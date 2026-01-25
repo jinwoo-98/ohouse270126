@@ -120,7 +120,7 @@ export function ShopTheLook() {
                         </span>
                       ))}
                     </div>
-                    <h3 className="text-xl md:text-2xl font-display font-semibold text-cream group-hover:text-primary transition-colors">
+                    <h3 className="text-lg md:text-xl font-bold text-cream group-hover:text-primary transition-colors">
                       {look.title}
                     </h3>
                   </div>

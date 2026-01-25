@@ -4,14 +4,16 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroLivingRoom from "@/assets/hero-living-room.jpg";
 import heroDiningRoom from "@/assets/hero-dining-room.jpg";
+import heroBedroom from "@/assets/hero-bedroom.jpg";
+import heroBathroom from "@/assets/hero-bathroom.jpg";
 
 const slides = [
   {
     id: 1,
     image: heroLivingRoom,
     title: "Phòng Khách Sang Trọng",
-    subtitle: "Bộ Sưu Tập Mới 2024",
-    description: "Nâng tầm không gian sống với những thiết kế độc đáo và chất liệu cao cấp",
+    subtitle: "Bộ Sưu Tập 2024",
+    description: "Nâng tầm không gian sống với thiết kế độc đáo và chất liệu cao cấp",
     cta: "Khám Phá Ngay",
     href: "/phong-khach",
   },
@@ -24,6 +26,24 @@ const slides = [
     cta: "Xem Thêm",
     href: "/phong-an",
   },
+  {
+    id: 3,
+    image: heroBedroom,
+    title: "Phòng Ngủ Êm Ái",
+    subtitle: "Giấc Ngủ Hoàn Hảo",
+    description: "Không gian nghỉ ngơi lý tưởng với nội thất chất lượng cao",
+    cta: "Khám Phá",
+    href: "/phong-ngu",
+  },
+  {
+    id: 4,
+    image: heroBathroom,
+    title: "Phòng Tắm Luxury",
+    subtitle: "Spa Tại Nhà",
+    description: "Trải nghiệm thư giãn đẳng cấp với thiết bị vệ sinh cao cấp",
+    cta: "Xem Ngay",
+    href: "/phong-tam",
+  },
 ];
 
 export function HeroSlider() {
@@ -32,7 +52,7 @@ export function HeroSlider() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
@@ -49,14 +69,14 @@ export function HeroSlider() {
   };
 
   return (
-    <section className="relative h-[60vh] md:h-[80vh] overflow-hidden">
+    <section className="relative h-[55vh] md:h-[75vh] overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
-          initial={{ opacity: 0, scale: 1.1 }}
+          initial={{ opacity: 0, scale: 1.05 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.7 }}
           className="absolute inset-0"
         >
           <img
@@ -64,7 +84,7 @@ export function HeroSlider() {
             alt={slides[currentSlide].title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-charcoal/70 via-charcoal/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-charcoal/80 via-charcoal/40 to-transparent" />
         </motion.div>
       </AnimatePresence>
 
@@ -78,15 +98,15 @@ export function HeroSlider() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="max-w-xl"
+              className="max-w-lg"
             >
-              <span className="inline-block text-primary font-medium uppercase tracking-widest text-sm mb-4">
+              <span className="inline-block text-primary font-semibold uppercase tracking-widest text-xs md:text-sm mb-3">
                 {slides[currentSlide].subtitle}
               </span>
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-cream mb-6 leading-tight">
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-cream mb-4 leading-tight">
                 {slides[currentSlide].title}
               </h1>
-              <p className="text-lg text-cream/80 mb-8 max-w-md">
+              <p className="text-base md:text-lg text-cream/80 mb-6 max-w-md">
                 {slides[currentSlide].description}
               </p>
               <Button
@@ -106,29 +126,29 @@ export function HeroSlider() {
       {/* Navigation Arrows */}
       <button
         onClick={goToPrev}
-        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 p-3 bg-card/20 backdrop-blur-sm rounded-full text-cream hover:bg-primary transition-colors"
+        className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 p-2.5 bg-card/30 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft className="w-5 h-5" />
       </button>
       <button
         onClick={goToNext}
-        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 p-3 bg-card/20 backdrop-blur-sm rounded-full text-cream hover:bg-primary transition-colors"
+        className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 p-2.5 bg-card/30 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all"
         aria-label="Next slide"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight className="w-5 h-5" />
       </button>
 
       {/* Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            className={`h-2 rounded-full transition-all duration-300 ${
               index === currentSlide
                 ? "bg-primary w-8"
-                : "bg-cream/50 hover:bg-cream/80"
+                : "bg-cream/50 w-2 hover:bg-cream/80"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />

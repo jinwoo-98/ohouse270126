@@ -56,7 +56,7 @@ export function CategoryGrid() {
                   />
                 </div>
                 <div className="p-4 text-center">
-                  <h3 className="font-display font-semibold text-lg group-hover:text-primary transition-colors">
+                  <h3 className="font-semibold text-base group-hover:text-primary transition-colors">
                     {category.name}
                   </h3>
                 </div>
@@ -77,7 +77,7 @@ export function CategoryGrid() {
             >
               <div className="aspect-square flex items-center justify-center">
                 <div className="text-center p-6">
-                  <span className="text-5xl md:text-6xl font-display font-bold text-destructive">
+                  <span className="text-4xl md:text-5xl font-bold text-destructive">
                     SALE
                   </span>
                   <p className="mt-2 text-sm text-destructive/80">
@@ -86,7 +86,7 @@ export function CategoryGrid() {
                 </div>
               </div>
               <div className="p-4 text-center">
-                <h3 className="font-display font-semibold text-lg text-destructive">
+                <h3 className="font-semibold text-base text-destructive">
                   Khuyến Mãi
                 </h3>
               </div>
