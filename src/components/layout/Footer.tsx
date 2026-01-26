@@ -25,7 +25,7 @@ const footerLinks = {
     { name: "Tuyển Dụng", href: "/tuyen-dung" },
     { name: "Tin Tức", href: "/tin-tuc" },
     { name: "Dự Án Nội Thất", href: "/du-an" },
-    { name: "Liên Hệ Hợp Tác", href: "/hop-tac" },
+    { name: "Liên Hệ Hợp Tác", href: "/lien-he" },
   ],
 };
 
