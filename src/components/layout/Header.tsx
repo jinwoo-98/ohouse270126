@@ -20,14 +20,12 @@ const productCategories = [
   { name: "Giường Ngủ", href: "/giuong" },
   { name: "Bàn Làm Việc", href: "/ban-lam-viec" },
   { name: "Đèn Trang Trí", href: "/den-trang-tri" },
+  { name: "Decor", href: "/decor" },
 ];
 
 const mainNav = [
   { name: "Nội Thất", href: "/noi-that", hasDropdown: true, dropdownType: "rooms" },
-  { name: "Sản Phẩm", href: "/san-pham", hasDropdown: true, dropdownType: "products" },
-  { name: "Dự Án", href: "/du-an" },
-  { name: "Tin Tức", href: "/tin-tuc" },
-  { name: "Về OHOUSE", href: "/ve-chung-toi" },
+  { name: "Sản Phẩm", href: "/noi-that", hasDropdown: true, dropdownType: "products" },
   { name: "Sale", href: "/sale", isHighlight: true },
 ];
 
@@ -46,7 +44,7 @@ export function Header() {
               <Phone className="w-3.5 h-3.5" />
               <span>1900 888 999</span>
             </a>
-            <span className="hidden md:inline text-cream/60">|</span>
+            <span className="hidden md:inline text-cream/40">|</span>
             <span className="hidden md:inline text-cream/80">Miễn phí vận chuyển cho đơn từ 5 triệu</span>
           </div>
           <div className="flex items-center gap-6">
@@ -225,27 +223,6 @@ export function Header() {
                 ))}
 
                 <div className="border-t border-border mt-6 pt-6">
-                  <Link
-                    to="/du-an"
-                    className="block py-2.5 px-3 rounded-lg hover:bg-secondary transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Dự Án Nội Thất
-                  </Link>
-                  <Link
-                    to="/tin-tuc"
-                    className="block py-2.5 px-3 rounded-lg hover:bg-secondary transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Tin Tức
-                  </Link>
-                  <Link
-                    to="/ve-chung-toi"
-                    className="block py-2.5 px-3 rounded-lg hover:bg-secondary transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Về OHOUSE
-                  </Link>
                   <Link
                     to="/sale"
                     className="block py-2.5 px-3 rounded-lg hover:bg-secondary transition-colors text-destructive font-medium"
