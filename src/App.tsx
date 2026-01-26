@@ -9,6 +9,13 @@ import CategoryPage from "./pages/CategoryPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import AboutPage from "./pages/AboutPage";
 import SupportPage from "./pages/SupportPage";
+import CartPage from "./pages/CartPage";
+import WishlistPage from "./pages/WishlistPage";
+import AccountPage from "./pages/AccountPage";
+import RecruitmentPage from "./pages/RecruitmentPage";
+import NewsPage from "./pages/NewsPage";
+import ProjectsPage from "./pages/ProjectsPage";
+import ContactPage from "./pages/ContactPage";
 
 const queryClient = new QueryClient();
 
@@ -21,26 +28,42 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           
-          {/* Category Pages */}
+          {/* Room Category Pages */}
+          <Route path="/noi-that" element={<CategoryPage />} />
           <Route path="/phong-khach" element={<CategoryPage />} />
           <Route path="/phong-ngu" element={<CategoryPage />} />
           <Route path="/phong-an" element={<CategoryPage />} />
           <Route path="/phong-tam" element={<CategoryPage />} />
           <Route path="/phong-lam-viec" element={<CategoryPage />} />
-          <Route path="/den-trang-tri" element={<CategoryPage />} />
+          
+          {/* Product Category Pages */}
           <Route path="/sofa" element={<CategoryPage />} />
-          <Route path="/ke-tivi" element={<CategoryPage />} />
           <Route path="/ban-an" element={<CategoryPage />} />
           <Route path="/ban-tra" element={<CategoryPage />} />
-          <Route path="/ban-lam-viec" element={<CategoryPage />} />
+          <Route path="/ke-tivi" element={<CategoryPage />} />
           <Route path="/giuong" element={<CategoryPage />} />
+          <Route path="/ban-lam-viec" element={<CategoryPage />} />
+          <Route path="/den-trang-tri" element={<CategoryPage />} />
+          <Route path="/decor" element={<CategoryPage />} />
           <Route path="/sale" element={<CategoryPage />} />
           
           {/* Product Detail */}
           <Route path="/san-pham/:id" element={<ProductDetailPage />} />
           
+          {/* Cart & Wishlist */}
+          <Route path="/gio-hang" element={<CartPage />} />
+          <Route path="/yeu-thich" element={<WishlistPage />} />
+          
+          {/* Account */}
+          <Route path="/tai-khoan" element={<AccountPage />} />
+          
           {/* About Pages */}
           <Route path="/ve-chung-toi" element={<AboutPage />} />
+          <Route path="/tuyen-dung" element={<RecruitmentPage />} />
+          <Route path="/tin-tuc" element={<NewsPage />} />
+          <Route path="/du-an" element={<ProjectsPage />} />
+          <Route path="/lien-he" element={<ContactPage />} />
+          <Route path="/hop-tac" element={<ContactPage />} />
           
           {/* Support Pages */}
           <Route path="/ho-tro/:slug" element={<SupportPage />} />
