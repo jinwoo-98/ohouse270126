@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, ShoppingBag, ChevronRight, Check, Truck, Shield } from "lucide-react";
+import { Plus, ShoppingBag, ChevronRight, Check, Truck, Shield, ChevronLeft, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -16,9 +16,9 @@ import categoryBed from "@/assets/category-bed.jpg";
 const looks = [
   {
     id: 1,
-    title: "Không Gian Sống Hiện Đại",
+    title: "Phòng Khách Hiện Đại",
+    room: "Phòng Khách",
     mainImage: heroLivingRoom,
-    thumbnailImage: heroLivingRoom,
     products: [
       { 
         id: 2, 
@@ -62,8 +62,8 @@ const looks = [
   {
     id: 2,
     title: "Phòng Ăn Sang Trọng",
+    room: "Phòng Ăn",
     mainImage: heroDiningRoom,
-    thumbnailImage: heroDiningRoom,
     products: [
       { 
         id: 3, 
@@ -78,13 +78,37 @@ const looks = [
         x: 50, 
         y: 60 
       },
+      { 
+        id: 10, 
+        name: "Ghế Ăn Bọc Da", 
+        image: categorySofa, 
+        price: 42990000, 
+        category: "Ghế Ăn",
+        description: "Ghế ăn bọc da cao cấp, thiết kế hiện đại, dễ dàng vệ sinh.",
+        features: ["Da Microfiber", "Khung thép không gỉ", "Màu sắc đa dạng"],
+        href: "/san-pham/10", 
+        x: 25, 
+        y: 65 
+      },
+      { 
+        id: 7, 
+        name: "Đèn Chùm Pha Lê", 
+        image: categoryBed, 
+        price: 15990000, 
+        category: "Đèn",
+        description: "Đèn chùm pha lê lấp lánh, tạo điểm nhấn sang trọng cho phòng ăn.",
+        features: ["Pha lê K9", "Khung kim loại mạ vàng", "Tiết kiệm điện"],
+        href: "/san-pham/7", 
+        x: 50, 
+        y: 20 
+      },
     ],
   },
   {
     id: 3,
     title: "Phòng Ngủ Tối Giản",
+    room: "Phòng Ngủ",
     mainImage: heroBedroom,
-    thumbnailImage: heroBedroom,
     products: [
       { 
         id: 6, 
@@ -98,6 +122,18 @@ const looks = [
         x: 50, 
         y: 60 
       },
+      { 
+        id: 14, 
+        name: "Tủ Quần Áo Gỗ Sồi", 
+        image: categorySofa, 
+        price: 22000000, 
+        category: "Tủ Quần Áo",
+        description: "Tủ quần áo gỗ sồi tự nhiên, thiết kế 4 cánh mở, không gian lưu trữ lớn.",
+        features: ["Gỗ Sồi tự nhiên", "Chống mối mọt", "Bảo hành 5 năm"],
+        href: "/san-pham/14", 
+        x: 85, 
+        y: 40 
+      },
     ],
   },
 ];
@@ -107,15 +143,31 @@ function formatPrice(price: number) {
 }
 
 export function ShopTheLook() {
-  const [activeLookId, setActiveLookId] = useState(1);
+  const [activeLookId, setActiveLookId] = useState(looks[0].id);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
 
-  const activeLook = looks.find(look => look.id === activeLookId)!;
+  const activeLookIndex = looks.findIndex(look => look.id === activeLookId);
+  const activeLook = looks[activeLookIndex];
   const selectedProduct = activeLook.products.find(p => p.id === selectedProductId);
 
-  const handleLookChange = (id: number) => {
-    setActiveLookId(id);
+  const goToPrev = () => {
+    const newIndex = (activeLookIndex - 1 + looks.length) % looks.length;
+    setActiveLookId(looks[newIndex].id);
     setSelectedProductId(null);
+  };
+
+  const goToNext = () => {
+    const newIndex = (activeLookIndex + 1) % looks.length;
+    setActiveLookId(looks[newIndex].id);
+    setSelectedProductId(null);
+  };
+
+  const handleRoomChange = (roomName: string) => {
+    const look = looks.find(l => l.room === roomName);
+    if (look) {
+      setActiveLookId(look.id);
+      setSelectedProductId(null);
+    }
   };
 
   return (
@@ -126,7 +178,26 @@ export function ShopTheLook() {
           <p className="text-muted-foreground">Mua sắm trực tiếp từ những không gian thiết kế ấn tượng</p>
         </div>
 
+        {/* Main Interactive Image Area */}
         <div className="relative rounded-lg overflow-hidden bg-background shadow-elevated">
+          
+          {/* Room Tabs Navigation */}
+          <div className="absolute top-0 left-0 right-0 z-30 bg-card/90 backdrop-blur-sm p-3 flex justify-center gap-4 border-b border-border">
+            {looks.map(look => (
+              <button
+                key={look.id}
+                onClick={() => handleRoomChange(look.room)}
+                className={`px-4 py-2 text-sm font-medium transition-colors rounded-full ${
+                  look.id === activeLookId 
+                    ? 'bg-primary text-primary-foreground shadow-gold' 
+                    : 'text-foreground hover:bg-secondary'
+                }`}
+              >
+                {look.room}
+              </button>
+            ))}
+          </div>
+
           <AnimatePresence mode="wait">
             <motion.div
               key={activeLook.id}
@@ -134,21 +205,22 @@ export function ShopTheLook() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
-              className="relative aspect-[16/9] md:aspect-[21/9] w-full"
+              className="relative aspect-[16/9] md:aspect-[21/9] w-full pt-[60px] md:pt-[70px]" // Add padding for tabs
             >
               <img
                 src={activeLook.mainImage}
                 alt={activeLook.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover absolute inset-0 top-[60px] md:top-[70px]"
               />
               
-              <div className="absolute inset-0">
+              {/* Hotspots Overlay */}
+              <div className="absolute inset-0 top-[60px] md:top-[70px] bg-black/5">
                 {activeLook.products.map((product) => (
                   <TooltipProvider key={product.id}>
                     <Tooltip delayDuration={300}>
                       <TooltipTrigger asChild>
                         <button
-                          onClick={() => setSelectedProductId(product.id)}
+                          onClick={() => setSelectedProductId(selectedProductId === product.id ? null : product.id)}
                           className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/90 shadow-lg flex items-center justify-center text-primary hover:scale-110 hover:bg-white transition-all duration-300 z-10 group"
                           style={{ left: `${product.x}%`, top: `${product.y}%` }}
                         >
@@ -164,10 +236,26 @@ export function ShopTheLook() {
                   </TooltipProvider>
                 ))}
               </div>
+
+              {/* Navigation Arrows */}
+              <button
+                onClick={goToPrev}
+                className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 bg-card/30 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all z-20"
+                aria-label="Previous look"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                onClick={goToNext}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-card/30 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all z-20"
+                aria-label="Next look"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
             </motion.div>
           </AnimatePresence>
 
-          {/* Full Height Side Panel (Sheet) */}
+          {/* Product Detail Sidebar (Sheet) */}
           <Sheet open={!!selectedProductId} onOpenChange={(open) => !open && setSelectedProductId(null)}>
             <SheetContent className="w-full sm:max-w-[450px] p-0 overflow-y-auto">
               {selectedProduct && (
@@ -246,28 +334,6 @@ export function ShopTheLook() {
               )}
             </SheetContent>
           </Sheet>
-        </div>
-
-        <div className="mt-8 flex justify-center">
-          <div className="grid grid-cols-3 gap-4 md:gap-6">
-            {looks.map((look) => (
-              <button
-                key={look.id}
-                onClick={() => handleLookChange(look.id)}
-                className={`relative w-24 h-24 md:w-32 md:h-24 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
-                  activeLookId === look.id 
-                    ? 'border-primary scale-105 shadow-gold' 
-                    : 'border-transparent opacity-70 hover:opacity-100 hover:scale-105'
-                }`}
-              >
-                <img 
-                  src={look.thumbnailImage} 
-                  alt={look.title} 
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ))}
-          </div>
         </div>
       </div>
     </section>
