@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { TrendingUp, ArrowRight, Sparkles, Search } from "lucide-react";
+import { TrendingUp, ArrowRight, Sparkles, Search, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import categoryTvStand from "@/assets/category-tv-stand.jpg";
 import categorySofa from "@/assets/category-sofa.jpg";
@@ -35,24 +35,23 @@ const POPULAR_KEYWORDS = [
   "Đèn chùm pha lê"
 ];
 
-// Mock data generator để tạo đủ 6 sản phẩm cho mỗi từ khóa
 const generateProducts = (keyword: string, baseImage: string, category: string): Product[] => {
   return Array.from({ length: 6 }).map((_, i) => ({
     id: `${keyword}-${i}`,
-    name: `${category} Cao Cấp Mẫu ${i + 1} - ${keyword}`,
-    price: 15000000 + (i * 2500000),
+    name: `${category} ${keyword} - Mẫu thiết kế ${i + 1}`,
+    price: 18500000 + (i * 3200000),
     image: baseImage,
     category: category
   }));
 };
 
 const PRODUCTS_MAP: Record<string, Product[]> = {
-  "Sofa da thật": generateProducts("Sofa", categorySofa, "Sofa"),
-  "Bàn ăn mặt đá": generateProducts("Bàn Ăn", categoryDiningTable, "Bàn Ăn"),
-  "Gỗ óc chó cao cấp": generateProducts("Nội Thất Gỗ", categoryTvStand, "Kệ Tivi"),
-  "Kệ tivi hiện đại": generateProducts("Kệ Tivi", categoryTvStand, "Kệ Tivi"),
-  "Giường ngủ luxury": generateProducts("Giường Ngủ", categoryBed, "Giường"),
-  "Đèn chùm pha lê": generateProducts("Đèn Trang Trí", categoryLighting, "Đèn"),
+  "Sofa da thật": generateProducts("Luxury", categorySofa, "Sofa"),
+  "Bàn ăn mặt đá": generateProducts("Modern", categoryDiningTable, "Bàn Ăn"),
+  "Gỗ óc chó cao cấp": generateProducts("Walnut", categoryTvStand, "Kệ Tivi"),
+  "Kệ tivi hiện đại": generateProducts("Minimalist", categoryTvStand, "Kệ Tivi"),
+  "Giường ngủ luxury": generateProducts("Grand", categoryBed, "Giường"),
+  "Đèn chùm pha lê": generateProducts("Crystal", categoryLighting, "Đèn"),
 };
 
 export function SearchSuggestions({ isVisible, onClose, onKeywordClick }: SearchSuggestionsProps) {
@@ -68,108 +67,113 @@ export function SearchSuggestions({ isVisible, onClose, onKeywordClick }: Search
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
-      className="absolute top-full left-[-20px] right-[-20px] md:left-[-100px] md:right-[-100px] lg:left-0 lg:right-0 mt-2 bg-card border border-border shadow-elevated rounded-xl overflow-hidden z-[100] hidden md:block"
+      className="absolute top-full left-0 mt-3 bg-card border border-border/60 shadow-elevated rounded-2xl overflow-hidden z-[100] hidden md:block w-[750px] -ml-20 lg:ml-0"
     >
-      <div className="flex h-[600px]">
-        {/* Cột 1: Từ khóa phổ biến */}
-        <div className="w-1/3 bg-secondary/30 p-6 border-r border-border flex flex-col">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-6 flex items-center gap-2">
+      <div className="flex h-[550px]">
+        {/* Left Column: Keywords */}
+        <div className="w-[280px] bg-secondary/20 p-6 border-r border-border/40 flex flex-col">
+          <div className="mb-6 flex items-center gap-2 px-2">
             <TrendingUp className="w-4 h-4 text-primary" />
-            Từ khóa phổ biến
-          </h3>
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              Tìm kiếm phổ biến
+            </h3>
+          </div>
           
           <div className="flex-1 space-y-1">
             {POPULAR_KEYWORDS.map((keyword) => (
-              <div
+              <button
                 key={keyword}
                 onMouseEnter={() => setActiveKeyword(keyword)}
-                className="relative"
+                onClick={() => onKeywordClick(keyword)}
+                className={`w-full text-left px-4 py-3 text-sm rounded-xl transition-all flex items-center justify-between group font-medium ${
+                  activeKeyword === keyword 
+                    ? "bg-primary text-primary-foreground shadow-gold" 
+                    : "hover:bg-background text-foreground/70 hover:text-primary"
+                }`}
               >
-                <button
-                  type="button"
-                  onClick={() => onKeywordClick(keyword)}
-                  className={`w-full text-left px-4 py-3 text-sm rounded-lg transition-all flex items-center justify-between font-medium group ${
-                    activeKeyword === keyword 
-                      ? "bg-primary text-primary-foreground shadow-md" 
-                      : "hover:bg-background hover:text-primary text-foreground/80"
-                  }`}
-                >
-                  {keyword}
-                  {activeKeyword === keyword && (
-                    <ArrowRight className="w-4 h-4 animate-in slide-in-from-left-2 fade-in duration-300" />
-                  )}
-                </button>
-              </div>
+                {keyword}
+                <ArrowRight className={`w-4 h-4 transition-all duration-300 ${
+                  activeKeyword === keyword ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
+                }`} />
+              </button>
             ))}
           </div>
 
-          <div className="mt-auto pt-6 border-t border-border/50">
-             <div className="bg-background rounded-lg p-4 border border-border/50">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="font-bold text-sm">Thiết kế riêng?</span>
-                </div>
-                <p className="text-xs text-muted-foreground mb-3">Nhận tư vấn thiết kế nội thất miễn phí từ chuyên gia.</p>
-                <Button variant="outline" size="sm" className="w-full text-xs h-8" asChild>
-                  <Link to="/thiet-ke" onClick={onClose}>Đăng ký ngay</Link>
-                </Button>
-             </div>
+          <div className="mt-auto p-4 bg-primary/5 rounded-xl border border-primary/10">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Dịch vụ đặc biệt</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+              Bạn muốn một thiết kế riêng cho căn hộ của mình?
+            </p>
+            <Button variant="link" className="p-0 h-auto text-[11px] font-bold text-charcoal hover:text-primary transition-colors group" asChild>
+              <Link to="/thiet-ke" onClick={onClose}>
+                ĐĂNG KÝ TƯ VẤN 3D
+                <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </Button>
           </div>
         </div>
 
-        {/* Cột 2: Sản phẩm tương ứng (2 cột x 3 hàng) */}
-        <div className="w-2/3 p-6 bg-card flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Search className="w-4 h-4 text-primary" />
-              Gợi ý cho "{activeKeyword}"
-            </h3>
+        {/* Right Column: Products Grid */}
+        <div className="flex-1 p-6 bg-card flex flex-col">
+          <div className="flex items-center justify-between mb-6 px-2">
+            <div className="flex items-center gap-2">
+              <Search className="w-3.5 h-3.5 text-primary" />
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                Gợi ý cho "{activeKeyword}"
+              </h3>
+            </div>
             <Link 
               to={`/tim-kiem?q=${activeKeyword}`}
               onClick={onClose}
-              className="text-xs font-medium text-primary hover:underline flex items-center gap-1"
+              className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1 uppercase tracking-wider"
             >
-              Xem tất cả kết quả
+              Xem tất cả
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 flex-1 overflow-y-auto pr-2">
+          <div className="grid grid-cols-2 gap-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             <AnimatePresence mode="wait">
               {currentProducts.map((product, index) => (
                 <motion.div
                   key={`${activeKeyword}-${index}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.03 }}
                 >
                   <Link
                     to={`/san-pham/${product.id}`}
                     onClick={onClose}
-                    className="flex gap-4 group h-full bg-background rounded-lg border border-border/50 p-2 hover:border-primary/50 hover:shadow-subtle transition-all"
+                    className="flex gap-3 group h-full bg-background rounded-xl border border-border/40 p-2.5 hover:border-primary/40 hover:shadow-subtle transition-all duration-300"
                   >
-                    <div className="w-24 h-24 flex-shrink-0 rounded-md overflow-hidden bg-secondary">
+                    <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-secondary">
                       <img 
                         src={product.image} 
                         alt={product.name} 
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                       />
                     </div>
-                    <div className="flex flex-col justify-center py-1">
-                      <span className="text-[10px] uppercase text-muted-foreground font-semibold mb-1">
+                    <div className="flex flex-col justify-center py-1 overflow-hidden">
+                      <span className="text-[9px] uppercase text-primary/70 font-bold tracking-widest mb-1">
                         {product.category}
                       </span>
-                      <h4 className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors mb-1">
+                      <h4 className="text-xs font-semibold line-clamp-2 group-hover:text-primary transition-colors mb-1.5 leading-snug">
                         {product.name}
                       </h4>
-                      <p className="text-primary font-bold text-sm mt-auto">
-                        {formatPrice(product.price)}
-                      </p>
+                      <div className="flex items-center justify-between mt-auto">
+                        <p className="text-charcoal font-bold text-sm">
+                          {formatPrice(product.price)}
+                        </p>
+                        <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                           <ShoppingBag className="w-3 h-3" />
+                        </div>
+                      </div>
                     </div>
                   </Link>
                 </motion.div>
