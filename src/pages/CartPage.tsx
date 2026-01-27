@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Minus, Plus, X, ShoppingBag, ArrowRight, Truck, Shield, CreditCard, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -74,9 +74,9 @@ export default function CartPage() {
 
       if (itemsError) throw itemsError;
 
-      toast.success("Đặt hàng thành công! Cảm ơn bạn đã mua sắm tại OHOUSE.");
       clearCart();
-      navigate("/tai-khoan/don-hang");
+      // Điều hướng đến trang thành công với ID đơn hàng
+      navigate(`/dat-hang-thanh-cong?id=${order.id}`);
     } catch (error: any) {
       toast.error("Đã có lỗi xảy ra: " + error.message);
       console.error(error);
@@ -125,7 +125,6 @@ export default function CartPage() {
                   ))}
                 </div>
 
-                {/* Shipping Info Form */}
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card rounded-lg p-6 shadow-subtle space-y-4">
                   <h2 className="text-lg font-bold border-b pb-2">Thông Tin Giao Hàng</h2>
                   {!user && (

@@ -27,6 +27,7 @@ import ShowroomPage from "./pages/ShowroomPage";
 import InspirationPage from "./pages/InspirationPage";
 import DesignServicePage from "./pages/DesignServicePage";
 import SearchPage from "./pages/SearchPage";
+import OrderSuccessPage from "./pages/OrderSuccessPage";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
                 <Route path="/san-pham/:id" element={<ProductDetailPage />} />
                 <Route path="/gio-hang" element={<CartPage />} />
                 <Route path="/yeu-thich" element={<WishlistPage />} />
+                <Route path="/dat-hang-thanh-cong" element={<OrderSuccessPage />} />
                 <Route path="/tai-khoan" element={<ProfileDashboard />}>
                   <Route index element={<Navigate to="thong-tin" replace />} />
                   <Route path="thong-tin" element={<ProfileDashboard />} />

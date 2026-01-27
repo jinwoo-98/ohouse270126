@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, Heart, Minus, Plus, ShoppingBag, Truck, RefreshCw, Shield, Check, Star, ArrowRight, Loader2, Send } from "lucide-react";
+import { ChevronRight, Heart, Minus, Plus, ShoppingBag, Truck, RefreshCw, Shield, Star, ArrowRight, Loader2, Send } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { RecentlyViewed, trackProductView } from "@/components/RecentlyViewed";
 import categoryTvStand from "@/assets/category-tv-stand.jpg";
 import categorySofa from "@/assets/category-sofa.jpg";
 import categoryDiningTable from "@/assets/category-dining-table.jpg";
@@ -62,6 +62,14 @@ export default function ProductDetailPage() {
     setQuantity(1);
     setSelectedColor(0);
     fetchReviews();
+    
+    // Lưu vào sản phẩm đã xem
+    trackProductView({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image
+    });
   }, [id, pathname]);
 
   const fetchReviews = async () => {
@@ -281,6 +289,8 @@ export default function ProductDetailPage() {
               </div>
             </TabsContent>
           </Tabs>
+
+          <RecentlyViewed />
 
           <section className="mb-16">
             <div className="flex items-center justify-between mb-8">
