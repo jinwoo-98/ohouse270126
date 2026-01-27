@@ -77,6 +77,7 @@ const mainCategories = [
   { name: "Sale", href: "/sale", hasDropdown: false, isHighlight: true },
 ];
 
+// Danh sách các chức năng tài khoản
 const accountMenuItems = [
   { name: "Tài khoản của tôi", href: "/tai-khoan/thong-tin", icon: User },
   { name: "Đặt hàng của tôi", href: "/tai-khoan/don-hang", icon: Package },
@@ -258,22 +259,45 @@ export function Header() {
                           </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild><Link to="/tai-khoan/thong-tin">Thông tin cá nhân</Link></DropdownMenuItem>
-                        <DropdownMenuItem asChild><Link to="/tai-khoan/don-hang">Đơn hàng của tôi</Link></DropdownMenuItem>
-                        <DropdownMenuItem asChild><Link to="/yeu-thich">Sản phẩm yêu thích</Link></DropdownMenuItem>
+                        {/* Hiển thị danh sách chức năng (Trừ Liên hệ đã có ở header) */}
+                        {accountMenuItems.filter(item => item.href !== "/lien-he").map((item) => (
+                          <DropdownMenuItem key={item.name} asChild>
+                            <Link to={item.href} className="flex items-center gap-2">
+                              <item.icon className="w-4 h-4" />
+                              {item.name}
+                            </Link>
+                          </DropdownMenuItem>
+                        ))}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleLogout} className="text-destructive">Đăng xuất</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                          <LogOut className="w-4 h-4 mr-2" />
+                          Đăng xuất
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   ) : (
-                    <button className="p-2.5 hover:bg-secondary rounded-lg transition-colors flex" onClick={() => setIsAuthDialogOpen(true)}><User className="w-5 h-5" /></button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                         <Button variant="ghost" className="p-2.5 h-auto rounded-lg flex"><User className="w-5 h-5" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuItem onClick={() => setIsAuthDialogOpen(true)} className="font-bold text-primary">
+                          <User className="w-4 h-4 mr-2" />
+                          Đăng Nhập / Đăng Ký
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {/* Khách vãng lai vẫn xem được một số mục */}
+                        <DropdownMenuItem asChild><Link to="/yeu-thich">Sản phẩm yêu thích</Link></DropdownMenuItem>
+                        <DropdownMenuItem asChild><Link to="/lich-su-xem">Lịch sử xem</Link></DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
                 </div>
               </div>
 
-              <Link to="/yeu-thich" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex relative">
-                <Heart className="w-5 h-5" />
-                {wishlistCount > 0 && <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center font-medium">{wishlistCount}</span>}
+              {/* Biểu tượng Liên hệ mới thay thế Yêu thích trên header desktop */}
+              <Link to="/lien-he" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex">
+                <Headset className="w-5 h-5" />
               </Link>
 
               <Link to="/gio-hang" className="p-2.5 hover:bg-secondary rounded-lg transition-colors relative">
