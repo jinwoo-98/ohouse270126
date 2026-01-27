@@ -297,32 +297,40 @@ export function Header() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-charcoal/50 z-50 lg:hidden" onClick={() => setIsMobileMenuOpen(false)} />
             <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} className="fixed left-0 top-0 h-full w-80 bg-card z-50 lg:hidden flex flex-col">
               
-              {/* Login/User Section - Top */}
-              <div className="p-6 bg-secondary/30 border-b border-border">
+              {/* Drawer Header with Close Button */}
+              <div className="p-4 border-b border-border flex items-center justify-between">
+                <span className="text-lg font-bold">OHOUSE</span>
+                <button 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-2 hover:bg-secondary rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Login/User Section */}
+              <div className="p-5 border-b border-border">
                 {user ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
-                        {user.email?.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="overflow-hidden">
-                        <p className="text-sm font-bold truncate">{user.email}</p>
-                        <p className="text-[10px] text-muted-foreground">Thành viên OHOUSE</p>
-                      </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
+                      {user.email?.charAt(0).toUpperCase()}
                     </div>
-                    <Button variant="outline" size="sm" asChild className="w-full justify-start h-9">
-                      <Link to="/tai-khoan/thong-tin" onClick={() => setIsMobileMenuOpen(false)}>
-                        <User className="w-4 h-4 mr-2" />
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-bold truncate">{user.email}</p>
+                      <Link 
+                        to="/tai-khoan/thong-tin" 
+                        className="text-[10px] text-primary font-bold underline"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
                         Quản lý tài khoản
                       </Link>
-                    </Button>
+                    </div>
                   </div>
                 ) : (
                   <Button 
-                    className="w-full btn-hero h-11" 
+                    className="w-full btn-hero h-10 text-xs shadow-none" 
                     onClick={() => { setIsAuthDialogOpen(true); setIsMobileMenuOpen(false); }}
                   >
-                    <User className="w-4 h-4 mr-2" />
                     Đăng Nhập / Đăng Ký
                   </Button>
                 )}
@@ -383,17 +391,17 @@ export function Header() {
                       exit={{ opacity: 0, x: 10 }}
                       className="p-4"
                     >
-                      <button 
-                        onClick={() => setActiveMobileSubMenu(null)}
-                        className="flex items-center gap-2 text-xs font-bold text-primary mb-6 px-3 hover:underline"
-                      >
-                        <ArrowLeft className="w-4 h-4" />
-                        Quay Lại
-                      </button>
-
-                      <h3 className="text-lg font-bold px-3 mb-4 capitalize">
-                        {activeMobileSubMenu.replace('-', ' ')}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-6 px-1">
+                        <button 
+                          onClick={() => setActiveMobileSubMenu(null)}
+                          className="p-2 hover:bg-secondary rounded-full transition-colors text-primary"
+                        >
+                          <ArrowLeft className="w-6 h-6" />
+                        </button>
+                        <h3 className="text-lg font-bold capitalize">
+                          {activeMobileSubMenu.replace('-', ' ')}
+                        </h3>
+                      </div>
 
                       <nav className="space-y-1">
                         <Link 
@@ -418,14 +426,6 @@ export function Header() {
                   )}
                 </AnimatePresence>
               </div>
-
-              {/* Close Button - Bottom Left fixed (optional) or top right inside drawer */}
-              <button 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="absolute top-4 right-4 p-2 hover:bg-secondary rounded-full transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
 
               {user && (
                 <div className="p-4 border-t border-border">
