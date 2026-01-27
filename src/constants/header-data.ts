@@ -63,8 +63,8 @@ export const mainCategories = [
 ];
 
 export const accountMenuItems = [
-  { name: "Tài khoản của tôi", href: "/tai-khoan/thong-tin", icon: User, requiresAuth: true },
-  { name: "Đơn hàng của tôi", href: "/tai-khoan/don-hang", icon: Package, requiresAuth: true },
+  { name: "Tài khoản", href: "/tai-khoan/thong-tin", icon: User, requiresAuth: true },
+  { name: "Đơn hàng", href: "/tai-khoan/don-hang", icon: Package, requiresAuth: true },
   { name: "Phiếu giảm giá", href: "/tai-khoan/vouchers", icon: Ticket, requiresAuth: true },
   { name: "Điểm thưởng", href: "/tai-khoan/points", icon: Star, requiresAuth: true },
   { name: "Danh sách yêu thích", href: "/yeu-thich", icon: Heart, requiresAuth: false },
