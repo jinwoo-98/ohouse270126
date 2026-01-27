@@ -147,6 +147,12 @@ export function Header() {
     setIsSearchFocused(false);
   };
 
+  const getSubMenuTitle = () => {
+    if (!activeMobileSubMenu) return "";
+    const category = mainCategories.find(c => c.dropdownKey === activeMobileSubMenu);
+    return category ? category.name : activeMobileSubMenu;
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-card shadow-sm">
       <div className="bg-primary text-primary-foreground">
@@ -391,15 +397,15 @@ export function Header() {
                       exit={{ opacity: 0, x: 10 }}
                       className="p-4"
                     >
-                      <div className="flex items-center gap-2 mb-6 px-1">
+                      <div className="flex items-center gap-3 mb-6 px-1">
                         <button 
                           onClick={() => setActiveMobileSubMenu(null)}
-                          className="p-2 hover:bg-secondary rounded-full transition-colors text-primary"
+                          className="p-2 hover:bg-secondary rounded-full transition-colors text-primary shrink-0"
                         >
                           <ArrowLeft className="w-6 h-6" />
                         </button>
-                        <h3 className="text-lg font-bold capitalize">
-                          {activeMobileSubMenu.replace('-', ' ')}
+                        <h3 className="text-lg font-bold">
+                          {getSubMenuTitle()}
                         </h3>
                       </div>
 
@@ -409,7 +415,7 @@ export function Header() {
                           className="block py-3 px-3 text-sm font-bold text-primary bg-primary/5 rounded-lg mb-2"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          Xem tất cả {activeMobileSubMenu.replace('-', ' ')}
+                          Xem tất cả {getSubMenuTitle()}
                         </Link>
                         {productCategories[activeMobileSubMenu]?.map((subItem) => (
                           <Link 
