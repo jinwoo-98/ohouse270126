@@ -48,6 +48,11 @@ const App = () => (
             <Route path="/decor" element={<CategoryPage />} />
             <Route path="/sale" element={<CategoryPage />} />
             
+            {/* Missing Category Routes added here */}
+            <Route path="/ban-ghe" element={<CategoryPage />} />
+            <Route path="/ban-chay" element={<CategoryPage />} />
+            <Route path="/moi" element={<CategoryPage />} />
+            
             {/* Product Detail */}
             <Route path="/san-pham/:id" element={<ProductDetailPage />} />
             
