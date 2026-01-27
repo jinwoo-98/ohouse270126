@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown, Phone } from "lucide-react";
+import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown, Phone, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { AuthDialog } from "@/components/AuthDialog";
+import { OrderTrackingDialog } from "@/components/OrderTrackingDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const roomCategories = [
   { name: "Phòng Khách", href: "/phong-khach" },
@@ -28,7 +35,7 @@ const secondaryLinks = [
   { name: "Showroom", href: "/showroom" },
   { name: "Cảm Hứng", href: "/cam-hung" },
   { name: "Thiết Kế Miễn Phí", href: "/thiet-ke" },
-  { name: "Hướng Dẫn", href: "/huong-dan" },
+  { name: "Hướng Dẫn", href: "/ho-tro/huong-dan" },
   { name: "Dự Án", href: "/du-an" },
   { name: "Hợp Tác B2B", href: "/lien-he" },
 ];
@@ -48,7 +55,10 @@ const mainCategories = [
 ];
 
 export function Header() {
+  const { user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [countdown, setCountdown] = useState({ days: 3, hours: 12, minutes: 45, seconds: 30 });
 
@@ -67,6 +77,16 @@ export function Header() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+  
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Đăng xuất thất bại. Vui lòng thử lại.");
+      console.error("Logout error:", error);
+    } else {
+      toast.success("Đã đăng xuất thành công.");
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-card shadow-sm">
@@ -109,7 +129,7 @@ export function Header() {
       <div className="bg-card">
         <div className="container-luxury">
           <div className="flex items-center justify-between h-12 md:h-14 gap-4">
-            {/* Left: Search */}
+            {/* Left: Search & Order Tracking */}
             <div className="flex-1 flex items-center max-w-md">
               {/* Mobile Menu Button */}
               <button
@@ -128,6 +148,17 @@ export function Header() {
                   className="pl-10 pr-4 h-10 text-sm bg-secondary/50 border-0 focus-visible:ring-1"
                 />
               </div>
+              
+              {/* Order Tracking Button */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="hidden md:flex text-sm text-muted-foreground hover:text-foreground ml-4"
+                onClick={() => setIsTrackingDialogOpen(true)}
+              >
+                <Package className="w-4 h-4 mr-2" />
+                Tra Cứu Đơn Hàng
+              </Button>
             </div>
 
             {/* Center: Logo */}
@@ -152,9 +183,48 @@ export function Header() {
                 <Search className="w-5 h-5" />
               </button>
 
-              <Link to="/tai-khoan" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex">
-                <User className="w-5 h-5" />
-              </Link>
+              {/* User/Account Icon */}
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="p-2.5 h-auto rounded-lg hidden sm:flex">
+                      <User className="w-5 h-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">Tài khoản</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/tai-khoan/thong-tin">Thông tin cá nhân</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/tai-khoan/don-hang">Đơn hàng của tôi</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/yeu-thich">Sản phẩm yêu thích</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                      Đăng xuất
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <button
+                  className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex"
+                  onClick={() => setIsAuthDialogOpen(true)}
+                  aria-label="Đăng nhập"
+                >
+                  <User className="w-5 h-5" />
+                </button>
+              )}
 
               <Link to="/yeu-thich" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex relative">
                 <Heart className="w-5 h-5" />
@@ -230,6 +300,7 @@ export function Header() {
                           key={subItem.name}
                           to={subItem.href}
                           className="block px-4 py-2.5 text-sm rounded-md hover:bg-secondary hover:text-primary transition-colors"
+                          onClick={() => setActiveDropdown(null)}
                         >
                           {subItem.name}
                         </Link>
@@ -277,6 +348,25 @@ export function Header() {
                     className="pl-10 h-10"
                   />
                 </div>
+              </div>
+
+              {/* Mobile Auth/Tracking */}
+              <div className="p-4 border-b border-border flex flex-col gap-2">
+                {user ? (
+                  <Button variant="outline" onClick={handleLogout} className="w-full">
+                    <User className="w-4 h-4 mr-2" />
+                    Đăng xuất
+                  </Button>
+                ) : (
+                  <Button variant="outline" onClick={() => { setIsAuthDialogOpen(true); setIsMobileMenuOpen(false); }} className="w-full">
+                    <User className="w-4 h-4 mr-2" />
+                    Đăng nhập / Đăng ký
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => { setIsTrackingDialogOpen(true); setIsMobileMenuOpen(false); }} className="w-full">
+                  <Package className="w-4 h-4 mr-2" />
+                  Tra Cứu Đơn Hàng
+                </Button>
               </div>
 
               {/* Mobile Secondary Links */}
@@ -342,6 +432,10 @@ export function Header() {
           </>
         )}
       </AnimatePresence>
+      
+      {/* Dialogs */}
+      <AuthDialog isOpen={isAuthDialogOpen} onClose={() => setIsAuthDialogOpen(false)} />
+      <OrderTrackingDialog isOpen={isTrackingDialogOpen} onClose={() => setIsTrackingDialogOpen(false)} />
     </header>
   );
 }
