@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, ShoppingBag, ChevronRight, Check, Truck, Shield, ChevronLeft, ArrowRight } from "lucide-react";
+import { Plus, ShoppingBag, ChevronRight, Check, Truck, Shield, ChevronLeft, ArrowRight, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import heroLivingRoom from "@/assets/hero-living-room.jpg";
 import heroDiningRoom from "@/assets/hero-dining-room.jpg";
 import heroBedroom from "@/assets/hero-bedroom.jpg";
@@ -157,6 +159,9 @@ function formatPrice(price: number) {
 }
 
 export function ShopTheLook() {
+  const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  
   const [activeLookId, setActiveLookId] = useState(looksData[0].id);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
@@ -191,10 +196,7 @@ export function ShopTheLook() {
           <p className="text-muted-foreground">Mua sắm trực tiếp từ những không gian thiết kế ấn tượng</p>
         </div>
 
-        {/* Main Interactive Image Area */}
         <div className="relative rounded-lg overflow-hidden bg-background shadow-elevated">
-          
-          {/* Room Tabs Navigation */}
           <div className="absolute top-0 left-0 right-0 z-30 bg-card/90 backdrop-blur-sm p-3 flex justify-center gap-4 border-b border-border">
             {looksData.map(look => (
               <button
@@ -226,7 +228,6 @@ export function ShopTheLook() {
                 className="w-full h-full object-cover absolute inset-0 top-[60px] md:top-[70px]"
               />
               
-              {/* Hotspots Overlay */}
               <div className="absolute inset-0 top-[60px] md:top-[70px] bg-black/5">
                 {currentImage.products.map((product) => (
                   <TooltipProvider key={product.id}>
@@ -250,7 +251,6 @@ export function ShopTheLook() {
                 ))}
               </div>
 
-              {/* Navigation Arrows */}
               {isMultiImage && (
                 <>
                   <button
@@ -270,7 +270,6 @@ export function ShopTheLook() {
                 </>
               )}
               
-              {/* Image Dots */}
               {isMultiImage && (
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
                   {activeLook.images.map((_, index) => (
@@ -290,7 +289,6 @@ export function ShopTheLook() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Product Detail Sidebar (Sheet) */}
           <Sheet open={!!selectedProductId} onOpenChange={(open) => !open && setSelectedProductId(null)}>
             <SheetContent className="w-full sm:max-w-[450px] p-0 flex flex-col">
               {selectedProduct && (
@@ -307,6 +305,23 @@ export function ShopTheLook() {
                           {selectedProduct.category}
                         </span>
                       </div>
+                      {/* Heart toggle directly on image in sheet */}
+                      <button 
+                        onClick={() => toggleWishlist({
+                          id: selectedProduct.id,
+                          name: selectedProduct.name,
+                          price: selectedProduct.price,
+                          image: selectedProduct.image,
+                          originalPrice: selectedProduct.originalPrice
+                        })}
+                        className={`absolute top-4 right-4 p-2.5 rounded-full shadow-medium transition-all ${
+                          isInWishlist(selectedProduct.id)
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'
+                        }`}
+                      >
+                        <Heart className={`w-5 h-5 ${isInWishlist(selectedProduct.id) ? 'fill-current' : ''}`} />
+                      </button>
                     </div>
 
                     <div className="p-6 md:p-8 space-y-6 pb-24">
@@ -355,7 +370,6 @@ export function ShopTheLook() {
                     </div>
                   </div>
 
-                  {/* Fixed Bottom Actions */}
                   <div className="p-4 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
                     <div className="flex gap-3">
                       <Button variant="outline" className="flex-1 h-12 text-sm font-semibold" asChild>
@@ -364,7 +378,16 @@ export function ShopTheLook() {
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Link>
                       </Button>
-                      <Button className="flex-[1.5] btn-hero h-12 text-sm font-bold shadow-gold">
+                      <Button 
+                        className="flex-[1.5] btn-hero h-12 text-sm font-bold shadow-gold"
+                        onClick={() => addToCart({
+                          id: selectedProduct.id,
+                          name: selectedProduct.name,
+                          price: selectedProduct.price,
+                          image: selectedProduct.image,
+                          quantity: 1
+                        })}
+                      >
                         <ShoppingBag className="w-4 h-4 mr-2" />
                         Thêm Vào Giỏ
                       </Button>
