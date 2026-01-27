@@ -69,15 +69,24 @@ export default function SearchPage() {
                         </div>
                       </Link>
                       
-                      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                      {/* Interaction Buttons - Moved to top right */}
+                      <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
                         <button 
-                          onClick={() => toggleWishlist({ ...product })}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleWishlist({ ...product });
+                          }}
                           className={`p-2.5 rounded-full shadow-medium transition-all pointer-events-auto ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-primary hover:text-primary-foreground'}`}
                         >
                           <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
                         </button>
                         <button 
-                          onClick={() => addToCart({ ...product, quantity: 1 })}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addToCart({ ...product, quantity: 1 });
+                          }}
                           className="p-2.5 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-all pointer-events-auto"
                         >
                           <ShoppingBag className="w-4 h-4" />

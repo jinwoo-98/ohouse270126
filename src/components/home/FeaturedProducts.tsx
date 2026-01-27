@@ -148,8 +148,8 @@ export function FeaturedProducts() {
                     </div>
                   </Link>
                   
-                  {/* Hover Actions - Moved out of Link and connected to state */}
-                  <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/20 transition-colors flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 z-10 pointer-events-none">
+                  {/* Interaction Buttons - Moved to top right and made visible on hover */}
+                  <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
                     <button
                       onClick={(e) => {
                         e.preventDefault();
@@ -161,14 +161,14 @@ export function FeaturedProducts() {
                           image: product.image
                         });
                       }}
-                      className={`p-3 rounded-full shadow-medium transition-colors pointer-events-auto ${
+                      className={`p-2.5 rounded-full shadow-medium transition-colors pointer-events-auto ${
                         isFavorite 
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-card hover:bg-primary hover:text-primary-foreground'
                       }`}
                       aria-label="Thêm vào yêu thích"
                     >
-                      <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+                      <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
                     </button>
                     <button
                       onClick={(e) => {
@@ -182,10 +182,10 @@ export function FeaturedProducts() {
                           quantity: 1
                         });
                       }}
-                      className="p-3 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-colors pointer-events-auto"
+                      className="p-2.5 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-colors pointer-events-auto"
                       aria-label="Thêm vào giỏ hàng"
                     >
-                      <ShoppingBag className="w-5 h-5" />
+                      <ShoppingBag className="w-4 h-4" />
                     </button>
                   </div>
                   
