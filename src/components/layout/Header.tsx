@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, User, Heart, ShoppingBag, Menu, X, Phone, ChevronDown } from "lucide-react";
+import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const roomCategories = [
@@ -23,64 +23,151 @@ const productCategories = [
   { name: "Decor", href: "/decor" },
 ];
 
-const mainNav = [
-  { name: "Nội Thất", href: "/noi-that", hasDropdown: true, dropdownType: "rooms" },
-  { name: "Sản Phẩm", href: "/noi-that", hasDropdown: true, dropdownType: "products" },
-  { name: "Sale", href: "/sale", isHighlight: true },
+const mainCategories = [
+  { name: "Nội Thất", href: "/noi-that", hasDropdown: true, dropdownType: "rooms" as const },
+  { name: "Phòng Khách", href: "/phong-khach", hasDropdown: false },
+  { name: "Phòng Ngủ", href: "/phong-ngu", hasDropdown: false },
+  { name: "Phòng Ăn", href: "/phong-an", hasDropdown: false },
+  { name: "Bàn & Ghế", href: "/ban-ghe", hasDropdown: true, dropdownType: "products" as const },
+  { name: "Đèn", href: "/den-trang-tri", hasDropdown: false },
+  { name: "Decor", href: "/decor", hasDropdown: false },
+  { name: "Bán Chạy", href: "/ban-chay", hasDropdown: false },
+  { name: "Mới", href: "/moi", hasDropdown: false },
+  { name: "Sale", href: "/sale", hasDropdown: false, isHighlight: true },
 ];
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState({ days: 3, hours: 12, minutes: 45, seconds: 30 });
+
+  // Countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        let { days, hours, minutes, seconds } = prev;
+        seconds--;
+        if (seconds < 0) { seconds = 59; minutes--; }
+        if (minutes < 0) { minutes = 59; hours--; }
+        if (hours < 0) { hours = 23; days--; }
+        if (days < 0) { days = 0; hours = 0; minutes = 0; seconds = 0; }
+        return { days, hours, minutes, seconds };
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-card/98 backdrop-blur-md border-b border-border">
-      {/* Top Bar */}
+    <header className="sticky top-0 z-50 bg-card shadow-sm">
+      {/* Row 1: Promo Bar with Countdown */}
       <div className="bg-charcoal text-cream">
-        <div className="container-luxury flex items-center justify-between h-9 text-xs">
-          <div className="flex items-center gap-6">
-            <a href="tel:1900888999" className="flex items-center gap-1.5 hover:text-primary transition-colors font-medium">
-              <Phone className="w-3.5 h-3.5" />
-              <span>1900 888 999</span>
-            </a>
-            <span className="hidden md:inline text-cream/40">|</span>
-            <span className="hidden md:inline text-cream/80">Miễn phí vận chuyển cho đơn từ 5 triệu</span>
+        <div className="container-luxury flex items-center justify-between h-10 text-xs">
+          {/* Left: Promo with countdown */}
+          <div className="flex items-center gap-2 md:gap-3">
+            <span className="font-medium hidden sm:inline">Flash Sale:</span>
+            <Link to="/sale" className="text-primary hover:underline font-semibold">
+              GIẢM ĐẾN 60% + Thêm 20%
+            </Link>
+            <span className="text-cream/60 hidden md:inline">→</span>
+            <span className="text-cream/80 hidden md:inline">Kết thúc sau</span>
+            <div className="flex items-center gap-1 ml-1">
+              <span className="bg-cream/20 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">
+                {countdown.days}d
+              </span>
+              <span className="bg-cream/20 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">
+                {String(countdown.hours).padStart(2, '0')}h
+              </span>
+              <span className="bg-cream/20 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">
+                {String(countdown.minutes).padStart(2, '0')}m
+              </span>
+              <span className="bg-cream/20 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">
+                {String(countdown.seconds).padStart(2, '0')}s
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-6">
-            <Link to="/showroom" className="hover:text-primary transition-colors">Showroom</Link>
-            <Link to="/lien-he" className="hover:text-primary transition-colors">Liên Hệ</Link>
+          
+          {/* Right: Free Shipping */}
+          <div className="hidden md:flex items-center gap-2 text-cream/90">
+            <Truck className="w-4 h-4" />
+            <span>Miễn Phí Vận Chuyển</span>
           </div>
         </div>
       </div>
 
-      {/* Main Header */}
-      <div className="container-luxury">
-        <div className="flex items-center justify-between h-16 md:h-18">
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden p-2 -ml-2 hover:bg-secondary rounded-lg transition-colors"
-            onClick={() => setIsMobileMenuOpen(true)}
-            aria-label="Menu"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <div className="flex flex-col items-start">
-              <span className="text-xl md:text-2xl font-bold tracking-tight text-charcoal leading-none">
-                OHOUSE
-              </span>
-              <span className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
-                Nội Thất Cao Cấp
-              </span>
+      {/* Row 2: Search - Logo - Icons */}
+      <div className="bg-card border-b border-border/50">
+        <div className="container-luxury">
+          <div className="flex items-center justify-between h-14 md:h-16 gap-4">
+            {/* Left: Search */}
+            <div className="flex-1 flex items-center max-w-md">
+              {/* Mobile Menu Button */}
+              <button
+                className="lg:hidden p-2 -ml-2 hover:bg-secondary rounded-lg transition-colors mr-2"
+                onClick={() => setIsMobileMenuOpen(true)}
+                aria-label="Menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              
+              {/* Search Input - Desktop */}
+              <div className="hidden md:flex items-center flex-1 relative">
+                <Search className="absolute left-3 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Tìm sản phẩm và ý tưởng..."
+                  className="pl-10 pr-4 h-10 text-sm bg-secondary/50 border-0 focus-visible:ring-1"
+                />
+              </div>
             </div>
-          </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {mainNav.map((item) => (
+            {/* Center: Logo */}
+            <Link to="/" className="flex items-center flex-shrink-0">
+              <div className="flex flex-col items-center">
+                <span className="text-2xl md:text-3xl font-bold tracking-tight text-charcoal leading-none">
+                  OHOUSE
+                </span>
+                <span className="text-[8px] md:text-[9px] uppercase tracking-[0.25em] text-muted-foreground mt-0.5">
+                  Nội Thất Cao Cấp
+                </span>
+              </div>
+            </Link>
+
+            {/* Right: Icons */}
+            <div className="flex-1 flex items-center justify-end gap-1 max-w-md">
+              {/* Mobile Search */}
+              <button
+                className="md:hidden p-2.5 hover:bg-secondary rounded-lg transition-colors"
+                aria-label="Tìm kiếm"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+
+              <Link to="/tai-khoan" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex">
+                <User className="w-5 h-5" />
+              </Link>
+
+              <Link to="/yeu-thich" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex relative">
+                <Heart className="w-5 h-5" />
+                <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center font-medium">
+                  4
+                </span>
+              </Link>
+
+              <Link to="/gio-hang" className="p-2.5 hover:bg-secondary rounded-lg transition-colors relative">
+                <ShoppingBag className="w-5 h-5" />
+                <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center font-medium">
+                  3
+                </span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 3: Category Navigation */}
+      <div className="bg-card hidden lg:block">
+        <div className="container-luxury">
+          <nav className="flex items-center justify-center gap-1">
+            {mainCategories.map((item) => (
               <div
                 key={item.name}
                 className="relative"
@@ -89,8 +176,8 @@ export function Header() {
               >
                 <Link
                   to={item.href}
-                  className={`flex items-center gap-1 px-4 py-2 text-sm font-medium tracking-wide transition-colors rounded-md hover:bg-secondary ${
-                    item.isHighlight ? "text-destructive" : "text-foreground hover:text-primary"
+                  className={`flex items-center gap-1 px-4 py-3.5 text-sm font-medium tracking-wide transition-colors hover:text-primary ${
+                    item.isHighlight ? "text-destructive" : "text-foreground"
                   }`}
                 >
                   {item.name}
@@ -103,7 +190,7 @@ export function Header() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute left-0 top-full pt-2 z-50"
+                    className="absolute left-0 top-full z-50"
                   >
                     <div className="bg-card rounded-lg shadow-elevated border border-border p-2 min-w-[180px]">
                       {(item.dropdownType === "rooms" ? roomCategories : productCategories).map((subItem) => (
@@ -121,54 +208,6 @@ export function Header() {
               </div>
             ))}
           </nav>
-
-          {/* Actions */}
-          <div className="flex items-center gap-1">
-            {/* Search */}
-            <div className="relative">
-              <AnimatePresence>
-                {isSearchOpen && (
-                  <motion.div
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: 200, opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
-                    className="absolute right-0 top-1/2 -translate-y-1/2"
-                  >
-                    <Input
-                      placeholder="Tìm kiếm..."
-                      className="pr-10 h-9 text-sm"
-                      autoFocus
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <button
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="p-2.5 hover:bg-secondary rounded-lg transition-colors"
-                aria-label="Tìm kiếm"
-              >
-                {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
-              </button>
-            </div>
-
-            <Link to="/tai-khoan" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden md:flex">
-              <User className="w-5 h-5" />
-            </Link>
-
-            <Link to="/yeu-thich" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden md:flex relative">
-              <Heart className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center font-medium">
-                4
-              </span>
-            </Link>
-
-            <Link to="/gio-hang" className="p-2.5 hover:bg-secondary rounded-lg transition-colors relative">
-              <ShoppingBag className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center font-medium">
-                3
-              </span>
-            </Link>
-          </div>
         </div>
       </div>
 
@@ -195,6 +234,17 @@ export function Header() {
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-secondary rounded-lg">
                   <X className="w-5 h-5" />
                 </button>
+              </div>
+              
+              {/* Mobile Search */}
+              <div className="p-4 border-b border-border">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Tìm sản phẩm..."
+                    className="pl-10 h-10"
+                  />
+                </div>
               </div>
               
               <nav className="p-4">
