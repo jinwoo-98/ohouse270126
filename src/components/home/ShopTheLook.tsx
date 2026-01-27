@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, ShoppingBag, ChevronRight, Check, Truck, Shield, ChevronLeft } from "lucide-react";
+import { Plus, ShoppingBag, ChevronRight, Check, Truck, Shield, ChevronLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import heroLivingRoom from "@/assets/hero-living-room.jpg";
 import heroDiningRoom from "@/assets/hero-dining-room.jpg";
 import heroBedroom from "@/assets/hero-bedroom.jpg";
-import heroBathroom from "@/assets/hero-bathroom.jpg"; // Added for variety
+import heroBathroom from "@/assets/hero-bathroom.jpg"; 
 import categoryTvStand from "@/assets/category-tv-stand.jpg";
 import categorySofa from "@/assets/category-sofa.jpg";
 import categoryCoffeeTable from "@/assets/category-coffee-table.jpg";
@@ -167,7 +167,7 @@ export function ShopTheLook() {
 
   const handleLookChange = (id: number) => {
     setActiveLookId(id);
-    setCurrentImageIndex(0); // Reset image index when changing room
+    setCurrentImageIndex(0); 
     setSelectedProductId(null);
   };
 
@@ -213,12 +213,11 @@ export function ShopTheLook() {
 
           <AnimatePresence mode="wait">
             <motion.div
-              key={`${activeLook.id}-${currentImageIndex}`} // Key changes on both look and image index
+              key={`${activeLook.id}-${currentImageIndex}`} 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
-              // Increased height by changing aspect ratio for better image visibility
               className="relative aspect-[16/10] md:aspect-[16/9] w-full pt-[60px] md:pt-[70px]" 
             >
               <img
@@ -251,7 +250,7 @@ export function ShopTheLook() {
                 ))}
               </div>
 
-              {/* Navigation Arrows (Larger) */}
+              {/* Navigation Arrows */}
               {isMultiImage && (
                 <>
                   <button
@@ -293,80 +292,85 @@ export function ShopTheLook() {
 
           {/* Product Detail Sidebar (Sheet) */}
           <Sheet open={!!selectedProductId} onOpenChange={(open) => !open && setSelectedProductId(null)}>
-            <SheetContent className="w-full sm:max-w-[450px] p-0 overflow-y-auto">
+            <SheetContent className="w-full sm:max-w-[450px] p-0 flex flex-col">
               {selectedProduct && (
-                <div className="flex flex-col h-full">
-                  <div className="relative aspect-square">
-                    <img 
-                      src={selectedProduct.image} 
-                      alt={selectedProduct.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <span className="bg-primary text-primary-foreground px-3 py-1 text-xs font-bold uppercase tracking-widest">
-                        {selectedProduct.category}
-                      </span>
+                <>
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="relative aspect-square">
+                      <img 
+                        src={selectedProduct.image} 
+                        alt={selectedProduct.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-primary text-primary-foreground px-3 py-1 text-xs font-bold uppercase tracking-widest">
+                          {selectedProduct.category}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-6 md:p-8 space-y-6 pb-24">
+                      <SheetHeader className="space-y-2">
+                        <SheetTitle className="text-2xl font-bold leading-tight">
+                          {selectedProduct.name}
+                        </SheetTitle>
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl font-bold text-primary">
+                            {formatPrice(selectedProduct.price)}
+                          </span>
+                          {selectedProduct.originalPrice && (
+                            <span className="text-lg text-muted-foreground line-through">
+                              {formatPrice(selectedProduct.originalPrice)}
+                            </span>
+                          )}
+                        </div>
+                      </SheetHeader>
+
+                      <SheetDescription className="text-base text-muted-foreground leading-relaxed">
+                        {selectedProduct.description}
+                      </SheetDescription>
+
+                      <div className="space-y-4">
+                        <h4 className="font-bold text-sm uppercase tracking-wider">Đặc điểm nổi bật</h4>
+                        <ul className="space-y-3">
+                          {selectedProduct.features.map((feature, i) => (
+                            <li key={i} className="flex items-start gap-3 text-sm">
+                              <Check className="w-4 h-4 text-primary mt-0.5" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 py-4 border-y border-border">
+                        <div className="flex flex-col items-center text-center gap-2">
+                          <Truck className="w-5 h-5 text-primary" />
+                          <span className="text-[10px] uppercase font-bold">Giao nhanh 24h</span>
+                        </div>
+                        <div className="flex flex-col items-center text-center gap-2">
+                          <Shield className="w-5 h-5 text-primary" />
+                          <span className="text-[10px] uppercase font-bold">Bảo hành 2 năm</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="p-6 md:p-8 space-y-6">
-                    <SheetHeader className="space-y-2">
-                      <SheetTitle className="text-2xl font-bold leading-tight">
-                        {selectedProduct.name}
-                      </SheetTitle>
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl font-bold text-primary">
-                          {formatPrice(selectedProduct.price)}
-                        </span>
-                        {selectedProduct.originalPrice && (
-                          <span className="text-lg text-muted-foreground line-through">
-                            {formatPrice(selectedProduct.originalPrice)}
-                          </span>
-                        )}
-                      </div>
-                    </SheetHeader>
-
-                    <SheetDescription className="text-base text-muted-foreground leading-relaxed">
-                      {selectedProduct.description}
-                    </SheetDescription>
-
-                    <div className="space-y-4">
-                      <h4 className="font-bold text-sm uppercase tracking-wider">Đặc điểm nổi bật</h4>
-                      <ul className="space-y-3">
-                        {selectedProduct.features.map((feature, i) => (
-                          <li key={i} className="flex items-start gap-3 text-sm">
-                            <Check className="w-4 h-4 text-primary mt-0.5" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 py-4 border-y border-border">
-                      <div className="flex flex-col items-center text-center gap-2">
-                        <Truck className="w-5 h-5 text-primary" />
-                        <span className="text-[10px] uppercase font-bold">Giao nhanh 24h</span>
-                      </div>
-                      <div className="flex flex-col items-center text-center gap-2">
-                        <Shield className="w-5 h-5 text-primary" />
-                        <span className="text-[10px] uppercase font-bold">Bảo hành 2 năm</span>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 space-y-3">
-                      <Button className="w-full btn-hero h-14 text-base">
-                        <ShoppingBag className="w-5 h-5 mr-3" />
-                        Thêm Vào Giỏ Hàng
-                      </Button>
-                      <Button variant="outline" className="w-full h-14 text-base" asChild>
+                  {/* Fixed Bottom Actions */}
+                  <div className="p-4 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+                    <div className="flex gap-3">
+                      <Button variant="outline" className="flex-1 h-12 text-sm font-semibold" asChild>
                         <Link to={selectedProduct.href}>
-                          Xem Trang Chi Tiết
-                          <ChevronRight className="w-5 h-5 ml-2" />
+                          Xem Chi Tiết
+                          <ArrowRight className="w-4 h-4 ml-2" />
                         </Link>
                       </Button>
+                      <Button className="flex-[1.5] btn-hero h-12 text-sm font-bold shadow-gold">
+                        <ShoppingBag className="w-4 h-4 mr-2" />
+                        Thêm Vào Giỏ
+                      </Button>
                     </div>
                   </div>
-                </div>
+                </>
               )}
             </SheetContent>
           </Sheet>
