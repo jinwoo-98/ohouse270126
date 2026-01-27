@@ -1,62 +1,58 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroLivingRoom from "@/assets/hero-living-room.jpg";
 import heroDiningRoom from "@/assets/hero-dining-room.jpg";
 import heroBedroom from "@/assets/hero-bedroom.jpg";
+import categorySofa from "@/assets/category-sofa.jpg";
+import categoryCoffeeTable from "@/assets/category-coffee-table.jpg";
+import categoryDiningTable from "@/assets/category-dining-table.jpg";
+import categoryBed from "@/assets/category-bed.jpg";
 
 const looks = [
   {
     id: 1,
-    title: "Phòng Khách Sang Trọng Phong Cách Châu Âu",
-    image: heroLivingRoom,
-    category: "Phòng Khách",
+    title: "Không Gian Sống Hiện Đại",
+    mainImage: heroLivingRoom,
+    thumbnailImage: heroLivingRoom,
     products: [
-      { id: 2, name: "Sofa Góc Chữ L", href: "/san-pham/2", position: { top: "65%", left: "40%" } },
-      { id: 4, name: "Bàn Trà Tròn", href: "/san-pham/4", position: { top: "78%", left: "65%" } },
-      { id: 7, name: "Đèn Sàn Trang Trí", href: "/san-pham/12", position: { top: "50%", left: "85%" } },
+      { id: 2, name: "Sofa Góc Chữ L Vải Nhung", image: categorySofa, price: 45990000, href: "/san-pham/2" },
+      { id: 4, name: "Bàn Trà Tròn Mặt Kính", image: categoryCoffeeTable, price: 12990000, href: "/san-pham/4" },
+      { id: 12, name: "Đèn Sàn Trang Trí", image: categoryDiningTable, price: 6990000, href: "/san-pham/12" },
     ],
-    href: "/y-tuong/phong-khach-chau-au",
   },
   {
     id: 2,
-    title: "Phòng Ăn Ấm Cúng Cho Gia Đình Hiện Đại",
-    image: heroDiningRoom,
-    category: "Phòng Ăn",
+    title: "Phòng Ăn Sang Trọng",
+    mainImage: heroDiningRoom,
+    thumbnailImage: heroDiningRoom,
     products: [
-      { id: 3, name: "Bàn Ăn Mặt Đá", href: "/san-pham/3", position: { top: "60%", left: "50%" } },
-      { id: 10, name: "Ghế Ăn Bọc Da", href: "/san-pham/10", position: { top: "55%", left: "25%" } },
-      { id: 7, name: "Đèn Chùm Pha Lê", href: "/san-pham/7", position: { top: "20%", left: "50%" } },
+      { id: 3, name: "Bàn Ăn Mặt Đá Marble", image: categoryDiningTable, price: 32990000, originalPrice: 38990000, href: "/san-pham/3" },
+      { id: 10, name: "Ghế Ăn Bọc Da", image: categorySofa, price: 42990000, href: "/san-pham/10" },
+      { id: 7, name: "Đèn Chùm Pha Lê", image: categoryBed, price: 15990000, href: "/san-pham/7" },
     ],
-    href: "/y-tuong/phong-an-am-cung",
   },
   {
     id: 3,
-    title: "Không Gian Nghỉ Ngơi Tối Giản và Thanh Lịch",
-    image: heroBedroom,
-    category: "Phòng Ngủ",
+    title: "Phòng Ngủ Tối Giản",
+    mainImage: heroBedroom,
+    thumbnailImage: heroBedroom,
     products: [
-      { id: 6, name: "Giường Ngủ Bọc Da", href: "/san-pham/6", position: { top: "60%", left: "50%" } },
-      { id: 14, name: "Tủ Quần Áo Gỗ Sồi", href: "/san-pham/14", position: { top: "45%", left: "85%" } },
+      { id: 6, name: "Giường Ngủ Bọc Da Ý", image: categoryBed, price: 38990000, href: "/san-pham/6" },
+      { id: 14, name: "Tủ Quần Áo Gỗ Sồi", image: categorySofa, price: 22000000, href: "/san-pham/14" },
     ],
-    href: "/y-tuong/phong-ngu-toi-gian",
   },
 ];
 
+function formatPrice(price: number) {
+  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
+}
+
 export function ShopTheLook() {
-  const [currentLook, setCurrentLook] = useState(0);
-
-  const nextLook = () => {
-    setCurrentLook((prev) => (prev + 1) % looks.length);
-  };
-
-  const prevLook = () => {
-    setCurrentLook((prev) => (prev - 1 + looks.length) % looks.length);
-  };
-
-  const activeLook = looks[currentLook];
+  const [activeLookId, setActiveLookId] = useState(1);
+  const activeLook = looks.find(look => look.id === activeLookId)!;
 
   return (
     <section className="py-16 md:py-24">
@@ -68,72 +64,89 @@ export function ShopTheLook() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="section-title mb-4">Ý Tưởng Thiết Kế</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
-            Khám phá các không gian được sắp đặt tinh tế và mua sắm trọn bộ sản phẩm.
+          <h2 className="section-title mb-4">Shop The Look</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Lấy cảm hứng từ những không gian được tuyển chọn và mua sắm trọn bộ.
           </p>
-          <Button variant="outline" asChild>
-            <Link to="/cam-hung" className="group">
-              Xem Tất Cả Ý Tưởng
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </Button>
         </motion.div>
 
-        <div className="relative">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentLook}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-secondary">
+        <div className="grid lg:grid-cols-5 gap-8">
+          {/* Main Image */}
+          <div className="lg:col-span-3">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeLook.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="aspect-[4/3] rounded-lg overflow-hidden"
+              >
                 <img
-                  src={activeLook.image}
+                  src={activeLook.mainImage}
                   alt={activeLook.title}
                   className="w-full h-full object-cover"
                 />
-                {activeLook.products.map((product) => (
-                  <Link
-                    key={product.id}
-                    to={product.href}
-                    className="group absolute z-10"
-                    style={{ top: product.position.top, left: product.position.left }}
-                  >
-                    <div className="relative flex items-center justify-center w-6 h-6">
-                      <div className="absolute w-3 h-3 rounded-full bg-primary transition-transform group-hover:scale-125" />
-                      <div className="absolute w-full h-full rounded-full bg-primary/50 animate-ping" />
-                    </div>
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 p-2 px-3 bg-card text-foreground text-xs font-semibold rounded-md shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                      {product.name}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-              <div className="text-center mt-4">
-                <h3 className="text-lg font-semibold">{activeLook.title}</h3>
-                <p className="text-sm text-muted-foreground">{activeLook.category}</p>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-          {/* Navigation Arrows */}
-          <button
-            onClick={prevLook}
-            className="absolute left-0 md:-left-4 top-1/2 -translate-y-1/2 p-2.5 bg-card/50 backdrop-blur-sm rounded-full text-foreground hover:bg-primary hover:text-primary-foreground transition-all shadow-medium"
-            aria-label="Previous look"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={nextLook}
-            className="absolute right-0 md:-right-4 top-1/2 -translate-y-1/2 p-2.5 bg-card/50 backdrop-blur-sm rounded-full text-foreground hover:bg-primary hover:text-primary-foreground transition-all shadow-medium"
-            aria-label="Next look"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+          {/* Product List */}
+          <div className="lg:col-span-2">
+            <h3 className="text-xl font-bold mb-4">{activeLook.title}</h3>
+            <div className="space-y-4 max-h-[450px] overflow-y-auto pr-3">
+              <AnimatePresence mode="wait">
+                {activeLook.products.map((product, index) => (
+                  <motion.div
+                    key={`${activeLook.id}-${product.id}`}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <div className="flex gap-4 p-3 bg-secondary/30 rounded-lg">
+                      <Link to={product.href} className="flex-shrink-0">
+                        <img src={product.image} alt={product.name} className="w-20 h-20 object-cover rounded-md" />
+                      </Link>
+                      <div className="flex-1">
+                        <Link to={product.href}>
+                          <h4 className="text-sm font-semibold line-clamp-2 hover:text-primary transition-colors">
+                            {product.name}
+                          </h4>
+                        </Link>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-base font-bold text-primary">{formatPrice(product.price)}</span>
+                          {product.originalPrice && (
+                            <span className="text-xs text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
+                          )}
+                        </div>
+                        <Button size="sm" className="mt-2 h-8 px-3 text-xs">
+                          <ShoppingBag className="w-3.5 h-3.5 mr-1.5" />
+                          Thêm vào giỏ
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        {/* Thumbnail Navigation */}
+        <div className="mt-8">
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+            {looks.map((look) => (
+              <button
+                key={look.id}
+                onClick={() => setActiveLookId(look.id)}
+                className={`aspect-[4/3] rounded-md overflow-hidden border-2 transition-all duration-300 ${
+                  activeLookId === look.id ? 'border-primary opacity-100' : 'border-transparent opacity-60 hover:opacity-100'
+                }`}
+              >
+                <img src={look.thumbnailImage} alt={look.title} className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </section>
