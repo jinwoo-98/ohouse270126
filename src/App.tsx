@@ -69,15 +69,18 @@ const App = () => (
                 <Route path="/yeu-thich" element={<WishlistPage />} />
                 <Route path="/lich-su-xem" element={<RecentlyViewedPage />} />
                 <Route path="/dat-hang-thanh-cong" element={<OrderSuccessPage />} />
+                
+                {/* Sửa lại định tuyến tài khoản để tránh bị lặp giao diện */}
                 <Route path="/tai-khoan" element={<ProfileDashboard />}>
                   <Route index element={<Navigate to="thong-tin" replace />} />
-                  <Route path="thong-tin" element={<ProfileDashboard />} />
-                  <Route path="don-hang" element={<ProfileDashboard />} />
-                  <Route path="vouchers" element={<ProfileDashboard />} />
-                  <Route path="points" element={<ProfileDashboard />} />
-                  <Route path="dia-chi" element={<ProfileDashboard />} />
-                  <Route path="cai-dat" element={<ProfileDashboard />} />
+                  <Route path="thong-tin" element={<></>} />
+                  <Route path="don-hang" element={<></>} />
+                  <Route path="vouchers" element={<></>} />
+                  <Route path="points" element={<></>} />
+                  <Route path="dia-chi" element={<></>} />
+                  <Route path="cai-dat" element={<></>} />
                 </Route>
+
                 <Route path="/dang-nhap" element={<AccountPage />} />
                 <Route path="/showroom" element={<ShowroomPage />} />
                 <Route path="/cam-hung" element={<InspirationPage />} />
