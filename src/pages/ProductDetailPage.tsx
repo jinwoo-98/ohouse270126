@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, Heart, Minus, Plus, ShoppingBag, Truck, RefreshCw, Shield, Check } from "lucide-react";
 import { Header } from "@/components/layout/Header";
@@ -10,40 +10,117 @@ import categoryTvStand from "@/assets/category-tv-stand.jpg";
 import categorySofa from "@/assets/category-sofa.jpg";
 import categoryDiningTable from "@/assets/category-dining-table.jpg";
 import categoryCoffeeTable from "@/assets/category-coffee-table.jpg";
+import categoryBed from "@/assets/category-bed.jpg";
+import categoryDesk from "@/assets/category-desk.jpg";
 
-const productImages = [categoryTvStand, categorySofa, categoryDiningTable, categoryCoffeeTable];
-
-const product = {
-  name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá Sintered Stone",
-  price: 25990000,
-  originalPrice: 32990000,
-  sku: "OHOUSE-TV-001",
-  category: "Kệ Tivi",
-  description: "Kệ tivi cao cấp kết hợp hoàn hảo giữa gỗ óc chó tự nhiên và mặt đá sintered stone. Thiết kế hiện đại, sang trọng phù hợp với mọi không gian phòng khách.",
-  features: [
-    "Chất liệu: Gỗ óc chó tự nhiên + Đá Sintered Stone",
-    "Kích thước: 180cm x 40cm x 50cm",
-    "Màu sắc: Nâu óc chó + Trắng vân mây",
-    "Xuất xứ: Nhập khẩu từ Ý",
-    "Bảo hành: 2 năm",
-  ],
-  colors: ["Nâu Óc Chó", "Gỗ Tự Nhiên", "Đen Than"],
+// Mock database to simulate dynamic product loading
+const MOCK_PRODUCTS: Record<string, any> = {
+  "1": {
+    name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá Sintered Stone",
+    price: 25990000,
+    originalPrice: 32990000,
+    category: "Kệ Tivi",
+    image: categoryTvStand,
+    images: [categoryTvStand, categorySofa, categoryDiningTable, categoryCoffeeTable],
+    description: "Kệ tivi cao cấp kết hợp hoàn hảo giữa gỗ óc chó tự nhiên và mặt đá sintered stone. Thiết kế hiện đại, sang trọng phù hợp với mọi không gian phòng khách.",
+    features: ["Chất liệu: Gỗ óc chó + Đá Sintered", "Kích thước: 180cm", "Bảo hành: 2 năm"],
+    colors: ["Nâu Óc Chó", "Tự Nhiên"]
+  },
+  "2": {
+    name: "Sofa Góc Chữ L Vải Nhung Ý Cao Cấp",
+    price: 45990000,
+    originalPrice: 52000000,
+    category: "Sofa",
+    image: categorySofa,
+    images: [categorySofa, categoryLivingRoomPlaceholder, categoryCoffeeTable, categoryDiningTable],
+    description: "Sofa cao cấp với chất liệu vải nhung nhập khẩu, khung gỗ sồi tự nhiên mang lại sự sang trọng và êm ái tuyệt đối.",
+    features: ["Khung gỗ sồi", "Vải nhung kháng khuẩn", "Đệm mút 4 lớp"],
+    colors: ["Xám Chuột", "Xanh Navy", "Be"]
+  },
+  "3": {
+    name: "Bàn Ăn Mặt Đá Marble Chân Gỗ Óc Chó",
+    price: 32990000,
+    originalPrice: 38990000,
+    category: "Bàn Ăn",
+    image: categoryDiningTable,
+    images: [categoryDiningTable, categoryCoffeeTable, categorySofa, categoryTvStand],
+    description: "Mặt đá Marble tự nhiên vân mây kết hợp chân gỗ óc chó cao cấp, tạo điểm nhấn đẳng cấp cho phòng ăn.",
+    features: ["Đá Marble tự nhiên", "Chân gỗ óc chó", "Kèm 6 ghế bọc da"],
+    colors: ["Trắng Vân Mây", "Đen Tia Chớp"]
+  },
+  "4": {
+    name: "Bàn Trà Tròn Mặt Kính Cường Lực",
+    price: 12990000,
+    category: "Bàn Trà",
+    image: categoryCoffeeTable,
+    images: [categoryCoffeeTable, categorySofa, categoryTvStand, categoryDiningTable],
+    description: "Thiết kế tối giản với mặt kính cường lực và chân inox mạ titan vàng gương.",
+    features: ["Kính cường lực 12mm", "Chân inox 304", "Chống trầy xước"],
+    colors: ["Vàng Gương", "Bạc Chrome"]
+  },
+  "6": {
+    name: "Giường Ngủ Bọc Da Ý Khung Inox",
+    price: 38990000,
+    category: "Giường",
+    image: categoryBed,
+    images: [categoryBed, categorySofa, categoryDiningTable, categoryDesk],
+    description: "Giường ngủ bọc da bò thật nhập khẩu từ Ý, thiết kế chuẩn ergonomic mang lại giấc ngủ sâu.",
+    features: ["Da bò thật 100%", "Khung thép chịu lực", "Bảo hành 5 năm"],
+    colors: ["Nâu Bò", "Kem", "Đen"]
+  },
+  "7": {
+    name: "Đèn Chùm Pha Lê Luxury Style",
+    price: 15990000,
+    category: "Đèn",
+    image: categoryBed, // Using bed as placeholder for lighting if not available
+    images: [categoryBed, categoryDiningTable, categorySofa, categoryCoffeeTable],
+    description: "Đèn chùm pha lê lấp lánh, tạo điểm nhấn sang trọng cho không gian sống đẳng cấp.",
+    features: ["Pha lê K9 cao cấp", "Khung kim loại mạ vàng", "Tiết kiệm điện"],
+    colors: ["Vàng Gold"]
+  },
+  "14": {
+    name: "Tủ Quần Áo Gỗ Sồi 4 Cánh Hiện Đại",
+    price: 22000000,
+    category: "Tủ Quần Áo",
+    image: categorySofa, // Placeholder
+    images: [categorySofa, categoryBed, categoryDesk, categoryDiningTable],
+    description: "Tủ quần áo gỗ sồi tự nhiên với không gian lưu trữ rộng rãi và thiết kế thanh lịch.",
+    features: ["Gỗ Sồi tự nhiên", "Chống mối mọt", "Ray trượt giảm chấn"],
+    colors: ["Sồi Tự Nhiên", "Sồi Trắng"]
+  }
 };
 
-const relatedProducts = [
-  { id: 2, name: "Sofa Góc Chữ L Phong Cách Ý", image: categorySofa, price: 45990000 },
-  { id: 3, name: "Bàn Trà Đá Marble Cao Cấp", image: categoryCoffeeTable, price: 12990000 },
-  { id: 4, name: "Bàn Ăn Đá 6 Ghế", image: categoryDiningTable, price: 32990000 },
-];
+const categoryLivingRoomPlaceholder = categorySofa;
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
 }
 
 export default function ProductDetailPage() {
+  const { id } = useParams();
+  const { pathname } = useLocation();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(0);
+
+  // Default to first product if ID not found
+  const product = MOCK_PRODUCTS[id || "1"] || MOCK_PRODUCTS["1"];
+  const productImages = product.images;
+
+  // Scroll to top when the page loads or the ID changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // Reset state for new product
+    setSelectedImage(0);
+    setQuantity(1);
+    setSelectedColor(0);
+  }, [id, pathname]);
+
+  const relatedProducts = [
+    { id: 2, name: "Sofa Góc Chữ L Phong Cách Ý", image: categorySofa, price: 45990000 },
+    { id: 3, name: "Bàn Trà Đá Marble Cao Cấp", image: categoryCoffeeTable, price: 12990000 },
+    { id: 4, name: "Bàn Ăn Đá 6 Ghế", image: categoryDiningTable, price: 32990000 },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -56,7 +133,7 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
               <ChevronRight className="w-4 h-4" />
-              <Link to="/ke-tivi" className="hover:text-primary transition-colors">Kệ Tivi</Link>
+              <Link to="/noi-that" className="hover:text-primary transition-colors">Sản phẩm</Link>
               <ChevronRight className="w-4 h-4" />
               <span className="text-foreground font-medium line-clamp-1">{product.name}</span>
             </div>
@@ -68,6 +145,7 @@ export default function ProductDetailPage() {
             {/* Images */}
             <div className="space-y-4">
               <motion.div 
+                key={id + selectedImage}
                 className="aspect-square bg-secondary rounded-lg overflow-hidden"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -79,7 +157,7 @@ export default function ProductDetailPage() {
                 />
               </motion.div>
               <div className="grid grid-cols-4 gap-3">
-                {productImages.map((img, idx) => (
+                {productImages.map((img: string, idx: number) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
@@ -94,7 +172,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Info */}
-            <div>
+            <div className="animate-fade-in">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">{product.category}</span>
               <h1 className="text-2xl md:text-3xl font-bold mt-2 mb-4">{product.name}</h1>
               
@@ -116,7 +194,7 @@ export default function ProductDetailPage() {
               <div className="mb-6">
                 <span className="font-semibold text-sm mb-3 block">Màu sắc: {product.colors[selectedColor]}</span>
                 <div className="flex gap-2">
-                  {product.colors.map((color, idx) => (
+                  {product.colors.map((color: string, idx: number) => (
                     <button
                       key={color}
                       onClick={() => setSelectedColor(idx)}
@@ -198,7 +276,7 @@ export default function ProductDetailPage() {
             </TabsList>
             <TabsContent value="features" className="pt-6">
               <ul className="space-y-3">
-                {product.features.map((feature, idx) => (
+                {product.features.map((feature: string, idx: number) => (
                   <li key={idx} className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                     <span>{feature}</span>
@@ -209,12 +287,8 @@ export default function ProductDetailPage() {
             <TabsContent value="specs" className="pt-6">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-secondary/50 p-4 rounded-lg">
-                  <span className="text-sm text-muted-foreground">Kích thước</span>
-                  <p className="font-semibold">180cm x 40cm x 50cm</p>
-                </div>
-                <div className="bg-secondary/50 p-4 rounded-lg">
                   <span className="text-sm text-muted-foreground">Chất liệu</span>
-                  <p className="font-semibold">Gỗ Óc Chó + Đá Sintered</p>
+                  <p className="font-semibold">{product.category}</p>
                 </div>
                 <div className="bg-secondary/50 p-4 rounded-lg">
                   <span className="text-sm text-muted-foreground">Xuất xứ</span>
