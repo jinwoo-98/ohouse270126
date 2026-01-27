@@ -96,33 +96,25 @@ export function FeaturedProducts() {
   return (
     <section className="py-16 md:py-24 bg-secondary/30">
       <div className="container-luxury">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-12">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="section-title text-left">Sản Phẩm Nổi Bật</h2>
-            <p className="text-muted-foreground mt-2">
-              Những thiết kế được yêu thích nhất
-            </p>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <Button variant="outline" asChild>
-              <Link to="/san-pham" className="group">
-                Xem Tất Cả
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </Button>
-          </motion.div>
-        </div>
+        {/* Centered Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <h2 className="section-title mb-2">Sản Phẩm Nổi Bật</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Những thiết kế được yêu thích nhất
+          </p>
+          <Button variant="outline" asChild className="mt-6">
+            <Link to="/san-pham" className="group">
+              Xem Tất Cả
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </Button>
+        </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {featuredProducts.map((product, index) => (
@@ -134,7 +126,7 @@ export function FeaturedProducts() {
               viewport={{ once: true }}
             >
               <div className="group card-luxury">
-                <Link to={product.href}>
+                <Link to={`/san-pham/${product.id}`}>
                   <div className="relative aspect-square img-zoom">
                     <img
                       src={product.image}
@@ -169,7 +161,7 @@ export function FeaturedProducts() {
                   <span className="text-xs text-muted-foreground uppercase tracking-wider">
                     {product.category}
                   </span>
-                  <Link to={product.href}>
+                  <Link to={`/san-pham/${product.id}`}>
                     <h3 className="font-medium text-sm md:text-base line-clamp-2 mt-1 group-hover:text-primary transition-colors">
                       {product.name}
                     </h3>

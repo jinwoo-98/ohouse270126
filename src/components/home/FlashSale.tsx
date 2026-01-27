@@ -84,7 +84,7 @@ function CountdownTimer() {
   }, []);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center justify-center gap-2">
       <Clock className="w-5 h-5 text-destructive" />
       <span className="text-muted-foreground mr-2">Kết thúc sau</span>
       <div className="flex items-center gap-1">
@@ -108,31 +108,23 @@ export function FlashSale() {
   return (
     <section className="py-16 md:py-24 bg-cream">
       <div className="container-luxury">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-12">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="section-title text-left mb-2">Flash Sale</h2>
-            <CountdownTimer />
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <Button variant="outline" asChild>
-              <Link to="/flash-sale" className="group">
-                Xem Tất Cả
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </Button>
-          </motion.div>
-        </div>
+        {/* Centered Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <h2 className="section-title mb-4">Flash Sale</h2>
+          <CountdownTimer />
+          <Button variant="outline" asChild className="mt-6">
+            <Link to="/flash-sale" className="group">
+              Xem Tất Cả
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </Button>
+        </motion.div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {flashSaleProducts.map((product, index) => (
