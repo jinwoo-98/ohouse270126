@@ -189,20 +189,20 @@ export function ShopTheLook() {
   const isMultiImage = activeLook.images.length > 1;
 
   return (
-    <section className="py-16 md:py-24 bg-secondary/20 overflow-hidden">
+    <section className="py-10 md:py-24 bg-secondary/20 overflow-hidden">
       <div className="container-luxury">
-        <div className="text-center mb-10">
-          <h2 className="section-title mb-4">Shop The Look</h2>
-          <p className="text-muted-foreground">Mua sắm trực tiếp từ những không gian thiết kế ấn tượng</p>
+        <div className="text-center mb-8 md:mb-10">
+          <h2 className="section-title mb-2 md:mb-4">Shop The Look</h2>
+          <p className="text-muted-foreground text-sm md:text-base">Mua sắm trực tiếp từ những không gian thiết kế ấn tượng</p>
         </div>
 
-        {/* Room Selector Tabs */}
-        <div className="flex justify-center gap-3 md:gap-4 mb-8">
+        {/* Room Selector Tabs - Scrollable on mobile */}
+        <div className="flex justify-start md:justify-center overflow-x-auto gap-3 md:gap-4 mb-6 md:mb-8 pb-2 px-4 no-scrollbar">
           {looksData.map(look => (
             <button
               key={look.id}
               onClick={() => handleLookChange(look.id)}
-              className={`px-5 py-2.5 text-sm font-bold uppercase tracking-wider transition-all rounded-full border-2 ${
+              className={`px-4 py-2 md:px-5 md:py-2.5 text-xs md:text-sm font-bold uppercase tracking-wider transition-all rounded-full border-2 whitespace-nowrap flex-shrink-0 ${
                 look.id === activeLookId 
                   ? 'bg-charcoal border-charcoal text-cream shadow-medium scale-105' 
                   : 'bg-transparent border-border text-muted-foreground hover:border-charcoal hover:text-charcoal'
@@ -221,7 +221,7 @@ export function ShopTheLook() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.6 }}
-              className="relative aspect-[3/2] w-full" 
+              className="relative aspect-[4/3] md:aspect-[3/2] w-full" 
             >
               <img
                 src={currentImage.src}
@@ -237,14 +237,14 @@ export function ShopTheLook() {
                       <TooltipTrigger asChild>
                         <button
                           onClick={() => setSelectedProductId(selectedProductId === product.id ? null : product.id)}
-                          className="absolute w-9 h-9 -ml-4.5 -mt-4.5 rounded-full bg-white/95 shadow-elevated flex items-center justify-center text-primary hover:scale-125 hover:bg-white transition-all duration-300 z-10 group"
+                          className="absolute w-8 h-8 md:w-9 md:h-9 -ml-4 -mt-4 md:-ml-4.5 md:-mt-4.5 rounded-full bg-white/95 shadow-elevated flex items-center justify-center text-primary hover:scale-125 hover:bg-white transition-all duration-300 z-10 group"
                           style={{ left: `${product.x}%`, top: `${product.y}%` }}
                         >
                           <span className="absolute w-full h-full rounded-full bg-white/50 animate-ping opacity-75 group-hover:hidden"></span>
-                          <Plus className="w-5 h-5" />
+                          <Plus className="w-4 h-4 md:w-5 md:h-5" />
                         </button>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="bg-charcoal text-cream border-charcoal p-3 shadow-medium">
+                      <TooltipContent side="top" className="bg-charcoal text-cream border-charcoal p-3 shadow-medium hidden md:block">
                         <p className="font-semibold text-sm">{product.name}</p>
                         <p className="text-primary font-bold text-xs mt-1">{formatPrice(product.price)}</p>
                       </TooltipContent>
@@ -253,22 +253,22 @@ export function ShopTheLook() {
                 ))}
               </div>
 
-              {/* Navigation Arrows - Vertical Rectangle Shape */}
+              {/* Navigation Arrows */}
               {isMultiImage && (
                 <>
                   <button
                     onClick={goToPrevImage}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-24 bg-card/40 backdrop-blur-md rounded-r-xl text-charcoal hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium flex items-center justify-center"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-8 md:w-10 h-16 md:h-24 bg-card/40 backdrop-blur-md rounded-r-xl text-charcoal hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium flex items-center justify-center"
                     aria-label="Previous image"
                   >
-                    <ChevronLeft className="w-6 h-6" />
+                    <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
                   </button>
                   <button
                     onClick={goToNextImage}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-24 bg-card/40 backdrop-blur-md rounded-l-xl text-charcoal hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium flex items-center justify-center"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 md:w-10 h-16 md:h-24 bg-card/40 backdrop-blur-md rounded-l-xl text-charcoal hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium flex items-center justify-center"
                     aria-label="Next image"
                   >
-                    <ChevronRight className="w-6 h-6" />
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
                   </button>
                 </>
               )}
@@ -312,22 +312,22 @@ export function ShopTheLook() {
 
                     <div className="p-6 md:p-8 space-y-6 pb-24">
                       <SheetHeader className="space-y-2">
-                        <SheetTitle className="text-2xl font-bold leading-tight text-left">
+                        <SheetTitle className="text-xl md:text-2xl font-bold leading-tight text-left">
                           {selectedProduct.name}
                         </SheetTitle>
                         <div className="flex items-center gap-3">
-                          <span className="text-2xl font-bold text-primary">
+                          <span className="text-xl md:text-2xl font-bold text-primary">
                             {formatPrice(selectedProduct.price)}
                           </span>
                           {selectedProduct.originalPrice && (
-                            <span className="text-lg text-muted-foreground line-through">
+                            <span className="text-base md:text-lg text-muted-foreground line-through">
                               {formatPrice(selectedProduct.originalPrice)}
                             </span>
                           )}
                         </div>
                       </SheetHeader>
 
-                      <SheetDescription className="text-base text-muted-foreground leading-relaxed text-left">
+                      <SheetDescription className="text-sm md:text-base text-muted-foreground leading-relaxed text-left">
                         {selectedProduct.description}
                       </SheetDescription>
 
@@ -341,17 +341,6 @@ export function ShopTheLook() {
                             </li>
                           ))}
                         </ul>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 py-4 border-y border-border">
-                        <div className="flex flex-col items-center text-center gap-2">
-                          <Truck className="w-5 h-5 text-primary" />
-                          <span className="text-[10px] uppercase font-bold">Giao nhanh 24h</span>
-                        </div>
-                        <div className="flex flex-col items-center text-center gap-2">
-                          <Shield className="w-5 h-5 text-primary" />
-                          <span className="text-[10px] uppercase font-bold">Bảo hành 2 năm</span>
-                        </div>
                       </div>
                     </div>
                   </div>

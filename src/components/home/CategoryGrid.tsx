@@ -20,22 +20,22 @@ const categories = [
 
 export function CategoryGrid() {
   return (
-    <section className="py-16 md:py-24">
+    <section className="py-10 md:py-24">
       <div className="container-luxury">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-8 md:mb-12"
         >
-          <h2 className="section-title mb-4">Danh Mục Sản Phẩm</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <h2 className="section-title mb-2 md:mb-4">Danh Mục Sản Phẩm</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">
             Khám phá bộ sưu tập nội thất cao cấp với hàng nghìn sản phẩm đa dạng
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
           {categories.map((category, index) => (
             <motion.div
               key={category.name}
@@ -55,8 +55,8 @@ export function CategoryGrid() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="p-4 text-center">
-                  <h3 className="font-semibold text-base group-hover:text-primary transition-colors">
+                <div className="p-3 md:p-4 text-center">
+                  <h3 className="font-semibold text-sm md:text-base group-hover:text-primary transition-colors">
                     {category.name}
                   </h3>
                 </div>
@@ -77,16 +77,16 @@ export function CategoryGrid() {
             >
               <div className="aspect-square flex items-center justify-center">
                 <div className="text-center p-6">
-                  <span className="text-4xl md:text-5xl font-bold text-destructive">
+                  <span className="text-3xl md:text-5xl font-bold text-destructive">
                     SALE
                   </span>
-                  <p className="mt-2 text-sm text-destructive/80">
+                  <p className="mt-2 text-xs md:text-sm text-destructive/80">
                     Giảm đến 50%
                   </p>
                 </div>
               </div>
-              <div className="p-4 text-center">
-                <h3 className="font-semibold text-base text-destructive">
+              <div className="p-3 md:p-4 text-center">
+                <h3 className="font-semibold text-sm md:text-base text-destructive">
                   Khuyến Mãi
                 </h3>
               </div>

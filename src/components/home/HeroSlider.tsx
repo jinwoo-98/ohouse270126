@@ -69,7 +69,7 @@ export function HeroSlider() {
   };
 
   return (
-    <section className="relative h-[65vh] md:h-[85vh] overflow-hidden bg-charcoal">
+    <section className="relative h-[60vh] md:h-[85vh] overflow-hidden bg-charcoal">
       {/* Background Images with Cross-fade */}
       <div className="absolute inset-0">
         <AnimatePresence initial={false}>
@@ -95,7 +95,7 @@ export function HeroSlider() {
       </div>
 
       {/* Content */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center p-4">
         <div className="container-luxury">
           <AnimatePresence mode="wait">
             <motion.div
@@ -110,19 +110,19 @@ export function HeroSlider() {
                 initial={{ opacity: 0, letterSpacing: "0.5em" }}
                 animate={{ opacity: 1, letterSpacing: "0.2em" }}
                 transition={{ duration: 1, delay: 0.5 }}
-                className="inline-block text-primary font-bold uppercase tracking-[0.2em] text-xs md:text-sm mb-4"
+                className="inline-block text-primary font-bold uppercase tracking-[0.2em] text-[10px] md:text-sm mb-2 md:mb-4"
               >
                 {slides[currentSlide].subtitle}
               </motion.span>
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-cream mb-6 leading-tight">
+              <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold text-cream mb-4 md:mb-6 leading-tight">
                 {slides[currentSlide].title}
               </h1>
-              <p className="text-base md:text-xl text-cream/80 mb-8 max-w-lg mx-auto leading-relaxed">
+              <p className="text-sm md:text-xl text-cream/80 mb-6 md:mb-8 max-w-lg mx-auto leading-relaxed px-4 md:px-0">
                 {slides[currentSlide].description}
               </p>
               <Button
                 size="lg"
-                className="btn-hero h-14 px-10"
+                className="btn-hero h-12 md:h-14 px-8 md:px-10 text-xs md:text-sm"
                 asChild
               >
                 <a href={slides[currentSlide].href}>
@@ -137,29 +137,29 @@ export function HeroSlider() {
       {/* Navigation Arrows */}
       <button
         onClick={goToPrev}
-        className="absolute left-0 top-1/2 -translate-y-1/2 w-10 md:w-12 h-32 md:h-40 bg-card/20 backdrop-blur-md rounded-r-2xl text-cream hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 flex items-center justify-center group"
+        className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 w-12 h-40 bg-card/20 backdrop-blur-md rounded-r-2xl text-cream hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 items-center justify-center group"
         aria-label="Previous slide"
       >
         <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
       </button>
       <button
         onClick={goToNext}
-        className="absolute right-0 top-1/2 -translate-y-1/2 w-10 md:w-12 h-32 md:h-40 bg-card/20 backdrop-blur-md rounded-l-2xl text-cream hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 flex items-center justify-center group"
+        className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 w-12 h-40 bg-card/20 backdrop-blur-md rounded-l-2xl text-cream hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 items-center justify-center group"
         aria-label="Next slide"
       >
         <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
       </button>
 
       {/* Luxury Dots */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3">
+      <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
             className={`h-1.5 rounded-full transition-all duration-500 ${
               index === currentSlide
-                ? "bg-primary w-12"
-                : "bg-cream/30 w-3 hover:bg-cream/60"
+                ? "bg-primary w-8 md:w-12"
+                : "bg-cream/30 w-2 md:w-3 hover:bg-cream/60"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />
