@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Loader2, Package, Calendar, ChevronRight, MapPin } from "lucide-react";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
+import { ProfileForm } from "@/components/profile/ProfileForm";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 
@@ -89,20 +90,7 @@ export default function ProfileDashboard() {
               <div className="bg-card rounded-lg p-6 md:p-8 shadow-subtle min-h-[50vh]">
                 <h2 className="text-xl font-bold mb-6 border-b pb-3">{getTitle()}</h2>
                 
-                {location.pathname === "/tai-khoan/thong-tin" && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground uppercase font-bold">Email đăng nhập</label>
-                        <p className="font-medium">{user?.email}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs text-muted-foreground uppercase font-bold">Tên hiển thị</label>
-                        <p className="font-medium">{user?.user_metadata?.first_name || "Chưa cập nhật"}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {location.pathname === "/tai-khoan/thong-tin" && <ProfileForm />}
 
                 {location.pathname === "/tai-khoan/don-hang" && (
                   <div className="space-y-4">

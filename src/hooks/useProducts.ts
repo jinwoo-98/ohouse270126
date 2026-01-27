@@ -23,6 +23,7 @@ interface Filters {
   priceRange: string[];
   materials: string[];
   sortBy: 'newest' | 'price-asc' | 'price-desc' | 'popular';
+  searchQuery?: string;
 }
 
 const ALL_PRODUCTS: Product[] = [
@@ -48,7 +49,6 @@ const categoryMap: Record<string, string[]> = {
   "phong-ngu": ["giuong", "phong-ngu"],
   "phong-an": ["ban-an"],
   "sale": ALL_PRODUCTS.filter(p => p.isSale).map(p => p.categorySlug),
-  // Add more mappings as needed
 };
 
 const priceRangeMap: Record<string, [number, number]> = {
@@ -58,11 +58,12 @@ const priceRangeMap: Record<string, [number, number]> = {
   "50+": [50000000, Infinity],
 };
 
-export function useProducts(slug: string) {
+export function useProducts(slug: string, initialSearch?: string) {
   const [filters, setFilters] = useState<Filters>({
     priceRange: [],
     materials: [],
     sortBy: 'newest',
+    searchQuery: initialSearch || '',
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -71,15 +72,27 @@ export function useProducts(slug: string) {
     // Simulate fetching delay
     setTimeout(() => setIsLoading(false), 300);
 
-    if (slug === "noi-that") return ALL_PRODUCTS;
-    
-    const targetSlugs = categoryMap[slug] || [slug];
-    
-    return ALL_PRODUCTS.filter(p => targetSlugs.includes(p.categorySlug) || slug === p.categorySlug);
+    let result = [...ALL_PRODUCTS];
+
+    if (slug !== "noi-that") {
+      const targetSlugs = categoryMap[slug] || [slug];
+      result = result.filter(p => targetSlugs.includes(p.categorySlug) || slug === p.categorySlug);
+    }
+
+    return result;
   }, [slug]);
 
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...rawProducts];
+
+    // 0. Search Filtering
+    if (filters.searchQuery) {
+      const query = filters.searchQuery.toLowerCase();
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.material.toLowerCase().includes(query)
+      );
+    }
 
     // 1. Filtering by Price Range
     if (filters.priceRange.length > 0) {
@@ -105,11 +118,9 @@ export function useProducts(slug: string) {
         result.sort((a, b) => b.price - a.price);
         break;
       case 'newest':
-        // Assuming higher ID means newer for simulation
         result.sort((a, b) => b.id - a.id);
         break;
       case 'popular':
-        // Simple popularity simulation (e.g., random sort)
         result.sort(() => Math.random() - 0.5);
         break;
     }
@@ -137,6 +148,7 @@ export function useProducts(slug: string) {
       priceRange: [],
       materials: [],
       sortBy: 'newest',
+      searchQuery: '',
     });
   };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown, Phone, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -76,6 +76,7 @@ const mainCategories = [
 ];
 
 export function Header() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
@@ -83,6 +84,7 @@ export function Header() {
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [countdown, setCountdown] = useState({ days: 3, hours: 12, minutes: 45, seconds: 30 });
 
   useEffect(() => {
@@ -106,6 +108,14 @@ export function Header() {
       toast.error("Đăng xuất thất bại. Vui lòng thử lại.");
     } else {
       toast.success("Đã đăng xuất thành công.");
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/tim-kiem?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -141,10 +151,15 @@ export function Header() {
               <button className="lg:hidden p-2 -ml-2 hover:bg-secondary rounded-lg transition-colors mr-2" onClick={() => setIsMobileMenuOpen(true)}>
                 <Menu className="w-5 h-5" />
               </button>
-              <div className="hidden md:flex items-center flex-1 relative">
+              <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 relative">
                 <Search className="absolute left-3 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Tìm sản phẩm..." className="pl-10 pr-4 h-10 text-sm bg-secondary/50 border-0 focus-visible:ring-1" />
-              </div>
+                <Input 
+                  placeholder="Tìm sản phẩm..." 
+                  className="pl-10 pr-4 h-10 text-sm bg-secondary/50 border-0 focus-visible:ring-1"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </form>
             </div>
 
             <Link to="/" className="flex items-center flex-shrink-0">
@@ -155,7 +170,7 @@ export function Header() {
             </Link>
 
             <div className="flex-1 flex items-center justify-end gap-1 max-w-[250px]">
-              <button className="md:hidden p-2.5 hover:bg-secondary rounded-lg transition-colors"><Search className="w-5 h-5" /></button>
+              <button className="md:hidden p-2.5 hover:bg-secondary rounded-lg transition-colors" onClick={() => setIsMobileMenuOpen(true)}><Search className="w-5 h-5" /></button>
               <button className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex" onClick={() => setIsTrackingDialogOpen(true)}><Package className="w-5 h-5" /></button>
 
               {user ? (
@@ -240,6 +255,19 @@ export function Header() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-charcoal/50 z-50 lg:hidden" onClick={() => setIsMobileMenuOpen(false)} />
             <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} className="fixed left-0 top-0 h-full w-80 bg-card z-50 lg:hidden overflow-y-auto">
               <div className="p-4 border-b border-border flex items-center justify-between"><span className="text-xl font-bold">OHOUSE</span><button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-secondary rounded-lg"><X className="w-5 h-5" /></button></div>
+              
+              <div className="p-4 border-b border-border">
+                <form onSubmit={handleSearch} className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Tìm sản phẩm..." 
+                    className="pl-10 h-10 bg-secondary/50 border-0" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </form>
+              </div>
+
               <div className="p-4 border-b border-border flex flex-col gap-2">
                 {user ? <Button variant="outline" onClick={handleLogout} className="w-full"><User className="w-4 h-4 mr-2" />Đăng xuất</Button> : <Button variant="outline" onClick={() => { setIsAuthDialogOpen(true); setIsMobileMenuOpen(false); }} className="w-full"><User className="w-4 h-4 mr-2" />Đăng nhập</Button>}
                 <Button variant="outline" onClick={() => { setIsTrackingDialogOpen(true); setIsMobileMenuOpen(false); }} className="w-full"><Package className="w-4 h-4 mr-2" />Tra Cứu Đơn Hàng</Button>

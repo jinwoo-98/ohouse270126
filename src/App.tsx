@@ -23,6 +23,7 @@ import ContactPage from "./pages/ContactPage";
 import ShowroomPage from "./pages/ShowroomPage";
 import InspirationPage from "./pages/InspirationPage";
 import DesignServicePage from "./pages/DesignServicePage";
+import SearchPage from "./pages/SearchPage";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
                 <Route path="/ban-ghe" element={<CategoryPage />} />
                 <Route path="/ban-chay" element={<CategoryPage />} />
                 <Route path="/moi" element={<CategoryPage />} />
+                <Route path="/tim-kiem" element={<SearchPage />} />
                 <Route path="/san-pham/:id" element={<ProductDetailPage />} />
                 <Route path="/gio-hang" element={<CartPage />} />
                 <Route path="/yeu-thich" element={<WishlistPage />} />
