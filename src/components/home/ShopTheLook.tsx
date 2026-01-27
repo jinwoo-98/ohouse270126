@@ -196,50 +196,52 @@ export function ShopTheLook() {
           <p className="text-muted-foreground">Mua sắm trực tiếp từ những không gian thiết kế ấn tượng</p>
         </div>
 
-        <div className="relative rounded-lg overflow-hidden bg-background shadow-elevated">
-          <div className="absolute top-0 left-0 right-0 z-30 bg-card/90 backdrop-blur-sm p-3 flex justify-center gap-4 border-b border-border">
-            {looksData.map(look => (
-              <button
-                key={look.id}
-                onClick={() => handleLookChange(look.id)}
-                className={`px-4 py-2 text-sm font-medium transition-colors rounded-full ${
-                  look.id === activeLookId 
-                    ? 'bg-primary text-primary-foreground shadow-gold' 
-                    : 'text-foreground hover:bg-secondary'
-                }`}
-              >
-                {look.room}
-              </button>
-            ))}
-          </div>
+        {/* Room Selector Tabs - Now outside the image frame */}
+        <div className="flex justify-center gap-3 md:gap-4 mb-8">
+          {looksData.map(look => (
+            <button
+              key={look.id}
+              onClick={() => handleLookChange(look.id)}
+              className={`px-5 py-2.5 text-sm font-bold uppercase tracking-wider transition-all rounded-full border-2 ${
+                look.id === activeLookId 
+                  ? 'bg-charcoal border-charcoal text-cream shadow-medium scale-105' 
+                  : 'bg-transparent border-border text-muted-foreground hover:border-charcoal hover:text-charcoal'
+              }`}
+            >
+              {look.room}
+            </button>
+          ))}
+        </div>
 
+        <div className="relative rounded-2xl overflow-hidden bg-background shadow-elevated border border-border/50">
           <AnimatePresence mode="wait">
             <motion.div
               key={`${activeLook.id}-${currentImageIndex}`} 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="relative aspect-[16/10] md:aspect-[16/9] w-full pt-[60px] md:pt-[70px]" 
+              transition={{ duration: 0.6 }}
+              className="relative aspect-[3/2] w-full" 
             >
               <img
                 src={currentImage.src}
                 alt={currentImage.title}
-                className="w-full h-full object-cover absolute inset-0 top-[60px] md:top-[70px]"
+                className="w-full h-full object-cover"
               />
               
-              <div className="absolute inset-0 top-[60px] md:top-[70px] bg-black/5">
+              {/* Product Hotspots */}
+              <div className="absolute inset-0 bg-black/5">
                 {currentImage.products.map((product) => (
                   <TooltipProvider key={product.id}>
                     <Tooltip delayDuration={300}>
                       <TooltipTrigger asChild>
                         <button
                           onClick={() => setSelectedProductId(selectedProductId === product.id ? null : product.id)}
-                          className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/90 shadow-lg flex items-center justify-center text-primary hover:scale-110 hover:bg-white transition-all duration-300 z-10 group"
+                          className="absolute w-9 h-9 -ml-4.5 -mt-4.5 rounded-full bg-white/95 shadow-elevated flex items-center justify-center text-primary hover:scale-125 hover:bg-white transition-all duration-300 z-10 group"
                           style={{ left: `${product.x}%`, top: `${product.y}%` }}
                         >
                           <span className="absolute w-full h-full rounded-full bg-white/50 animate-ping opacity-75 group-hover:hidden"></span>
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-5 h-5" />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="bg-charcoal text-cream border-charcoal p-3 shadow-medium">
@@ -251,18 +253,19 @@ export function ShopTheLook() {
                 ))}
               </div>
 
+              {/* Navigation Arrows - Centered relative to image height */}
               {isMultiImage && (
                 <>
                   <button
                     onClick={goToPrevImage}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 p-4 bg-card/50 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-card/60 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium"
                     aria-label="Previous image"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
                   <button
                     onClick={goToNextImage}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-4 bg-card/50 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-card/60 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium"
                     aria-label="Next image"
                   >
                     <ChevronRight className="w-6 h-6" />
@@ -273,7 +276,7 @@ export function ShopTheLook() {
           </AnimatePresence>
 
           <Sheet open={!!selectedProductId} onOpenChange={(open) => !open && setSelectedProductId(null)}>
-            <SheetContent className="w-full sm:max-w-[450px] p-0 flex flex-col">
+            <SheetContent className="w-full sm:max-w-[450px] p-0 flex flex-col z-[100]">
               {selectedProduct && (
                 <>
                   <div className="flex-1 overflow-y-auto">
@@ -289,7 +292,6 @@ export function ShopTheLook() {
                         </span>
                       </div>
                       
-                      {/* Optimized Wishlist Button position: Moved left away from the close button (X) */}
                       <button 
                         onClick={() => toggleWishlist({
                           id: selectedProduct.id,
@@ -310,7 +312,7 @@ export function ShopTheLook() {
 
                     <div className="p-6 md:p-8 space-y-6 pb-24">
                       <SheetHeader className="space-y-2">
-                        <SheetTitle className="text-2xl font-bold leading-tight">
+                        <SheetTitle className="text-2xl font-bold leading-tight text-left">
                           {selectedProduct.name}
                         </SheetTitle>
                         <div className="flex items-center gap-3">
@@ -325,17 +327,17 @@ export function ShopTheLook() {
                         </div>
                       </SheetHeader>
 
-                      <SheetDescription className="text-base text-muted-foreground leading-relaxed">
+                      <SheetDescription className="text-base text-muted-foreground leading-relaxed text-left">
                         {selectedProduct.description}
                       </SheetDescription>
 
                       <div className="space-y-4">
-                        <h4 className="font-bold text-sm uppercase tracking-wider">Đặc điểm nổi bật</h4>
+                        <h4 className="font-bold text-sm uppercase tracking-wider text-left">Đặc điểm nổi bật</h4>
                         <ul className="space-y-3">
                           {selectedProduct.features.map((feature, i) => (
                             <li key={i} className="flex items-start gap-3 text-sm">
                               <Check className="w-4 h-4 text-primary mt-0.5" />
-                              <span>{feature}</span>
+                              <span className="text-left">{feature}</span>
                             </li>
                           ))}
                         </ul>
@@ -356,7 +358,7 @@ export function ShopTheLook() {
 
                   <div className="p-4 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
                     <div className="flex gap-3">
-                      <Button variant="outline" className="flex-1 h-12 text-sm font-semibold" asChild>
+                      <Button variant="outline" className="flex-1 h-12 text-sm font-semibold" asChild onClick={() => setSelectedProductId(null)}>
                         <Link to={selectedProduct.href}>
                           Xem Chi Tiết
                           <ArrowRight className="w-4 h-4 ml-2" />
