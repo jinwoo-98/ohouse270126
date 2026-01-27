@@ -6,6 +6,7 @@ import { CategoryGrid } from "@/components/home/CategoryGrid";
 import { FlashSale } from "@/components/home/FlashSale";
 import { ShopTheLook } from "@/components/home/ShopTheLook";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
+import { TrendingSearch } from "@/components/home/TrendingSearch";
 import { BrandPromise } from "@/components/home/BrandPromise";
 
 const Index = () => {
@@ -15,12 +16,15 @@ const Index = () => {
       
       <main className="flex-1">
         <HeroSlider />
-        <USPBar />
-        <CategoryGrid />
-        <FlashSale />
-        <ShopTheLook />
-        <FeaturedProducts />
-        <BrandPromise />
+        <div className="space-y-0"> {/* Wrapper to manage vertical flow */}
+          <USPBar />
+          <CategoryGrid />
+          <FlashSale />
+          <ShopTheLook />
+          <FeaturedProducts />
+          <TrendingSearch />
+          <BrandPromise />
+        </div>
       </main>
 
       <Footer />
