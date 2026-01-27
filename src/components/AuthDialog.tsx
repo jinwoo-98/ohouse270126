@@ -56,7 +56,7 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
               },
             },
           }}
-          providers={[]}
+          providers={['google', 'facebook']} // Added Google and Facebook
           view="sign_in"
           localization={{
             variables: {

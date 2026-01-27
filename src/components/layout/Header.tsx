@@ -129,7 +129,7 @@ export function Header() {
       <div className="bg-card">
         <div className="container-luxury">
           <div className="flex items-center justify-between h-12 md:h-14 gap-4">
-            {/* Left: Search & Order Tracking */}
+            {/* Left: Search */}
             <div className="flex-1 flex items-center max-w-md">
               {/* Mobile Menu Button */}
               <button
@@ -148,17 +148,6 @@ export function Header() {
                   className="pl-10 pr-4 h-10 text-sm bg-secondary/50 border-0 focus-visible:ring-1"
                 />
               </div>
-              
-              {/* Order Tracking Button */}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="hidden md:flex text-sm text-muted-foreground hover:text-foreground ml-4"
-                onClick={() => setIsTrackingDialogOpen(true)}
-              >
-                <Package className="w-4 h-4 mr-2" />
-                Tra Cứu Đơn Hàng
-              </Button>
             </div>
 
             {/* Center: Logo */}
@@ -181,6 +170,15 @@ export function Header() {
                 aria-label="Tìm kiếm"
               >
                 <Search className="w-5 h-5" />
+              </button>
+              
+              {/* Order Tracking Icon (Desktop & Mobile) */}
+              <button
+                className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex"
+                onClick={() => setIsTrackingDialogOpen(true)}
+                aria-label="Tra cứu đơn hàng"
+              >
+                <Package className="w-5 h-5" />
               </button>
 
               {/* User/Account Icon */}
