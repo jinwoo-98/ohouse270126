@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown, Phone, Package } from "lucide-react";
@@ -286,7 +286,7 @@ export function Header() {
       </div>
 
       {/* Row 4: Main Category Navigation */}
-      <div className="bg-card hidden lg:block"> {/* Removed border-t border-border */}
+      <div className="bg-card hidden lg:block">
         <div className="container-luxury">
           <nav className="flex items-center justify-center gap-1">
             {mainCategories.map((item) => (
