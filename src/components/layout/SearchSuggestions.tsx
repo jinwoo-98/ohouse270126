@@ -35,23 +35,56 @@ const POPULAR_KEYWORDS = [
   "Đèn chùm pha lê"
 ];
 
-const generateProducts = (keyword: string, baseImage: string, category: string): Product[] => {
-  return Array.from({ length: 6 }).map((_, i) => ({
-    id: `${keyword}-${i}`,
-    name: `${category} ${keyword} - Mẫu thiết kế ${i + 1}`,
-    price: 18500000 + (i * 3200000),
-    image: baseImage,
-    category: category
-  }));
-};
-
+// Mapping từ khóa đến các sản phẩm thực tế có trong hệ thống (ID 1-15)
 const PRODUCTS_MAP: Record<string, Product[]> = {
-  "Sofa da thật": generateProducts("Luxury", categorySofa, "Sofa"),
-  "Bàn ăn mặt đá": generateProducts("Modern", categoryDiningTable, "Bàn Ăn"),
-  "Gỗ óc chó cao cấp": generateProducts("Walnut", categoryTvStand, "Kệ Tivi"),
-  "Kệ tivi hiện đại": generateProducts("Minimalist", categoryTvStand, "Kệ Tivi"),
-  "Giường ngủ luxury": generateProducts("Grand", categoryBed, "Giường"),
-  "Đèn chùm pha lê": generateProducts("Crystal", categoryLighting, "Đèn"),
+  "Sofa da thật": [
+    { id: 2, name: "Sofa Góc Chữ L Vải Nhung Ý", price: 45990000, image: categorySofa, category: "Sofa" },
+    { id: 8, name: "Sofa Đơn Bọc Da Thật", price: 19990000, image: categorySofa, category: "Sofa" },
+    { id: 13, name: "Ghế Thư Giãn Da Bò", price: 15000000, image: categorySofa, category: "Sofa" },
+    { id: 2, name: "Sofa Da Ý Cao Cấp - Mẫu 2", price: 48500000, image: categorySofa, category: "Sofa" },
+    { id: 8, name: "Sofa Băng Chờ Luxury", price: 22000000, image: categorySofa, category: "Sofa" },
+    { id: 13, name: "Sofa Thư Giãn Bắc Âu", price: 16500000, image: categorySofa, category: "Sofa" },
+  ],
+  "Bàn ăn mặt đá": [
+    { id: 3, name: "Bàn Ăn Mặt Đá Marble 6 Ghế", price: 32990000, image: categoryDiningTable, category: "Bàn Ăn" },
+    { id: 10, name: "Bàn Ăn Gỗ Óc Chó 8 Ghế", price: 42990000, image: categoryDiningTable, category: "Bàn Ăn" },
+    { id: 3, name: "Bàn Ăn Tròn Xoay Thông Minh", price: 35000000, image: categoryDiningTable, category: "Bàn Ăn" },
+    { id: 10, name: "Bàn Ăn Sintered Stone 1m8", price: 28000000, image: categoryDiningTable, category: "Bàn Ăn" },
+    { id: 3, name: "Bộ Bàn Ăn 4 Ghế Hiện Đại", price: 18500000, image: categoryDiningTable, category: "Bàn Ăn" },
+    { id: 10, name: "Bàn Ăn Mặt Đá Granite Ý", price: 55000000, image: categoryDiningTable, category: "Bàn Ăn" },
+  ],
+  "Gỗ óc chó cao cấp": [
+    { id: 1, name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá", price: 25990000, image: categoryTvStand, category: "Kệ Tivi" },
+    { id: 5, name: "Bàn Làm Việc Gỗ Óc Chó", price: 18990000, image: categoryTvStand, category: "Văn Phòng" },
+    { id: 1, name: "Tủ Trang Trí Gỗ Óc Chó", price: 21000000, image: categoryTvStand, category: "Nội Thất" },
+    { id: 5, name: "Bàn Giám Đốc Gỗ Óc Chó", price: 32000000, image: categoryTvStand, category: "Văn Phòng" },
+    { id: 1, name: "Kệ Sách Gỗ Tự Nhiên", price: 12500000, image: categoryTvStand, category: "Nội Thất" },
+    { id: 5, name: "Bàn Trà Gỗ Óc Chó Nguyên Khối", price: 15500000, image: categoryTvStand, category: "Bàn Trà" },
+  ],
+  "Kệ tivi hiện đại": [
+    { id: 1, name: "Kệ Tivi Gỗ Óc Chó", price: 25990000, image: categoryTvStand, category: "Kệ Tivi" },
+    { id: 9, name: "Kệ Tivi Treo Tường Hiện Đại", price: 14990000, image: categoryTvStand, category: "Kệ Tivi" },
+    { id: 1, name: "Kệ Tivi Luxury Mặt Đá", price: 28500000, image: categoryTvStand, category: "Kệ Tivi" },
+    { id: 9, name: "Kệ Tivi Minimalist Xám", price: 11000000, image: categoryTvStand, category: "Kệ Tivi" },
+    { id: 1, name: "Kệ Tivi Phong Cách Nhật", price: 19500000, image: categoryTvStand, category: "Kệ Tivi" },
+    { id: 9, name: "Kệ Tivi Công Nghiệp E1", price: 8500000, image: categoryTvStand, category: "Kệ Tivi" },
+  ],
+  "Giường ngủ luxury": [
+    { id: 6, name: "Giường Ngủ Bọc Da Ý Cao Cấp", price: 38990000, image: categoryBed, category: "Giường" },
+    { id: 14, name: "Giường Gỗ Sồi Hiện Đại", price: 22000000, image: categoryBed, category: "Giường" },
+    { id: 6, name: "Giường King Size Bọc Nỉ", price: 32000000, image: categoryBed, category: "Giường" },
+    { id: 14, name: "Giường Ngủ Có Ngăn Kéo", price: 18500000, image: categoryBed, category: "Giường" },
+    { id: 6, name: "Giường Ngủ Tân Cổ Điển", price: 45000000, image: categoryBed, category: "Giường" },
+    { id: 14, name: "Giường Ngủ Gỗ Sồi - Mẫu 2", price: 21500000, image: categoryBed, category: "Giường" },
+  ],
+  "Đèn chùm pha lê": [
+    { id: 7, name: "Đèn Chùm Pha Lê Châu Âu", price: 15990000, image: categoryLighting, category: "Đèn" },
+    { id: 12, name: "Đèn Sàn Trang Trí", price: 6990000, image: categoryLighting, category: "Đèn" },
+    { id: 7, name: "Đèn Chùm Thông Tầng", price: 28000000, image: categoryLighting, category: "Đèn" },
+    { id: 12, name: "Đèn Bàn Luxury Gold", price: 4500000, image: categoryLighting, category: "Đèn" },
+    { id: 7, name: "Đèn Pha Lê Phòng Khách", price: 12500000, image: categoryLighting, category: "Đèn" },
+    { id: 12, name: "Đèn Sàn Minimalist", price: 5800000, image: categoryLighting, category: "Đèn" },
+  ],
 };
 
 export function SearchSuggestions({ isVisible, onClose, onKeywordClick }: SearchSuggestionsProps) {
@@ -142,7 +175,7 @@ export function SearchSuggestions({ isVisible, onClose, onKeywordClick }: Search
             <AnimatePresence mode="wait">
               {currentProducts.map((product, index) => (
                 <motion.div
-                  key={`${activeKeyword}-${index}`}
+                  key={`${activeKeyword}-${index}-${product.id}`}
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.03 }}
