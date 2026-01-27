@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, X, ShoppingBag, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 import heroLivingRoom from "@/assets/hero-living-room.jpg";
 import heroDiningRoom from "@/assets/hero-dining-room.jpg";
 import heroBedroom from "@/assets/hero-bedroom.jpg";
@@ -91,19 +92,28 @@ export function ShopTheLook() {
               {/* Hotspots Overlay */}
               <div className="absolute inset-0 bg-black/5">
                 {activeLook.products.map((product) => (
-                  <button
-                    key={product.id}
-                    onClick={() => setSelectedProductId(selectedProductId === product.id ? null : product.id)}
-                    className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/90 shadow-lg flex items-center justify-center text-primary hover:scale-110 hover:bg-white transition-all duration-300 z-10 group"
-                    style={{ left: `${product.x}%`, top: `${product.y}%` }}
-                  >
-                    <span className="absolute w-full h-full rounded-full bg-white/50 animate-ping opacity-75 group-hover:hidden"></span>
-                    {selectedProductId === product.id ? (
-                      <div className="w-3 h-3 bg-primary rounded-full" />
-                    ) : (
-                      <Plus className="w-4 h-4" />
-                    )}
-                  </button>
+                  <TooltipProvider key={product.id}>
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setSelectedProductId(selectedProductId === product.id ? null : product.id)}
+                          className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/90 shadow-lg flex items-center justify-center text-primary hover:scale-110 hover:bg-white transition-all duration-300 z-10 group"
+                          style={{ left: `${product.x}%`, top: `${product.y}%` }}
+                        >
+                          <span className="absolute w-full h-full rounded-full bg-white/50 animate-ping opacity-75 group-hover:hidden"></span>
+                          {selectedProductId === product.id ? (
+                            <div className="w-3 h-3 bg-primary rounded-full" />
+                          ) : (
+                            <Plus className="w-4 h-4" />
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="bg-charcoal text-cream border-charcoal p-3 shadow-medium">
+                        <p className="font-semibold text-sm">{product.name}</p>
+                        <p className="text-primary font-bold text-xs mt-1">{formatPrice(product.price)}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 ))}
               </div>
             </motion.div>
