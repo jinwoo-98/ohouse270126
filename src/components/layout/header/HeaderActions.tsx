@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { User, ShoppingBag, Package, Headset, LogOut, Heart, History, Ticket, Star } from "lucide-react";
+import { User, ShoppingBag, Package, Headset, LogOut, Heart, History, Ticket, Star, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,51 +26,46 @@ export function HeaderActions({ onOpenTracking, onOpenAuth, onOpenAccountDrawer 
 
   return (
     <div className="flex-1 flex items-center justify-end gap-1 max-w-[250px]">
-      {/* Tra cứu đơn hàng */}
       <button className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex" onClick={onOpenTracking}>
         <Package className="w-5 h-5" />
       </button>
 
       <div className="flex">
-        {/* Mobile Account Trigger */}
         <button className="lg:hidden p-2.5 hover:bg-secondary rounded-lg transition-colors" onClick={onOpenAccountDrawer}>
           <User className="w-5 h-5" />
         </button>
 
-        {/* Desktop Account Dropdown */}
         <div className="hidden lg:block">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="p-2.5 h-auto rounded-lg flex"><User className="w-5 h-5" /></Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 p-2">
+            <DropdownMenuContent align="end" className="w-72 p-3 rounded-2xl shadow-elevated border-border/40">
               {!user ? (
-                <>
-                  <DropdownMenuItem onClick={onOpenAuth} className="font-bold text-primary focus:text-primary cursor-pointer p-3 rounded-xl mb-1">
-                    <User className="w-4 h-4 mr-2" /> Đăng Nhập / Đăng Ký
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
+                <div className="p-4 bg-secondary/30 rounded-xl mb-4 text-center border border-border/50">
+                  <Sparkles className="w-6 h-6 text-primary mx-auto mb-2" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3">Chào mừng quý khách</p>
+                  <Button onClick={onOpenAuth} className="w-full btn-hero h-10 text-[11px] shadow-gold mb-3">Đăng Nhập / Đăng Ký</Button>
+                  <p className="text-[10px] text-muted-foreground italic">Đăng ký thành viên để nhận ưu đãi 500K</p>
+                </div>
               ) : (
                 <>
-                  <DropdownMenuLabel className="font-normal p-3">
+                  <DropdownMenuLabel className="font-normal p-3 bg-primary/5 rounded-xl mb-3 border border-primary/10">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-bold leading-none">Chào bạn!</p>
-                      <p className="text-xs leading-none text-muted-foreground truncate">{user.email}</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-primary">Thành viên OHOUSE</p>
+                      <p className="text-sm font-bold truncate">{user.email}</p>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
                 </>
               )}
 
-              {/* Danh sách các chức năng chính (Loại bỏ Liên hệ trên desktop menu) */}
-              <div className="py-1">
+              <div className="space-y-0.5">
                 {accountMenuItems
                   .filter(item => item.href !== "/lien-he")
                   .map((item) => (
-                    <DropdownMenuItem key={item.name} asChild className="cursor-pointer p-2.5 rounded-lg mb-0.5">
+                    <DropdownMenuItem key={item.name} asChild className="cursor-pointer p-2.5 rounded-xl transition-all focus:bg-secondary group">
                       <Link to={item.href} className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-md bg-secondary/50 flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground group-focus:bg-primary group-focus:text-primary-foreground transition-colors">
                           <item.icon className="w-4 h-4" />
                         </div>
                         <span className="text-sm font-medium">{item.name}</span>
@@ -81,9 +76,9 @@ export function HeaderActions({ onOpenTracking, onOpenAuth, onOpenAccountDrawer 
 
               {user && (
                 <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer p-2.5 rounded-lg mt-1">
-                    <LogOut className="w-4 h-4 mr-2" /> Đăng xuất
+                  <DropdownMenuSeparator className="my-2" />
+                  <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer p-2.5 rounded-xl">
+                    <LogOut className="w-4 h-4 mr-2" /> Đăng xuất tài khoản
                   </DropdownMenuItem>
                 </>
               )}
@@ -92,12 +87,10 @@ export function HeaderActions({ onOpenTracking, onOpenAuth, onOpenAccountDrawer 
         </div>
       </div>
 
-      {/* Biểu tượng Liên hệ (Thay thế cho Yêu thích trên Desktop) */}
       <Link to="/lien-he" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex">
         <Headset className="w-5 h-5" />
       </Link>
 
-      {/* Giỏ hàng */}
       <Link to="/gio-hang" className="p-2.5 hover:bg-secondary rounded-lg transition-colors relative">
         <ShoppingBag className="w-5 h-5" />
         {cartCount > 0 && (
