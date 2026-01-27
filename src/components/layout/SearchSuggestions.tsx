@@ -4,6 +4,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, ArrowRight, Sparkles, LayoutGrid } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Product {
   id: string | number;
