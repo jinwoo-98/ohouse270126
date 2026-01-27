@@ -28,10 +28,6 @@ const categoryInfo: Record<string, { title: string; description: string }> = {
   "noi-that": { title: "Tất Cả Nội Thất", description: "Khám phá toàn bộ bộ sưu tập" },
 };
 
-function formatPrice(price: number) {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
-}
-
 const priceRanges = [
   { label: "Dưới 10 triệu", value: "0-10" },
   { label: "10 - 20 triệu", value: "10-20" },
@@ -40,21 +36,18 @@ const priceRanges = [
 ];
 
 const materials = ["Gỗ Óc Chó", "Gỗ Sồi", "Đá Marble", "Da Thật", "Vải Nhung", "Inox Mạ Vàng", "Kính Cường Lực", "Gỗ Công Nghiệp", "Pha Lê", "Kim Loại"];
+const styles = ["Luxury", "Minimalist", "Modern", "Classic"];
+
+function formatPrice(price: number) {
+  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
+}
 
 export default function CategoryPage() {
   const location = useLocation();
   const pathSegment = location.pathname.split('/').pop() || 'noi-that';
   const categorySlug = pathSegment;
   
-  const { 
-    products, 
-    filters, 
-    updateFilters, 
-    toggleFilter, 
-    clearFilters, 
-    isLoading 
-  } = useProducts(categorySlug);
-
+  const { products, filters, updateFilters, toggleFilter, clearFilters, isLoading } = useProducts(categorySlug);
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -63,24 +56,11 @@ export default function CategoryPage() {
   
   const category = categoryInfo[categorySlug] || { title: "Danh Mục", description: "Khám phá sản phẩm" };
 
-  const handleSortChange = (value: string) => {
-    updateFilters({ sortBy: value as 'newest' | 'price-asc' | 'price-desc' | 'popular' });
-  };
-
-  const handlePriceFilterChange = (value: string) => {
-    toggleFilter('priceRange', value);
-  };
-
-  const handleMaterialFilterChange = (value: string) => {
-    toggleFilter('materials', value);
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1">
-        {/* Breadcrumb */}
         <div className="bg-secondary/50 py-3">
           <div className="container-luxury">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -91,7 +71,6 @@ export default function CategoryPage() {
           </div>
         </div>
 
-        {/* Category Header */}
         <div className="container-luxury py-8">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">{category.title}</h1>
           <p className="text-muted-foreground">{category.description}</p>
@@ -99,19 +78,14 @@ export default function CategoryPage() {
 
         <div className="container-luxury pb-16">
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Filters Sidebar */}
             <aside className={`lg:w-64 flex-shrink-0 ${showFilters ? 'block fixed inset-0 z-40 bg-background p-6 lg:static lg:p-0' : 'hidden lg:block'}`}>
               <div className="lg:bg-card lg:rounded-lg lg:p-5 lg:shadow-subtle lg:sticky lg:top-24">
-                
                 {showFilters && (
                   <div className="flex justify-between items-center mb-6 lg:hidden">
                     <h3 className="font-bold text-xl">Bộ Lọc</h3>
-                    <Button variant="ghost" size="icon" onClick={() => setShowFilters(false)}>
-                      <X className="w-5 h-5" />
-                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => setShowFilters(false)}><X className="w-5 h-5" /></Button>
                   </div>
                 )}
-                
                 <h3 className="hidden lg:block font-bold text-lg mb-4">Bộ Lọc</h3>
                 
                 <div className="mb-6">
@@ -119,11 +93,20 @@ export default function CategoryPage() {
                   <div className="space-y-2">
                     {priceRanges.map((range) => (
                       <label key={range.value} className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox 
-                          checked={filters.priceRange.includes(range.value)}
-                          onCheckedChange={() => handlePriceFilterChange(range.value)}
-                        />
+                        <Checkbox checked={filters.priceRange.includes(range.value)} onCheckedChange={() => toggleFilter('priceRange', range.value)} />
                         <span className="text-sm">{range.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-3 text-sm uppercase tracking-wide">Phong Cách</h4>
+                  <div className="space-y-2">
+                    {styles.map((style) => (
+                      <label key={style} className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox checked={filters.styles.includes(style)} onCheckedChange={() => toggleFilter('styles', style)} />
+                        <span className="text-sm">{style}</span>
                       </label>
                     ))}
                   </div>
@@ -134,10 +117,7 @@ export default function CategoryPage() {
                   <div className="space-y-2">
                     {materials.map((material) => (
                       <label key={material} className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox 
-                          checked={filters.materials.includes(material)}
-                          onCheckedChange={() => handleMaterialFilterChange(material)}
-                        />
+                        <Checkbox checked={filters.materials.includes(material)} onCheckedChange={() => toggleFilter('materials', material)} />
                         <span className="text-sm">{material}</span>
                       </label>
                     ))}
@@ -148,45 +128,16 @@ export default function CategoryPage() {
               </div>
             </aside>
 
-            {/* Products Grid */}
             <div className="flex-1">
-              {/* Toolbar */}
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="lg:hidden"
-                    onClick={() => setShowFilters(!showFilters)}
-                  >
-                    <SlidersHorizontal className="w-4 h-4 mr-2" />
-                    Lọc
-                  </Button>
+                  <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setShowFilters(!showFilters)}><SlidersHorizontal className="w-4 h-4 mr-2" />Lọc</Button>
                   <span className="text-sm text-muted-foreground">{products.length} sản phẩm</span>
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <div className="hidden md:flex items-center gap-1">
-                    <button 
-                      onClick={() => setGridCols(3)}
-                      className={`p-2 rounded ${gridCols === 3 ? 'bg-secondary' : 'hover:bg-secondary'}`}
-                      aria-label="3 columns view"
-                    >
-                      <Grid3X3 className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={() => setGridCols(4)}
-                      className={`p-2 rounded ${gridCols === 4 ? 'bg-secondary' : 'hover:bg-secondary'}`}
-                      aria-label="4 columns view"
-                    >
-                      <LayoutGrid className="w-4 h-4" />
-                    </button>
-                  </div>
-                  
-                  <Select value={filters.sortBy} onValueChange={handleSortChange}>
-                    <SelectTrigger className="w-40 h-9 text-sm">
-                      <SelectValue placeholder="Sắp xếp" />
-                    </SelectTrigger>
+                  <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
+                    <SelectTrigger className="w-40 h-9 text-sm"><SelectValue placeholder="Sắp xếp" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="newest">Mới nhất</SelectItem>
                       <SelectItem value="price-asc">Giá tăng dần</SelectItem>
@@ -197,11 +148,8 @@ export default function CategoryPage() {
                 </div>
               </div>
 
-              {/* Products */}
               {isLoading ? (
-                <div className="flex justify-center items-center h-64">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
+                <div className="flex justify-center items-center h-64"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
               ) : products.length === 0 ? (
                 <div className="text-center py-16 bg-secondary/50 rounded-lg">
                   <h3 className="text-xl font-semibold mb-2">Không tìm thấy sản phẩm nào</h3>
@@ -211,95 +159,27 @@ export default function CategoryPage() {
                 <div className={`grid grid-cols-2 md:grid-cols-3 ${gridCols === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 md:gap-5`}>
                   {products.map((product, index) => {
                     const isFavorite = isInWishlist(product.id);
-                    
                     return (
-                      <motion.div
-                        key={product.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: index * 0.05 }}
-                      >
+                      <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: index * 0.05 }}>
                         <div className="group card-luxury relative">
                           <Link to={`/san-pham/${product.id}`} className="block">
                             <div className="relative aspect-square img-zoom">
-                              <img
-                                src={product.image}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                              />
+                              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                               <div className="absolute top-2 left-2 flex flex-col gap-1">
-                                {product.isNew && (
-                                  <span className="bg-primary text-primary-foreground px-2 py-0.5 text-xs font-semibold">
-                                    Mới
-                                  </span>
-                                )}
-                                {product.isSale && (
-                                  <span className="bg-destructive text-destructive-foreground px-2 py-0.5 text-xs font-semibold">
-                                    Sale
-                                  </span>
-                                )}
+                                {product.isNew && <span className="bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">Mới</span>}
+                                {product.isSale && <span className="bg-destructive text-destructive-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">Sale</span>}
                               </div>
                             </div>
                           </Link>
                           
-                          {/* Quick Actions Overlay - Moved outside of the Link */}
-                          <div className="absolute inset-x-0 top-0 bottom-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
-                            <button 
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                toggleWishlist({
-                                  id: product.id,
-                                  name: product.name,
-                                  price: product.price,
-                                  image: product.image,
-                                  originalPrice: product.originalPrice
-                                });
-                              }}
-                              className={`p-2.5 rounded-full shadow-medium transition-all pointer-events-auto ${
-                                isFavorite 
-                                  ? 'bg-primary text-primary-foreground' 
-                                  : 'bg-card hover:bg-primary hover:text-primary-foreground'
-                              }`} 
-                              aria-label="Thêm vào yêu thích"
-                            >
-                              <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
-                            </button>
-                            <button 
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                addToCart({
-                                  id: product.id,
-                                  name: product.name,
-                                  price: product.price,
-                                  image: product.image,
-                                  quantity: 1
-                                });
-                              }}
-                              className="p-2.5 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-all pointer-events-auto" 
-                              aria-label="Thêm vào giỏ hàng"
-                            >
-                              <ShoppingBag className="w-4 h-4" />
-                            </button>
+                          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                            <button onClick={() => toggleWishlist(product)} className={`p-2.5 rounded-full shadow-medium transition-all pointer-events-auto ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-primary hover:text-primary-foreground'}`}><Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} /></button>
+                            <button onClick={() => addToCart({ ...product, quantity: 1 })} className="p-2.5 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-all pointer-events-auto"><ShoppingBag className="w-4 h-4" /></button>
                           </div>
                           
                           <div className="p-3">
-                            <Link to={`/san-pham/${product.id}`}>
-                              <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors mb-2">
-                                {product.name}
-                              </h3>
-                            </Link>
-                            <div className="flex items-center gap-2">
-                              <span className="text-base font-bold text-primary">
-                                {formatPrice(product.price)}
-                              </span>
-                              {product.originalPrice && (
-                                <span className="text-xs text-muted-foreground line-through">
-                                  {formatPrice(product.originalPrice)}
-                                </span>
-                              )}
-                            </div>
+                            <Link to={`/san-pham/${product.id}`}><h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors mb-2">{product.name}</h3></Link>
+                            <div className="flex items-center gap-2"><span className="text-base font-bold text-primary">{formatPrice(product.price)}</span></div>
                           </div>
                         </div>
                       </motion.div>

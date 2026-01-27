@@ -17,31 +17,33 @@ interface Product {
   isSale?: boolean;
   categorySlug: string;
   material: string;
+  style: 'Luxury' | 'Minimalist' | 'Modern' | 'Classic';
 }
 
 interface Filters {
   priceRange: string[];
   materials: string[];
+  styles: string[];
   sortBy: 'newest' | 'price-asc' | 'price-desc' | 'popular';
   searchQuery?: string;
 }
 
 const ALL_PRODUCTS: Product[] = [
-  { id: 1, name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá", image: categoryTvStand, price: 25990000, originalPrice: 32990000, isNew: true, isSale: true, categorySlug: "ke-tivi", material: "Gỗ Óc Chó" },
-  { id: 2, name: "Sofa Góc Chữ L Vải Nhung Ý", image: categorySofa, price: 45990000, categorySlug: "sofa", material: "Vải Nhung" },
-  { id: 3, name: "Bàn Ăn Mặt Đá Marble 6 Ghế", image: categoryDiningTable, price: 32990000, originalPrice: 38990000, isSale: true, categorySlug: "ban-an", material: "Đá Marble" },
-  { id: 4, name: "Bàn Trà Tròn Mặt Kính Cường Lực", image: categoryCoffeeTable, price: 12990000, categorySlug: "ban-tra", material: "Kính Cường Lực" },
-  { id: 5, name: "Bàn Làm Việc Gỗ Sồi Tự Nhiên", image: categoryDesk, price: 18990000, isNew: true, categorySlug: "ban-lam-viec", material: "Gỗ Sồi" },
-  { id: 6, name: "Giường Ngủ Bọc Da Ý Cao Cấp", image: categoryBed, price: 38990000, originalPrice: 45990000, isSale: true, categorySlug: "giuong", material: "Da Thật" },
-  { id: 7, name: "Đèn Chùm Pha Lê Phong Cách Châu Âu", image: categoryLighting, price: 15990000, categorySlug: "den-trang-tri", material: "Pha Lê" },
-  { id: 8, name: "Sofa Đơn Bọc Da Thật", image: categorySofa, price: 19990000, isNew: true, categorySlug: "sofa", material: "Da Thật" },
-  { id: 9, name: "Kệ Tivi Treo Tường Hiện Đại", image: categoryTvStand, price: 14990000, categorySlug: "ke-tivi", material: "Gỗ Công Nghiệp" },
-  { id: 10, name: "Bàn Ăn Gỗ Óc Chó 8 Ghế", image: categoryDiningTable, price: 42990000, originalPrice: 52990000, isSale: true, categorySlug: "ban-an", material: "Gỗ Óc Chó" },
-  { id: 11, name: "Bàn Trà Gỗ Tần Bì Bắc Âu", image: categoryCoffeeTable, price: 8990000, categorySlug: "ban-tra", material: "Gỗ Sồi" },
-  { id: 12, name: "Đèn Sàn Trang Trí Phòng Khách", image: categoryLighting, price: 6990000, isNew: true, categorySlug: "den-trang-tri", material: "Kim Loại" },
-  { id: 13, name: "Ghế Thư Giãn Da Bò", image: categorySofa, price: 15000000, categorySlug: "sofa", material: "Da Thật" },
-  { id: 14, name: "Tủ Quần Áo Gỗ Sồi", image: categoryBed, price: 22000000, categorySlug: "phong-ngu", material: "Gỗ Sồi" },
-  { id: 15, name: "Bàn Console Đá", image: categoryDesk, price: 55000000, categorySlug: "phong-khach", material: "Đá Marble" },
+  { id: 1, name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá", image: categoryTvStand, price: 25990000, originalPrice: 32990000, isNew: true, isSale: true, categorySlug: "ke-tivi", material: "Gỗ Óc Chó", style: 'Luxury' },
+  { id: 2, name: "Sofa Góc Chữ L Vải Nhung Ý", image: categorySofa, price: 45990000, categorySlug: "sofa", material: "Vải Nhung", style: 'Modern' },
+  { id: 3, name: "Bàn Ăn Mặt Đá Marble 6 Ghế", image: categoryDiningTable, price: 32990000, originalPrice: 38990000, isSale: true, categorySlug: "ban-an", material: "Đá Marble", style: 'Luxury' },
+  { id: 4, name: "Bàn Trà Tròn Mặt Kính Cường Lực", image: categoryCoffeeTable, price: 12990000, categorySlug: "ban-tra", material: "Kính Cường Lực", style: 'Minimalist' },
+  { id: 5, name: "Bàn Làm Việc Gỗ Sồi Tự Nhiên", image: categoryDesk, price: 18990000, isNew: true, categorySlug: "ban-lam-viec", material: "Gỗ Sồi", style: 'Modern' },
+  { id: 6, name: "Giường Ngủ Bọc Da Ý Cao Cấp", image: categoryBed, price: 38990000, originalPrice: 45990000, isSale: true, categorySlug: "giuong", material: "Da Thật", style: 'Luxury' },
+  { id: 7, name: "Đèn Chùm Pha Lê Phong Cách Châu Âu", image: categoryLighting, price: 15990000, categorySlug: "den-trang-tri", material: "Pha Lê", style: 'Luxury' },
+  { id: 8, name: "Sofa Đơn Bọc Da Thật", image: categorySofa, price: 19990000, isNew: true, categorySlug: "sofa", material: "Da Thật", style: 'Classic' },
+  { id: 9, name: "Kệ Tivi Treo Tường Hiện Đại", image: categoryTvStand, price: 14990000, categorySlug: "ke-tivi", material: "Gỗ Công Nghiệp", style: 'Minimalist' },
+  { id: 10, name: "Bàn Ăn Gỗ Óc Chó 8 Ghế", image: categoryDiningTable, price: 42990000, originalPrice: 52990000, isSale: true, categorySlug: "ban-an", material: "Gỗ Óc Chó", style: 'Luxury' },
+  { id: 11, name: "Bàn Trà Gỗ Tần Bì Bắc Âu", image: categoryCoffeeTable, price: 8990000, categorySlug: "ban-tra", material: "Gỗ Sồi", style: 'Minimalist' },
+  { id: 12, name: "Đèn Sàn Trang Trí Phòng Khách", image: categoryLighting, price: 6990000, isNew: true, categorySlug: "den-trang-tri", material: "Kim Loại", style: 'Modern' },
+  { id: 13, name: "Ghế Thư Giãn Da Bò", image: categorySofa, price: 15000000, categorySlug: "sofa", material: "Da Thật", style: 'Modern' },
+  { id: 14, name: "Tủ Quần Áo Gỗ Sồi", image: categoryBed, price: 22000000, categorySlug: "phong-ngu", material: "Gỗ Sồi", style: 'Modern' },
+  { id: 15, name: "Bàn Console Đá", image: categoryDesk, price: 55000000, categorySlug: "phong-khach", material: "Đá Marble", style: 'Luxury' },
 ];
 
 const categoryMap: Record<string, string[]> = {
@@ -62,6 +64,7 @@ export function useProducts(slug: string, initialSearch?: string) {
   const [filters, setFilters] = useState<Filters>({
     priceRange: [],
     materials: [],
+    styles: [],
     sortBy: 'newest',
     searchQuery: initialSearch || '',
   });
@@ -69,7 +72,6 @@ export function useProducts(slug: string, initialSearch?: string) {
 
   const rawProducts = useMemo(() => {
     setIsLoading(true);
-    // Simulate fetching delay
     setTimeout(() => setIsLoading(false), 300);
 
     let result = [...ALL_PRODUCTS];
@@ -85,7 +87,6 @@ export function useProducts(slug: string, initialSearch?: string) {
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...rawProducts];
 
-    // 0. Search Filtering
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
       result = result.filter(p => 
@@ -94,7 +95,6 @@ export function useProducts(slug: string, initialSearch?: string) {
       );
     }
 
-    // 1. Filtering by Price Range
     if (filters.priceRange.length > 0) {
       result = result.filter(product => {
         return filters.priceRange.some(rangeKey => {
@@ -104,12 +104,14 @@ export function useProducts(slug: string, initialSearch?: string) {
       });
     }
 
-    // 2. Filtering by Material
     if (filters.materials.length > 0) {
       result = result.filter(product => filters.materials.includes(product.material));
     }
 
-    // 3. Sorting
+    if (filters.styles.length > 0) {
+      result = result.filter(product => filters.styles.includes(product.style));
+    }
+
     switch (filters.sortBy) {
       case 'price-asc':
         result.sort((a, b) => a.price - b.price);
@@ -147,6 +149,7 @@ export function useProducts(slug: string, initialSearch?: string) {
     setFilters({
       priceRange: [],
       materials: [],
+      styles: [],
       sortBy: 'newest',
       searchQuery: '',
     });
