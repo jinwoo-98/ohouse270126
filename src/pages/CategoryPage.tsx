@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, SlidersHorizontal, Grid3X3, LayoutGrid, Heart, ShoppingBag, Loader2, X, Eye } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, Heart, ShoppingBag, X, Eye, Star } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
+import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 
 const categoryInfo: Record<string, { title: string; description: string }> = {
   "phong-khach": { title: "Phòng Khách", description: "Nội thất phòng khách sang trọng, hiện đại" },
@@ -150,20 +151,20 @@ export default function CategoryPage() {
                 </div>
               </div>
 
-              {isLoading ? (
-                <div className="flex justify-center items-center h-64"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-              ) : products.length === 0 ? (
-                <div className="text-center py-16 bg-secondary/50 rounded-lg">
-                  <h3 className="text-xl font-semibold mb-2">Không tìm thấy sản phẩm nào</h3>
-                  <p className="text-muted-foreground">Vui lòng thử điều chỉnh bộ lọc của bạn.</p>
-                </div>
-              ) : (
-                <div className={`grid grid-cols-2 md:grid-cols-3 ${gridCols === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 md:gap-5`}>
-                  {products.map((product, index) => {
+              <div className={`grid grid-cols-2 md:grid-cols-3 ${gridCols === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 md:gap-5`}>
+                {isLoading ? (
+                  Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)
+                ) : products.length === 0 ? (
+                  <div className="col-span-full text-center py-16 bg-secondary/50 rounded-lg">
+                    <h3 className="text-xl font-semibold mb-2">Không tìm thấy sản phẩm nào</h3>
+                    <p className="text-muted-foreground">Vui lòng thử điều chỉnh bộ lọc của bạn.</p>
+                  </div>
+                ) : (
+                  products.map((product, index) => {
                     const isFavorite = isInWishlist(product.id);
                     return (
                       <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: index * 0.05 }}>
-                        <div className="group card-luxury relative">
+                        <div className="group card-luxury relative h-full flex flex-col">
                           <div className="relative aspect-square img-zoom">
                             <Link to={`/san-pham/${product.id}`} className="block">
                               <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
@@ -173,7 +174,6 @@ export default function CategoryPage() {
                               </div>
                             </Link>
 
-                            {/* Interaction Buttons - Moved to top right */}
                             <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none">
                               <button 
                                 onClick={(e) => {
@@ -182,7 +182,6 @@ export default function CategoryPage() {
                                   toggleWishlist(product);
                                 }} 
                                 className={`p-2.5 rounded-full shadow-medium transition-all pointer-events-auto ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-primary hover:text-primary-foreground'}`}
-                                aria-label="Thêm vào yêu thích"
                               >
                                 <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
                               </button>
@@ -193,13 +192,11 @@ export default function CategoryPage() {
                                   addToCart({ ...product, quantity: 1 });
                                 }} 
                                 className="p-2.5 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-all pointer-events-auto"
-                                aria-label="Thêm vào giỏ hàng"
                               >
                                 <ShoppingBag className="w-4 h-4" />
                               </button>
                             </div>
 
-                            {/* Quick View Button - Left Bottom */}
                             <button 
                               onClick={() => setSelectedProduct(product)}
                               className="absolute bottom-2 left-2 bg-card/90 backdrop-blur-sm text-foreground p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-primary hover:text-primary-foreground shadow-sm flex items-center gap-1.5"
@@ -209,16 +206,26 @@ export default function CategoryPage() {
                             </button>
                           </div>
                           
-                          <div className="p-3">
+                          <div className="p-4 flex-1 flex flex-col">
                             <Link to={`/san-pham/${product.id}`}><h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors mb-2">{product.name}</h3></Link>
-                            <div className="flex items-center gap-2"><span className="text-base font-bold text-primary">{formatPrice(product.price)}</span></div>
+                            
+                            <div className="flex items-center gap-1 mb-3">
+                              <div className="flex text-primary">
+                                {[1, 2, 3, 4, 5].map(i => <Star key={i} className={`w-3 h-3 ${i <= 4 ? 'fill-current' : ''}`} />)}
+                              </div>
+                              <span className="text-[10px] text-muted-foreground ml-1">(12)</span>
+                            </div>
+
+                            <div className="mt-auto">
+                              <span className="text-base font-bold text-primary">{formatPrice(product.price)}</span>
+                            </div>
                           </div>
                         </div>
                       </motion.div>
                     );
-                  })}
-                </div>
-              )}
+                  })
+                )}
+              </div>
             </div>
           </div>
         </div>
