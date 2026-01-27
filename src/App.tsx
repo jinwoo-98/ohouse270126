@@ -18,6 +18,9 @@ import RecruitmentPage from "./pages/RecruitmentPage";
 import NewsPage from "./pages/NewsPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import ContactPage from "./pages/ContactPage";
+import ShowroomPage from "./pages/ShowroomPage"; // NEW
+import InspirationPage from "./pages/InspirationPage"; // NEW
+import DesignServicePage from "./pages/DesignServicePage"; // NEW
 
 const queryClient = new QueryClient();
 
@@ -72,7 +75,12 @@ const App = () => (
             {/* Login Page (Fallback/Dialog Trigger) */}
             <Route path="/dang-nhap" element={<AccountPage />} />
             
-            {/* About Pages */}
+            {/* Secondary Links / About Pages */}
+            <Route path="/showroom" element={<ShowroomPage />} /> {/* NEW */}
+            <Route path="/cam-hung" element={<InspirationPage />} /> {/* NEW */}
+            <Route path="/thiet-ke" element={<DesignServicePage />} /> {/* NEW */}
+            <Route path="/y-tuong/:slug" element={<InspirationPage />} /> {/* For deep links from home page */}
+            
             <Route path="/ve-chung-toi" element={<AboutPage />} />
             <Route path="/tuyen-dung" element={<RecruitmentPage />} />
             <Route path="/tin-tuc" element={<NewsPage />} />
