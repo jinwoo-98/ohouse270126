@@ -286,7 +286,7 @@ export function Header() {
       </div>
 
       {/* Row 4: Main Category Navigation */}
-      <div className="bg-card hidden lg:block border-t border-border">
+      <div className="bg-card hidden lg:block"> {/* Removed border-t border-border */}
         <div className="container-luxury">
           <nav className="flex items-center justify-center gap-1">
             {mainCategories.map((item) => (
@@ -303,7 +303,7 @@ export function Header() {
                   }`}
                 >
                   {item.name}
-                  {item.hasDropdown && <ChevronDown className="w-3.5 h-3.5" />}
+                  {/* Removed {item.hasDropdown && <ChevronDown className="w-3.5 h-3.5" />} */}
                 </Link>
 
                 {/* Dropdown */}
