@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { User, LogOut, ChevronRight, Sparkles, Gift } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { LogOut, ChevronRight, Sparkles, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { accountMenuItems } from "@/constants/header-data";
@@ -15,12 +15,22 @@ interface HeaderAccountDrawerProps {
 
 export function HeaderAccountDrawer({ isOpen, onOpenChange, onOpenAuth }: HeaderAccountDrawerProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) toast.error("Đăng xuất thất bại.");
     else {
       toast.success("Đã đăng xuất.");
+      onOpenChange(false);
+    }
+  };
+
+  const handleItemClick = (item: any) => {
+    if (item.requiresAuth && !user) {
+      onOpenAuth();
+    } else {
+      navigate(item.href);
       onOpenChange(false);
     }
   };
@@ -65,11 +75,10 @@ export function HeaderAccountDrawer({ isOpen, onOpenChange, onOpenAuth }: Header
           <nav className="px-3">
             <div className="space-y-1">
               {accountMenuItems.map((item) => (
-                <Link 
+                <button 
                   key={item.name} 
-                  to={item.href} 
-                  onClick={() => onOpenChange(false)} 
-                  className="flex items-center gap-4 py-3.5 px-4 rounded-2xl hover:bg-secondary transition-all group"
+                  onClick={() => handleItemClick(item)} 
+                  className="w-full flex items-center gap-4 py-3.5 px-4 rounded-2xl hover:bg-secondary transition-all group"
                 >
                   <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                     <item.icon className="w-5 h-5" />
@@ -78,7 +87,7 @@ export function HeaderAccountDrawer({ isOpen, onOpenChange, onOpenAuth }: Header
                     {item.name}
                   </span>
                   <ChevronRight className="w-4 h-4 ml-auto opacity-20 group-hover:opacity-100" />
-                </Link>
+                </button>
               ))}
             </div>
           </nav>

@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { User, ShoppingBag, Package, Headset, LogOut, Heart, History, Ticket, Star, Sparkles } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { User, ShoppingBag, Package, Headset, LogOut, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,11 +17,20 @@ interface HeaderActionsProps {
 export function HeaderActions({ onOpenTracking, onOpenAuth, onOpenAccountDrawer }: HeaderActionsProps) {
   const { user } = useAuth();
   const { cartCount } = useCart();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) toast.error("Đăng xuất thất bại.");
     else toast.success("Đã đăng xuất thành công.");
+  };
+
+  const handleItemClick = (item: any) => {
+    if (item.requiresAuth && !user) {
+      onOpenAuth();
+    } else {
+      navigate(item.href);
+    }
   };
 
   return (
@@ -49,27 +58,32 @@ export function HeaderActions({ onOpenTracking, onOpenAuth, onOpenAccountDrawer 
                   <p className="text-[10px] text-muted-foreground italic">Đăng ký thành viên để nhận ưu đãi 500K</p>
                 </div>
               ) : (
-                <>
-                  <DropdownMenuLabel className="font-normal p-3 bg-primary/5 rounded-xl mb-3 border border-primary/10">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-xs font-bold uppercase tracking-wider text-primary">Thành viên OHOUSE</p>
-                      <p className="text-sm font-bold truncate">{user.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                </>
+                <DropdownMenuLabel className="font-normal p-3 bg-primary/5 rounded-xl mb-3 border border-primary/10">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-xs font-bold uppercase tracking-wider text-primary">Thành viên OHOUSE</p>
+                    <p className="text-sm font-bold truncate">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
               )}
 
               <div className="space-y-0.5">
                 {accountMenuItems
                   .filter(item => item.href !== "/lien-he")
                   .map((item) => (
-                    <DropdownMenuItem key={item.name} asChild className="cursor-pointer p-2.5 rounded-xl transition-all focus:bg-secondary group">
-                      <Link to={item.href} className="flex items-center gap-3">
+                    <DropdownMenuItem 
+                      key={item.name} 
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        handleItemClick(item);
+                      }}
+                      className="cursor-pointer p-2.5 rounded-xl transition-all focus:bg-secondary group"
+                    >
+                      <div className="flex items-center gap-3 w-full">
                         <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground group-focus:bg-primary group-focus:text-primary-foreground transition-colors">
                           <item.icon className="w-4 h-4" />
                         </div>
                         <span className="text-sm font-medium">{item.name}</span>
-                      </Link>
+                      </div>
                     </DropdownMenuItem>
                   ))}
               </div>
