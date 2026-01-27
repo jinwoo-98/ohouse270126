@@ -84,12 +84,13 @@ export function HeroSlider() {
             alt={slides[currentSlide].title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-charcoal/80 via-charcoal/40 to-transparent" />
+          {/* Changed gradient to center the focus */}
+          <div className="absolute inset-0 bg-charcoal/60 via-charcoal/20 to-transparent" />
         </motion.div>
       </AnimatePresence>
 
       {/* Content */}
-      <div className="absolute inset-0 flex items-center">
+      <div className="absolute inset-0 flex items-center justify-center">
         <div className="container-luxury">
           <AnimatePresence mode="wait">
             <motion.div
@@ -98,7 +99,7 @@ export function HeroSlider() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="max-w-lg"
+              className="max-w-lg mx-auto text-center" // Added mx-auto and text-center
             >
               <span className="inline-block text-primary font-semibold uppercase tracking-widest text-xs md:text-sm mb-3">
                 {slides[currentSlide].subtitle}
@@ -106,7 +107,7 @@ export function HeroSlider() {
               <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-cream mb-4 leading-tight">
                 {slides[currentSlide].title}
               </h1>
-              <p className="text-base md:text-lg text-cream/80 mb-6 max-w-md">
+              <p className="text-base md:text-lg text-cream/80 mb-6 max-w-md mx-auto"> {/* Added mx-auto */}
                 {slides[currentSlide].description}
               </p>
               <Button
