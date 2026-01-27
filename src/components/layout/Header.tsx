@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown, Phone, Package } from "lucide-react";
+import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown, Phone, Package, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { AuthDialog } from "@/components/AuthDialog";
 import { OrderTrackingDialog } from "@/components/OrderTrackingDialog";
@@ -168,9 +168,14 @@ export function Header() {
         <div className="container-luxury">
           <div className="flex items-center justify-between h-12 md:h-14 gap-4">
             <div className="flex-1 flex items-center max-w-[250px] relative" ref={searchContainerRef}>
-              <button className="lg:hidden p-2 -ml-2 hover:bg-secondary rounded-lg transition-colors mr-2" onClick={() => setIsMobileMenuOpen(true)}>
-                <Menu className="w-5 h-5" />
-              </button>
+              <div className="flex items-center lg:hidden mr-2">
+                <button className="p-2 -ml-2 hover:bg-secondary rounded-lg transition-colors" onClick={() => setIsMobileMenuOpen(true)}>
+                  <Menu className="w-5 h-5" />
+                </button>
+                <button className="md:hidden p-2 hover:bg-secondary rounded-lg transition-colors" onClick={() => setIsMobileMenuOpen(true)}>
+                  <Search className="w-5 h-5" />
+                </button>
+              </div>
               <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 relative">
                 <Search className="absolute left-3 w-4 h-4 text-muted-foreground" />
                 <Input 
@@ -200,13 +205,12 @@ export function Header() {
             </Link>
 
             <div className="flex-1 flex items-center justify-end gap-1 max-w-[250px]">
-              <button className="md:hidden p-2.5 hover:bg-secondary rounded-lg transition-colors" onClick={() => setIsMobileMenuOpen(true)}><Search className="w-5 h-5" /></button>
               <button className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex" onClick={() => setIsTrackingDialogOpen(true)}><Package className="w-5 h-5" /></button>
 
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="p-2.5 h-auto rounded-lg hidden sm:flex"><User className="w-5 h-5" /></Button>
+                    <Button variant="ghost" className="p-2.5 h-auto rounded-lg flex"><User className="w-5 h-5" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel className="font-normal">
@@ -224,7 +228,7 @@ export function Header() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <button className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex" onClick={() => setIsAuthDialogOpen(true)}><User className="w-5 h-5" /></button>
+                <button className="p-2.5 hover:bg-secondary rounded-lg transition-colors flex" onClick={() => setIsAuthDialogOpen(true)}><User className="w-5 h-5" /></button>
               )}
 
               <Link to="/yeu-thich" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex relative">
@@ -299,16 +303,46 @@ export function Header() {
               </div>
 
               <div className="p-4 border-b border-border flex flex-col gap-2">
-                {user ? <Button variant="outline" onClick={handleLogout} className="w-full"><User className="w-4 h-4 mr-2" />Đăng xuất</Button> : <Button variant="outline" onClick={() => { setIsAuthDialogOpen(true); setIsMobileMenuOpen(false); }} className="w-full"><User className="w-4 h-4 mr-2" />Đăng nhập</Button>}
-                <Button variant="outline" onClick={() => { setIsTrackingDialogOpen(true); setIsMobileMenuOpen(false); }} className="w-full"><Package className="w-4 h-4 mr-2" />Tra Cứu Đơn Hàng</Button>
+                {user ? (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground px-3">Đã đăng nhập: {user.email}</p>
+                    <Button variant="outline" asChild className="w-full justify-start"><Link to="/tai-khoan/thong-tin"><User className="w-4 h-4 mr-2" />Quản lý tài khoản</Link></Button>
+                  </div>
+                ) : (
+                  <Button variant="outline" onClick={() => { setIsAuthDialogOpen(true); setIsMobileMenuOpen(false); }} className="w-full"><User className="w-4 h-4 mr-2" />Đăng nhập / Đăng ký</Button>
+                )}
+                <Button variant="outline" onClick={() => { setIsTrackingDialogOpen(true); setIsMobileMenuOpen(false); }} className="w-full justify-start"><Package className="w-4 h-4 mr-2" />Tra Cứu Đơn Hàng</Button>
+                <Button variant="outline" asChild className="w-full justify-start"><Link to="/yeu-thich"><Heart className="w-4 h-4 mr-2" />Sản phẩm yêu thích</Link></Button>
               </div>
-              <nav className="p-4">
-                {mainCategories.map((item) => (
-                  <React.Fragment key={item.name}>
-                    <Link to={item.href} className={`block py-2.5 px-3 rounded-lg hover:bg-secondary transition-colors ${item.isHighlight ? "text-destructive font-medium" : ""}`} onClick={() => setIsMobileMenuOpen(false)}>{item.name}</Link>
-                  </React.Fragment>
-                ))}
-              </nav>
+              
+              <div className="p-4 bg-secondary/20">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-3">Danh Mục</p>
+                <nav className="space-y-1">
+                  {mainCategories.map((item) => (
+                    <Link key={item.name} to={item.href} className={`flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-card transition-colors ${item.isHighlight ? "text-destructive font-bold" : "font-medium"}`} onClick={() => setIsMobileMenuOpen(false)}>
+                      {item.name}
+                      <ChevronRight className="w-4 h-4 opacity-50" />
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+
+              <div className="p-4 border-t border-border">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-3">Tiện Ích & Thông Tin</p>
+                <nav className="space-y-1">
+                  {secondaryLinks.map((link) => (
+                    <Link key={link.name} to={link.href} className="block py-2.5 px-3 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-secondary rounded-lg transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                      {link.name}
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+
+              {user && (
+                <div className="p-4 mt-auto">
+                  <Button variant="ghost" onClick={handleLogout} className="w-full text-destructive hover:bg-destructive/10">Đăng xuất</Button>
+                </div>
+              )}
             </motion.div>
           </>
         )}
