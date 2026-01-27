@@ -13,6 +13,9 @@ import categoryCoffeeTable from "@/assets/category-coffee-table.jpg";
 import categoryBed from "@/assets/category-bed.jpg";
 import categoryDesk from "@/assets/category-desk.jpg";
 
+// Declare placeholder before usage
+const categoryLivingRoomPlaceholder = categorySofa;
+
 // Mock database to simulate dynamic product loading
 const MOCK_PRODUCTS: Record<string, any> = {
   "1": {
@@ -72,7 +75,7 @@ const MOCK_PRODUCTS: Record<string, any> = {
     name: "Đèn Chùm Pha Lê Luxury Style",
     price: 15990000,
     category: "Đèn",
-    image: categoryBed, // Using bed as placeholder for lighting if not available
+    image: categoryBed,
     images: [categoryBed, categoryDiningTable, categorySofa, categoryCoffeeTable],
     description: "Đèn chùm pha lê lấp lánh, tạo điểm nhấn sang trọng cho không gian sống đẳng cấp.",
     features: ["Pha lê K9 cao cấp", "Khung kim loại mạ vàng", "Tiết kiệm điện"],
@@ -82,15 +85,13 @@ const MOCK_PRODUCTS: Record<string, any> = {
     name: "Tủ Quần Áo Gỗ Sồi 4 Cánh Hiện Đại",
     price: 22000000,
     category: "Tủ Quần Áo",
-    image: categorySofa, // Placeholder
+    image: categorySofa,
     images: [categorySofa, categoryBed, categoryDesk, categoryDiningTable],
     description: "Tủ quần áo gỗ sồi tự nhiên với không gian lưu trữ rộng rãi và thiết kế thanh lịch.",
     features: ["Gỗ Sồi tự nhiên", "Chống mối mọt", "Ray trượt giảm chấn"],
     colors: ["Sồi Tự Nhiên", "Sồi Trắng"]
   }
 };
-
-const categoryLivingRoomPlaceholder = categorySofa;
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
