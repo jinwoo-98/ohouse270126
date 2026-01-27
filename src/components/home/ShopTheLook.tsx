@@ -33,7 +33,7 @@ const looksData = [
             price: 45990000, 
             originalPrice: 52000000,
             category: "Sofa",
-            description: "Sofa cao cấp với chất liệu vải nhung nhập khẩu, khung gỗ sồi tự nhiên mang lại sự sang trọng và êm ái tuyệt đối cho phòng khách của bạn.",
+            description: "Sofa cao cấp with chất liệu vải nhung nhập khẩu, khung gỗ sồi tự nhiên mang lại sự sang trọng và êm ái tuyệt đối cho phòng khách của bạn.",
             features: ["Khung gỗ sồi bền bỉ", "Vải nhung kháng khuẩn", "Đệm mút 4 lớp", "Kích thước: 280x160cm"],
             href: "/san-pham/2", 
             x: 50, 
@@ -45,7 +45,7 @@ const looksData = [
             image: categoryCoffeeTable, 
             price: 12990000, 
             category: "Bàn Trà",
-            description: "Thiết kế tối giản với mặt kính cường lực và chân inox mạ titan vàng gương.",
+            description: "Thiết kế tối giản with mặt kính cường lực and chân inox mạ titan vàng gương.",
             features: ["Kính cường lực 12mm", "Chân inox 304", "Chống trầy xước", "Dễ dàng vệ sinh"],
             href: "/san-pham/4", 
             x: 30, 
@@ -63,7 +63,7 @@ const looksData = [
             image: categoryTvStand, 
             price: 25990000, 
             category: "Kệ Tivi",
-            description: "Kệ tivi cao cấp kết hợp hoàn hảo giữa gỗ óc chó tự nhiên và mặt đá sintered stone.",
+            description: "Kệ tivi cao cấp kết hợp hoàn hảo giữa gỗ óc chó tự nhiên and mặt đá sintered stone.",
             features: ["Gỗ óc chó tự nhiên", "Đá Sintered Stone", "Kích thước: 180cm"],
             href: "/san-pham/1", 
             x: 50, 
@@ -196,7 +196,7 @@ export function ShopTheLook() {
           <p className="text-muted-foreground">Mua sắm trực tiếp từ những không gian thiết kế ấn tượng</p>
         </div>
 
-        {/* Room Selector Tabs - Now outside the image frame */}
+        {/* Room Selector Tabs */}
         <div className="flex justify-center gap-3 md:gap-4 mb-8">
           {looksData.map(look => (
             <button
@@ -253,19 +253,19 @@ export function ShopTheLook() {
                 ))}
               </div>
 
-              {/* Navigation Arrows - Centered relative to image height */}
+              {/* Navigation Arrows - Vertical Rectangle Shape */}
               {isMultiImage && (
                 <>
                   <button
                     onClick={goToPrevImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-card/60 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-24 bg-card/40 backdrop-blur-md rounded-r-xl text-charcoal hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium flex items-center justify-center"
                     aria-label="Previous image"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
                   <button
                     onClick={goToNextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-card/60 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-24 bg-card/40 backdrop-blur-md rounded-l-xl text-charcoal hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium flex items-center justify-center"
                     aria-label="Next image"
                   >
                     <ChevronRight className="w-6 h-6" />
