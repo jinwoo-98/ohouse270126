@@ -1,138 +1,152 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, ShoppingBag, ChevronRight, Check, Truck, Shield, ChevronLeft, ChevronDown } from "lucide-react";
+import { Plus, ShoppingBag, ChevronRight, Check, Truck, Shield, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import heroLivingRoom from "@/assets/hero-living-room.jpg";
 import heroDiningRoom from "@/assets/hero-dining-room.jpg";
 import heroBedroom from "@/assets/hero-bedroom.jpg";
+import heroBathroom from "@/assets/hero-bathroom.jpg"; // Added for variety
+import categoryTvStand from "@/assets/category-tv-stand.jpg";
 import categorySofa from "@/assets/category-sofa.jpg";
 import categoryCoffeeTable from "@/assets/category-coffee-table.jpg";
 import categoryDiningTable from "@/assets/category-dining-table.jpg";
 import categoryBed from "@/assets/category-bed.jpg";
 
-const looks = [
+const looksData = [
   {
     id: 1,
-    title: "Phòng Khách Hiện Đại",
     room: "Phòng Khách",
-    mainImage: heroLivingRoom,
-    products: [
+    images: [
       { 
-        id: 2, 
-        name: "Sofa Góc Chữ L Vải Nhung", 
-        image: categorySofa, 
-        price: 45990000, 
-        originalPrice: 52000000,
-        category: "Sofa",
-        description: "Sofa cao cấp với chất liệu vải nhung nhập khẩu, khung gỗ sồi tự nhiên mang lại sự sang trọng và êm ái tuyệt đối cho phòng khách của bạn.",
-        features: ["Khung gỗ sồi bền bỉ", "Vải nhung kháng khuẩn", "Đệm mút 4 lớp", "Kích thước: 280x160cm"],
-        href: "/san-pham/2", 
-        x: 50, 
-        y: 65 
+        src: heroLivingRoom, 
+        title: "Phòng Khách Hiện Đại",
+        products: [
+          { 
+            id: 2, 
+            name: "Sofa Góc Chữ L Vải Nhung", 
+            image: categorySofa, 
+            price: 45990000, 
+            originalPrice: 52000000,
+            category: "Sofa",
+            description: "Sofa cao cấp với chất liệu vải nhung nhập khẩu, khung gỗ sồi tự nhiên mang lại sự sang trọng và êm ái tuyệt đối cho phòng khách của bạn.",
+            features: ["Khung gỗ sồi bền bỉ", "Vải nhung kháng khuẩn", "Đệm mút 4 lớp", "Kích thước: 280x160cm"],
+            href: "/san-pham/2", 
+            x: 50, 
+            y: 65 
+          },
+          { 
+            id: 4, 
+            name: "Bàn Trà Tròn Mặt Kính", 
+            image: categoryCoffeeTable, 
+            price: 12990000, 
+            category: "Bàn Trà",
+            description: "Thiết kế tối giản với mặt kính cường lực và chân inox mạ titan vàng gương.",
+            features: ["Kính cường lực 12mm", "Chân inox 304", "Chống trầy xước", "Dễ dàng vệ sinh"],
+            href: "/san-pham/4", 
+            x: 30, 
+            y: 75 
+          },
+        ],
       },
       { 
-        id: 4, 
-        name: "Bàn Trà Tròn Mặt Kính", 
-        image: categoryCoffeeTable, 
-        price: 12990000, 
-        category: "Bàn Trà",
-        description: "Thiết kế tối giản với mặt kính cường lực và chân inox mạ titan vàng gương.",
-        features: ["Kính cường lực 12mm", "Chân inox 304", "Chống trầy xước", "Dễ dàng vệ sinh"],
-        href: "/san-pham/4", 
-        x: 30, 
-        y: 75 
-      },
-      { 
-        id: 12, 
-        name: "Đèn Sàn Trang Trí", 
-        image: categoryDiningTable, 
-        price: 6990000, 
-        category: "Đèn",
-        description: "Ánh sáng vàng ấm áp tạo điểm nhấn tinh tế cho không gian đọc sách.",
-        features: ["Thân kim loại sơn tĩnh điện", "Điều chỉnh độ sáng", "Tiết kiệm điện"],
-        href: "/san-pham/12", 
-        x: 80, 
-        y: 40 
+        src: categoryTvStand, 
+        title: "Góc Giải Trí Tinh Tế",
+        products: [
+          { 
+            id: 1, 
+            name: "Kệ Tivi Gỗ Óc Chó", 
+            image: categoryTvStand, 
+            price: 25990000, 
+            category: "Kệ Tivi",
+            description: "Kệ tivi cao cấp kết hợp hoàn hảo giữa gỗ óc chó tự nhiên và mặt đá sintered stone.",
+            features: ["Gỗ óc chó tự nhiên", "Đá Sintered Stone", "Kích thước: 180cm"],
+            href: "/san-pham/1", 
+            x: 50, 
+            y: 50 
+          },
+        ],
       },
     ],
   },
   {
     id: 2,
-    title: "Phòng Ăn Sang Trọng",
     room: "Phòng Ăn",
-    mainImage: heroDiningRoom,
-    products: [
+    images: [
       { 
-        id: 3, 
-        name: "Bàn Ăn Mặt Đá Marble", 
-        image: categoryDiningTable, 
-        price: 32990000, 
-        originalPrice: 38990000, 
-        category: "Bàn Ăn",
-        description: "Mặt đá Marble tự nhiên vân mây kết hợp chân gỗ óc chó cao cấp.",
-        features: ["Đá Marble tự nhiên", "Chân gỗ óc chó", "Ghế bọc da Microfiber"],
-        href: "/san-pham/3", 
-        x: 50, 
-        y: 60 
-      },
-      { 
-        id: 10, 
-        name: "Ghế Ăn Bọc Da", 
-        image: categorySofa, 
-        price: 42990000, 
-        category: "Ghế Ăn",
-        description: "Ghế ăn bọc da cao cấp, thiết kế hiện đại, dễ dàng vệ sinh.",
-        features: ["Da Microfiber", "Khung thép không gỉ", "Màu sắc đa dạng"],
-        href: "/san-pham/10", 
-        x: 25, 
-        y: 65 
-      },
-      { 
-        id: 7, 
-        name: "Đèn Chùm Pha Lê", 
-        image: categoryBed, 
-        price: 15990000, 
-        category: "Đèn",
-        description: "Đèn chùm pha lê lấp lánh, tạo điểm nhấn sang trọng cho phòng ăn.",
-        features: ["Pha lê K9", "Khung kim loại mạ vàng", "Tiết kiệm điện"],
-        href: "/san-pham/7", 
-        x: 50, 
-        y: 20 
+        src: heroDiningRoom, 
+        title: "Phòng Ăn Sang Trọng",
+        products: [
+          { 
+            id: 3, 
+            name: "Bàn Ăn Mặt Đá Marble", 
+            image: categoryDiningTable, 
+            price: 32990000, 
+            originalPrice: 38990000, 
+            category: "Bàn Ăn",
+            description: "Mặt đá Marble tự nhiên vân mây kết hợp chân gỗ óc chó cao cấp.",
+            features: ["Đá Marble tự nhiên", "Chân gỗ óc chó", "Ghế bọc da Microfiber"],
+            href: "/san-pham/3", 
+            x: 50, 
+            y: 60 
+          },
+          { 
+            id: 7, 
+            name: "Đèn Chùm Pha Lê", 
+            image: categoryBed, 
+            price: 15990000, 
+            category: "Đèn",
+            description: "Đèn chùm pha lê lấp lánh, tạo điểm nhấn sang trọng cho phòng ăn.",
+            features: ["Pha lê K9", "Khung kim loại mạ vàng", "Tiết kiệm điện"],
+            href: "/san-pham/7", 
+            x: 50, 
+            y: 20 
+          },
+        ],
       },
     ],
   },
   {
     id: 3,
-    title: "Phòng Ngủ Tối Giản",
     room: "Phòng Ngủ",
-    mainImage: heroBedroom,
-    products: [
+    images: [
       { 
-        id: 6, 
-        name: "Giường Ngủ Bọc Da Ý", 
-        image: categoryBed, 
-        price: 38990000, 
-        category: "Giường",
-        description: "Giường ngủ bọc da bò thật nhập khẩu từ Ý, thiết kế chuẩn ergonomic.",
-        features: ["Da bò thật 100%", "Khung thép chịu lực", "Giát giường cong"],
-        href: "/san-pham/6", 
-        x: 50, 
-        y: 60 
+        src: heroBedroom, 
+        title: "Phòng Ngủ Tối Giản",
+        products: [
+          { 
+            id: 6, 
+            name: "Giường Ngủ Bọc Da Ý", 
+            image: categoryBed, 
+            price: 38990000, 
+            category: "Giường",
+            description: "Giường ngủ bọc da bò thật nhập khẩu từ Ý, thiết kế chuẩn ergonomic.",
+            features: ["Da bò thật 100%", "Khung thép chịu lực", "Giát giường cong"],
+            href: "/san-pham/6", 
+            x: 50, 
+            y: 60 
+          },
+        ],
       },
       { 
-        id: 14, 
-        name: "Tủ Quần Áo Gỗ Sồi", 
-        image: categorySofa, 
-        price: 22000000, 
-        category: "Tủ Quần Áo",
-        description: "Tủ quần áo gỗ sồi tự nhiên, thiết kế 4 cánh mở, không gian lưu trữ lớn.",
-        features: ["Gỗ Sồi tự nhiên", "Chống mối mọt", "Bảo hành 5 năm"],
-        href: "/san-pham/14", 
-        x: 85, 
-        y: 40 
+        src: heroBathroom, 
+        title: "Góc Thư Giãn",
+        products: [
+          { 
+            id: 14, 
+            name: "Tủ Quần Áo Gỗ Sồi", 
+            image: categorySofa, 
+            price: 22000000, 
+            category: "Tủ Quần Áo",
+            description: "Tủ quần áo gỗ sồi tự nhiên, thiết kế 4 cánh mở, không gian lưu trữ lớn.",
+            features: ["Gỗ Sồi tự nhiên", "Chống mối mọt", "Bảo hành 5 năm"],
+            href: "/san-pham/14", 
+            x: 85, 
+            y: 40 
+          },
+        ],
       },
     ],
   },
@@ -143,32 +157,31 @@ function formatPrice(price: number) {
 }
 
 export function ShopTheLook() {
-  const [activeLookId, setActiveLookId] = useState(looks[0].id);
+  const [activeLookId, setActiveLookId] = useState(looksData[0].id);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
 
-  const activeLookIndex = looks.findIndex(look => look.id === activeLookId);
-  const activeLook = looks[activeLookIndex];
-  const selectedProduct = activeLook.products.find(p => p.id === selectedProductId);
+  const activeLook = looksData.find(look => look.id === activeLookId)!;
+  const currentImage = activeLook.images[currentImageIndex];
+  const selectedProduct = currentImage.products.find(p => p.id === selectedProductId);
 
-  const goToPrev = () => {
-    const newIndex = (activeLookIndex - 1 + looks.length) % looks.length;
-    setActiveLookId(looks[newIndex].id);
+  const handleLookChange = (id: number) => {
+    setActiveLookId(id);
+    setCurrentImageIndex(0); // Reset image index when changing room
     setSelectedProductId(null);
   };
 
-  const goToNext = () => {
-    const newIndex = (activeLookIndex + 1) % looks.length;
-    setActiveLookId(looks[newIndex].id);
+  const goToPrevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + activeLook.images.length) % activeLook.images.length);
     setSelectedProductId(null);
   };
 
-  const handleRoomChange = (roomName: string) => {
-    const look = looks.find(l => l.room === roomName);
-    if (look) {
-      setActiveLookId(look.id);
-      setSelectedProductId(null);
-    }
+  const goToNextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % activeLook.images.length);
+    setSelectedProductId(null);
   };
+
+  const isMultiImage = activeLook.images.length > 1;
 
   return (
     <section className="py-16 md:py-24 bg-secondary/20 overflow-hidden">
@@ -183,10 +196,10 @@ export function ShopTheLook() {
           
           {/* Room Tabs Navigation */}
           <div className="absolute top-0 left-0 right-0 z-30 bg-card/90 backdrop-blur-sm p-3 flex justify-center gap-4 border-b border-border">
-            {looks.map(look => (
+            {looksData.map(look => (
               <button
                 key={look.id}
-                onClick={() => handleRoomChange(look.room)}
+                onClick={() => handleLookChange(look.id)}
                 className={`px-4 py-2 text-sm font-medium transition-colors rounded-full ${
                   look.id === activeLookId 
                     ? 'bg-primary text-primary-foreground shadow-gold' 
@@ -200,22 +213,23 @@ export function ShopTheLook() {
 
           <AnimatePresence mode="wait">
             <motion.div
-              key={activeLook.id}
+              key={`${activeLook.id}-${currentImageIndex}`} // Key changes on both look and image index
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
-              className="relative aspect-[16/9] md:aspect-[21/9] w-full pt-[60px] md:pt-[70px]" // Add padding for tabs
+              // Increased height by changing aspect ratio for better image visibility
+              className="relative aspect-[16/10] md:aspect-[16/9] w-full pt-[60px] md:pt-[70px]" 
             >
               <img
-                src={activeLook.mainImage}
-                alt={activeLook.title}
+                src={currentImage.src}
+                alt={currentImage.title}
                 className="w-full h-full object-cover absolute inset-0 top-[60px] md:top-[70px]"
               />
               
               {/* Hotspots Overlay */}
               <div className="absolute inset-0 top-[60px] md:top-[70px] bg-black/5">
-                {activeLook.products.map((product) => (
+                {currentImage.products.map((product) => (
                   <TooltipProvider key={product.id}>
                     <Tooltip delayDuration={300}>
                       <TooltipTrigger asChild>
@@ -237,21 +251,43 @@ export function ShopTheLook() {
                 ))}
               </div>
 
-              {/* Navigation Arrows */}
-              <button
-                onClick={goToPrev}
-                className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 bg-card/30 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all z-20"
-                aria-label="Previous look"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={goToNext}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-card/30 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all z-20"
-                aria-label="Next look"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
+              {/* Navigation Arrows (Larger) */}
+              {isMultiImage && (
+                <>
+                  <button
+                    onClick={goToPrevImage}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 p-4 bg-card/50 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={goToNextImage}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-4 bg-card/50 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all z-20 shadow-medium"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
+              
+              {/* Image Dots */}
+              {isMultiImage && (
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+                  {activeLook.images.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        index === currentImageIndex
+                          ? "bg-primary w-6"
+                          : "bg-cream/50 w-2 hover:bg-cream/80"
+                      }`}
+                      aria-label={`Go to image ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
 
