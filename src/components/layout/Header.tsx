@@ -11,24 +11,47 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-const roomCategories = [
-  { name: "Phòng Khách", href: "/phong-khach" },
-  { name: "Phòng Ngủ", href: "/phong-ngu" },
-  { name: "Phòng Ăn", href: "/phong-an" },
-  { name: "Phòng Tắm", href: "/phong-tam" },
-  { name: "Phòng Làm Việc", href: "/phong-lam-viec" },
-];
-
-const productCategories = [
-  { name: "Sofa & Ghế", href: "/sofa" },
-  { name: "Bàn Ăn", href: "/ban-an" },
-  { name: "Bàn Trà", href: "/ban-tra" },
-  { name: "Kệ Tivi", href: "/ke-tivi" },
-  { name: "Giường Ngủ", href: "/giuong" },
-  { name: "Bàn Làm Việc", href: "/ban-lam-viec" },
-  { name: "Đèn Trang Trí", href: "/den-trang-tri" },
-  { name: "Decor", href: "/decor" },
-];
+// Danh mục sản phẩm chi tiết
+const productCategories = {
+  "phong-khach": [
+    { name: "Sofa & Ghế", href: "/sofa" },
+    { name: "Bàn Trà", href: "/ban-tra" },
+    { name: "Kệ Tivi", href: "/ke-tivi" },
+    { name: "Đèn Sàn", href: "/den-san" },
+    { name: "Tủ Trang Trí", href: "/tu-trang-tri" },
+  ],
+  "phong-ngu": [
+    { name: "Giường Ngủ", href: "/giuong" },
+    { name: "Tủ Quần Áo", href: "/tu-quan-ao" },
+    { name: "Bàn Trang Điểm", href: "/ban-trang-diem" },
+    { name: "Đèn Ngủ", href: "/den-ngu" },
+  ],
+  "phong-an": [
+    { name: "Bàn Ăn", href: "/ban-an" },
+    { name: "Ghế Ăn", href: "/ghe-an" },
+    { name: "Tủ Rượu", href: "/tu-ruou" },
+    { name: "Đèn Chùm", href: "/den-chum" },
+  ],
+  "ban-ghe": [
+    { name: "Ghế Sofa", href: "/sofa" },
+    { name: "Ghế Ăn", href: "/ghe-an" },
+    { name: "Ghế Thư Giãn", href: "/ghe-thu-gian" },
+    { name: "Bàn Làm Việc", href: "/ban-lam-viec" },
+    { name: "Bàn Console", href: "/ban-console" },
+  ],
+  "den-trang-tri": [
+    { name: "Đèn Chùm", href: "/den-chum" },
+    { name: "Đèn Sàn", href: "/den-san" },
+    { name: "Đèn Bàn", href: "/den-ban" },
+    { name: "Đèn Tường", href: "/den-tuong" },
+  ],
+  "decor": [
+    { name: "Tranh Trang Trí", href: "/tranh" },
+    { name: "Thảm", href: "/tham" },
+    { name: "Gương", href: "/guong" },
+    { name: "Bình Hoa", href: "/binh-hoa" },
+  ]
+};
 
 // Row 3: Secondary links
 const secondaryLinks = [
@@ -42,13 +65,12 @@ const secondaryLinks = [
 
 // Row 4: Main category navigation
 const mainCategories = [
-  { name: "Nội Thất", href: "/noi-that", hasDropdown: true, dropdownType: "rooms" as const },
-  { name: "Phòng Khách", href: "/phong-khach", hasDropdown: false },
-  { name: "Phòng Ngủ", href: "/phong-ngu", hasDropdown: false },
-  { name: "Phòng Ăn", href: "/phong-an", hasDropdown: false },
-  { name: "Bàn & Ghế", href: "/ban-ghe", hasDropdown: true, dropdownType: "products" as const },
-  { name: "Đèn", href: "/den-trang-tri", hasDropdown: false },
-  { name: "Decor", href: "/decor", hasDropdown: false },
+  { name: "Phòng Khách", href: "/phong-khach", hasDropdown: true, dropdownKey: "phong-khach" },
+  { name: "Phòng Ngủ", href: "/phong-ngu", hasDropdown: true, dropdownKey: "phong-ngu" },
+  { name: "Phòng Ăn", href: "/phong-an", hasDropdown: true, dropdownKey: "phong-an" },
+  { name: "Bàn & Ghế", href: "/ban-ghe", hasDropdown: true, dropdownKey: "ban-ghe" },
+  { name: "Đèn", href: "/den-trang-tri", hasDropdown: true, dropdownKey: "den-trang-tri" },
+  { name: "Decor", href: "/decor", hasDropdown: true, dropdownKey: "decor" },
   { name: "Bán Chạy", href: "/ban-chay", hasDropdown: false },
   { name: "Mới", href: "/moi", hasDropdown: false },
   { name: "Sale", href: "/sale", hasDropdown: false, isHighlight: true },
@@ -264,14 +286,14 @@ export function Header() {
       </div>
 
       {/* Row 4: Main Category Navigation */}
-      <div className="bg-card hidden lg:block">
+      <div className="bg-card hidden lg:block border-t border-border">
         <div className="container-luxury">
           <nav className="flex items-center justify-center gap-1">
             {mainCategories.map((item) => (
               <div
                 key={item.name}
                 className="relative"
-                onMouseEnter={() => item.hasDropdown && setActiveDropdown(item.name)}
+                onMouseEnter={() => item.hasDropdown && setActiveDropdown(item.dropdownKey || item.name)}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
                 <Link
@@ -285,7 +307,7 @@ export function Header() {
                 </Link>
 
                 {/* Dropdown */}
-                {item.hasDropdown && activeDropdown === item.name && (
+                {item.hasDropdown && activeDropdown === (item.dropdownKey || item.name) && productCategories[item.dropdownKey || item.name] && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -293,7 +315,7 @@ export function Header() {
                     className="absolute left-0 top-full z-50"
                   >
                     <div className="bg-card rounded-lg shadow-elevated border border-border p-2 min-w-[180px]">
-                      {(item.dropdownType === "rooms" ? roomCategories : productCategories).map((subItem) => (
+                      {productCategories[item.dropdownKey || item.name].map((subItem) => (
                         <Link
                           key={subItem.name}
                           to={subItem.href}
@@ -384,39 +406,32 @@ export function Header() {
               </div>
               
               <nav className="p-4">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2 px-3">Không gian</p>
-                {roomCategories.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className="block py-2.5 px-3 rounded-lg hover:bg-secondary transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2 px-3">Danh mục chính</p>
+                {mainCategories.map((item) => (
+                  <React.Fragment key={item.name}>
+                    <Link
+                      to={item.href}
+                      className={`block py-2.5 px-3 rounded-lg hover:bg-secondary transition-colors ${item.isHighlight ? "text-destructive font-medium" : ""}`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                    {item.hasDropdown && productCategories[item.dropdownKey || item.name] && (
+                      <div className="pl-6 border-l border-border ml-3 mb-2">
+                        {productCategories[item.dropdownKey || item.name].map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.href}
+                            className="block py-1.5 px-3 text-sm text-muted-foreground hover:text-primary transition-colors"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </React.Fragment>
                 ))}
-                
-                <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2 px-3 mt-6">Sản phẩm</p>
-                {productCategories.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className="block py-2.5 px-3 rounded-lg hover:bg-secondary transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-
-                <div className="border-t border-border mt-6 pt-6">
-                  <Link
-                    to="/sale"
-                    className="block py-2.5 px-3 rounded-lg hover:bg-secondary transition-colors text-destructive font-medium"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    🔥 Sale
-                  </Link>
-                </div>
               </nav>
 
               {/* Mobile Contact */}
