@@ -246,56 +246,51 @@ export function Header() {
 
                 {/* Desktop Account Dropdown */}
                 <div className="hidden lg:block">
-                  {user ? (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="p-2.5 h-auto rounded-lg flex"><User className="w-5 h-5" /></Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel className="font-normal">
-                          <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium leading-none">Tài khoản</p>
-                            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                          </div>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {/* Hiển thị danh sách chức năng (Trừ Liên hệ đã có ở header) */}
-                        {accountMenuItems.filter(item => item.href !== "/lien-he").map((item) => (
-                          <DropdownMenuItem key={item.name} asChild>
-                            <Link to={item.href} className="flex items-center gap-2">
-                              <item.icon className="w-4 h-4" />
-                              {item.name}
-                            </Link>
-                          </DropdownMenuItem>
-                        ))}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                          <LogOut className="w-4 h-4 mr-2" />
-                          Đăng xuất
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  ) : (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                         <Button variant="ghost" className="p-2.5 h-auto rounded-lg flex"><User className="w-5 h-5" /></Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuItem onClick={() => setIsAuthDialogOpen(true)} className="font-bold text-primary">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="p-2.5 h-auto rounded-lg flex"><User className="w-5 h-5" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-60">
+                      {!user ? (
+                        <DropdownMenuItem onClick={() => setIsAuthDialogOpen(true)} className="font-bold text-primary focus:text-primary">
                           <User className="w-4 h-4 mr-2" />
                           Đăng Nhập / Đăng Ký
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        {/* Khách vãng lai vẫn xem được một số mục */}
-                        <DropdownMenuItem asChild><Link to="/yeu-thich">Sản phẩm yêu thích</Link></DropdownMenuItem>
-                        <DropdownMenuItem asChild><Link to="/lich-su-xem">Lịch sử xem</Link></DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                      ) : (
+                        <DropdownMenuLabel className="font-normal">
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">Tài khoản</p>
+                            <p className="text-xs leading-none text-muted-foreground truncate">{user.email}</p>
+                          </div>
+                        </DropdownMenuLabel>
+                      )}
+                      <DropdownMenuSeparator />
+                      
+                      {/* Hiển thị tất cả chức năng, trừ Liên hệ trên Desktop */}
+                      {accountMenuItems.filter(item => item.href !== "/lien-he").map((item) => (
+                        <DropdownMenuItem key={item.name} asChild>
+                          <Link to={item.href} className="flex items-center gap-2">
+                            <item.icon className="w-4 h-4" />
+                            {item.name}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+
+                      {user && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                            <LogOut className="w-4 h-4 mr-2" />
+                            Đăng xuất
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
-              {/* Biểu tượng Liên hệ mới thay thế Yêu thích trên header desktop */}
+              {/* Biểu tượng Liên hệ mới trên Header Desktop */}
               <Link to="/lien-he" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex">
                 <Headset className="w-5 h-5" />
               </Link>
