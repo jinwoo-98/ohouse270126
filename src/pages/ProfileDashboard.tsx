@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Loader2, Package, Calendar, ChevronRight, MapPin, Plus, Trash2, Home } from "lucide-react";
+import { Loader2, Package, Calendar, ChevronRight, MapPin, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +28,7 @@ export default function ProfileDashboard() {
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthLoading && !user) {
@@ -45,10 +46,18 @@ export default function ProfileDashboard() {
   const fetchOrders = async () => {
     setIsLoadingOrders(true);
     try {
-      const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*, order_items(*)')
+        .order('created_at', { ascending: false });
+      
       if (error) throw error;
       setOrders(data || []);
-    } catch (error) { console.error(error); } finally { setIsLoadingOrders(false); }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoadingOrders(false);
+    }
   };
 
   const fetchAddresses = async () => {
@@ -157,38 +166,106 @@ export default function ProfileDashboard() {
 
                 {location.pathname === "/tai-khoan/don-hang" && (
                   <div className="space-y-4">
-                    {isLoadingOrders ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : orders.length === 0 ? (
-                      <div className="text-center py-12"><Package className="w-12 h-12 mx-auto opacity-30 mb-4" /><p>Bạn chưa có đơn hàng nào.</p></div>
-                    ) : orders.map(order => (
-                      <div key={order.id} className="border border-border rounded-lg p-4">
-                        <div className="flex justify-between mb-4">
-                          <div className="font-bold">#{order.id.slice(0, 8).toUpperCase()}</div>
-                          {getStatusLabel(order.status)}
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>{new Date(order.created_at).toLocaleDateString()}</span>
-                          <span className="text-primary font-bold">{formatPrice(order.total_amount)}</span>
-                        </div>
+                    {isLoadingOrders ? <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /> : orders.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Package className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />
+                        <p className="text-muted-foreground">Bạn chưa có đơn hàng nào.</p>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="space-y-4">
+                        {orders.map((order) => (
+                          <div key={order.id} className="border border-border rounded-lg overflow-hidden bg-card hover:shadow-subtle transition-shadow">
+                            <div 
+                              className="p-4 cursor-pointer flex flex-wrap items-center justify-between gap-4"
+                              onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-primary/10 rounded-lg text-primary"><Package className="w-5 h-5" /></div>
+                                <div>
+                                  <p className="text-sm font-bold">Mã đơn: #{order.id.slice(0, 8).toUpperCase()}</p>
+                                  <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString('vi-VN')}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <div className="text-right hidden sm:block">
+                                  <p className="text-xs text-muted-foreground">Tổng cộng</p>
+                                  <p className="font-bold text-primary">{formatPrice(order.total_amount)}</p>
+                                </div>
+                                {getStatusLabel(order.status)}
+                                {expandedOrder === order.id ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                              </div>
+                            </div>
+
+                            {expandedOrder === order.id && (
+                              <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} className="border-t border-border bg-secondary/10">
+                                <div className="p-4 space-y-4">
+                                  <div className="grid md:grid-cols-2 gap-6 pb-4 border-b">
+                                    <div className="space-y-2">
+                                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Địa chỉ nhận hàng</p>
+                                      <div className="flex gap-2">
+                                        <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                        <div className="text-sm">
+                                          <p className="font-medium">{order.shipping_address}</p>
+                                          <p className="text-muted-foreground">SĐT: {order.contact_phone}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Trạng thái thanh toán</p>
+                                      <div className="flex items-center gap-2">
+                                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Đã thanh toán (COD)</Badge>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-3">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Danh sách sản phẩm</p>
+                                    {order.order_items?.map((item: any) => (
+                                      <div key={item.id} className="flex items-center gap-4 py-2">
+                                        <img src={item.product_image} alt={item.product_name} className="w-16 h-16 object-cover rounded-lg border" />
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-semibold truncate">{item.product_name}</p>
+                                          <p className="text-xs text-muted-foreground">Số lượng: {item.quantity}</p>
+                                        </div>
+                                        <p className="text-sm font-bold">{formatPrice(item.price)}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  <div className="pt-4 border-t flex justify-between items-center">
+                                    <Button variant="outline" size="sm" asChild>
+                                      <Link to="/ho-tro/huong-dan">Cần hỗ trợ?</Link>
+                                    </Button>
+                                    <div className="text-right">
+                                      <span className="text-sm text-muted-foreground mr-2">Thành tiền:</span>
+                                      <span className="text-xl font-bold text-primary">{formatPrice(order.total_amount)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
                 
                 {location.pathname === "/tai-khoan/dia-chi" && (
                   <div className="space-y-4">
-                    {isLoadingAddresses ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : addresses.length === 0 ? (
+                    {isLoadingAddresses ? <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /> : addresses.length === 0 ? (
                       <div className="text-center py-12"><MapPin className="w-12 h-12 mx-auto opacity-30 mb-4" /><p>Chưa có địa chỉ nào.</p></div>
                     ) : addresses.map(addr => (
-                      <div key={addr.id} className="flex items-start justify-between p-4 border rounded-lg">
+                      <div key={addr.id} className="flex items-start justify-between p-4 border rounded-lg hover:border-primary transition-colors bg-card">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="font-bold">{addr.receiver_name}</span>
-                            {addr.is_default && <Badge variant="secondary" className="text-[10px]">Mặc định</Badge>}
+                            {addr.is_default && <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-none">Mặc định</Badge>}
                           </div>
                           <p className="text-sm text-muted-foreground">{addr.phone}</p>
                           <p className="text-sm">{addr.detail_address}, {addr.ward}, {addr.district}, {addr.province}</p>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteAddress(addr.id)} className="text-destructive"><Trash2 className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteAddress(addr.id)} className="text-destructive hover:bg-destructive/10"><Trash2 className="w-4 h-4" /></Button>
                       </div>
                     ))}
                   </div>

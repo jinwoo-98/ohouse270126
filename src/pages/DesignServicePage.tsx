@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { LayoutGrid, Zap, CheckCircle, Send, ArrowRight } from "lucide-react";
+import { LayoutGrid, Zap, CheckCircle, Send, ArrowRight, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import heroLivingRoom from "@/assets/hero-living-room.jpg";
 
 const steps = [
@@ -17,12 +19,52 @@ const steps = [
 ];
 
 export default function DesignServicePage() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    room: "",
+    budget: "",
+    message: ""
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.phone) {
+      toast.error("Vui lòng nhập họ tên và số điện thoại.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('design_requests')
+        .insert({
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          room_type: formData.room,
+          budget: formData.budget,
+          message: formData.message
+        });
+
+      if (error) throw error;
+      
+      toast.success("Đăng ký thành công! Kiến trúc sư của OHOUSE sẽ liên hệ với bạn sớm nhất.");
+      setFormData({ name: "", phone: "", email: "", room: "", budget: "", message: "" });
+    } catch (error: any) {
+      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1">
-        {/* Hero */}
         <section className="relative h-[50vh] overflow-hidden">
           <img src={heroLivingRoom} alt="Dịch vụ thiết kế miễn phí" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-charcoal/70 flex items-center justify-center">
@@ -39,7 +81,6 @@ export default function DesignServicePage() {
           </div>
         </section>
 
-        {/* Process */}
         <section className="py-16 md:py-24">
           <div className="container-luxury">
             <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Quy Trình 3 Bước Đơn Giản</h2>
@@ -64,34 +105,33 @@ export default function DesignServicePage() {
           </div>
         </section>
 
-        {/* Contact Form */}
         <section className="py-16 bg-cream">
           <div className="container-luxury max-w-3xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">Đăng Ký Nhận Tư Vấn</h2>
             <p className="text-muted-foreground text-center mb-8">
               Vui lòng điền thông tin chi tiết để chúng tôi có thể phục vụ bạn tốt nhất.
             </p>
-            <form className="bg-card rounded-lg p-6 md:p-8 shadow-elevated space-y-4">
+            <form onSubmit={handleSubmit} className="bg-card rounded-lg p-6 md:p-8 shadow-elevated space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Họ và tên *</Label>
-                  <Input id="name" placeholder="Nguyễn Văn A" required />
+                  <Input id="name" placeholder="Nguyễn Văn A" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Số điện thoại *</Label>
-                  <Input id="phone" placeholder="0909 xxx xxx" required />
+                  <Input id="phone" placeholder="0909 xxx xxx" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
                 </div>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="your@email.com" />
+                <Input id="email" type="email" placeholder="your@email.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="room">Không gian cần thiết kế</Label>
-                  <Select>
+                  <Select onValueChange={val => setFormData({...formData, room: val})} value={formData.room}>
                     <SelectTrigger>
                       <SelectValue placeholder="Chọn không gian" />
                     </SelectTrigger>
@@ -106,7 +146,7 @@ export default function DesignServicePage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="budget">Ngân sách dự kiến</Label>
-                  <Select>
+                  <Select onValueChange={val => setFormData({...formData, budget: val})} value={formData.budget}>
                     <SelectTrigger>
                       <SelectValue placeholder="Chọn ngân sách" />
                     </SelectTrigger>
@@ -126,11 +166,13 @@ export default function DesignServicePage() {
                   id="message" 
                   placeholder="Mô tả phong cách, kích thước, hoặc bất kỳ yêu cầu đặc biệt nào..."
                   rows={4}
+                  value={formData.message}
+                  onChange={e => setFormData({...formData, message: e.target.value})}
                 />
               </div>
 
-              <Button className="w-full btn-hero">
-                <Send className="w-4 h-4 mr-2" />
+              <Button type="submit" className="w-full btn-hero" disabled={isLoading}>
+                {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
                 Gửi Yêu Cầu Thiết Kế
               </Button>
             </form>
