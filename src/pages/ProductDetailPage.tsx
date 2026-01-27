@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, Heart, Minus, Plus, ShoppingBag, Truck, RefreshCw, Shield, Check } from "lucide-react";
+import { ChevronRight, Heart, Minus, Plus, ShoppingBag, Truck, RefreshCw, Shield, Check, Star, ArrowRight } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -15,17 +15,21 @@ import categoryCoffeeTable from "@/assets/category-coffee-table.jpg";
 import categoryBed from "@/assets/category-bed.jpg";
 import categoryDesk from "@/assets/category-desk.jpg";
 
-const categoryLivingRoomPlaceholder = categorySofa;
-
 const MOCK_PRODUCTS: Record<string, any> = {
   "1": { id: "1", name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá Sintered Stone", price: 25990000, originalPrice: 32990000, category: "Kệ Tivi", image: categoryTvStand, images: [categoryTvStand, categorySofa, categoryDiningTable, categoryCoffeeTable], description: "Kệ tivi cao cấp kết hợp hoàn hảo giữa gỗ óc chó tự nhiên và mặt đá sintered stone.", features: ["Chất liệu: Gỗ óc chó + Đá Sintered", "Kích thước: 180cm", "Bảo hành: 2 năm"], colors: ["Nâu Óc Chó", "Tự Nhiên"] },
-  "2": { id: "2", name: "Sofa Góc Chữ L Vải Nhung Ý Cao Cấp", price: 45990000, originalPrice: 52000000, category: "Sofa", image: categorySofa, images: [categorySofa, categoryLivingRoomPlaceholder, categoryCoffeeTable, categoryDiningTable], description: "Sofa cao cấp với chất liệu vải nhung nhập khẩu, khung gỗ sồi tự nhiên.", features: ["Khung gỗ sồi", "Vải nhung kháng khuẩn", "Đệm mút 4 lớp"], colors: ["Xám Chuột", "Xanh Navy", "Be"] },
+  "2": { id: "2", name: "Sofa Góc Chữ L Vải Nhung Ý Cao Cấp", price: 45990000, originalPrice: 52000000, category: "Sofa", image: categorySofa, images: [categorySofa, categoryCoffeeTable, categoryDiningTable], description: "Sofa cao cấp với chất liệu vải nhung nhập khẩu, khung gỗ sồi tự nhiên.", features: ["Khung gỗ sồi", "Vải nhung kháng khuẩn", "Đệm mút 4 lớp"], colors: ["Xám Chuột", "Xanh Navy", "Be"] },
   "3": { id: "3", name: "Bàn Ăn Mặt Đá Marble Chân Gỗ Óc Chó", price: 32990000, originalPrice: 38990000, category: "Bàn Ăn", image: categoryDiningTable, images: [categoryDiningTable, categoryCoffeeTable, categorySofa, categoryTvStand], description: "Mặt đá Marble tự nhiên vân mây kết hợp chân gỗ óc chó cao cấp.", features: ["Đá Marble tự nhiên", "Chân gỗ óc chó", "Kèm 6 ghế bọc da"], colors: ["Trắng Vân Mây", "Đen Tia Chớp"] },
-  "4": { id: "4", name: "Bàn Trà Tròn Mặt Kính Cường Lực", price: 12990000, category: "Bàn Trà", image: categoryCoffeeTable, images: [categoryCoffeeTable, categorySofa, categoryTvStand, categoryDiningTable], description: "Thiết kế tối giản với mặt kính cường lực và chân inox mạ titan.", features: ["Kính cường lực 12mm", "Chân inox 304", "Chống trầy xước"], colors: ["Vàng Gương", "Bạc Chrome"] },
-  "6": { id: "6", name: "Giường Ngủ Bọc Da Ý Khung Inox", price: 38990000, category: "Giường", image: categoryBed, images: [categoryBed, categorySofa, categoryDiningTable, categoryDesk], description: "Giường ngủ bọc da bò thật nhập khẩu từ Ý, thiết kế chuẩn ergonomic.", features: ["Da bò thật 100%", "Khung thép chịu lực", "Bảo hành 5 năm"], colors: ["Nâu Bò", "Kem", "Đen"] },
-  "7": { id: "7", name: "Đèn Chùm Pha Lê Luxury Style", price: 15990000, category: "Đèn", image: categoryBed, images: [categoryBed, categoryDiningTable, categorySofa, categoryCoffeeTable], description: "Đèn chùm pha lê lấp lánh, tạo điểm nhấn sang trọng.", features: ["Pha lê K9 cao cấp", "Khung kim loại mạ vàng", "Tiết kiệm điện"], colors: ["Vàng Gold"] },
-  "14": { id: "14", name: "Tủ Quần Áo Gỗ Sồi 4 Cánh Hiện Đại", price: 22000000, category: "Tủ Quần Áo", image: categorySofa, images: [categorySofa, categoryBed, categoryDesk, categoryDiningTable], description: "Tủ quần áo gỗ sồi tự nhiên với không gian lưu trữ rộng rãi.", features: ["Gỗ Sồi tự nhiên", "Chống mối mọt", "Ray trượt giảm chấn"], colors: ["Sồi Tự Nhiên", "Sồi Trắng"] }
+  "4": { id: "4", name: "Bàn Trà Tròn Mặt Kính Cường Lực", price: 12990000, category: "Bàn Trà", image: categoryCoffeeTable, images: [categoryCoffeeTable, categorySofa, categoryTvStand], description: "Thiết kế tối giản với mặt kính cường lực và chân inox mạ titan.", features: ["Kính cường lực 12mm", "Chân inox 304", "Chống trầy xước"], colors: ["Vàng Gương", "Bạc Chrome"] },
+  "6": { id: "6", name: "Giường Ngủ Bọc Da Ý Khung Inox", price: 38990000, category: "Giường", image: categoryBed, images: [categoryBed, categorySofa, categoryDiningTable], description: "Giường ngủ bọc da bò thật nhập khẩu từ Ý, thiết kế chuẩn ergonomic.", features: ["Da bò thật 100%", "Khung thép chịu lực", "Bảo hành 5 năm"], colors: ["Nâu Bò", "Kem", "Đen"] },
+  "14": { id: "14", name: "Tủ Quần Áo Gỗ Sồi 4 Cánh Hiện Đại", price: 22000000, category: "Tủ Quần Áo", image: categorySofa, images: [categorySofa, categoryBed, categoryDesk], description: "Tủ quần áo gỗ sồi tự nhiên với không gian lưu trữ rộng rãi.", features: ["Gỗ Sồi tự nhiên", "Chống mối mọt", "Ray trượt giảm chấn"], colors: ["Sồi Tự Nhiên", "Sồi Trắng"] }
 };
+
+const RELATED_PRODUCTS = [
+  { id: "1", name: "Kệ Tivi Gỗ Óc Chó", price: 25990000, image: categoryTvStand },
+  { id: "2", name: "Sofa Vải Nhung", price: 45990000, image: categorySofa },
+  { id: "3", name: "Bàn Ăn Mặt Đá", price: 32990000, image: categoryDiningTable },
+  { id: "4", name: "Bàn Trà Kính", price: 12990000, image: categoryCoffeeTable },
+];
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -78,7 +82,7 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="container-luxury py-8">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
             <div className="space-y-4">
               <div className="aspect-square bg-secondary rounded-lg overflow-hidden">
                 <img src={product.images[selectedImage]} alt={product.name} className="w-full h-full object-cover" />
@@ -93,41 +97,115 @@ export default function ProductDetailPage() {
             <div className="animate-fade-in">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">{product.category}</span>
               <h1 className="text-2xl md:text-3xl font-bold mt-2 mb-4">{product.name}</h1>
-              <div className="flex items-center gap-3 mb-6"><span className="text-2xl md:text-3xl font-bold text-primary">{formatPrice(product.price)}</span></div>
-              <p className="text-muted-foreground mb-6">{product.description}</p>
+              
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex text-primary">
+                  {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-current" />)}
+                </div>
+                <span className="text-sm text-muted-foreground">(24 đánh giá)</span>
+              </div>
+
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-2xl md:text-3xl font-bold text-primary">{formatPrice(product.price)}</span>
+                {product.originalPrice && (
+                  <span className="text-lg text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
+                )}
+              </div>
+              
+              <p className="text-muted-foreground mb-6 leading-relaxed">{product.description}</p>
               
               <div className="mb-6">
                 <span className="font-semibold text-sm mb-3 block">Màu sắc: {product.colors[selectedColor]}</span>
                 <div className="flex gap-2">
                   {product.colors.map((color: string, idx: number) => (
-                    <button key={color} onClick={() => setSelectedColor(idx)} className={`px-4 py-2 rounded-lg border text-sm font-medium ${selectedColor === idx ? 'border-primary bg-primary/10 text-primary' : 'border-border'}`}>{color}</button>
+                    <button key={color} onClick={() => setSelectedColor(idx)} className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${selectedColor === idx ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:border-primary'}`}>{color}</button>
                   ))}
                 </div>
               </div>
 
-              <div className="mb-6">
+              <div className="mb-8">
                 <span className="font-semibold text-sm mb-3 block">Số lượng</span>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center border border-border rounded-lg">
-                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2.5 hover:bg-secondary"><Minus className="w-4 h-4" /></button>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center border border-border rounded-lg bg-card">
+                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 hover:bg-secondary transition-colors"><Minus className="w-4 h-4" /></button>
                     <span className="w-12 text-center font-semibold">{quantity}</span>
-                    <button onClick={() => setQuantity(quantity + 1)} className="p-2.5 hover:bg-secondary"><Plus className="w-4 h-4" /></button>
+                    <button onClick={() => setQuantity(quantity + 1)} className="p-3 hover:bg-secondary transition-colors"><Plus className="w-4 h-4" /></button>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-3 mb-8">
-                <Button size="lg" className="flex-1 btn-hero" onClick={handleAddToCart}><ShoppingBag className="w-5 h-5 mr-2" /> Thêm Vào Giỏ</Button>
-                <Button size="lg" variant="outline" className={`px-4 ${isFavorite ? 'text-primary' : ''}`} onClick={() => toggleWishlist(product)}><Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} /></Button>
+              <div className="flex flex-col sm:flex-row gap-3 mb-8">
+                <Button size="lg" className="flex-1 btn-hero" onClick={handleAddToCart}>
+                  <ShoppingBag className="w-5 h-5 mr-2" /> 
+                  Thêm Vào Giỏ
+                </Button>
+                <Button size="lg" variant="outline" className={`px-4 transition-all ${isFavorite ? 'text-primary border-primary bg-primary/5' : ''}`} onClick={() => toggleWishlist(product)}>
+                  <Heart className={`w-5 h-5 mr-2 ${isFavorite ? 'fill-current' : ''}`} />
+                  {isFavorite ? "Đã yêu thích" : "Yêu thích"}
+                </Button>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 p-4 bg-secondary/50 rounded-lg text-center">
-                <div><Truck className="w-6 h-6 mx-auto mb-1 text-primary" /><span className="text-xs">Freeship</span></div>
-                <div><RefreshCw className="w-6 h-6 mx-auto mb-1 text-primary" /><span className="text-xs">30 ngày đổi trả</span></div>
-                <div><Shield className="w-6 h-6 mx-auto mb-1 text-primary" /><span className="text-xs">2 năm bảo hành</span></div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-5 bg-secondary/30 rounded-xl border border-border/50">
+                <div className="flex items-center gap-3"><Truck className="w-5 h-5 text-primary" /><div className="text-xs font-semibold">Giao hàng miễn phí</div></div>
+                <div className="flex items-center gap-3"><RefreshCw className="w-5 h-5 text-primary" /><div className="text-xs font-semibold">30 ngày đổi trả</div></div>
+                <div className="flex items-center gap-3"><Shield className="w-5 h-5 text-primary" /><div className="text-xs font-semibold">Bảo hành 2 năm</div></div>
               </div>
             </div>
           </div>
+
+          <Tabs defaultValue="description" className="mb-16">
+            <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-8">
+              <TabsTrigger value="description" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Mô tả sản phẩm</TabsTrigger>
+              <TabsTrigger value="spec" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Thông số kỹ thuật</TabsTrigger>
+              <TabsTrigger value="review" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Đánh giá (24)</TabsTrigger>
+            </TabsList>
+            <TabsContent value="description" className="py-8 animate-fade-in">
+              <div className="prose prose-stone max-w-none">
+                <p>{product.description}</p>
+                <p>Mỗi chi tiết trong sản phẩm của OHOUSE đều được chế tác tỉ mỉ bởi các nghệ nhân lành nghề, kết hợp cùng công nghệ sản xuất hiện đại để mang đến vẻ đẹp tinh tế và độ bền vượt trội.</p>
+              </div>
+            </TabsContent>
+            <TabsContent value="spec" className="py-8 animate-fade-in">
+              <div className="grid gap-4 max-w-2xl">
+                {product.features.map((f: string, i: number) => (
+                  <div key={i} className="flex items-center justify-between py-3 border-b border-border/50">
+                    <span className="text-muted-foreground">{f.split(':')[0]}</span>
+                    <span className="font-semibold">{f.split(':')[1]}</span>
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+            <TabsContent value="review" className="py-8 animate-fade-in">
+              <p className="text-muted-foreground">Chưa có đánh giá nào cho sản phẩm này.</p>
+            </TabsContent>
+          </Tabs>
+
+          <section className="mb-16">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold">Sản Phẩm Liên Quan</h2>
+              <Button variant="ghost" asChild className="group">
+                <Link to="/noi-that">
+                  Xem tất cả
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {RELATED_PRODUCTS.map((item, index) => (
+                <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className="group">
+                  <Link to={`/san-pham/${item.id}`} className="block card-luxury overflow-hidden">
+                    <div className="aspect-square img-zoom">
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-medium text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors">{item.name}</h3>
+                      <p className="font-bold text-primary">{formatPrice(item.price)}</p>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </section>
         </div>
       </main>
       <Footer />

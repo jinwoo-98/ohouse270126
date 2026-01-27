@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Youtube, Phone, Mail, MapPin } from "lucide-react";
+import { Facebook, Instagram, Youtube, Phone, Mail, MapPin, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const footerLinks = {
   products: [
@@ -30,6 +33,36 @@ const footerLinks = {
 };
 
 export function Footer() {
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('subscribers')
+        .insert({ email });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast.info("Email này đã đăng ký trước đó rồi.");
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("Đăng ký thành công! OHOUSE sẽ gửi ưu đãi đến bạn.");
+        setEmail("");
+      }
+    } catch (error: any) {
+      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <footer className="bg-charcoal text-cream">
       {/* Newsletter Section */}
@@ -44,16 +77,19 @@ export function Footer() {
                 Nhận ngay voucher giảm 500K cho đơn hàng đầu tiên
               </p>
             </div>
-            <div className="flex w-full md:w-auto gap-2">
+            <form onSubmit={handleSubscribe} className="flex w-full md:w-auto gap-2">
               <Input
                 type="email"
                 placeholder="Nhập email của bạn"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="bg-walnut/20 border-walnut/30 text-cream placeholder:text-taupe w-full md:w-80"
               />
-              <Button className="btn-hero whitespace-nowrap">
-                Đăng Ký
+              <Button type="submit" className="btn-hero whitespace-nowrap" disabled={isLoading}>
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Đăng Ký"}
               </Button>
-            </div>
+            </form>
           </div>
         </div>
       </div>
@@ -74,7 +110,7 @@ export function Footer() {
               hiện đại và tinh tế cho ngôi nhà của bạn.
             </p>
             <div className="space-y-3">
-              <a href="tel:19008889999" className="flex items-center gap-3 text-taupe hover:text-primary transition-colors">
+              <a href="tel:1900888999" className="flex items-center gap-3 text-taupe hover:text-primary transition-colors">
                 <Phone className="w-4 h-4" />
                 <span>1900 888 999</span>
               </a>
