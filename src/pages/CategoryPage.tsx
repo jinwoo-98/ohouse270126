@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, SlidersHorizontal, Grid3X3, LayoutGrid, Heart, ShoppingBag, Loader2, X } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, Grid3X3, LayoutGrid, Heart, ShoppingBag, Loader2, X, Eye } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { QuickViewSheet } from "@/components/QuickViewSheet";
 
 const categoryInfo: Record<string, { title: string; description: string }> = {
   "phong-khach": { title: "Phòng Khách", description: "Nội thất phòng khách sang trọng, hiện đại" },
@@ -53,6 +54,7 @@ export default function CategoryPage() {
 
   const [gridCols, setGridCols] = useState(4);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
   
   const category = categoryInfo[categorySlug] || { title: "Danh Mục", description: "Khám phá sản phẩm" };
 
@@ -162,15 +164,24 @@ export default function CategoryPage() {
                     return (
                       <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: index * 0.05 }}>
                         <div className="group card-luxury relative">
-                          <Link to={`/san-pham/${product.id}`} className="block">
-                            <div className="relative aspect-square img-zoom">
+                          <div className="relative aspect-square img-zoom">
+                            <Link to={`/san-pham/${product.id}`} className="block">
                               <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                               <div className="absolute top-2 left-2 flex flex-col gap-1">
                                 {product.isNew && <span className="bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">Mới</span>}
                                 {product.isSale && <span className="bg-destructive text-destructive-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">Sale</span>}
                               </div>
-                            </div>
-                          </Link>
+                            </Link>
+
+                            {/* Nút Xem Nhanh ở góc dưới bên trái */}
+                            <button 
+                              onClick={() => setSelectedProduct(product)}
+                              className="absolute bottom-2 left-2 bg-card/90 backdrop-blur-sm text-foreground p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-primary hover:text-primary-foreground shadow-sm flex items-center gap-1.5"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span className="text-[10px] font-bold uppercase tracking-wider">Xem nhanh</span>
+                            </button>
+                          </div>
                           
                           <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
                             <button onClick={() => toggleWishlist(product)} className={`p-2.5 rounded-full shadow-medium transition-all pointer-events-auto ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-primary hover:text-primary-foreground'}`}><Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} /></button>
@@ -191,6 +202,12 @@ export default function CategoryPage() {
           </div>
         </div>
       </main>
+
+      <QuickViewSheet 
+        product={selectedProduct} 
+        isOpen={!!selectedProduct} 
+        onClose={() => setSelectedProduct(null)} 
+      />
 
       <Footer />
     </div>
