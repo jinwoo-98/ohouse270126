@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown, Phone, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { AuthDialog } from "@/components/AuthDialog";
 import { OrderTrackingDialog } from "@/components/OrderTrackingDialog";
+import { SearchSuggestions } from "./SearchSuggestions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
@@ -85,7 +86,9 @@ export function Header() {
   const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [countdown, setCountdown] = useState({ days: 3, hours: 12, minutes: 45, seconds: 30 });
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -100,6 +103,16 @@ export function Header() {
       });
     }, 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   
   const handleLogout = async () => {
@@ -116,7 +129,14 @@ export function Header() {
     if (searchQuery.trim()) {
       navigate(`/tim-kiem?q=${encodeURIComponent(searchQuery.trim())}`);
       setIsMobileMenuOpen(false);
+      setIsSearchFocused(false);
     }
+  };
+
+  const handleKeywordSearch = (keyword: string) => {
+    setSearchQuery(keyword);
+    navigate(`/tim-kiem?q=${encodeURIComponent(keyword)}`);
+    setIsSearchFocused(false);
   };
 
   return (
@@ -147,7 +167,7 @@ export function Header() {
       <div className="bg-card">
         <div className="container-luxury">
           <div className="flex items-center justify-between h-12 md:h-14 gap-4">
-            <div className="flex-1 flex items-center max-w-[250px]">
+            <div className="flex-1 flex items-center max-w-[250px] relative" ref={searchContainerRef}>
               <button className="lg:hidden p-2 -ml-2 hover:bg-secondary rounded-lg transition-colors mr-2" onClick={() => setIsMobileMenuOpen(true)}>
                 <Menu className="w-5 h-5" />
               </button>
@@ -158,8 +178,18 @@ export function Header() {
                   className="pl-10 pr-4 h-10 text-sm bg-secondary/50 border-0 focus-visible:ring-1"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setIsSearchFocused(true)}
                 />
               </form>
+              <AnimatePresence>
+                {isSearchFocused && (
+                  <SearchSuggestions 
+                    isVisible={isSearchFocused} 
+                    onClose={() => setIsSearchFocused(false)}
+                    onKeywordClick={handleKeywordSearch}
+                  />
+                )}
+              </AnimatePresence>
             </div>
 
             <Link to="/" className="flex items-center flex-shrink-0">
