@@ -106,9 +106,9 @@ export function Header() {
       </div>
 
       {/* Row 2: Search - Logo - Icons */}
-      <div className="bg-card border-b border-border/50">
+      <div className="bg-card">
         <div className="container-luxury">
-          <div className="flex items-center justify-between h-14 md:h-16 gap-4">
+          <div className="flex items-center justify-between h-12 md:h-14 gap-4">
             {/* Left: Search */}
             <div className="flex-1 flex items-center max-w-md">
               {/* Mobile Menu Button */}
@@ -175,9 +175,9 @@ export function Header() {
       </div>
 
       {/* Row 3: Secondary Links (like Visit Stores, Inspiration, etc.) */}
-      <div className="bg-card border-b border-border/30 hidden lg:block">
+      <div className="bg-card hidden lg:block">
         <div className="container-luxury">
-          <div className="flex items-center justify-center gap-6 h-10">
+          <div className="flex items-center justify-center gap-6 h-9">
             {secondaryLinks.map((link, index) => (
               <div key={link.name} className="flex items-center gap-6">
                 <Link
@@ -208,7 +208,7 @@ export function Header() {
               >
                 <Link
                   to={item.href}
-                  className={`flex items-center gap-1 px-4 py-3.5 text-sm font-medium tracking-wide transition-colors hover:text-primary ${
+                  className={`flex items-center gap-1 px-4 py-2.5 text-sm font-medium tracking-wide transition-colors hover:text-primary ${
                     item.isHighlight ? "text-destructive" : "text-foreground"
                   }`}
                 >
