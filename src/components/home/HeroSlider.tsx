@@ -52,7 +52,7 @@ export function HeroSlider() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, []);
 
@@ -69,14 +69,14 @@ export function HeroSlider() {
   };
 
   return (
-    <section className="relative h-[55vh] md:h-[75vh] overflow-hidden">
+    <section className="relative h-[65vh] md:h-[85vh] overflow-hidden bg-charcoal">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
-          initial={{ opacity: 0, scale: 1.05 }}
+          initial={{ opacity: 0, scale: 1.1 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
           className="absolute inset-0"
         >
           <img
@@ -84,8 +84,7 @@ export function HeroSlider() {
             alt={slides[currentSlide].title}
             className="w-full h-full object-cover"
           />
-          {/* Changed gradient to center the focus */}
-          <div className="absolute inset-0 bg-charcoal/60 via-charcoal/20 to-transparent" />
+          <div className="absolute inset-0 bg-charcoal/40 via-transparent to-charcoal/40" />
         </motion.div>
       </AnimatePresence>
 
@@ -98,21 +97,26 @@ export function HeroSlider() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="max-w-lg mx-auto text-center" // Added mx-auto and text-center
+              transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+              className="max-w-2xl mx-auto text-center"
             >
-              <span className="inline-block text-primary font-semibold uppercase tracking-widest text-xs md:text-sm mb-3">
+              <motion.span 
+                initial={{ opacity: 0, letterSpacing: "0.5em" }}
+                animate={{ opacity: 1, letterSpacing: "0.2em" }}
+                transition={{ duration: 1, delay: 0.5 }}
+                className="inline-block text-primary font-bold uppercase tracking-[0.2em] text-xs md:text-sm mb-4"
+              >
                 {slides[currentSlide].subtitle}
-              </span>
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-cream mb-4 leading-tight">
+              </motion.span>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-cream mb-6 leading-tight">
                 {slides[currentSlide].title}
               </h1>
-              <p className="text-base md:text-lg text-cream/80 mb-6 max-w-md mx-auto"> {/* Added mx-auto */}
+              <p className="text-base md:text-xl text-cream/80 mb-8 max-w-lg mx-auto leading-relaxed">
                 {slides[currentSlide].description}
               </p>
               <Button
                 size="lg"
-                className="btn-hero"
+                className="btn-hero h-14 px-10"
                 asChild
               >
                 <a href={slides[currentSlide].href}>
@@ -124,32 +128,32 @@ export function HeroSlider() {
         </div>
       </div>
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows - Vertical Rectangle Style */}
       <button
         onClick={goToPrev}
-        className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 p-2.5 bg-card/30 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all"
+        className="absolute left-0 top-1/2 -translate-y-1/2 w-10 md:w-12 h-32 md:h-40 bg-card/20 backdrop-blur-md rounded-r-2xl text-cream hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 flex items-center justify-center group"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
       </button>
       <button
         onClick={goToNext}
-        className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 p-2.5 bg-card/30 backdrop-blur-sm rounded-full text-cream hover:bg-primary hover:text-primary-foreground transition-all"
+        className="absolute right-0 top-1/2 -translate-y-1/2 w-10 md:w-12 h-32 md:h-40 bg-card/20 backdrop-blur-md rounded-l-2xl text-cream hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 flex items-center justify-center group"
         aria-label="Next slide"
       >
-        <ChevronRight className="w-5 h-5" />
+        <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
       </button>
 
-      {/* Dots */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
+      {/* Luxury Dots */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`h-1.5 rounded-full transition-all duration-500 ${
               index === currentSlide
-                ? "bg-primary w-8"
-                : "bg-cream/50 w-2 hover:bg-cream/80"
+                ? "bg-primary w-12"
+                : "bg-cream/30 w-3 hover:bg-cream/60"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />
