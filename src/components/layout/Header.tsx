@@ -152,7 +152,7 @@ export function Header() {
         <div className="container-luxury">
           <div className="flex items-center justify-between h-12 md:h-14 gap-4">
             {/* Left: Search */}
-            <div className="flex-1 flex items-center max-w-[300px]">
+            <div className="flex-1 flex items-center max-w-[250px]"> {/* Reduced max-width */}
               {/* Mobile Menu Button */}
               <button
                 className="lg:hidden p-2 -ml-2 hover:bg-secondary rounded-lg transition-colors mr-2"
@@ -185,7 +185,7 @@ export function Header() {
             </Link>
 
             {/* Right: Icons */}
-            <div className="flex-1 flex items-center justify-end gap-1 max-w-[300px]">
+            <div className="flex-1 flex items-center justify-end gap-1 max-w-[250px]"> {/* Reduced max-width for symmetry */}
               {/* Mobile Search */}
               <button
                 className="md:hidden p-2.5 hover:bg-secondary rounded-lg transition-colors"
