@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown, Phone, Package, ChevronRight, ArrowLeft } from "lucide-react";
+import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown, Phone, Package, ChevronRight, ArrowLeft, Ticket, Star, History, Headset, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { AuthDialog } from "@/components/AuthDialog";
 import { OrderTrackingDialog } from "@/components/OrderTrackingDialog";
@@ -11,6 +11,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -76,12 +77,23 @@ const mainCategories = [
   { name: "Sale", href: "/sale", hasDropdown: false, isHighlight: true },
 ];
 
+const accountMenuItems = [
+  { name: "Tài khoản của tôi", href: "/tai-khoan/thong-tin", icon: User },
+  { name: "Đặt hàng của tôi", href: "/tai-khoan/don-hang", icon: Package },
+  { name: "Phiếu giảm giá của tôi", href: "/tai-khoan/cai-dat", icon: Ticket },
+  { name: "Điểm thưởng của tôi", href: "/tai-khoan/cai-dat", icon: Star },
+  { name: "Danh sách yêu thích", href: "/yeu-thich", icon: Heart },
+  { name: "Lịch sử xem", href: "/", icon: History },
+  { name: "Liên hệ", href: "/lien-he", icon: Headset },
+];
+
 export function Header() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false);
   const [activeMobileSubMenu, setActiveMobileSubMenu] = useState<string | null>(null);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
@@ -129,6 +141,7 @@ export function Header() {
     } else {
       toast.success("Đã đăng xuất thành công.");
       setIsMobileMenuOpen(false);
+      setIsAccountDrawerOpen(false);
     }
   };
 
@@ -221,29 +234,42 @@ export function Header() {
             <div className="flex-1 flex items-center justify-end gap-1 max-w-[250px]">
               <button className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex" onClick={() => setIsTrackingDialogOpen(true)}><Package className="w-5 h-5" /></button>
 
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="p-2.5 h-auto rounded-lg flex"><User className="w-5 h-5" /></Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">Tài khoản</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild><Link to="/tai-khoan/thong-tin">Thông tin cá nhân</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link to="/tai-khoan/don-hang">Đơn hàng của tôi</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link to="/yeu-thich">Sản phẩm yêu thích</Link></DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">Đăng xuất</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <button className="p-2.5 hover:bg-secondary rounded-lg transition-colors flex" onClick={() => setIsAuthDialogOpen(true)}><User className="w-5 h-5" /></button>
-              )}
+              <div className="flex">
+                {/* Mobile Account Trigger */}
+                <button 
+                  className="lg:hidden p-2.5 hover:bg-secondary rounded-lg transition-colors"
+                  onClick={() => setIsAccountDrawerOpen(true)}
+                >
+                  <User className="w-5 h-5" />
+                </button>
+
+                {/* Desktop Account Dropdown */}
+                <div className="hidden lg:block">
+                  {user ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="p-2.5 h-auto rounded-lg flex"><User className="w-5 h-5" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel className="font-normal">
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">Tài khoản</p>
+                            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                          </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild><Link to="/tai-khoan/thong-tin">Thông tin cá nhân</Link></DropdownMenuItem>
+                        <DropdownMenuItem asChild><Link to="/tai-khoan/don-hang">Đơn hàng của tôi</Link></DropdownMenuItem>
+                        <DropdownMenuItem asChild><Link to="/yeu-thich">Sản phẩm yêu thích</Link></DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="text-destructive">Đăng xuất</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <button className="p-2.5 hover:bg-secondary rounded-lg transition-colors flex" onClick={() => setIsAuthDialogOpen(true)}><User className="w-5 h-5" /></button>
+                  )}
+                </div>
+              </div>
 
               <Link to="/yeu-thich" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex relative">
                 <Heart className="w-5 h-5" />
@@ -297,6 +323,75 @@ export function Header() {
         </div>
       </div>
 
+      {/* Mobile Account Menu Drawer */}
+      <Sheet open={isAccountDrawerOpen} onOpenChange={setIsAccountDrawerOpen}>
+        <SheetContent side="right" className="w-80 p-0 flex flex-col z-[100]">
+          <SheetHeader className="p-6 border-b border-border">
+            <SheetTitle className="text-left font-bold text-xl uppercase tracking-wider">Tài Khoản</SheetTitle>
+          </SheetHeader>
+          
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-5 border-b border-border">
+              {user ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-lg">
+                      {user.email?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-bold truncate">{user.email}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Thành viên OHOUSE</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Button 
+                  className="w-full btn-hero h-11" 
+                  onClick={() => { setIsAuthDialogOpen(true); setIsAccountDrawerOpen(false); }}
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Đăng Nhập / Đăng Ký
+                </Button>
+              )}
+            </div>
+
+            <nav className="p-4">
+              <div className="space-y-1">
+                {accountMenuItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={() => setIsAccountDrawerOpen(false)}
+                    className="flex items-center gap-4 py-3.5 px-3 rounded-xl hover:bg-secondary transition-all group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                      <item.icon className="w-4.5 h-4.5" />
+                    </div>
+                    <span className="text-sm font-medium text-foreground/80 group-hover:text-foreground">
+                      {item.name}
+                    </span>
+                    <ChevronRight className="w-4 h-4 ml-auto opacity-30 group-hover:opacity-100" />
+                  </Link>
+                ))}
+              </div>
+            </nav>
+          </div>
+
+          {user && (
+            <div className="p-4 border-t border-border mt-auto">
+              <Button 
+                variant="ghost" 
+                onClick={handleLogout} 
+                className="w-full text-destructive hover:bg-destructive/10 justify-start"
+              >
+                <LogOut className="w-4 h-4 mr-3" />
+                Đăng xuất tài khoản
+              </Button>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
@@ -314,7 +409,7 @@ export function Header() {
                 </button>
               </div>
 
-              {/* Login/User Section */}
+              {/* Login/User Section - Main Mobile Menu */}
               <div className="p-5 border-b border-border">
                 {user ? (
                   <div className="flex items-center gap-3">
@@ -397,7 +492,7 @@ export function Header() {
                       exit={{ opacity: 0, x: 10 }}
                       className="p-4"
                     >
-                      <div className="flex items-center gap-3 mb-6 px-1">
+                      <div className="flex items-center gap-2 mb-6 px-1">
                         <button 
                           onClick={() => setActiveMobileSubMenu(null)}
                           className="p-2 hover:bg-secondary rounded-full transition-colors text-primary shrink-0"
