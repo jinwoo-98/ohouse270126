@@ -1,18 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroLivingRoom from "@/assets/hero-living-room.jpg";
 import heroDiningRoom from "@/assets/hero-dining-room.jpg";
-
-const tabs = [
-  "Tất Cả",
-  "Phòng Khách",
-  "Phòng Ngủ",
-  "Phòng Ăn",
-  "Văn Phòng",
-];
+import heroBedroom from "@/assets/hero-bedroom.jpg";
 
 const looks = [
   {
@@ -21,105 +14,126 @@ const looks = [
     image: heroLivingRoom,
     category: "Phòng Khách",
     products: [
-      { name: "Sofa", price: "45.990.000₫" },
-      { name: "Bàn Trà", price: "12.990.000₫" },
-      { name: "Kệ Tivi", price: "19.990.000₫" },
+      { id: 2, name: "Sofa Góc Chữ L", href: "/san-pham/2", position: { top: "65%", left: "40%" } },
+      { id: 4, name: "Bàn Trà Tròn", href: "/san-pham/4", position: { top: "78%", left: "65%" } },
+      { id: 7, name: "Đèn Sàn Trang Trí", href: "/san-pham/12", position: { top: "50%", left: "85%" } },
     ],
     href: "/y-tuong/phong-khach-chau-au",
   },
   {
     id: 2,
-    title: "Phòng Ăn Ấm Cúng Cho Gia Đình",
+    title: "Phòng Ăn Ấm Cúng Cho Gia Đình Hiện Đại",
     image: heroDiningRoom,
     category: "Phòng Ăn",
     products: [
-      { name: "Bàn Ăn", price: "26.990.000₫" },
-      { name: "Ghế Ăn", price: "4.990.000₫" },
-      { name: "Tủ Rượu", price: "18.990.000₫" },
+      { id: 3, name: "Bàn Ăn Mặt Đá", href: "/san-pham/3", position: { top: "60%", left: "50%" } },
+      { id: 10, name: "Ghế Ăn Bọc Da", href: "/san-pham/10", position: { top: "55%", left: "25%" } },
+      { id: 7, name: "Đèn Chùm Pha Lê", href: "/san-pham/7", position: { top: "20%", left: "50%" } },
     ],
     href: "/y-tuong/phong-an-am-cung",
+  },
+  {
+    id: 3,
+    title: "Không Gian Nghỉ Ngơi Tối Giản và Thanh Lịch",
+    image: heroBedroom,
+    category: "Phòng Ngủ",
+    products: [
+      { id: 6, name: "Giường Ngủ Bọc Da", href: "/san-pham/6", position: { top: "60%", left: "50%" } },
+      { id: 14, name: "Tủ Quần Áo Gỗ Sồi", href: "/san-pham/14", position: { top: "45%", left: "85%" } },
+    ],
+    href: "/y-tuong/phong-ngu-toi-gian",
   },
 ];
 
 export function ShopTheLook() {
-  const [activeTab, setActiveTab] = useState("Tất Cả");
+  const [currentLook, setCurrentLook] = useState(0);
+
+  const nextLook = () => {
+    setCurrentLook((prev) => (prev + 1) % looks.length);
+  };
+
+  const prevLook = () => {
+    setCurrentLook((prev) => (prev - 1 + looks.length) % looks.length);
+  };
+
+  const activeLook = looks[currentLook];
 
   return (
     <section className="py-16 md:py-24">
       <div className="container-luxury">
-        {/* Centered Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center mb-8"
+          className="text-center mb-12"
         >
           <h2 className="section-title mb-4">Ý Tưởng Thiết Kế</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+            Khám phá các không gian được sắp đặt tinh tế và mua sắm trọn bộ sản phẩm.
+          </p>
           <Button variant="outline" asChild>
-            <Link to="/y-tuong" className="group">
-              Xem Tất Cả
+            <Link to="/cam-hung" className="group">
+              Xem Tất Cả Ý Tưởng
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>
           </Button>
         </motion.div>
 
-        {/* Tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeTab === tab
-                  ? "bg-charcoal text-cream"
-                  : "bg-secondary text-foreground hover:bg-muted"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        {/* Looks Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {looks.map((look, index) => (
+        <div className="relative">
+          <AnimatePresence mode="wait">
             <motion.div
-              key={look.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
+              key={currentLook}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
             >
-              <Link to={look.href} className="group block card-luxury">
-                <div className="relative aspect-[16/10] img-zoom">
-                  <img
-                    src={look.image}
-                    alt={look.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-transparent to-transparent" />
-                  
-                  {/* Products List */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {look.products.map((product) => (
-                        <span
-                          key={product.name}
-                          className="bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs"
-                        >
-                          {product.name}: <span className="font-semibold">{product.price}</span>
-                        </span>
-                      ))}
+              <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-secondary">
+                <img
+                  src={activeLook.image}
+                  alt={activeLook.title}
+                  className="w-full h-full object-cover"
+                />
+                {activeLook.products.map((product) => (
+                  <Link
+                    key={product.id}
+                    to={product.href}
+                    className="group absolute z-10"
+                    style={{ top: product.position.top, left: product.position.left }}
+                  >
+                    <div className="relative flex items-center justify-center w-6 h-6">
+                      <div className="absolute w-3 h-3 rounded-full bg-primary transition-transform group-hover:scale-125" />
+                      <div className="absolute w-full h-full rounded-full bg-primary/50 animate-ping" />
                     </div>
-                    <h3 className="text-lg md:text-xl font-bold text-cream group-hover:text-primary transition-colors">
-                      {look.title}
-                    </h3>
-                  </div>
-                </div>
-              </Link>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 p-2 px-3 bg-card text-foreground text-xs font-semibold rounded-md shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                      {product.name}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <div className="text-center mt-4">
+                <h3 className="text-lg font-semibold">{activeLook.title}</h3>
+                <p className="text-sm text-muted-foreground">{activeLook.category}</p>
+              </div>
             </motion.div>
-          ))}
+          </AnimatePresence>
+
+          {/* Navigation Arrows */}
+          <button
+            onClick={prevLook}
+            className="absolute left-0 md:-left-4 top-1/2 -translate-y-1/2 p-2.5 bg-card/50 backdrop-blur-sm rounded-full text-foreground hover:bg-primary hover:text-primary-foreground transition-all shadow-medium"
+            aria-label="Previous look"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={nextLook}
+            className="absolute right-0 md:-right-4 top-1/2 -translate-y-1/2 p-2.5 bg-card/50 backdrop-blur-sm rounded-full text-foreground hover:bg-primary hover:text-primary-foreground transition-all shadow-medium"
+            aria-label="Next look"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </section>
