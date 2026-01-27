@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, Search, Heart, ShoppingBag, Loader2, SlidersHorizontal, X, Eye, Star } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -12,6 +12,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
+import { Badge } from "@/components/ui/badge";
 
 const priceRanges = [
   { label: "Dưới 10 triệu", value: "0-10" },
@@ -41,6 +42,8 @@ export default function SearchPage() {
   useEffect(() => {
     updateFilters({ searchQuery: query });
   }, [query]);
+
+  const hasActiveFilters = filters.priceRange.length > 0 || filters.materials.length > 0 || filters.styles.length > 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -113,22 +116,61 @@ export default function SearchPage() {
 
             {/* Products Grid */}
             <div className="flex-1">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setShowFilters(!showFilters)}><SlidersHorizontal className="w-4 h-4 mr-2" />Lọc</Button>
+              <div className="flex flex-col gap-4 mb-6">
+                <div className="flex items-center justify-between pb-4 border-b border-border">
+                  <div className="flex items-center gap-3">
+                    <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setShowFilters(!showFilters)}><SlidersHorizontal className="w-4 h-4 mr-2" />Lọc</Button>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
+                      <SelectTrigger className="w-40 h-9 text-sm"><SelectValue placeholder="Sắp xếp" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="newest">Mới nhất</SelectItem>
+                        <SelectItem value="price-asc">Giá tăng dần</SelectItem>
+                        <SelectItem value="price-desc">Giá giảm dần</SelectItem>
+                        <SelectItem value="popular">Phổ biến nhất</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                
-                <div className="flex items-center gap-3">
-                  <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
-                    <SelectTrigger className="w-40 h-9 text-sm"><SelectValue placeholder="Sắp xếp" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="newest">Mới nhất</SelectItem>
-                      <SelectItem value="price-asc">Giá tăng dần</SelectItem>
-                      <SelectItem value="price-desc">Giá giảm dần</SelectItem>
-                      <SelectItem value="popular">Phổ biến nhất</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+
+                {/* Active Filters Summary */}
+                <AnimatePresence>
+                  {hasActiveFilters && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex flex-wrap items-center gap-2"
+                    >
+                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mr-2">Đang lọc:</span>
+                      
+                      {filters.priceRange.map(val => (
+                        <Badge key={val} variant="secondary" className="pl-3 pr-1 py-1 gap-1 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20">
+                          {priceRanges.find(r => r.value === val)?.label}
+                          <button onClick={() => toggleFilter('priceRange', val)} className="p-0.5 hover:bg-primary/20 rounded-full transition-colors"><X className="w-3 h-3" /></button>
+                        </Badge>
+                      ))}
+
+                      {filters.styles.map(val => (
+                        <Badge key={val} variant="secondary" className="pl-3 pr-1 py-1 gap-1 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20">
+                          {val}
+                          <button onClick={() => toggleFilter('styles', val)} className="p-0.5 hover:bg-primary/20 rounded-full transition-colors"><X className="w-3 h-3" /></button>
+                        </Badge>
+                      ))}
+
+                      {filters.materials.map(val => (
+                        <Badge key={val} variant="secondary" className="pl-3 pr-1 py-1 gap-1 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20">
+                          {val}
+                          <button onClick={() => toggleFilter('materials', val)} className="p-0.5 hover:bg-primary/20 rounded-full transition-colors"><X className="w-3 h-3" /></button>
+                        </Badge>
+                      ))}
+
+                      <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs h-7 px-2 hover:bg-destructive/10 hover:text-destructive">Xóa tất cả</Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {isLoading ? (
