@@ -16,6 +16,7 @@ import AboutPage from "./pages/AboutPage";
 import SupportPage from "./pages/SupportPage";
 import CartPage from "./pages/CartPage";
 import WishlistPage from "./pages/WishlistPage";
+import RecentlyViewedPage from "./pages/RecentlyViewedPage";
 import AccountPage from "./pages/AccountPage";
 import ProfileDashboard from "./pages/ProfileDashboard";
 import RecruitmentPage from "./pages/RecruitmentPage";
@@ -66,11 +67,14 @@ const App = () => (
                 <Route path="/san-pham/:id" element={<ProductDetailPage />} />
                 <Route path="/gio-hang" element={<CartPage />} />
                 <Route path="/yeu-thich" element={<WishlistPage />} />
+                <Route path="/lich-su-xem" element={<RecentlyViewedPage />} />
                 <Route path="/dat-hang-thanh-cong" element={<OrderSuccessPage />} />
                 <Route path="/tai-khoan" element={<ProfileDashboard />}>
                   <Route index element={<Navigate to="thong-tin" replace />} />
                   <Route path="thong-tin" element={<ProfileDashboard />} />
                   <Route path="don-hang" element={<ProfileDashboard />} />
+                  <Route path="vouchers" element={<ProfileDashboard />} />
+                  <Route path="points" element={<ProfileDashboard />} />
                   <Route path="dia-chi" element={<ProfileDashboard />} />
                   <Route path="cai-dat" element={<ProfileDashboard />} />
                 </Route>

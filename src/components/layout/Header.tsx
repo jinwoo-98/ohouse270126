@@ -80,10 +80,10 @@ const mainCategories = [
 const accountMenuItems = [
   { name: "Tài khoản của tôi", href: "/tai-khoan/thong-tin", icon: User },
   { name: "Đặt hàng của tôi", href: "/tai-khoan/don-hang", icon: Package },
-  { name: "Phiếu giảm giá của tôi", href: "/tai-khoan/cai-dat", icon: Ticket },
-  { name: "Điểm thưởng của tôi", href: "/tai-khoan/cai-dat", icon: Star },
+  { name: "Phiếu giảm giá của tôi", href: "/tai-khoan/vouchers", icon: Ticket },
+  { name: "Điểm thưởng của tôi", href: "/tai-khoan/points", icon: Star },
   { name: "Danh sách yêu thích", href: "/yeu-thich", icon: Heart },
-  { name: "Lịch sử xem", href: "/", icon: History },
+  { name: "Lịch sử xem", href: "/lich-su-xem", icon: History },
   { name: "Liên hệ", href: "/lien-he", icon: Headset },
 ];
 

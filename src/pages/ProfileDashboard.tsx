@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Loader2, Package, Calendar, ChevronRight, MapPin, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Package, Calendar, ChevronRight, MapPin, Plus, Trash2, ChevronDown, ChevronUp, Ticket, Star, Clock } from "lucide-react";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { supabase } from "@/integrations/supabase/client";
@@ -109,6 +109,8 @@ export default function ProfileDashboard() {
       case "/tai-khoan/thong-tin": return "Thông tin cá nhân";
       case "/tai-khoan/don-hang": return "Đơn hàng của tôi";
       case "/tai-khoan/dia-chi": return "Địa chỉ giao hàng";
+      case "/tai-khoan/vouchers": return "Phiếu giảm giá của tôi";
+      case "/tai-khoan/points": return "Điểm thưởng của tôi";
       case "/tai-khoan/cai-dat": return "Cài đặt tài khoản";
       default: return "Tổng quan tài khoản";
     }
@@ -163,6 +165,60 @@ export default function ProfileDashboard() {
                 </div>
                 
                 {location.pathname === "/tai-khoan/thong-tin" && <ProfileForm />}
+
+                {location.pathname === "/tai-khoan/vouchers" && (
+                  <div className="space-y-4">
+                    {[
+                      { code: "OHOUSE500", desc: "Giảm 500K cho đơn hàng từ 5tr", expiry: "31/12/2024", type: "Voucher" },
+                      { code: "FREESHIP", desc: "Miễn phí vận chuyển toàn quốc", expiry: "31/12/2024", type: "Vận chuyển" },
+                    ].map((v) => (
+                      <div key={v.code} className="flex items-center gap-4 p-4 border border-dashed border-primary/30 rounded-xl bg-primary/5">
+                        <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
+                          <Ticket className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-bold text-lg">{v.code}</p>
+                          <p className="text-sm text-muted-foreground">{v.desc}</p>
+                          <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground uppercase tracking-widest">
+                            <Clock className="w-3 h-3" /> Hạn dùng: {v.expiry}
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm">Dùng ngay</Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {location.pathname === "/tai-khoan/points" && (
+                  <div className="space-y-8">
+                    <div className="bg-charcoal text-cream p-8 rounded-2xl flex flex-col items-center justify-center text-center relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-4 opacity-10"><Star className="w-32 h-32" /></div>
+                      <p className="text-sm font-medium uppercase tracking-[0.2em] mb-2">Điểm hiện có</p>
+                      <h3 className="text-5xl font-bold text-primary flex items-center gap-3">
+                        1,250 <Star className="w-8 h-8 fill-current" />
+                      </h3>
+                      <p className="mt-4 text-taupe text-xs">Tương đương {formatPrice(125000)} giảm giá</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="font-bold">Lịch sử tích điểm</h4>
+                      <div className="space-y-2">
+                        {[
+                          { action: "Mua hàng đơn #OH8823", points: "+500", date: "15/10/2024" },
+                          { action: "Mua hàng đơn #OH8710", points: "+750", date: "02/10/2024" },
+                        ].map((h, i) => (
+                          <div key={i} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                            <div>
+                              <p className="text-sm font-medium">{h.action}</p>
+                              <p className="text-xs text-muted-foreground">{h.date}</p>
+                            </div>
+                            <span className="font-bold text-primary">{h.points}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {location.pathname === "/tai-khoan/don-hang" && (
                   <div className="space-y-4">
