@@ -35,7 +35,7 @@ export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] z-[110]">
         <DialogHeader>
           <DialogTitle>Tra Cứu Đơn Hàng</DialogTitle>
           <DialogDescription>

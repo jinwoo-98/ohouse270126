@@ -23,7 +23,7 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] p-6 md:p-8">
+      <DialogContent className="sm:max-w-[425px] p-6 md:p-8 z-[110]">
         <DialogHeader className="text-center">
           <DialogTitle className="text-2xl font-bold">Chào Mừng Đến OHOUSE</DialogTitle>
           <p className="text-muted-foreground text-sm">
@@ -56,7 +56,7 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
               },
             },
           }}
-          providers={['google', 'facebook']} // Added Google and Facebook
+          providers={['google', 'facebook']}
           view="sign_in"
           localization={{
             variables: {
