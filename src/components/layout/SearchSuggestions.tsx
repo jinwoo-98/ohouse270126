@@ -5,6 +5,9 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, ArrowRight, Sparkles, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import categoryTvStand from "@/assets/category-tv-stand.jpg";
+import categorySofa from "@/assets/category-sofa.jpg";
+import categoryDiningTable from "@/assets/category-dining-table.jpg";
 
 interface Product {
   id: string | number;
@@ -36,9 +39,9 @@ const TRENDING_CATEGORIES = [
 ];
 
 const SUGGESTED_PRODUCTS: Product[] = [
-  { id: 1, name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá", price: 25990000, image: "https://kyfzqgyazmjtnxjdvetr.supabase.co/storage/v1/object/public/product-images/category-tv-stand.jpg" },
-  { id: 2, name: "Sofa Góc Chữ L Vải Nhung Ý", price: 45990000, image: "https://kyfzqgyazmjtnxjdvetr.supabase.co/storage/v1/object/public/product-images/category-sofa.jpg" },
-  { id: 3, name: "Bàn Ăn Mặt Đá Marble 6 Ghế", price: 32990000, image: "https://kyfzqgyazmjtnxjdvetr.supabase.co/storage/v1/object/public/product-images/category-dining-table.jpg" },
+  { id: 1, name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá", price: 25990000, image: categoryTvStand },
+  { id: 2, name: "Sofa Góc Chữ L Vải Nhung Ý", price: 45990000, image: categorySofa },
+  { id: 3, name: "Bàn Ăn Mặt Đá Marble 6 Ghế", price: 32990000, image: categoryDiningTable },
 ];
 
 export function SearchSuggestions({ isVisible, onClose, onKeywordClick }: SearchSuggestionsProps) {
@@ -53,7 +56,7 @@ export function SearchSuggestions({ isVisible, onClose, onKeywordClick }: Search
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
-      className="absolute top-full left-[-150px] md:left-[-300px] right-[-150px] md:right-[-400px] mt-3 bg-card border border-border shadow-elevated rounded-2xl overflow-hidden z-[60] hidden md:block"
+      className="absolute top-full left-[-150px] md:left-[-300px] right-[-150px] md:right-[-400px] mt-3 bg-card border border-border shadow-elevated rounded-2xl overflow-hidden z-[100] hidden md:block"
     >
       <div className="flex min-h-[450px]">
         {/* Cột 1: Từ khóa & Xu hướng */}
@@ -67,6 +70,7 @@ export function SearchSuggestions({ isVisible, onClose, onKeywordClick }: Search
               {POPULAR_KEYWORDS.map((keyword) => (
                 <button
                   key={keyword}
+                  type="button"
                   onClick={() => onKeywordClick(keyword)}
                   className="w-full text-left px-3 py-2.5 text-sm rounded-lg hover:bg-primary/10 hover:text-primary transition-all group flex items-center justify-between font-medium"
                 >
