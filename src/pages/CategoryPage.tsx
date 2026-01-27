@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, SlidersHorizontal, Grid3X3, LayoutGrid, Heart, ShoppingBag, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
@@ -40,8 +40,10 @@ const priceRanges = [
 const materials = ["Gỗ Óc Chó", "Gỗ Sồi", "Đá Marble", "Da Thật", "Vải Nhung", "Inox Mạ Vàng", "Kính Cường Lực", "Gỗ Công Nghiệp", "Pha Lê", "Kim Loại"];
 
 export default function CategoryPage() {
-  const { slug } = useParams();
-  const categorySlug = slug || "noi-that";
+  const location = useLocation();
+  // Extract the last segment of the path (e.g., '/phong-khach' -> 'phong-khach')
+  const pathSegment = location.pathname.split('/').pop() || 'noi-that';
+  const categorySlug = pathSegment;
   
   const { 
     products, 
