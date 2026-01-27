@@ -70,35 +70,41 @@ export function HeroSlider() {
 
   return (
     <section className="relative h-[65vh] md:h-[85vh] overflow-hidden bg-charcoal">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentSlide}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="absolute inset-0"
-        >
-          <img
-            src={slides[currentSlide].image}
-            alt={slides[currentSlide].title}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-charcoal/40 via-transparent to-charcoal/40" />
-        </motion.div>
-      </AnimatePresence>
+      {/* Background Images with Cross-fade */}
+      <div className="absolute inset-0">
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={`bg-${currentSlide}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5, ease: "easeInOut" }}
+            className="absolute inset-0"
+          >
+            <motion.img
+              initial={{ scale: 1.1 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 6, ease: "linear" }}
+              src={slides[currentSlide].image}
+              alt={slides[currentSlide].title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-charcoal/40 via-transparent to-charcoal/40" />
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       {/* Content */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="container-luxury">
           <AnimatePresence mode="wait">
             <motion.div
-              key={currentSlide}
+              key={`content-${currentSlide}`}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="max-w-2xl mx-auto text-center"
+              className="max-w-2xl mx-auto text-center relative z-10"
             >
               <motion.span 
                 initial={{ opacity: 0, letterSpacing: "0.5em" }}
@@ -128,7 +134,7 @@ export function HeroSlider() {
         </div>
       </div>
 
-      {/* Navigation Arrows - Vertical Rectangle Style */}
+      {/* Navigation Arrows */}
       <button
         onClick={goToPrev}
         className="absolute left-0 top-1/2 -translate-y-1/2 w-10 md:w-12 h-32 md:h-40 bg-card/20 backdrop-blur-md rounded-r-2xl text-cream hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 flex items-center justify-center group"
