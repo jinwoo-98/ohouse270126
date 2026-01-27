@@ -109,8 +109,8 @@ export default function ProfileDashboard() {
       case "/tai-khoan/thong-tin": return "Thông tin cá nhân";
       case "/tai-khoan/don-hang": return "Đơn hàng của tôi";
       case "/tai-khoan/dia-chi": return "Địa chỉ giao hàng";
-      case "/tai-khoan/vouchers": return "Phiếu giảm giá của tôi";
-      case "/tai-khoan/points": return "Điểm thưởng của tôi";
+      case "/tai-khoan/vouchers": return "Phiếu giảm giá";
+      case "/tai-khoan/points": return "Điểm thưởng";
       case "/tai-khoan/cai-dat": return "Cài đặt tài khoản";
       default: return "Tổng quan tài khoản";
     }
@@ -191,7 +191,7 @@ export default function ProfileDashboard() {
 
                 {location.pathname === "/tai-khoan/points" && (
                   <div className="space-y-8">
-                    <div className="bg-charcoal text-cream p-8 rounded-2xl flex flex-col items-center justify-center text-center relative overflow-hidden">
+                    <div className="bg-charcoal text-cream p-8 rounded-2xl flex flex-col items-center justify-center text-center relative overflow-hidden shadow-gold">
                       <div className="absolute top-0 right-0 p-4 opacity-10"><Star className="w-32 h-32" /></div>
                       <p className="text-sm font-medium uppercase tracking-[0.2em] mb-2">Điểm hiện có</p>
                       <h3 className="text-5xl font-bold text-primary flex items-center gap-3">

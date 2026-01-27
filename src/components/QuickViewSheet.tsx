@@ -61,7 +61,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               </span>
             </div>
             
-            {/* Optimized Wishlist Button position: Moved further left from the close button (X) */}
             <button 
               onClick={() => toggleWishlist({
                 id: product.id,
