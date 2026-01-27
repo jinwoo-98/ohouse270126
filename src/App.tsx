@@ -19,7 +19,9 @@ import AccountPage from "./pages/AccountPage";
 import ProfileDashboard from "./pages/ProfileDashboard";
 import RecruitmentPage from "./pages/RecruitmentPage";
 import NewsPage from "./pages/NewsPage";
+import NewsDetailPage from "./pages/NewsDetailPage";
 import ProjectsPage from "./pages/ProjectsPage";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
 import ContactPage from "./pages/ContactPage";
 import ShowroomPage from "./pages/ShowroomPage";
 import InspirationPage from "./pages/InspirationPage";
@@ -77,7 +79,9 @@ const App = () => (
                 <Route path="/ve-chung-toi" element={<AboutPage />} />
                 <Route path="/tuyen-dung" element={<RecruitmentPage />} />
                 <Route path="/tin-tuc" element={<NewsPage />} />
+                <Route path="/tin-tuc/:id" element={<NewsDetailPage />} />
                 <Route path="/du-an" element={<ProjectsPage />} />
+                <Route path="/du-an/:id" element={<ProjectDetailPage />} />
                 <Route path="/lien-he" element={<ContactPage />} />
                 <Route path="/hop-tac" element={<ContactPage />} />
                 <Route path="/ho-tro/:slug" element={<SupportPage />} />
