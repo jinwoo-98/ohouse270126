@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, SlidersHorizontal, Grid3X3, LayoutGrid, Heart, ShoppingBag, Loader2 } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, Grid3X3, LayoutGrid, Heart, ShoppingBag, Loader2, X } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useProducts } from "@/hooks/useProducts";
+import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 const categoryInfo: Record<string, { title: string; description: string }> = {
   "phong-khach": { title: "Phòng Khách", description: "Nội thất phòng khách sang trọng, hiện đại" },
@@ -41,7 +43,6 @@ const materials = ["Gỗ Óc Chó", "Gỗ Sồi", "Đá Marble", "Da Thật", "V
 
 export default function CategoryPage() {
   const location = useLocation();
-  // Extract the last segment of the path (e.g., '/phong-khach' -> 'phong-khach')
   const pathSegment = location.pathname.split('/').pop() || 'noi-that';
   const categorySlug = pathSegment;
   
@@ -53,6 +54,9 @@ export default function CategoryPage() {
     clearFilters, 
     isLoading 
   } = useProducts(categorySlug);
+
+  const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [gridCols, setGridCols] = useState(4);
   const [showFilters, setShowFilters] = useState(false);
@@ -110,7 +114,6 @@ export default function CategoryPage() {
                 
                 <h3 className="hidden lg:block font-bold text-lg mb-4">Bộ Lọc</h3>
                 
-                {/* Price Range */}
                 <div className="mb-6">
                   <h4 className="font-semibold mb-3 text-sm uppercase tracking-wide">Khoảng Giá</h4>
                   <div className="space-y-2">
@@ -126,7 +129,6 @@ export default function CategoryPage() {
                   </div>
                 </div>
 
-                {/* Material */}
                 <div className="mb-6">
                   <h4 className="font-semibold mb-3 text-sm uppercase tracking-wide">Chất Liệu</h4>
                   <div className="space-y-2">
@@ -207,65 +209,102 @@ export default function CategoryPage() {
                 </div>
               ) : (
                 <div className={`grid grid-cols-2 md:grid-cols-3 ${gridCols === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 md:gap-5`}>
-                  {products.map((product, index) => (
-                    <motion.div
-                      key={product.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: index * 0.05 }}
-                    >
-                      <div className="group card-luxury">
-                        <Link to={`/san-pham/${product.id}`}>
-                          <div className="relative aspect-square img-zoom">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute top-2 left-2 flex flex-col gap-1">
-                              {product.isNew && (
-                                <span className="bg-primary text-primary-foreground px-2 py-0.5 text-xs font-semibold">
-                                  Mới
-                                </span>
-                              )}
-                              {product.isSale && (
-                                <span className="bg-destructive text-destructive-foreground px-2 py-0.5 text-xs font-semibold">
-                                  Sale
-                                </span>
-                              )}
+                  {products.map((product, index) => {
+                    const isFavorite = isInWishlist(product.id);
+                    
+                    return (
+                      <motion.div
+                        key={product.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: index * 0.05 }}
+                      >
+                        <div className="group card-luxury relative">
+                          <Link to={`/san-pham/${product.id}`} className="block">
+                            <div className="relative aspect-square img-zoom">
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute top-2 left-2 flex flex-col gap-1">
+                                {product.isNew && (
+                                  <span className="bg-primary text-primary-foreground px-2 py-0.5 text-xs font-semibold">
+                                    Mới
+                                  </span>
+                                )}
+                                {product.isSale && (
+                                  <span className="bg-destructive text-destructive-foreground px-2 py-0.5 text-xs font-semibold">
+                                    Sale
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            
-                            <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/20 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-                              <button className="p-2.5 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-colors" aria-label="Thêm vào yêu thích">
-                                <Heart className="w-4 h-4" />
-                              </button>
-                              <button className="p-2.5 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-colors" aria-label="Thêm vào giỏ hàng">
-                                <ShoppingBag className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-                        </Link>
-                        
-                        <div className="p-3">
-                          <Link to={`/san-pham/${product.id}`}>
-                            <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors mb-2">
-                              {product.name}
-                            </h3>
                           </Link>
-                          <div className="flex items-center gap-2">
-                            <span className="text-base font-bold text-primary">
-                              {formatPrice(product.price)}
-                            </span>
-                            {product.originalPrice && (
-                              <span className="text-xs text-muted-foreground line-through">
-                                {formatPrice(product.originalPrice)}
+                          
+                          {/* Quick Actions Overlay - Moved outside of the Link */}
+                          <div className="absolute inset-x-0 top-0 bottom-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                toggleWishlist({
+                                  id: product.id,
+                                  name: product.name,
+                                  price: product.price,
+                                  image: product.image,
+                                  originalPrice: product.originalPrice
+                                });
+                              }}
+                              className={`p-2.5 rounded-full shadow-medium transition-all pointer-events-auto ${
+                                isFavorite 
+                                  ? 'bg-primary text-primary-foreground' 
+                                  : 'bg-card hover:bg-primary hover:text-primary-foreground'
+                              }`} 
+                              aria-label="Thêm vào yêu thích"
+                            >
+                              <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                addToCart({
+                                  id: product.id,
+                                  name: product.name,
+                                  price: product.price,
+                                  image: product.image,
+                                  quantity: 1
+                                });
+                              }}
+                              className="p-2.5 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-all pointer-events-auto" 
+                              aria-label="Thêm vào giỏ hàng"
+                            >
+                              <ShoppingBag className="w-4 h-4" />
+                            </button>
+                          </div>
+                          
+                          <div className="p-3">
+                            <Link to={`/san-pham/${product.id}`}>
+                              <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors mb-2">
+                                {product.name}
+                              </h3>
+                            </Link>
+                            <div className="flex items-center gap-2">
+                              <span className="text-base font-bold text-primary">
+                                {formatPrice(product.price)}
                               </span>
-                            )}
+                              {product.originalPrice && (
+                                <span className="text-xs text-muted-foreground line-through">
+                                  {formatPrice(product.originalPrice)}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </div>

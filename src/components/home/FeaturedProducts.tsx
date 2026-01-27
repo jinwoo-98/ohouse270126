@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, ShoppingBag, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import categoryTvStand from "@/assets/category-tv-stand.jpg";
 import categorySofa from "@/assets/category-sofa.jpg";
 import categoryDiningTable from "@/assets/category-dining-table.jpg";
@@ -13,12 +15,12 @@ import categoryLighting from "@/assets/category-lighting.jpg";
 const featuredProducts = [
   {
     id: 1,
-    name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá Sintered",
+    name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá Sintered Stone",
     image: categoryTvStand,
     price: 25990000,
     category: "Kệ Tivi",
     isNew: true,
-    href: "/san-pham/ke-tivi-oc-cho-da",
+    href: "/san-pham/1",
   },
   {
     id: 2,
@@ -27,7 +29,7 @@ const featuredProducts = [
     price: 45990000,
     category: "Sofa",
     isNew: false,
-    href: "/san-pham/sofa-l-y",
+    href: "/san-pham/2",
   },
   {
     id: 3,
@@ -36,7 +38,7 @@ const featuredProducts = [
     price: 32990000,
     category: "Bàn Ăn",
     isNew: true,
-    href: "/san-pham/ban-an-da-vang",
+    href: "/san-pham/3",
   },
   {
     id: 4,
@@ -45,7 +47,7 @@ const featuredProducts = [
     price: 12990000,
     category: "Bàn Trà",
     isNew: false,
-    href: "/san-pham/ban-tra-granite",
+    href: "/san-pham/4",
   },
   {
     id: 5,
@@ -54,7 +56,7 @@ const featuredProducts = [
     price: 18990000,
     category: "Bàn Làm Việc",
     isNew: true,
-    href: "/san-pham/ban-oc-cho",
+    href: "/san-pham/5",
   },
   {
     id: 6,
@@ -63,7 +65,7 @@ const featuredProducts = [
     price: 38990000,
     category: "Giường",
     isNew: false,
-    href: "/san-pham/giuong-da-y",
+    href: "/san-pham/6",
   },
   {
     id: 7,
@@ -72,7 +74,7 @@ const featuredProducts = [
     price: 15990000,
     category: "Đèn Trang Trí",
     isNew: true,
-    href: "/san-pham/den-pha-le",
+    href: "/san-pham/7",
   },
   {
     id: 8,
@@ -81,7 +83,7 @@ const featuredProducts = [
     price: 8990000,
     category: "Bàn Trà",
     isNew: false,
-    href: "/san-pham/ban-tra-soi",
+    href: "/san-pham/8",
   },
 ];
 
@@ -93,10 +95,12 @@ function formatPrice(price: number) {
 }
 
 export function FeaturedProducts() {
+  const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+
   return (
     <section className="py-16 md:py-24 bg-secondary/30">
       <div className="container-luxury">
-        {/* Centered Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -109,7 +113,7 @@ export function FeaturedProducts() {
             Những thiết kế được yêu thích nhất
           </p>
           <Button variant="outline" asChild className="mt-6">
-            <Link to="/san-pham" className="group">
+            <Link to="/noi-that" className="group">
               Xem Tất Cả
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>
@@ -117,62 +121,91 @@ export function FeaturedProducts() {
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {featuredProducts.map((product, index) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.05 }}
-              viewport={{ once: true }}
-            >
-              <div className="group card-luxury">
-                <Link to={`/san-pham/${product.id}`}>
-                  <div className="relative aspect-square img-zoom">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                    {product.isNew && (
-                      <span className="absolute top-3 left-3 bg-primary text-primary-foreground px-3 py-1 text-xs font-semibold uppercase tracking-wider">
-                        Mới
-                      </span>
-                    )}
-                    
-                    {/* Hover Actions */}
-                    <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/20 transition-colors flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
-                      <button
-                        className="p-3 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-colors"
-                        aria-label="Thêm vào yêu thích"
-                      >
-                        <Heart className="w-5 h-5" />
-                      </button>
-                      <button
-                        className="p-3 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-colors"
-                        aria-label="Thêm vào giỏ hàng"
-                      >
-                        <ShoppingBag className="w-5 h-5" />
-                      </button>
+          {featuredProducts.map((product, index) => {
+            const isFavorite = isInWishlist(product.id);
+            
+            return (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.05 }}
+                viewport={{ once: true }}
+              >
+                <div className="group card-luxury relative">
+                  <Link to={product.href} className="block">
+                    <div className="relative aspect-square img-zoom">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                      {product.isNew && (
+                        <span className="absolute top-3 left-3 bg-primary text-primary-foreground px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+                          Mới
+                        </span>
+                      )}
                     </div>
-                  </div>
-                </Link>
-                
-                <div className="p-4">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                    {product.category}
-                  </span>
-                  <Link to={`/san-pham/${product.id}`}>
-                    <h3 className="font-medium text-sm md:text-base line-clamp-2 mt-1 group-hover:text-primary transition-colors">
-                      {product.name}
-                    </h3>
                   </Link>
-                  <p className="text-lg font-bold text-primary mt-2">
-                    {formatPrice(product.price)}
-                  </p>
+                  
+                  {/* Hover Actions - Moved out of Link and connected to state */}
+                  <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/20 transition-colors flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 z-10 pointer-events-none">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleWishlist({
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          image: product.image
+                        });
+                      }}
+                      className={`p-3 rounded-full shadow-medium transition-colors pointer-events-auto ${
+                        isFavorite 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-card hover:bg-primary hover:text-primary-foreground'
+                      }`}
+                      aria-label="Thêm vào yêu thích"
+                    >
+                      <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addToCart({
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          image: product.image,
+                          quantity: 1
+                        });
+                      }}
+                      className="p-3 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-colors pointer-events-auto"
+                      aria-label="Thêm vào giỏ hàng"
+                    >
+                      <ShoppingBag className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  <div className="p-4">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                      {product.category}
+                    </span>
+                    <Link to={product.href}>
+                      <h3 className="font-medium text-sm md:text-base line-clamp-2 mt-1 group-hover:text-primary transition-colors">
+                        {product.name}
+                      </h3>
+                    </Link>
+                    <p className="text-lg font-bold text-primary mt-2">
+                      {formatPrice(product.price)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
