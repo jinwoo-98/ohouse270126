@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, Heart, Minus, Plus, ShoppingBag, Truck, RefreshCw, Shield, Check, Star, ArrowRight } from "lucide-react";
+import { ChevronRight, Heart, Minus, Plus, ShoppingBag, Truck, RefreshCw, Shield, Check, Star, ArrowRight, Loader2, Send } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import categoryTvStand from "@/assets/category-tv-stand.jpg";
 import categorySofa from "@/assets/category-sofa.jpg";
 import categoryDiningTable from "@/assets/category-dining-table.jpg";
@@ -38,12 +43,16 @@ function formatPrice(price: number) {
 export default function ProductDetailPage() {
   const { id } = useParams();
   const { pathname } = useLocation();
+  const { user } = useAuth();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(0);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [isReviewLoading, setIsReviewLoading] = useState(false);
+  const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
 
   const product = MOCK_PRODUCTS[id || "1"] || MOCK_PRODUCTS["1"];
 
@@ -52,7 +61,58 @@ export default function ProductDetailPage() {
     setSelectedImage(0);
     setQuantity(1);
     setSelectedColor(0);
+    fetchReviews();
   }, [id, pathname]);
+
+  const fetchReviews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('product_id', id || "1")
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setReviews(data || []);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để gửi đánh giá.");
+      return;
+    }
+    if (!newReview.comment.trim()) {
+      toast.error("Vui lòng nhập nội dung đánh giá.");
+      return;
+    }
+
+    setIsReviewLoading(true);
+    try {
+      const { error } = await supabase
+        .from('reviews')
+        .insert({
+          product_id: id || "1",
+          user_id: user.id,
+          rating: newReview.rating,
+          comment: newReview.comment,
+          user_name: user.user_metadata?.first_name || user.email?.split('@')[0]
+        });
+
+      if (error) throw error;
+
+      toast.success("Cảm ơn bạn đã đánh giá sản phẩm!");
+      setNewReview({ rating: 5, comment: "" });
+      fetchReviews();
+    } catch (error: any) {
+      toast.error("Đã có lỗi xảy ra khi gửi đánh giá.");
+    } finally {
+      setIsReviewLoading(false);
+    }
+  };
 
   const handleAddToCart = () => {
     addToCart({
@@ -100,9 +160,9 @@ export default function ProductDetailPage() {
               
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex text-primary">
-                  {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-current" />)}
+                  {[1, 2, 3, 4, 5].map(i => <Star key={i} className={`w-4 h-4 ${i <= (reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1)) ? 'fill-current' : ''}`} />)}
                 </div>
-                <span className="text-sm text-muted-foreground">(24 đánh giá)</span>
+                <span className="text-sm text-muted-foreground">({reviews.length} đánh giá)</span>
               </div>
 
               <div className="flex items-center gap-3 mb-6">
@@ -157,7 +217,7 @@ export default function ProductDetailPage() {
             <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-8">
               <TabsTrigger value="description" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Mô tả sản phẩm</TabsTrigger>
               <TabsTrigger value="spec" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Thông số kỹ thuật</TabsTrigger>
-              <TabsTrigger value="review" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Đánh giá (24)</TabsTrigger>
+              <TabsTrigger value="review" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Đánh giá ({reviews.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="description" className="py-8 animate-fade-in">
               <div className="prose prose-stone max-w-none">
@@ -176,7 +236,49 @@ export default function ProductDetailPage() {
               </div>
             </TabsContent>
             <TabsContent value="review" className="py-8 animate-fade-in">
-              <p className="text-muted-foreground">Chưa có đánh giá nào cho sản phẩm này.</p>
+              <div className="grid lg:grid-cols-3 gap-12">
+                <div className="lg:col-span-2 space-y-8">
+                  {reviews.length === 0 ? (
+                    <p className="text-muted-foreground italic">Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên!</p>
+                  ) : (
+                    reviews.map((rev) => (
+                      <div key={rev.id} className="border-b border-border pb-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-bold">{rev.user_name}</span>
+                          <span className="text-xs text-muted-foreground">{new Date(rev.created_at).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                        <div className="flex text-primary mb-3">
+                          {[1, 2, 3, 4, 5].map(i => <Star key={i} className={`w-3 h-3 ${i <= rev.rating ? 'fill-current' : ''}`} />)}
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{rev.comment}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+                
+                <div className="bg-secondary/20 p-6 rounded-lg h-fit">
+                  <h3 className="font-bold mb-4">Gửi đánh giá của bạn</h3>
+                  <form onSubmit={handleReviewSubmit} className="space-y-4">
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <button key={i} type="button" onClick={() => setNewReview({...newReview, rating: i})} className="transition-transform hover:scale-110">
+                          <Star className={`w-6 h-6 ${i <= newReview.rating ? 'fill-current text-primary' : 'text-muted-foreground'}`} />
+                        </button>
+                      ))}
+                    </div>
+                    <Textarea 
+                      placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..." 
+                      className="bg-card"
+                      value={newReview.comment}
+                      onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
+                    />
+                    <Button type="submit" className="w-full" disabled={isReviewLoading}>
+                      {isReviewLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                      Gửi đánh giá
+                    </Button>
+                  </form>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
 
