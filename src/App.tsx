@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { CartProvider } from "./contexts/CartContext";
+import { WishlistProvider } from "./contexts/WishlistContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
@@ -12,15 +14,15 @@ import AboutPage from "./pages/AboutPage";
 import SupportPage from "./pages/SupportPage";
 import CartPage from "./pages/CartPage";
 import WishlistPage from "./pages/WishlistPage";
-import AccountPage from "./pages/AccountPage"; // Login Dialog Page
-import ProfileDashboard from "./pages/ProfileDashboard"; // Authenticated Dashboard
+import AccountPage from "./pages/AccountPage";
+import ProfileDashboard from "./pages/ProfileDashboard";
 import RecruitmentPage from "./pages/RecruitmentPage";
 import NewsPage from "./pages/NewsPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import ContactPage from "./pages/ContactPage";
-import ShowroomPage from "./pages/ShowroomPage"; // NEW
-import InspirationPage from "./pages/InspirationPage"; // NEW
-import DesignServicePage from "./pages/DesignServicePage"; // NEW
+import ShowroomPage from "./pages/ShowroomPage";
+import InspirationPage from "./pages/InspirationPage";
+import DesignServicePage from "./pages/DesignServicePage";
 
 const queryClient = new QueryClient();
 
@@ -28,78 +30,63 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
+      <Sonner position="top-center" />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            
-            {/* Category Pages */}
-            <Route path="/noi-that" element={<CategoryPage />} />
-            <Route path="/phong-khach" element={<CategoryPage />} />
-            <Route path="/phong-ngu" element={<CategoryPage />} />
-            <Route path="/phong-an" element={<CategoryPage />} />
-            <Route path="/phong-tam" element={<CategoryPage />} />
-            <Route path="/phong-lam-viec" element={<CategoryPage />} />
-            <Route path="/sofa" element={<CategoryPage />} />
-            <Route path="/ban-an" element={<CategoryPage />} />
-            <Route path="/ban-tra" element={<CategoryPage />} />
-            <Route path="/ke-tivi" element={<CategoryPage />} />
-            <Route path="/giuong" element={<CategoryPage />} />
-            <Route path="/ban-lam-viec" element={<CategoryPage />} />
-            <Route path="/den-trang-tri" element={<CategoryPage />} />
-            <Route path="/decor" element={<CategoryPage />} />
-            <Route path="/sale" element={<CategoryPage />} />
-            
-            {/* Missing Category Routes added here */}
-            <Route path="/ban-ghe" element={<CategoryPage />} />
-            <Route path="/ban-chay" element={<CategoryPage />} />
-            <Route path="/moi" element={<CategoryPage />} />
-            
-            {/* Product Detail */}
-            <Route path="/san-pham/:id" element={<ProductDetailPage />} />
-            
-            {/* Cart & Wishlist */}
-            <Route path="/gio-hang" element={<CartPage />} />
-            <Route path="/yeu-thich" element={<WishlistPage />} />
-            
-            {/* Account Routes */}
-            <Route path="/tai-khoan" element={<ProfileDashboard />}>
-              <Route index element={<Navigate to="thong-tin" replace />} />
-              <Route path="thong-tin" element={<ProfileDashboard />} />
-              <Route path="don-hang" element={<ProfileDashboard />} />
-              <Route path="dia-chi" element={<ProfileDashboard />} />
-              <Route path="cai-dat" element={<ProfileDashboard />} />
-            </Route>
-            
-            {/* Login Page (Fallback/Dialog Trigger) */}
-            <Route path="/dang-nhap" element={<AccountPage />} />
-            
-            {/* Secondary Links / About Pages */}
-            <Route path="/showroom" element={<ShowroomPage />} /> {/* NEW */}
-            <Route path="/cam-hung" element={<InspirationPage />} /> {/* NEW */}
-            <Route path="/thiet-ke" element={<DesignServicePage />} /> {/* NEW */}
-            <Route path="/y-tuong/:slug" element={<InspirationPage />} /> {/* For deep links from home page */}
-            
-            <Route path="/ve-chung-toi" element={<AboutPage />} />
-            <Route path="/tuyen-dung" element={<RecruitmentPage />} />
-            <Route path="/tin-tuc" element={<NewsPage />} />
-            <Route path="/du-an" element={<ProjectsPage />} />
-            <Route path="/lien-he" element={<ContactPage />} />
-            <Route path="/hop-tac" element={<ContactPage />} />
-            
-            {/* Support Pages */}
-            <Route path="/ho-tro/:slug" element={<SupportPage />} />
-            <Route path="/huong-dan" element={<SupportPage />} />
-            <Route path="/doi-tra" element={<SupportPage />} />
-            <Route path="/bao-hanh" element={<SupportPage />} />
-            <Route path="/thanh-toan" element={<SupportPage />} />
-            <Route path="/van-chuyen" element={<SupportPage />} />
-            <Route path="/faq" element={<SupportPage />} />
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <CartProvider>
+            <WishlistProvider>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/noi-that" element={<CategoryPage />} />
+                <Route path="/phong-khach" element={<CategoryPage />} />
+                <Route path="/phong-ngu" element={<CategoryPage />} />
+                <Route path="/phong-an" element={<CategoryPage />} />
+                <Route path="/phong-tam" element={<CategoryPage />} />
+                <Route path="/phong-lam-viec" element={<CategoryPage />} />
+                <Route path="/sofa" element={<CategoryPage />} />
+                <Route path="/ban-an" element={<CategoryPage />} />
+                <Route path="/ban-tra" element={<CategoryPage />} />
+                <Route path="/ke-tivi" element={<CategoryPage />} />
+                <Route path="/giuong" element={<CategoryPage />} />
+                <Route path="/ban-lam-viec" element={<CategoryPage />} />
+                <Route path="/den-trang-tri" element={<CategoryPage />} />
+                <Route path="/decor" element={<CategoryPage />} />
+                <Route path="/sale" element={<CategoryPage />} />
+                <Route path="/ban-ghe" element={<CategoryPage />} />
+                <Route path="/ban-chay" element={<CategoryPage />} />
+                <Route path="/moi" element={<CategoryPage />} />
+                <Route path="/san-pham/:id" element={<ProductDetailPage />} />
+                <Route path="/gio-hang" element={<CartPage />} />
+                <Route path="/yeu-thich" element={<WishlistPage />} />
+                <Route path="/tai-khoan" element={<ProfileDashboard />}>
+                  <Route index element={<Navigate to="thong-tin" replace />} />
+                  <Route path="thong-tin" element={<ProfileDashboard />} />
+                  <Route path="don-hang" element={<ProfileDashboard />} />
+                  <Route path="dia-chi" element={<ProfileDashboard />} />
+                  <Route path="cai-dat" element={<ProfileDashboard />} />
+                </Route>
+                <Route path="/dang-nhap" element={<AccountPage />} />
+                <Route path="/showroom" element={<ShowroomPage />} />
+                <Route path="/cam-hung" element={<InspirationPage />} />
+                <Route path="/thiet-ke" element={<DesignServicePage />} />
+                <Route path="/y-tuong/:slug" element={<InspirationPage />} />
+                <Route path="/ve-chung-toi" element={<AboutPage />} />
+                <Route path="/tuyen-dung" element={<RecruitmentPage />} />
+                <Route path="/tin-tuc" element={<NewsPage />} />
+                <Route path="/du-an" element={<ProjectsPage />} />
+                <Route path="/lien-he" element={<ContactPage />} />
+                <Route path="/hop-tac" element={<ContactPage />} />
+                <Route path="/ho-tro/:slug" element={<SupportPage />} />
+                <Route path="/huong-dan" element={<SupportPage />} />
+                <Route path="/doi-tra" element={<SupportPage />} />
+                <Route path="/bao-hanh" element={<SupportPage />} />
+                <Route path="/thanh-toan" element={<SupportPage />} />
+                <Route path="/van-chuyen" element={<SupportPage />} />
+                <Route path="/faq" element={<SupportPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </WishlistProvider>
+          </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
