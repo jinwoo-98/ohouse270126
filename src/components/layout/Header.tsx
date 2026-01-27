@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown, Phone, Package, ChevronRight } from "lucide-react";
+import { Search, User, Heart, ShoppingBag, Menu, X, Truck, ChevronDown, Phone, Package, ChevronRight, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { AuthDialog } from "@/components/AuthDialog";
 import { OrderTrackingDialog } from "@/components/OrderTrackingDialog";
@@ -14,7 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-const productCategories = {
+const productCategories: Record<string, { name: string; href: string }[]> = {
   "phong-khach": [
     { name: "Sofa & Ghế", href: "/sofa" },
     { name: "Bàn Trà", href: "/ban-tra" },
@@ -82,6 +82,7 @@ export function Header() {
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeMobileSubMenu, setActiveMobileSubMenu] = useState<string | null>(null);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -114,6 +115,12 @@ export function Header() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      setActiveMobileSubMenu(null);
+    }
+  }, [isMobileMenuOpen]);
   
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -121,6 +128,7 @@ export function Header() {
       toast.error("Đăng xuất thất bại. Vui lòng thử lại.");
     } else {
       toast.success("Đã đăng xuất thành công.");
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -287,60 +295,143 @@ export function Header() {
         {isMobileMenuOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-charcoal/50 z-50 lg:hidden" onClick={() => setIsMobileMenuOpen(false)} />
-            <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} className="fixed left-0 top-0 h-full w-80 bg-card z-50 lg:hidden overflow-y-auto">
-              <div className="p-4 border-b border-border flex items-center justify-between"><span className="text-xl font-bold">OHOUSE</span><button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-secondary rounded-lg"><X className="w-5 h-5" /></button></div>
+            <motion.div initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} className="fixed left-0 top-0 h-full w-80 bg-card z-50 lg:hidden flex flex-col">
               
-              <div className="p-4 border-b border-border">
-                <form onSubmit={handleSearch} className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="Tìm sản phẩm..." 
-                    className="pl-10 h-10 bg-secondary/50 border-0" 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </form>
-              </div>
-
-              <div className="p-4 border-b border-border flex flex-col gap-2">
+              {/* Login/User Section - Top */}
+              <div className="p-6 bg-secondary/30 border-b border-border">
                 {user ? (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground px-3">Đã đăng nhập: {user.email}</p>
-                    <Button variant="outline" asChild className="w-full justify-start"><Link to="/tai-khoan/thong-tin"><User className="w-4 h-4 mr-2" />Quản lý tài khoản</Link></Button>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
+                        {user.email?.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="overflow-hidden">
+                        <p className="text-sm font-bold truncate">{user.email}</p>
+                        <p className="text-[10px] text-muted-foreground">Thành viên OHOUSE</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" asChild className="w-full justify-start h-9">
+                      <Link to="/tai-khoan/thong-tin" onClick={() => setIsMobileMenuOpen(false)}>
+                        <User className="w-4 h-4 mr-2" />
+                        Quản lý tài khoản
+                      </Link>
+                    </Button>
                   </div>
                 ) : (
-                  <Button variant="outline" onClick={() => { setIsAuthDialogOpen(true); setIsMobileMenuOpen(false); }} className="w-full"><User className="w-4 h-4 mr-2" />Đăng nhập / Đăng ký</Button>
+                  <Button 
+                    className="w-full btn-hero h-11" 
+                    onClick={() => { setIsAuthDialogOpen(true); setIsMobileMenuOpen(false); }}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Đăng Nhập / Đăng Ký
+                  </Button>
                 )}
-                <Button variant="outline" onClick={() => { setIsTrackingDialogOpen(true); setIsMobileMenuOpen(false); }} className="w-full justify-start"><Package className="w-4 h-4 mr-2" />Tra Cứu Đơn Hàng</Button>
-                <Button variant="outline" asChild className="w-full justify-start"><Link to="/yeu-thich"><Heart className="w-4 h-4 mr-2" />Sản phẩm yêu thích</Link></Button>
-              </div>
-              
-              <div className="p-4 bg-secondary/20">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-3">Danh Mục</p>
-                <nav className="space-y-1">
-                  {mainCategories.map((item) => (
-                    <Link key={item.name} to={item.href} className={`flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-card transition-colors ${item.isHighlight ? "text-destructive font-bold" : "font-medium"}`} onClick={() => setIsMobileMenuOpen(false)}>
-                      {item.name}
-                      <ChevronRight className="w-4 h-4 opacity-50" />
-                    </Link>
-                  ))}
-                </nav>
               </div>
 
-              <div className="p-4 border-t border-border">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-3">Tiện Ích & Thông Tin</p>
-                <nav className="space-y-1">
-                  {secondaryLinks.map((link) => (
-                    <Link key={link.name} to={link.href} className="block py-2.5 px-3 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-secondary rounded-lg transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
-                      {link.name}
-                    </Link>
-                  ))}
-                </nav>
+              <div className="flex-1 overflow-y-auto">
+                <AnimatePresence mode="wait">
+                  {!activeMobileSubMenu ? (
+                    <motion.div 
+                      key="main-menu"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="p-4"
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-3">Danh Mục Sản Phẩm</p>
+                      <nav className="space-y-1">
+                        {mainCategories.map((item) => (
+                          <button
+                            key={item.name}
+                            onClick={() => {
+                              if (item.hasDropdown && item.dropdownKey) {
+                                setActiveMobileSubMenu(item.dropdownKey);
+                              } else {
+                                navigate(item.href);
+                                setIsMobileMenuOpen(false);
+                              }
+                            }}
+                            className={`w-full flex items-center justify-between py-3 px-3 rounded-lg hover:bg-secondary transition-colors ${item.isHighlight ? "text-destructive font-bold" : "font-medium"}`}
+                          >
+                            {item.name}
+                            {item.hasDropdown && <ChevronRight className="w-4 h-4 opacity-50" />}
+                          </button>
+                        ))}
+                      </nav>
+
+                      <div className="mt-8">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 px-3">Tiện Ích & Dịch Vụ</p>
+                        <nav className="space-y-1">
+                          {secondaryLinks.map((link) => (
+                            <Link 
+                              key={link.name} 
+                              to={link.href} 
+                              className="block py-3 px-3 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-secondary rounded-lg transition-colors"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              {link.name}
+                            </Link>
+                          ))}
+                        </nav>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div 
+                      key="sub-menu"
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      className="p-4"
+                    >
+                      <button 
+                        onClick={() => setActiveMobileSubMenu(null)}
+                        className="flex items-center gap-2 text-xs font-bold text-primary mb-6 px-3 hover:underline"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        Quay Lại
+                      </button>
+
+                      <h3 className="text-lg font-bold px-3 mb-4 capitalize">
+                        {activeMobileSubMenu.replace('-', ' ')}
+                      </h3>
+
+                      <nav className="space-y-1">
+                        <Link 
+                          to={`/${activeMobileSubMenu}`}
+                          className="block py-3 px-3 text-sm font-bold text-primary bg-primary/5 rounded-lg mb-2"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Xem tất cả {activeMobileSubMenu.replace('-', ' ')}
+                        </Link>
+                        {productCategories[activeMobileSubMenu]?.map((subItem) => (
+                          <Link 
+                            key={subItem.name} 
+                            to={subItem.href} 
+                            className="block py-3 px-3 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-secondary rounded-lg transition-colors"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </nav>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
+
+              {/* Close Button - Bottom Left fixed (optional) or top right inside drawer */}
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="absolute top-4 right-4 p-2 hover:bg-secondary rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
 
               {user && (
-                <div className="p-4 mt-auto">
-                  <Button variant="ghost" onClick={handleLogout} className="w-full text-destructive hover:bg-destructive/10">Đăng xuất</Button>
+                <div className="p-4 border-t border-border">
+                  <Button variant="ghost" onClick={handleLogout} className="w-full text-destructive hover:bg-destructive/10">
+                    Đăng xuất tài khoản
+                  </Button>
                 </div>
               )}
             </motion.div>
