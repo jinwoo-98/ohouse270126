@@ -269,23 +269,6 @@ export function ShopTheLook() {
                   </button>
                 </>
               )}
-              
-              {isMultiImage && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
-                  {activeLook.images.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        index === currentImageIndex
-                          ? "bg-primary w-6"
-                          : "bg-cream/50 w-2 hover:bg-cream/80"
-                      }`}
-                      aria-label={`Go to image ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              )}
             </motion.div>
           </AnimatePresence>
 
@@ -305,7 +288,8 @@ export function ShopTheLook() {
                           {selectedProduct.category}
                         </span>
                       </div>
-                      {/* Heart toggle directly on image in sheet */}
+                      
+                      {/* Optimized Wishlist Button position: Moved left away from the close button (X) */}
                       <button 
                         onClick={() => toggleWishlist({
                           id: selectedProduct.id,
@@ -314,7 +298,7 @@ export function ShopTheLook() {
                           image: selectedProduct.image,
                           originalPrice: selectedProduct.originalPrice
                         })}
-                        className={`absolute top-4 right-4 p-2.5 rounded-full shadow-medium transition-all ${
+                        className={`absolute top-4 right-14 p-2.5 rounded-full shadow-medium transition-all ${
                           isInWishlist(selectedProduct.id)
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Check, Truck, Shield, ArrowRight, Heart, X } from "lucide-react";
+import { ShoppingBag, Check, Truck, Shield, ArrowRight, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
@@ -35,7 +35,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
   }
 
-  // Mẫu dữ liệu bổ sung cho xem nhanh
   const productDetails = {
     description: `Sản phẩm thuộc bộ sưu tập nội thất cao cấp của OHOUSE, được chế tác từ chất liệu ${product.material || "cao cấp"} theo phong cách ${product.style || "hiện đại"}. Mang lại vẻ đẹp tinh tế và sự tiện nghi tối đa cho không gian sống của bạn.`,
     features: [
@@ -61,6 +60,8 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 {product.categorySlug?.replace('-', ' ') || "Nội Thất"}
               </span>
             </div>
+            
+            {/* Optimized Wishlist Button position: Moved further left from the close button (X) */}
             <button 
               onClick={() => toggleWishlist({
                 id: product.id,
@@ -68,7 +69,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 price: product.price,
                 image: product.image
               })}
-              className={`absolute top-4 right-4 p-2.5 rounded-full shadow-medium transition-all ${
+              className={`absolute top-4 right-14 p-2.5 rounded-full shadow-medium transition-all ${
                 isInWishlist(product.id)
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'
