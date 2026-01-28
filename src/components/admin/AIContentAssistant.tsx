@@ -34,11 +34,8 @@ export function AIContentAssistant({ onInsert, contextTitle, contentType }: AICo
       const title = contextTitle || "Nội thất cao cấp";
       const isLongRequest = prompt.toLowerCase().includes("dài") || prompt.toLowerCase().includes("chi tiết") || prompt.toLowerCase().includes("sâu");
       
-      const extraPromptSection = prompt ? `<p className="bg-primary/5 p-3 rounded-lg border-l-4 border-primary"><strong>Lưu ý theo yêu cầu:</strong> Hệ thống đã tối ưu nội dung tập trung vào: <em>${prompt}</em></p>` : "";
-
       if (contentType === 'news') {
         mockResponse = `
-${extraPromptSection}
 <h2>${title}: Xu Hướng Kiến Trúc Đẳng Cấp Năm 2024</h2>
 <p>Trong kỷ nguyên mới của ngành thiết kế nội thất, <strong>${title}</strong> không chỉ đơn thuần là việc sắp xếp đồ đạc mà còn là nghệ thuật thể hiện phong cách sống của gia chủ. Tại OHOUSE, chúng tôi luôn đi tiên phong trong việc cập nhật những tinh hoa thiết kế từ Châu Âu để áp dụng vào không gian sống Việt.</p>
 
@@ -59,7 +56,6 @@ ${isLongRequest ? `
 <p>Kết luận, việc đầu tư vào <strong>${title}</strong> chính là đầu tư vào chất lượng cuộc sống lâu dài. Hãy để OHOUSE đồng hành cùng bạn trên hành trình xây dựng tổ ấm trong mơ.</p>`;
       } else if (contentType === 'project') {
         mockResponse = `
-${extraPromptSection}
 <h1>Dự Án Tiêu Biểu: ${title}</h1>
 <p>Dự án <strong>${title}</strong> là một minh chứng điển hình cho triết lý thiết kế "Sang trọng từ sự tối giản" mà OHOUSE đang theo đuổi. Công trình được hoàn thiện sau 6 tháng tư vấn, thiết kế và thi công tỉ mỉ đến từng chi tiết nhỏ nhất.</p>
 
@@ -83,7 +79,6 @@ ${isLongRequest ? `
 `;
       } else {
         mockResponse = `
-${extraPromptSection}
 <h2>Thông Tin Chi Tiết Về ${title}</h2>
 <p>Chào mừng quý khách đến với chuyên mục hỗ trợ của OHOUSE. Dưới đây là các thông tin chi tiết và chính thức về <strong>${title}</strong>. Chúng tôi hy vọng những nội dung này sẽ giúp quý khách hiểu rõ hơn về quy trình làm việc cũng như các cam kết chất lượng của chúng tôi.</p>
 
