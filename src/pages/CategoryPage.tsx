@@ -159,7 +159,6 @@ export default function CategoryPage() {
                     
                     <div className="space-y-8">
                        <SubcategoryList currentSlug={categorySlug} />
-                       {/* Price, Styles, Materials duplicated for mobile modal... simplified here for brevity */}
                        <div className="animate-fade-in">
                         <h4 className="font-bold mb-4 text-[11px] uppercase tracking-widest text-muted-foreground">Khoảng Giá</h4>
                         <div className="space-y-2.5">
@@ -184,27 +183,34 @@ export default function CategoryPage() {
               <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md py-4 border-b border-border/60 mb-8 -mx-4 px-4 md:-mx-8 md:px-8">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-2 md:gap-4">
-                    {/* Filter Toggle Button (Desktop) */}
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-                      className="hidden lg:flex h-10 px-3 rounded-xl hover:bg-secondary gap-2 text-xs font-bold uppercase tracking-widest"
-                    >
-                      {isSidebarVisible ? <X className="w-4 h-4" /> : <ListFilter className="w-4 h-4" />}
-                      {isSidebarVisible ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
-                    </Button>
+                    {/* Category Title & Filter Toggle Group */}
+                    <div className="flex items-center gap-4">
+                      <h1 className="hidden md:block text-sm font-bold uppercase tracking-[0.2em] text-charcoal whitespace-nowrap">
+                        {category.title}
+                      </h1>
+                      
+                      <div className="h-4 w-[1px] bg-border/50 hidden md:block" />
 
-                    {/* Filter Toggle Button (Mobile) */}
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setShowFiltersMobile(true)}
-                      className="lg:hidden h-10 px-4 rounded-xl border-border/60 gap-2"
-                    >
-                      <SlidersHorizontal className="w-4 h-4" />
-                      Lọc
-                    </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+                        className="hidden lg:flex h-10 px-3 rounded-xl hover:bg-secondary gap-2 text-xs font-bold uppercase tracking-widest"
+                      >
+                        {isSidebarVisible ? <X className="w-4 h-4" /> : <ListFilter className="w-4 h-4" />}
+                        {isSidebarVisible ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
+                      </Button>
+
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setShowFiltersMobile(true)}
+                        className="lg:hidden h-10 px-4 rounded-xl border-border/60 gap-2"
+                      >
+                        <SlidersHorizontal className="w-4 h-4" />
+                        Lọc
+                      </Button>
+                    </div>
 
                     <div className="h-6 w-[1px] bg-border/50 mx-1 hidden lg:block" />
 
@@ -258,7 +264,7 @@ export default function CategoryPage() {
                           <button onClick={() => toggleFilter('priceRange', val)} className="p-0.5 hover:bg-primary/20 rounded-full transition-colors"><X className="w-3 h-3" /></button>
                         </Badge>
                       ))}
-                      <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[10px] font-bold uppercase tracking-widest h-7 px-2 text-muted-foreground hover:text-destructive">Xóa hết</Button>
+                      <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[10px] font-bold uppercase tracking-widest h-7 px-2 text-muted-foreground hover:text-destructive">Xóa hết</button>
                     </motion.div>
                   )}
                 </AnimatePresence>
