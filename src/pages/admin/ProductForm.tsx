@@ -10,14 +10,16 @@ import {
   Settings2,
   Image as ImageIcon,
   TrendingUp,
-  Box
+  Box,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
 import { 
   Select, 
   SelectContent, 
@@ -119,7 +121,7 @@ export default function ProductForm() {
     }
 
     setLoading(true);
-    const slug = formData.slug || formData.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    const slug = formData.slug || formData.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
     
     const payload = {
       name: formData.name,
@@ -159,7 +161,6 @@ export default function ProductForm() {
     }
   };
 
-  // Tổ chức danh mục theo cấp cha-con để hiển thị đẹp hơn
   const parentCategories = categories.filter(c => !c.parent_id);
 
   if (fetching) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -168,79 +169,85 @@ export default function ProductForm() {
     <div className="max-w-5xl mx-auto pb-20">
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" asChild>
+          <Button variant="outline" size="icon" className="rounded-xl" asChild>
             <Link to="/admin/products"><ArrowLeft className="w-4 h-4" /></Link>
           </Button>
           <div>
             <h1 className="text-2xl font-bold">{isEdit ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}</h1>
-            <p className="text-muted-foreground">Điền thông tin chi tiết sản phẩm của bạn bên dưới.</p>
+            <p className="text-muted-foreground text-sm">Cập nhật thông tin chi tiết cho website.</p>
           </div>
         </div>
-        <Button onClick={handleSubmit} disabled={loading} className="btn-hero shadow-gold px-10">
+        <Button onClick={handleSubmit} disabled={loading} className="btn-hero shadow-gold px-10 rounded-xl">
           {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-          {isEdit ? "Cập nhật sản phẩm" : "Lưu sản phẩm"}
+          {isEdit ? "Cập nhật ngay" : "Lưu sản phẩm"}
         </Button>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-border space-y-4">
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
               <Info className="w-4 h-4" /> Thông tin cơ bản
             </h3>
             <div className="space-y-2">
-              <Label>Tên sản phẩm *</Label>
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tên sản phẩm *</Label>
               <Input 
                 value={formData.name} 
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="Ví dụ: Sofa da Ý cao cấp"
                 required
-                className="h-12"
+                className="h-12 rounded-xl text-lg font-bold"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-2">
-                <Label>Chất liệu</Label>
-                <Input value={formData.material} onChange={(e) => setFormData({...formData, material: e.target.value})} placeholder="Ví dụ: Gỗ Sồi, Da thật..." className="h-12" />
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Chất liệu</Label>
+                <Input value={formData.material} onChange={(e) => setFormData({...formData, material: e.target.value})} placeholder="Gỗ Óc Chó, Da thật..." className="h-12 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label>Phong cách</Label>
-                <Input value={formData.style} onChange={(e) => setFormData({...formData, style: e.target.value})} placeholder="Ví dụ: Hiện đại, Minimalist..." className="h-12" />
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Phong cách</Label>
+                <Input value={formData.style} onChange={(e) => setFormData({...formData, style: e.target.value})} placeholder="Luxury, Hiện đại..." className="h-12 rounded-xl" />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Mô tả ngắn</Label>
-              <Textarea 
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả sản phẩm</Label>
+                <AIContentAssistant 
+                  contentType="product" 
+                  contextTitle={formData.name} 
+                  onInsert={(val) => setFormData({...formData, description: val})} 
+                />
+              </div>
+              <RichTextEditor 
                 value={formData.description} 
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Nhập mô tả tóm tắt về sản phẩm..."
-                rows={5}
+                onChange={(val) => setFormData({...formData, description: val})} 
+                placeholder="Nhập mô tả chi tiết sản phẩm tại đây..."
               />
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-border space-y-4">
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
               <Settings2 className="w-4 h-4" /> Giá và Phân loại
             </h3>
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label>Giá bán lẻ (VND) *</Label>
-                <Input type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} required className="h-12 font-bold text-primary" />
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Giá bán lẻ (VND) *</Label>
+                <Input type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} required className="h-12 rounded-xl font-bold text-primary text-lg" />
               </div>
               <div className="space-y-2">
-                <Label>Giá gốc (Nếu có)</Label>
-                <Input type="number" value={formData.original_price} onChange={(e) => setFormData({...formData, original_price: e.target.value})} className="h-12" />
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Giá gốc (Nếu có)</Label>
+                <Input type="number" value={formData.original_price} onChange={(e) => setFormData({...formData, original_price: e.target.value})} className="h-12 rounded-xl" />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Danh mục sản phẩm *</Label>
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Danh mục mục tiêu *</Label>
               <Select 
                 value={formData.category_id} 
                 onValueChange={(val) => setFormData({...formData, category_id: val})}
               >
                 <SelectTrigger className="h-12 rounded-xl">
-                  <SelectValue placeholder="Chọn một danh mục" />
+                  <SelectValue placeholder="Chọn danh mục sản phẩm" />
                 </SelectTrigger>
                 <SelectContent className="max-h-80 rounded-xl">
                   {parentCategories.map(parent => (
@@ -254,63 +261,59 @@ export default function ProductForm() {
                       ))}
                     </SelectGroup>
                   ))}
-                  {/* Trường hợp các danh mục đặc biệt không thuộc cha nào */}
-                  {categories.filter(c => !c.parent_id && !categories.some(child => child.parent_id === c.id)).map(cat => (
-                    <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
-                  ))}
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-border space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" /> Cấu hình Marketing & Hiển thị
-            </h3>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Thứ tự hiển thị</Label>
-                <Input type="number" value={formData.display_order} onChange={(e) => setFormData({...formData, display_order: e.target.value})} className="h-12" />
-              </div>
-              <div className="space-y-2">
-                <Label>Lượt mua ảo</Label>
-                <Input type="number" value={formData.fake_sold} onChange={(e) => setFormData({...formData, fake_sold: e.target.value})} className="h-12" />
-              </div>
-              <div className="space-y-2">
-                <Label>Điểm đánh giá</Label>
-                <Input type="number" step="0.1" max="5" value={formData.fake_rating} onChange={(e) => setFormData({...formData, fake_rating: e.target.value})} className="h-12" />
-              </div>
-              <div className="space-y-2">
-                <Label>Số lượng đánh giá</Label>
-                <Input type="number" value={formData.fake_review_count} onChange={(e) => setFormData({...formData, fake_review_count: e.target.value})} className="h-12" />
-              </div>
             </div>
           </div>
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-border space-y-4">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
               <ImageIcon className="w-4 h-4" /> Hình ảnh chính
             </h3>
             <ImageUpload value={formData.image_url} onChange={(url) => setFormData({...formData, image_url: url})} />
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-border space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Layers className="w-4 h-4" /> Thuộc tính hiển thị
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" /> Marketing (Ảo)
             </h3>
-            <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-              <div className="flex flex-col"><span className="text-xs font-bold uppercase">Sản phẩm Mới</span></div>
-              <Switch checked={formData.is_new} onCheckedChange={(val) => setFormData({...formData, is_new: val})} />
+            <div className="grid gap-4">
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Thứ tự hiển thị</Label>
+                <Input type="number" value={formData.display_order} onChange={(e) => setFormData({...formData, display_order: e.target.value})} className="h-10 rounded-lg" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Lượt mua</Label>
+                  <Input type="number" value={formData.fake_sold} onChange={(e) => setFormData({...formData, fake_sold: e.target.value})} className="h-10 rounded-lg" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Sao (Max 5)</Label>
+                  <Input type="number" step="0.1" max="5" value={formData.fake_rating} onChange={(e) => setFormData({...formData, fake_rating: e.target.value})} className="h-10 rounded-lg" />
+                </div>
+              </div>
             </div>
-            <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-              <div className="flex flex-col"><span className="text-xs font-bold uppercase">Đang Khuyến Mãi</span></div>
-              <Switch checked={formData.is_sale} onCheckedChange={(val) => setFormData({...formData, is_sale: val})} />
-            </div>
-            <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-              <div className="flex flex-col"><span className="text-xs font-bold uppercase">Sản phẩm Nổi Bật</span></div>
-              <Switch checked={formData.is_featured} onCheckedChange={(val) => setFormData({...formData, is_featured: val})} />
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+              <Layers className="w-4 h-4" /> Trạng thái & Badge
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
+                <span className="text-xs font-bold uppercase">Sản phẩm Mới</span>
+                <Switch checked={formData.is_new} onCheckedChange={(val) => setFormData({...formData, is_new: val})} />
+              </div>
+              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
+                <span className="text-xs font-bold uppercase">Flash Sale</span>
+                <Switch checked={formData.is_sale} onCheckedChange={(val) => setFormData({...formData, is_sale: val})} />
+              </div>
+              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
+                <span className="text-xs font-bold uppercase">Nổi Bật</span>
+                <Switch checked={formData.is_featured} onCheckedChange={(val) => setFormData({...formData, is_featured: val})} />
+              </div>
             </div>
           </div>
         </div>
