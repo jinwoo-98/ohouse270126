@@ -92,7 +92,9 @@ export default function PageForm() {
             placeholder="Nhập nội dung trang tại đây..."
             className="min-h-[400px] font-mono text-sm leading-relaxed"
           />
-          <p className="text-[10px] text-muted-foreground italic">Gợi ý: Bạn có thể sử dụng các thẻ HTML như <h3>, <p>, <ul>, <li> để định dạng nội dung.</p>
+          <p className="text-[10px] text-muted-foreground italic">
+            Gợi ý: Bạn có thể sử dụng các thẻ HTML như <h3>, <p>, <ul>, <li> để định dạng nội dung.
+          </p>
         </div>
       </form>
     </div>

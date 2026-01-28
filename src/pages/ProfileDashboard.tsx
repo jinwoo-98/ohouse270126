@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Outlet, useLocation, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { 
   Loader2, Package, Calendar, ChevronRight, MapPin, 
   Plus, Trash2, ChevronDown, ChevronUp, Ticket, 
-  Star, Clock, Settings, ShoppingBag, X, Heart 
+  Clock, Heart, ShoppingBag, X
 } from "lucide-react";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { ProfileForm } from "@/components/profile/ProfileForm";
@@ -99,7 +99,7 @@ export default function ProfileDashboard() {
       district: formData.get('district'),
       ward: formData.get('ward'),
       detail_address: formData.get('detail'),
-      is_default: addresses.length === 0 // Tự động đặt mặc định nếu là địa chỉ đầu tiên
+      is_default: addresses.length === 0 
     };
 
     try {
