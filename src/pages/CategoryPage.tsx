@@ -128,7 +128,6 @@ export default function CategoryPage() {
                     <SheetTitle className="text-left font-bold text-sm uppercase tracking-widest">Bộ lọc sản phẩm</SheetTitle>
                   </SheetHeader>
                   <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-                    {/* Sale Toggle in Mobile Sheet */}
                     <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-xl">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold uppercase tracking-widest">Chỉ hiện hàng SALE</span>
@@ -184,7 +183,6 @@ export default function CategoryPage() {
                 </SheetContent>
               </Sheet>
 
-              {/* Sale Toggle - Desktop Only */}
               <div className="hidden lg:flex items-center gap-3 ml-2">
                 <Switch 
                   checked={filters.saleOnly} 
@@ -196,7 +194,6 @@ export default function CategoryPage() {
             </div>
 
             <div className="flex items-center gap-4 md:gap-8">
-              {/* Sort Selection - Visible on both Mobile (as button-like select) and Desktop */}
               <div className="relative">
                 <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
                   <SelectTrigger className="w-32 md:w-48 border border-charcoal/20 lg:border-none bg-transparent hover:text-primary focus:ring-0 text-[10px] md:text-xs font-bold uppercase tracking-widest h-10 lg:h-auto px-3 lg:p-0 shadow-none rounded-none">
@@ -204,6 +201,7 @@ export default function CategoryPage() {
                   </SelectTrigger>
                   <SelectContent className="rounded-xl z-[110]">
                     <SelectItem value="newest">Mới nhất</SelectItem>
+                    <SelectItem value="popular">Phổ biến nhất</SelectItem>
                     <SelectItem value="price-asc">Giá thấp đến cao</SelectItem>
                     <SelectItem value="price-desc">Giá cao đến thấp</SelectItem>
                   </SelectContent>
@@ -215,7 +213,6 @@ export default function CategoryPage() {
 
         <div className="container-luxury">
           <div className="flex flex-col lg:flex-row gap-12 items-start relative">
-            {/* Sidebar Filter - Desktop - Independent Scroll */}
             <AnimatePresence mode="wait">
               {isSidebarVisible && (
                 <motion.aside 
@@ -273,7 +270,6 @@ export default function CategoryPage() {
               )}
             </AnimatePresence>
 
-            {/* Product Grid */}
             <div className="flex-1 min-w-0">
               <div className={cn(
                 "grid grid-cols-2 gap-4 md:gap-8 lg:gap-10",
@@ -283,6 +279,10 @@ export default function CategoryPage() {
                   Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)
                 ) : products.map((product, index) => {
                   const isFavorite = isInWishlist(product.id);
+                  const rating = product.fake_rating || 5;
+                  const reviews = product.fake_review_count || 0;
+                  const sold = product.fake_sold || 0;
+
                   return (
                     <motion.div 
                       key={product.id} 
@@ -293,12 +293,19 @@ export default function CategoryPage() {
                       <div className="group relative h-full flex flex-col">
                         <div className="relative aspect-[3/4] overflow-hidden bg-secondary/30">
                           <Link to={`/san-pham/${product.id}`} className="block h-full">
-                            <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                            {product.isSale && (
-                              <span className="absolute top-4 left-4 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-charcoal shadow-sm">
-                                Sale
-                              </span>
-                            )}
+                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <div className="absolute top-4 left-4 flex flex-col gap-1">
+                              {product.is_sale && (
+                                <span className="bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-charcoal shadow-sm">
+                                  Sale
+                                </span>
+                              )}
+                              {product.is_new && (
+                                <span className="bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm">
+                                  New
+                                </span>
+                              )}
+                            </div>
                           </Link>
                           
                           <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
@@ -322,18 +329,37 @@ export default function CategoryPage() {
                         </div>
 
                         <div className="pt-5 flex-1 flex flex-col">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="flex text-primary">
+                              {[...Array(5)].map((_, i) => (
+                                <Star 
+                                  key={i} 
+                                  className={cn(
+                                    "w-3 h-3", 
+                                    i < Math.floor(rating) ? "fill-current" : "text-gray-300"
+                                  )} 
+                                />
+                              ))}
+                            </div>
+                            <span className="text-[10px] text-muted-foreground">({reviews})</span>
+                          </div>
+
                           <Link to={`/san-pham/${product.id}`}>
                             <h3 className="text-sm font-medium text-charcoal hover:text-primary transition-colors line-clamp-2 mb-2">
                               {product.name}
                             </h3>
                           </Link>
+                          
                           <div className="mt-auto">
                             <div className="flex items-center gap-3">
                               <span className="text-base font-bold text-charcoal">{formatPrice(product.price)}</span>
-                              {product.originalPrice && (
-                                <span className="text-xs text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
+                              {product.original_price && (
+                                <span className="text-xs text-muted-foreground line-through">{formatPrice(product.original_price)}</span>
                               )}
                             </div>
+                            {sold > 0 && (
+                              <p className="text-[10px] text-muted-foreground mt-1">Đã bán {sold}</p>
+                            )}
                           </div>
                         </div>
                       </div>

@@ -40,7 +40,6 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
 
       // Filter by Category
       if (categorySlug !== 'noi-that' && categorySlug !== 'sale' && categorySlug !== 'moi' && categorySlug !== 'ban-chay') {
-        // Simple mapping for demonstration
         query = query.eq('category_id', categorySlug);
       }
 
@@ -54,15 +53,23 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
         query = query.eq('is_sale', true);
       }
 
-      // Sorting
-      if (filters.sortBy === 'price-asc') query = query.order('price', { ascending: true });
-      else if (filters.sortBy === 'price-desc') query = query.order('price', { ascending: false });
-      else query = query.order('created_at', { ascending: false });
+      // Sorting Logic
+      if (filters.sortBy === 'price-asc') {
+        query = query.order('price', { ascending: true });
+      } else if (filters.sortBy === 'price-desc') {
+        query = query.order('price', { ascending: false });
+      } else if (filters.sortBy === 'popular') {
+        // Nếu chọn phổ biến, ưu tiên xếp theo fake_sold
+        query = query.order('fake_sold', { ascending: false }).order('display_order', { ascending: true });
+      } else {
+        // Mặc định (Newest): Ưu tiên Display Order trước, sau đó đến ngày tạo
+        query = query.order('display_order', { ascending: true }).order('created_at', { ascending: false });
+      }
 
       const { data, error } = await query;
       if (error) throw error;
 
-      // Client side filtering for price (simpler for this demo)
+      // Client side filtering for price
       let filteredData = data || [];
       if (filters.priceRange.length > 0) {
         filteredData = filteredData.filter(p => {

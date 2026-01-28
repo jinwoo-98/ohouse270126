@@ -8,7 +8,8 @@ import {
   Info,
   Layers,
   Settings2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +38,11 @@ export default function ProductForm() {
     is_featured: false,
     is_new: false,
     is_sale: false,
+    // New fields
+    display_order: "1000",
+    fake_sold: "0",
+    fake_review_count: "0",
+    fake_rating: "5",
   });
 
   useEffect(() => {
@@ -64,6 +70,10 @@ export default function ProductForm() {
           is_featured: data.is_featured,
           is_new: data.is_new,
           is_sale: data.is_sale,
+          display_order: data.display_order?.toString() || "1000",
+          fake_sold: data.fake_sold?.toString() || "0",
+          fake_review_count: data.fake_review_count?.toString() || "0",
+          fake_rating: data.fake_rating?.toString() || "5",
         });
       }
     } catch (error) {
@@ -85,10 +95,20 @@ export default function ProductForm() {
     const slug = formData.slug || formData.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
     
     const payload = {
-      ...formData,
-      slug,
+      name: formData.name,
+      slug: slug,
       price: parseFloat(formData.price),
       original_price: formData.original_price ? parseFloat(formData.original_price) : null,
+      description: formData.description,
+      category_id: formData.category_id,
+      image_url: formData.image_url,
+      is_featured: formData.is_featured,
+      is_new: formData.is_new,
+      is_sale: formData.is_sale,
+      display_order: parseInt(formData.display_order) || 1000,
+      fake_sold: parseInt(formData.fake_sold) || 0,
+      fake_review_count: parseInt(formData.fake_review_count) || 0,
+      fake_rating: parseFloat(formData.fake_rating) || 5,
       updated_at: new Date()
     };
 
@@ -184,7 +204,7 @@ export default function ProductForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Giá gốc (Nếu có - để hiện gạch ngang)</Label>
+                <Label>Giá gốc (Nếu có)</Label>
                 <Input 
                   type="number"
                   value={formData.original_price} 
@@ -204,6 +224,58 @@ export default function ProductForm() {
               />
             </div>
           </div>
+
+          {/* New Section: Fake Data & Sorting */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-border space-y-4">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" /> Cấu hình Marketing & Hiển thị
+            </h3>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label>Thứ tự hiển thị (Nhỏ xếp trước)</Label>
+                <Input 
+                  type="number"
+                  value={formData.display_order} 
+                  onChange={(e) => setFormData({...formData, display_order: e.target.value})}
+                  placeholder="1000"
+                  className="h-12"
+                />
+                <p className="text-[10px] text-muted-foreground">Nhập 1-20 để đưa lên đầu danh mục.</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Lượt mua ảo (Fake Sold)</Label>
+                <Input 
+                  type="number"
+                  value={formData.fake_sold} 
+                  onChange={(e) => setFormData({...formData, fake_sold: e.target.value})}
+                  placeholder="0"
+                  className="h-12"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Điểm đánh giá (Fake Rating)</Label>
+                <Input 
+                  type="number"
+                  step="0.1"
+                  max="5"
+                  value={formData.fake_rating} 
+                  onChange={(e) => setFormData({...formData, fake_rating: e.target.value})}
+                  placeholder="5.0"
+                  className="h-12"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Số lượng đánh giá (Fake Count)</Label>
+                <Input 
+                  type="number"
+                  value={formData.fake_review_count} 
+                  onChange={(e) => setFormData({...formData, fake_review_count: e.target.value})}
+                  placeholder="0"
+                  className="h-12"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Sidebar content */}
@@ -216,7 +288,6 @@ export default function ProductForm() {
               value={formData.image_url} 
               onChange={(url) => setFormData({...formData, image_url: url})} 
             />
-            <p className="text-[10px] text-muted-foreground italic text-center">Ảnh này sẽ hiển thị ở danh sách sản phẩm bên ngoài web.</p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-border space-y-6">
