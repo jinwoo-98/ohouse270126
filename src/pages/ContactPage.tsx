@@ -1,185 +1,173 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Phone, Mail, MapPin, Clock, Send, MessageSquare, Building2, Users, Loader2 } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Facebook, Send, Bot, ExternalLink, ArrowRight } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { AIChatWindow } from "@/components/contact/AIChatWindow";
 
-const contactMethods = [
-  { icon: Phone, title: "Hotline", value: "1900 888 999", desc: "Miễn phí cuộc gọi" },
-  { icon: Mail, title: "Email", value: "info@ohouse.vn", desc: "Phản hồi trong 24h" },
-  { icon: MapPin, title: "Showroom", value: "123 Nguyễn Huệ, Q.1, HCM", desc: "Xem bản đồ" },
-  { icon: Clock, title: "Giờ làm việc", value: "8:00 - 21:00", desc: "Thứ 2 - Chủ nhật" },
-];
-
-const cooperationTypes = [
-  { icon: Building2, title: "Đại Lý", desc: "Trở thành đại lý phân phối sản phẩm OHOUSE" },
-  { icon: Users, title: "Nhà Thầu", desc: "Hợp tác dự án nội thất công trình" },
-  { icon: MessageSquare, title: "Đối Tác", desc: "Liên kết kinh doanh và truyền thông" },
+const contactChannels = [
+  {
+    id: 'ai',
+    icon: Bot,
+    title: "Chat với AI",
+    desc: "Tư vấn sản phẩm & giải đáp nhanh 24/7",
+    action: "Bắt đầu chat",
+    color: "bg-primary/10 text-primary",
+    isInternal: true
+  },
+  {
+    id: 'zalo',
+    icon: MessageCircle,
+    title: "Nhắn Zalo",
+    desc: "Hỗ trợ kỹ thuật & xem ảnh thực tế",
+    action: "0909 123 456",
+    color: "bg-blue-500/10 text-blue-600",
+    href: "https://zalo.me/123456789"
+  },
+  {
+    id: 'phone',
+    icon: Phone,
+    title: "Gọi Hotline",
+    desc: "Đặt hàng & khiếu nại dịch vụ",
+    action: "1900 888 999",
+    color: "bg-green-500/10 text-green-600",
+    href: "tel:1900888999"
+  },
+  {
+    id: 'fb',
+    icon: Facebook,
+    title: "Facebook Messenger",
+    desc: "Cập nhật xu hướng & khuyến mãi",
+    action: "Nhắn Fanpage",
+    color: "bg-indigo-500/10 text-indigo-600",
+    href: "https://m.me/ohouse.vn"
+  },
+  {
+    id: 'email',
+    icon: Mail,
+    title: "Gửi Email",
+    desc: "Hỗ trợ bảo hành & thông tin hóa đơn",
+    action: "info@ohouse.vn",
+    color: "bg-orange-500/10 text-orange-600",
+    href: "mailto:info@ohouse.vn"
+  }
 ];
 
 export default function ContactPage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    subject: "",
-    message: ""
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.phone || !formData.message) {
-      toast.error("Vui lòng điền đầy đủ các thông tin bắt buộc (*)");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { error } = await supabase
-        .from('contact_messages')
-        .insert({
-          name: formData.name,
-          phone: formData.phone,
-          email: formData.email,
-          subject: formData.subject || "Liên hệ chung",
-          message: formData.message
-        });
-
-      if (error) throw error;
-      
-      toast.success("Gửi yêu cầu thành công! Chúng tôi sẽ liên hệ sớm nhất.");
-      setFormData({ name: "", phone: "", email: "", subject: "", message: "" });
-    } catch (error: any) {
-      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1">
-        <section className="bg-charcoal text-cream py-16">
-          <div className="container-luxury text-center">
+        <section className="bg-charcoal text-cream py-16 md:py-24 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary rounded-full blur-3xl" />
+          </div>
+          
+          <div className="container-luxury text-center relative z-10">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Liên Hệ & Hợp Tác</h1>
-              <p className="text-taupe max-w-2xl mx-auto">Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn</p>
+              <span className="text-primary font-bold uppercase tracking-[0.3em] text-xs mb-4 block">Chúng tôi ở đây để giúp bạn</span>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">Liên Hệ Với OHOUSE</h1>
+              <p className="text-taupe max-w-2xl mx-auto text-lg">
+                Chọn phương thức thuận tiện nhất cho bạn. Đội ngũ chúng tôi luôn sẵn sàng hỗ trợ mọi thắc mắc.
+              </p>
             </motion.div>
           </div>
         </section>
 
-        <section className="py-12">
+        <section className="py-16 md:py-24">
           <div className="container-luxury">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {contactMethods.map((method, index) => (
-                <motion.div key={method.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} viewport={{ once: true }} className="text-center p-6 bg-card rounded-lg shadow-subtle">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <method.icon className="w-6 h-6 text-primary" />
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {contactChannels.map((channel, index) => (
+                <motion.div
+                  key={channel.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <div className="card-luxury p-8 h-full flex flex-col border border-border/50 bg-card hover:border-primary/30 transition-all group">
+                    <div className={`w-14 h-14 ${channel.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                      <channel.icon className="w-7 h-7" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">{channel.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-8">
+                      {channel.desc}
+                    </p>
+                    
+                    <div className="mt-auto">
+                      {channel.isInternal ? (
+                        <Button 
+                          onClick={() => setIsAIChatOpen(true)}
+                          className="w-full btn-hero h-12 text-xs font-bold shadow-gold"
+                        >
+                          {channel.action} <ArrowRight className="w-4 h-4 ml-2" />
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="outline" 
+                          className="w-full h-12 text-xs font-bold border-charcoal/20 hover:bg-charcoal hover:text-cream"
+                          asChild
+                        >
+                          <a href={channel.href} target="_blank" rel="noopener noreferrer">
+                            {channel.action} <ExternalLink className="w-4 h-4 ml-2 opacity-50" />
+                          </a>
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <h3 className="font-semibold mb-1">{method.title}</h3>
-                  <p className="text-primary font-medium text-sm">{method.value}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{method.desc}</p>
                 </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="py-12 bg-secondary/30">
+        <section className="py-20 bg-secondary/30">
           <div className="container-luxury">
-            <div className="grid lg:grid-cols-2 gap-12">
-              <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-                <h2 className="text-2xl font-bold mb-6">Gửi Yêu Cầu Tư Vấn</h2>
-                <form onSubmit={handleSubmit} className="bg-card rounded-lg p-6 shadow-subtle space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Họ và tên *</Label>
-                      <Input id="name" placeholder="Nguyễn Văn A" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+                <h2 className="text-3xl font-bold mb-6">Ghé Thăm Showroom</h2>
+                <p className="text-muted-foreground mb-8 leading-relaxed">
+                  Trải nghiệm tận mắt các sản phẩm nội thất cao cấp tại không gian trưng bày sang trọng của OHOUSE.
+                </p>
+                <div className="space-y-6">
+                  <div className="flex gap-4">
+                    <div className="w-12 h-12 bg-charcoal text-cream rounded-xl flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-5 h-5" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Số điện thoại *</Label>
-                      <Input id="phone" placeholder="0909 xxx xxx" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                    <div>
+                      <h4 className="font-bold">Showroom TP.HCM</h4>
+                      <p className="text-sm text-muted-foreground">123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh</p>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="your@email.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Chủ đề</Label>
-                    <Select onValueChange={val => setFormData({...formData, subject: val})}>
-                      <SelectTrigger><SelectValue placeholder="Chọn chủ đề" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="product">Tư vấn sản phẩm</SelectItem>
-                        <SelectItem value="project">Thiết kế dự án</SelectItem>
-                        <SelectItem value="order">Đơn hàng</SelectItem>
-                        <SelectItem value="warranty">Bảo hành</SelectItem>
-                        <SelectItem value="other">Khác</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Nội dung *</Label>
-                    <Textarea id="message" placeholder="Mô tả yêu cầu của bạn..." rows={4} value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} />
-                  </div>
-                  <Button type="submit" className="w-full btn-hero" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                    Gửi Yêu Cầu
-                  </Button>
-                </form>
-              </motion.div>
-
-              <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-                <h2 className="text-2xl font-bold mb-6">Hợp Tác Kinh Doanh</h2>
-                <p className="text-muted-foreground mb-6">OHOUSE luôn chào đón các đối tác tiềm năng. Hãy liên hệ với chúng tôi để khám phá cơ hội hợp tác cùng phát triển.</p>
-                <div className="space-y-4">
-                  {cooperationTypes.map((type, index) => (
-                    <div key={type.title} className="flex items-start gap-4 bg-card rounded-lg p-5 shadow-subtle hover:shadow-medium transition-shadow cursor-pointer group">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                        <type.icon className="w-6 h-6 text-primary group-hover:text-primary-foreground" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors">{type.title}</h3>
-                        <p className="text-sm text-muted-foreground">{type.desc}</p>
-                      </div>
+                  <div className="flex gap-4">
+                    <div className="w-12 h-12 bg-charcoal text-cream rounded-xl flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-5 h-5" />
                     </div>
-                  ))}
-                </div>
-                <div className="mt-8 p-6 bg-charcoal text-cream rounded-lg">
-                  <h3 className="font-semibold mb-2">Liên hệ hợp tác trực tiếp</h3>
-                  <p className="text-taupe text-sm mb-4">Bộ phận kinh doanh B2B</p>
-                  <div className="space-y-2 text-sm">
-                    <p className="flex items-center gap-2"><Phone className="w-4 h-4 text-primary" /><span>0909 123 456</span></p>
-                    <p className="flex items-center gap-2"><Mail className="w-4 h-4 text-primary" /><span>business@ohouse.vn</span></p>
+                    <div>
+                      <h4 className="font-bold">Showroom Hà Nội</h4>
+                      <p className="text-sm text-muted-foreground">456 Phố Huế, Quận Hai Bà Trưng, Hà Nội</p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
-            </div>
-          </div>
-        </section>
-
-        <section className="h-[400px] bg-muted">
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            <div className="text-center">
-              <MapPin className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">Bản đồ Showroom OHOUSE</p>
-              <p className="text-sm">123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh</p>
+              
+              <div className="aspect-video bg-muted rounded-3xl overflow-hidden shadow-medium border border-border/50 flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <MapPin className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                  <p className="font-bold text-sm uppercase tracking-widest">Bản đồ vị trí Showroom</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
       </main>
 
+      <AIChatWindow isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} />
       <Footer />
     </div>
   );

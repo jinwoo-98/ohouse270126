@@ -31,6 +31,7 @@ import DesignServicePage from "./pages/DesignServicePage";
 import SearchPage from "./pages/SearchPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import CooperationPage from "./pages/CooperationPage";
 
 const queryClient = new QueryClient();
 
@@ -94,7 +95,7 @@ const App = () => (
                 <Route path="/du-an" element={<ProjectsPage />} />
                 <Route path="/du-an/:id" element={<ProjectDetailPage />} />
                 <Route path="/lien-he" element={<ContactPage />} />
-                <Route path="/hop-tac" element={<ContactPage />} />
+                <Route path="/hop-tac" element={<CooperationPage />} />
                 <Route path="/ho-tro/:slug" element={<SupportPage />} />
                 <Route path="/huong-dan" element={<SupportPage />} />
                 <Route path="/doi-tra" element={<SupportPage />} />

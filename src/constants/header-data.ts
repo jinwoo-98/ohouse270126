@@ -47,7 +47,7 @@ export const secondaryLinks = [
   { name: "Thiết Kế Miễn Phí", href: "/thiet-ke" },
   { name: "Hướng Dẫn", href: "/ho-tro/huong-dan" },
   { name: "Dự Án", href: "/du-an" },
-  { name: "Hợp Tác B2B", href: "/lien-he" },
+  { name: "Hợp Tác B2B", href: "/hop-tac" },
 ];
 
 export const mainCategories = [
