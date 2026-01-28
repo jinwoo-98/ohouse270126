@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Save, Loader2, Palette, Type, Clock, Settings2, Eye } from "lucide-react";
+import { Save, Loader2, Palette, Type, Clock, Settings2, Eye, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
