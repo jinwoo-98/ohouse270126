@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Truck, Loader2 } from "lucide-react";
+import { Truck, Loader2, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { ShippingInfoDialog } from "./ShippingInfoDialog";
 
 export function HeaderTopBanner() {
   const [settings, setSettings] = useState<any>(null);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [loading, setLoading] = useState(true);
   const [currentMsgIndex, setCurrentMsgIndex] = useState(0);
+  const [isShippingDialogOpen, setIsShippingDialogOpen] = useState(false);
 
   useEffect(() => {
     async function fetchSettings() {
@@ -66,60 +68,73 @@ export function HeaderTopBanner() {
   const hasCountdown = currentMsg?.end_time && (countdown.days > 0 || countdown.hours > 0 || countdown.minutes > 0 || countdown.seconds > 0);
 
   return (
-    <div className="bg-primary text-primary-foreground overflow-hidden">
-      <div className="container-luxury flex items-center justify-between h-10 text-[10px] md:text-xs">
-        <div className="flex items-center gap-2 md:gap-4 flex-1">
-          <div className="relative h-6 flex-1 max-w-[450px] overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentMsgIndex}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.5 }}
-                className="absolute inset-0 flex items-center gap-3"
-              >
-                <Link to={currentMsg.link || "/sale"} className="font-bold underline underline-offset-2 hover:no-underline truncate">
-                  {currentMsg.text}
-                </Link>
+    <>
+      <div className="bg-primary text-primary-foreground overflow-hidden">
+        <div className="container-luxury flex items-center justify-between h-10 text-[10px] md:text-xs">
+          <div className="flex items-center gap-2 md:gap-4 flex-1">
+            <div className="relative h-6 flex-1 max-w-[450px] overflow-hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentMsgIndex}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0 flex items-center gap-3"
+                >
+                  <Link to={currentMsg.link || "/sale"} className="font-bold underline underline-offset-2 hover:no-underline truncate">
+                    {currentMsg.text}
+                  </Link>
 
-                {hasCountdown && (
-                  <div className="flex items-center gap-1 shrink-0 animate-fade-in">
-                    <div className="flex items-center gap-0.5">
-                      {countdown.days > 0 && (
-                        <>
-                          <div className="bg-black text-white px-1.5 py-0.5 rounded-sm font-mono font-bold min-w-[20px] text-center border border-white/10">
-                            {countdown.days}d
-                          </div>
-                          <span className="text-[8px] font-bold mx-0.5">:</span>
-                        </>
-                      )}
-                      <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10">
-                        {String(countdown.hours).padStart(2, '0')}
-                      </div>
-                      <span className="text-[8px] font-bold mx-0.5">:</span>
-                      <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10">
-                        {String(countdown.minutes).padStart(2, '0')}
-                      </div>
-                      <span className="text-[8px] font-bold mx-0.5">:</span>
-                      <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10 animate-pulse">
-                        {String(countdown.seconds).padStart(2, '0')}
+                  {hasCountdown && (
+                    <div className="flex items-center gap-1 shrink-0 animate-fade-in">
+                      <div className="flex items-center gap-0.5">
+                        {countdown.days > 0 && (
+                          <>
+                            <div className="bg-black text-white px-1.5 py-0.5 rounded-sm font-mono font-bold min-w-[20px] text-center border border-white/10">
+                              {countdown.days}d
+                            </div>
+                            <span className="text-[8px] font-bold mx-0.5">:</span>
+                          </>
+                        )}
+                        <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10">
+                          {String(countdown.hours).padStart(2, '0')}
+                        </div>
+                        <span className="text-[8px] font-bold mx-0.5">:</span>
+                        <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10">
+                          {String(countdown.minutes).padStart(2, '0')}
+                        </div>
+                        <span className="text-[8px] font-bold mx-0.5">:</span>
+                        <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10 animate-pulse">
+                          {String(countdown.seconds).padStart(2, '0')}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
+          
+          {settings.top_banner_shipping && (
+            <button 
+              onClick={() => setIsShippingDialogOpen(true)}
+              className="hidden sm:flex items-center gap-2 font-bold uppercase tracking-wider opacity-90 hover:opacity-100 transition-opacity"
+            >
+              <Truck className="w-3.5 h-3.5" />
+              <span>{settings.top_banner_shipping}</span>
+              <Info className="w-3 h-3 ml-1 opacity-60" />
+            </button>
+          )}
         </div>
-        
-        {settings.top_banner_shipping && (
-          <div className="hidden sm:flex items-center gap-2 font-bold uppercase tracking-wider opacity-90">
-            <Truck className="w-3.5 h-3.5" />
-            <span>{settings.top_banner_shipping}</span>
-          </div>
-        )}
       </div>
-    </div>
+
+      <ShippingInfoDialog 
+        isOpen={isShippingDialogOpen} 
+        onClose={() => setIsShippingDialogOpen(false)} 
+        title={settings?.shipping_modal_title}
+        content={settings?.shipping_modal_content}
+      />
+    </>
   );
 }

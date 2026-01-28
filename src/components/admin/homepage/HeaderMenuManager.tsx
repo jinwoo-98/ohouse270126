@@ -14,7 +14,8 @@ import {
   Clock,
   Calendar,
   AlertCircle,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Truck
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { cn } from "@/lib/utils";
 
 export function HeaderMenuManager() {
@@ -30,7 +32,9 @@ export function HeaderMenuManager() {
   const [settings, setSettings] = useState<any>({
     top_banner_messages: [{ text: "", link: "", end_time: "" }],
     top_banner_shipping: "",
-    logo_url: ""
+    logo_url: "",
+    shipping_modal_title: "",
+    shipping_modal_content: ""
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -109,6 +113,8 @@ export function HeaderMenuManager() {
         top_banner_messages: filteredMessages,
         top_banner_shipping: settings.top_banner_shipping,
         logo_url: settings.logo_url,
+        shipping_modal_title: settings.shipping_modal_title,
+        shipping_modal_content: settings.shipping_modal_content,
         updated_at: new Date()
       };
 
@@ -146,7 +152,7 @@ export function HeaderMenuManager() {
             </Button>
           </div>
           
-          <div className="space-y-6 max-h-[650px] overflow-y-auto pr-2 pb-10 custom-scrollbar">
+          <div className="space-y-6 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
             {settings.top_banner_messages.map((msg: any, idx: number) => {
               const isExpired = msg.end_time && new Date(msg.end_time) < new Date();
               
@@ -196,7 +202,7 @@ export function HeaderMenuManager() {
                       
                       <div className="space-y-2 pt-2 border-t border-dashed border-border/40">
                         <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                          <Clock className="w-3 h-3 text-destructive" /> Thời gian tự động kết thúc (Hết hạn lúc)
+                          <Clock className="w-3 h-3 text-destructive" /> Thời gian tự động kết thúc
                         </Label>
                         <Input 
                           type="datetime-local" 
@@ -225,6 +231,43 @@ export function HeaderMenuManager() {
           </div>
         </div>
 
+        {/* NEW SECTION: SHIPPING MODAL CONFIG */}
+        <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
+          <div className="flex items-center gap-3 border-b pb-4">
+            <div className="p-2 bg-primary/10 rounded-lg text-primary"><Truck className="w-5 h-5" /></div>
+            <div>
+              <h3 className="font-bold text-sm uppercase tracking-widest">Nội dung Bảng vận chuyển</h3>
+              <p className="text-[10px] text-muted-foreground font-medium">Hiện khi nhấn vào mục vận chuyển</p>
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] uppercase font-bold text-muted-foreground">Tiêu đề bảng thông báo</Label>
+              <Input 
+                value={settings.shipping_modal_title} 
+                onChange={e => setSettings({...settings, shipping_modal_title: e.target.value})} 
+                placeholder="Ví dụ: Miễn Phí Vận Chuyển"
+                className="h-12 rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] uppercase font-bold text-muted-foreground">Nội dung chi tiết</Label>
+              <RichTextEditor 
+                value={settings.shipping_modal_content} 
+                onChange={val => setSettings({...settings, shipping_modal_content: val})} 
+              />
+            </div>
+          </div>
+        </div>
+
+        <Button onClick={handleSaveSettings} disabled={saving} className="w-full btn-hero h-14 shadow-gold rounded-2xl flex items-center justify-center gap-3">
+          {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+          CẬP NHẬT CẤU HÌNH HEADER
+        </Button>
+      </div>
+
+      <div className="space-y-8">
         <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
           <div className="flex items-center gap-3 border-b pb-4">
             <div className="p-2 bg-primary/10 rounded-lg text-primary"><LucideImage className="w-5 h-5" /></div>
@@ -236,60 +279,48 @@ export function HeaderMenuManager() {
           <ImageUpload value={settings.logo_url} onChange={(url) => setSettings({...settings, logo_url: url})} />
         </div>
 
-        <Button onClick={handleSaveSettings} disabled={saving} className="w-full btn-hero h-14 shadow-gold rounded-2xl flex items-center justify-center gap-3">
-          {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-          CẬP NHẬT CẤU HÌNH HEADER
-        </Button>
-      </div>
-
-      <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6 h-fit">
-        <div className="flex items-center gap-3 border-b pb-4">
-          <div className="p-2 bg-primary/10 rounded-lg text-primary"><LayoutGrid className="w-5 h-5" /></div>
-          <div>
-            <h3 className="font-bold text-sm uppercase tracking-widest">Danh mục ở Trang Chủ</h3>
-            <p className="text-[10px] text-muted-foreground font-medium">Bật "Hiện ở Home" để hiện ở lưới danh mục</p>
+        <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
+          <div className="flex items-center gap-3 border-b pb-4">
+            <div className="p-2 bg-primary/10 rounded-lg text-primary"><LayoutGrid className="w-5 h-5" /></div>
+            <div>
+              <h3 className="font-bold text-sm uppercase tracking-widest">Danh mục ở Trang Chủ</h3>
+              <p className="text-[10px] text-muted-foreground font-medium">Bật "Hiện ở Home" để hiện ở lưới danh mục</p>
+            </div>
           </div>
-        </div>
-        
-        <div className="space-y-3 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
-          <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10 mb-4 flex items-center gap-3">
-             <AlertCircle className="w-4 h-4 text-primary shrink-0" />
-             <p className="text-[10px] text-primary-foreground/80 font-medium leading-relaxed italic">
-               Gợi ý: Chỉ nên chọn khoảng 4-8 danh mục chính để hiển thị ngoài trang chủ để đảm bảo tính thẩm mỹ.
-             </p>
-          </div>
-
-          {categories.filter(c => !c.parent_id).map(cat => {
-            const children = categories.filter(c => c.parent_id === cat.id);
-            return (
-              <div key={cat.id} className="space-y-2 border-b border-border/40 pb-4 last:border-0">
-                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-secondary/30 border border-border/20">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white overflow-hidden border border-border/50 flex items-center justify-center shadow-sm">
-                      {cat.image_url ? <img src={cat.image_url} className="w-full h-full object-cover" /> : <ImageIcon className="w-4 h-4 text-gray-300" />}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-xs text-charcoal">{cat.name}</span>
-                      <span className="text-[9px] font-mono text-muted-foreground uppercase">Thứ tự: {cat.display_order}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest">Hiện ở Home</span>
-                    <Switch checked={cat.show_on_home} onCheckedChange={(val) => handleUpdateCategory(cat.id, { show_on_home: val })} />
-                  </div>
-                </div>
-                {children.map(child => (
-                  <div key={child.id} className="flex items-center justify-between p-2.5 ml-10 border-l-2 border-dashed border-border/40 hover:bg-secondary/10 rounded-r-xl transition-colors">
-                    <span className="text-[11px] font-medium text-charcoal/70">— {child.name}</span>
+          
+          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+            {categories.filter(c => !c.parent_id).map(cat => {
+              const children = categories.filter(c => c.parent_id === cat.id);
+              return (
+                <div key={cat.id} className="space-y-2 border-b border-border/40 pb-4 last:border-0">
+                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-secondary/30 border border-border/20">
                     <div className="flex items-center gap-3">
-                       <span className="text-[8px] font-bold uppercase text-muted-foreground">Hiện Home</span>
-                       <Switch checked={child.show_on_home} onCheckedChange={(val) => handleUpdateCategory(child.id, { show_on_home: val })} />
+                      <div className="w-10 h-10 rounded-xl bg-white overflow-hidden border border-border/50 flex items-center justify-center shadow-sm">
+                        {cat.image_url ? <img src={cat.image_url} className="w-full h-full object-cover" /> : <ImageIcon className="w-4 h-4 text-gray-300" />}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-xs text-charcoal">{cat.name}</span>
+                        <span className="text-[9px] font-mono text-muted-foreground uppercase">Thứ tự: {cat.display_order}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest">Hiện ở Home</span>
+                      <Switch checked={cat.show_on_home} onCheckedChange={(val) => handleUpdateCategory(cat.id, { show_on_home: val })} />
                     </div>
                   </div>
-                ))}
-              </div>
-            );
-          })}
+                  {children.map(child => (
+                    <div key={child.id} className="flex items-center justify-between p-2.5 ml-10 border-l-2 border-dashed border-border/40 hover:bg-secondary/10 rounded-r-xl transition-colors">
+                      <span className="text-[11px] font-medium text-charcoal/70">— {child.name}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[8px] font-bold uppercase text-muted-foreground">Hiện Home</span>
+                        <Switch checked={child.show_on_home} onCheckedChange={(val) => handleUpdateCategory(child.id, { show_on_home: val })} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
