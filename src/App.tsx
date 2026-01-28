@@ -38,7 +38,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner position="top-center" />
+      <Toaster asSonner position="top-center" />
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
@@ -67,12 +67,11 @@ const App = () => (
                 <Route path="/tim-kiem" element={<SearchPage />} />
                 <Route path="/san-pham/:id" element={<ProductDetailPage />} />
                 <Route path="/gio-hang" element={<CartPage />} />
-                <Route path="/yeu-thich" element={<WishlistPage />} />
+                <Route path="/yeu-thich" element={<ProfileDashboard />} />
                 <Route path="/lich-su-xem" element={<RecentlyViewedPage />} />
                 <Route path="/dat-hang-thanh-cong" element={<OrderSuccessPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 
-                {/* Sửa lại định tuyến tài khoản để tránh bị lặp giao diện */}
                 <Route path="/tai-khoan" element={<ProfileDashboard />}>
                   <Route index element={<Navigate to="thong-tin" replace />} />
                   <Route path="thong-tin" element={<></>} />

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Loader2, Package, Calendar, ChevronRight, MapPin, Plus, Trash2, ChevronDown, ChevronUp, Ticket, Star, Clock, Settings } from "lucide-react";
+import { Loader2, Package, Calendar, ChevronRight, MapPin, Plus, Trash2, ChevronDown, ChevronUp, Ticket, Star, Clock, Settings, ShoppingBag, X } from "lucide-react";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { PasswordChangeForm } from "@/components/profile/PasswordChangeForm";
@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useWishlist } from "@/contexts/WishlistContext";
+import { useCart } from "@/contexts/CartContext";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -24,6 +26,9 @@ export default function ProfileDashboard() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { wishlist, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  
   const [orders, setOrders] = useState<any[]>([]);
   const [addresses, setAddresses] = useState<any[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
@@ -110,9 +115,10 @@ export default function ProfileDashboard() {
       case "/tai-khoan/thong-tin": return "Thông tin cá nhân";
       case "/tai-khoan/don-hang": return "Đơn hàng của tôi";
       case "/tai-khoan/dia-chi": return "Địa chỉ giao hàng";
-      case "/tai-khoan/vouchers": return "Phiếu giảm giá";
+      case "/tai-khoan/vouchers": return "Mã giảm giá";
       case "/tai-khoan/points": return "Điểm thưởng";
       case "/tai-khoan/cai-dat": return "Cài đặt tài khoản";
+      case "/yeu-thich": return `Sản phẩm yêu thích (${wishlist.length})`;
       default: return "Tổng quan tài khoản";
     }
   };
@@ -167,24 +173,44 @@ export default function ProfileDashboard() {
                 
                 {location.pathname === "/tai-khoan/thong-tin" && <ProfileForm />}
 
+                {location.pathname === "/yeu-thich" && (
+                  wishlist.length === 0 ? (
+                    <div className="text-center py-16">
+                      <Heart className="w-16 h-16 mx-auto text-muted-foreground/20 mb-4" />
+                      <p className="text-muted-foreground">Bạn chưa có sản phẩm yêu thích nào.</p>
+                      <Button asChild className="mt-4" variant="outline"><Link to="/noi-that">Khám phá ngay</Link></Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {wishlist.map((item) => (
+                        <div key={item.id} className="group card-luxury relative border">
+                          <button onClick={() => removeFromWishlist(item.id)} className="absolute top-2 right-2 z-10 p-1.5 bg-card/90 rounded-full hover:bg-destructive hover:text-white transition-colors"><X className="w-4 h-4" /></button>
+                          <Link to={`/san-pham/${item.id}`} className="block aspect-square overflow-hidden"><img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" /></Link>
+                          <div className="p-3">
+                            <Link to={`/san-pham/${item.id}`}><h3 className="text-sm font-semibold line-clamp-1 mb-1">{item.name}</h3></Link>
+                            <p className="text-primary font-bold mb-3">{formatPrice(item.price)}</p>
+                            <Button className="w-full h-8 text-[10px]" onClick={() => addToCart({...item, quantity: 1})}><ShoppingBag className="w-3 h-3 mr-1" /> Mua ngay</Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                )}
+
                 {location.pathname === "/tai-khoan/vouchers" && (
                   <div className="space-y-4">
                     {[
-                      { code: "OHOUSE500", desc: "Giảm 500K cho đơn hàng từ 5tr", expiry: "31/12/2024", type: "Voucher" },
-                      { code: "FREESHIP", desc: "Miễn phí vận chuyển toàn quốc", expiry: "31/12/2024", type: "Vận chuyển" },
+                      { code: "OHOUSE500", desc: "Giảm 500.000đ cho đơn hàng từ 10.000.000đ", expiry: "31/12/2024" },
+                      { code: "FREESHIP", desc: "Miễn phí vận chuyển toàn quốc", expiry: "31/12/2024" },
                     ].map((v) => (
                       <div key={v.code} className="flex items-center gap-4 p-4 border border-dashed border-primary/30 rounded-xl bg-primary/5">
-                        <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
-                          <Ticket className="w-6 h-6" />
-                        </div>
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary"><Ticket className="w-6 h-6" /></div>
                         <div className="flex-1">
-                          <p className="font-bold text-lg">{v.code}</p>
+                          <p className="font-bold text-lg leading-tight">{v.code}</p>
                           <p className="text-sm text-muted-foreground">{v.desc}</p>
-                          <div className="flex items-center gap-1 mt-1 text-[10px] text-muted-foreground uppercase tracking-widest">
-                            <Clock className="w-3 h-3" /> Hạn dùng: {v.expiry}
-                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-1">Hạn dùng: {v.expiry}</p>
                         </div>
-                        <Button variant="outline" size="sm">Dùng ngay</Button>
+                        <Button variant="outline" size="sm">Sao chép</Button>
                       </div>
                     ))}
                   </div>
@@ -192,27 +218,21 @@ export default function ProfileDashboard() {
 
                 {location.pathname === "/tai-khoan/points" && (
                   <div className="space-y-8">
-                    <div className="bg-charcoal text-cream p-8 rounded-2xl flex flex-col items-center justify-center text-center relative overflow-hidden shadow-gold">
-                      <div className="absolute top-0 right-0 p-4 opacity-10"><Star className="w-32 h-32" /></div>
-                      <p className="text-sm font-medium uppercase tracking-[0.2em] mb-2">Điểm hiện có</p>
-                      <h3 className="text-5xl font-bold text-primary flex items-center gap-3">
-                        1,250 <Star className="w-8 h-8 fill-current" />
-                      </h3>
-                      <p className="mt-4 text-taupe text-xs">Tương đương {formatPrice(125000)} giảm giá</p>
+                    <div className="bg-charcoal text-cream p-8 rounded-2xl text-center shadow-elevated relative overflow-hidden">
+                      <Star className="absolute -right-4 -top-4 w-24 h-24 text-primary/10" />
+                      <p className="text-xs uppercase tracking-widest mb-2">Điểm tích lũy hiện có</p>
+                      <h3 className="text-5xl font-bold text-primary">1,250</h3>
+                      <p className="text-sm text-taupe mt-4">Tương đương {formatPrice(125000)} tiền mặt</p>
                     </div>
-
                     <div className="space-y-4">
-                      <h4 className="font-bold">Lịch sử tích điểm</h4>
+                      <h4 className="font-bold border-b pb-2">Lịch sử tích điểm</h4>
                       <div className="space-y-2">
                         {[
-                          { action: "Mua hàng đơn #OH8823", points: "+500", date: "15/10/2024" },
-                          { action: "Mua hàng đơn #OH8710", points: "+750", date: "02/10/2024" },
+                          { action: "Hoàn thành đơn hàng #OH123", points: "+500", date: "15/10/2024" },
+                          { action: "Quà tặng sinh nhật", points: "+750", date: "01/10/2024" },
                         ].map((h, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                            <div>
-                              <p className="text-sm font-medium">{h.action}</p>
-                              <p className="text-xs text-muted-foreground">{h.date}</p>
-                            </div>
+                          <div key={i} className="flex justify-between items-center py-2 border-b border-border/50">
+                            <div><p className="text-sm font-medium">{h.action}</p><p className="text-[10px] text-muted-foreground">{h.date}</p></div>
                             <span className="font-bold text-primary">{h.points}</span>
                           </div>
                         ))}

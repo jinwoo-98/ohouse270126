@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { User, ShoppingBag, Heart, LogOut, MapPin, Settings } from "lucide-react";
+import { User, ShoppingBag, Heart, LogOut, MapPin, Settings, Ticket, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -8,6 +8,8 @@ const navItems = [
   { name: "Thông tin cá nhân", href: "/tai-khoan/thong-tin", icon: User },
   { name: "Đơn hàng của tôi", href: "/tai-khoan/don-hang", icon: ShoppingBag },
   { name: "Sản phẩm yêu thích", href: "/yeu-thich", icon: Heart },
+  { name: "Mã giảm giá", href: "/tai-khoan/vouchers", icon: Ticket },
+  { name: "Điểm thưởng", href: "/tai-khoan/points", icon: Star },
   { name: "Địa chỉ giao hàng", href: "/tai-khoan/dia-chi", icon: MapPin },
   { name: "Cài đặt", href: "/tai-khoan/cai-dat", icon: Settings },
 ];
@@ -34,9 +36,7 @@ export function ProfileSidebar() {
             key={item.name}
             to={item.href}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-              location.pathname.startsWith(item.href) && item.href !== "/yeu-thich"
-                ? 'bg-primary text-primary-foreground'
-                : location.pathname === item.href
+              location.pathname === item.href
                 ? 'bg-primary text-primary-foreground'
                 : 'hover:bg-secondary'
             }`}
