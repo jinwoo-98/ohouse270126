@@ -1,19 +1,22 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, ArrowRight } from "lucide-react";
-
-const trendingKeywords = [
-  "Sofa da thật",
-  "Bàn ăn mặt đá Marble",
-  "Kệ tivi gỗ óc chó",
-  "Giường ngủ bọc da Ý",
-  "Đèn chùm pha lê",
-  "Bàn làm việc hiện đại",
-  "Nội thất phòng ngủ gỗ sồi",
-  "Decor phòng khách luxury"
-];
+import { supabase } from "@/integrations/supabase/client";
 
 export function TrendingSearch() {
+  const [keywords, setKeywords] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchKeywords() {
+      const { data } = await supabase.from('trending_keywords').select('*').order('created_at', { ascending: false });
+      setKeywords(data || []);
+    }
+    fetchKeywords();
+  }, []);
+
+  if (keywords.length === 0) return null;
+
   return (
     <section className="py-12 md:py-16 bg-background border-t border-border/50">
       <div className="container-luxury">
@@ -29,19 +32,19 @@ export function TrendingSearch() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-3 flex-1">
-            {trendingKeywords.map((keyword, index) => (
+            {keywords.map((item, index) => (
               <motion.div
-                key={keyword}
+                key={item.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 viewport={{ once: true }}
               >
                 <Link
-                  to={`/tim-kiem?q=${encodeURIComponent(keyword)}`}
+                  to={`/tim-kiem?q=${encodeURIComponent(item.keyword)}`}
                   className="px-4 py-2 bg-secondary/50 hover:bg-primary hover:text-primary-foreground border border-border/50 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap"
                 >
-                  {keyword}
+                  {item.keyword}
                 </Link>
               </motion.div>
             ))}
