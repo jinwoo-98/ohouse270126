@@ -22,7 +22,6 @@ export function ShopTheLook() {
   const [allLooks, setAllLooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // State quản lý danh mục và ảnh hiện tại
   const [activeCategorySlug, setActiveCategorySlug] = useState<string>("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
@@ -50,7 +49,6 @@ export function ShopTheLook() {
       if (error) throw error;
       setAllLooks(data || []);
 
-      // Mặc định chọn danh mục đầu tiên có dữ liệu
       if (data && data.length > 0) {
         const firstWithData = mainCategories.find(c => data.some(l => l.category_id === c.dropdownKey));
         if (firstWithData) setActiveCategorySlug(firstWithData.dropdownKey!);
@@ -62,11 +60,9 @@ export function ShopTheLook() {
     }
   };
 
-  // Lấy danh sách ảnh thuộc danh mục đang chọn
   const currentCategoryLooks = allLooks.filter(l => l.category_id === activeCategorySlug);
   const activeLook = currentCategoryLooks[currentImageIndex];
 
-  // Cập nhật thông tin sản phẩm khi click hotspot
   useEffect(() => {
     if (selectedProductId && activeLook) {
       const item = activeLook.shop_look_items.find((i: any) => i.product_id === selectedProductId);
@@ -82,7 +78,6 @@ export function ShopTheLook() {
   if (loading) return <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   if (allLooks.length === 0) return null;
 
-  // Lọc các danh mục cha ở Header có tồn tại dữ liệu Lookbook
   const categoriesWithLooks = mainCategories.filter(c => 
     c.dropdownKey && allLooks.some(l => l.category_id === c.dropdownKey)
   );
@@ -98,7 +93,6 @@ export function ShopTheLook() {
           </p>
         </div>
 
-        {/* Category Tabs (Từ Header Row 4) */}
         <div className="flex justify-center gap-2 mb-10 overflow-x-auto pb-2 no-scrollbar px-4">
           {categoriesWithLooks.map((cat) => (
             <button
@@ -136,7 +130,6 @@ export function ShopTheLook() {
                   className="w-full h-full object-cover"
                 />
                 
-                {/* Hotspots */}
                 <div className="absolute inset-0 bg-black/5">
                   {activeLook.shop_look_items.map((item: any) => (
                     <TooltipProvider key={item.id}>
@@ -162,29 +155,33 @@ export function ShopTheLook() {
                   ))}
                 </div>
 
-                {/* Arrows to switch between looks IN SAME category */}
                 {currentCategoryLooks.length > 1 && (
                   <>
-                    <button onClick={goToPrev} className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-all z-20 opacity-0 group-hover:opacity-100">
-                      <ChevronLeft className="w-6 h-6" />
+                    <button 
+                      onClick={goToPrev} 
+                      className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 w-12 h-40 bg-card/10 backdrop-blur-md rounded-r-2xl text-white hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 items-center justify-center group border border-white/10"
+                    >
+                      <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
                     </button>
-                    <button onClick={goToNext} className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-all z-20 opacity-0 group-hover:opacity-100">
-                      <ChevronRight className="w-6 h-6" />
+                    <button 
+                      onClick={goToNext} 
+                      className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 w-12 h-40 bg-card/10 backdrop-blur-md rounded-l-2xl text-white hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 items-center justify-center group border border-white/10"
+                    >
+                      <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                     </button>
                     
-                    {/* Pagination indicators inside the image */}
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
                       {currentCategoryLooks.map((_, idx) => (
-                        <div 
-                          key={idx} 
-                          className={`h-1.5 rounded-full transition-all ${idx === currentImageIndex ? 'w-8 bg-white' : 'w-2 bg-white/40'}`} 
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentImageIndex(idx)}
+                          className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentImageIndex ? "bg-white w-8" : "bg-white/30 w-2 hover:bg-white/60"}`}
                         />
                       ))}
                     </div>
                   </>
                 )}
                 
-                {/* Title badge */}
                 <div className="absolute top-6 left-6 bg-charcoal/80 backdrop-blur-md text-cream px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border border-white/10">
                   {activeLook.title}
                 </div>
@@ -196,7 +193,6 @@ export function ShopTheLook() {
             )}
           </AnimatePresence>
 
-          {/* Product Sheet for Mobile & Quick View */}
           <Sheet open={!!selectedProductId} onOpenChange={(open) => !open && setSelectedProductId(null)}>
             <SheetContent side="right" className="w-full sm:max-w-[450px] p-0 flex flex-col z-[150] border-none shadow-elevated">
               {productDetails && (
