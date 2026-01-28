@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, ShoppingBag, ArrowRight, Eye } from "lucide-react";
@@ -6,24 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
-import categoryTvStand from "@/assets/category-tv-stand.jpg";
-import categorySofa from "@/assets/category-sofa.jpg";
-import categoryDiningTable from "@/assets/category-dining-table.jpg";
-import categoryCoffeeTable from "@/assets/category-coffee-table.jpg";
-import categoryDesk from "@/assets/category-desk.jpg";
-import categoryBed from "@/assets/category-bed.jpg";
-import categoryLighting from "@/assets/category-lighting.jpg";
-
-const featuredProducts = [
-  { id: 1, name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá Sintered Stone", image: categoryTvStand, price: 25990000, category: "Kệ Tivi", isNew: true, href: "/san-pham/1" },
-  { id: 2, name: "Sofa Góc Chữ L Phong Cách Ý", image: categorySofa, price: 45990000, category: "Sofa", isNew: false, href: "/san-pham/2" },
-  { id: 3, name: "Bàn Ăn Mặt Đá Chân Inox Mạ Vàng", image: categoryDiningTable, price: 32990000, category: "Bàn Ăn", isNew: true, href: "/san-pham/3" },
-  { id: 4, name: "Bàn Trà Tròn Mặt Đá Granite", image: categoryCoffeeTable, price: 12990000, category: "Bàn Trà", isNew: false, href: "/san-pham/4" },
-  { id: 5, name: "Bàn Làm Việc Gỗ Óc Chó Nguyên Khối", image: categoryDesk, price: 18990000, category: "Bàn Làm Việc", isNew: true, href: "/san-pham/5" },
-  { id: 6, name: "Giường Ngủ Bọc Da Ý Khung Inox", image: categoryBed, price: 38990000, category: "Giường", isNew: false, href: "/san-pham/6" },
-  { id: 7, name: "Đèn Chùm Pha Lê Luxury", image: categoryLighting, price: 15990000, category: "Đèn Trang Trí", isNew: true, href: "/san-pham/7" },
-  { id: 8, name: "Bàn Trà Gỗ Sồi Phong Cách Bắc Âu", image: categoryCoffeeTable, price: 8990000, category: "Bàn Trà", isNew: false, href: "/san-pham/8" },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -33,6 +17,31 @@ export function FeaturedProducts() {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFeaturedProducts();
+  }, []);
+
+  const fetchFeaturedProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_featured', true)
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: false })
+        .limit(8);
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error("Error loading featured products:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <section className="py-10 md:py-24 bg-secondary/30">
@@ -55,45 +64,63 @@ export function FeaturedProducts() {
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-          {featuredProducts.map((product, index) => {
-            const isFavorite = isInWishlist(product.id);
-            return (
-              <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.05 }} viewport={{ once: true }}>
-                <div className="group card-luxury relative">
-                  <div className="relative aspect-square img-zoom">
-                    <Link to={product.href} className="block">
-                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                      {product.isNew && (
-                        <span className="absolute top-2 left-2 md:top-3 md:left-3 bg-primary text-primary-foreground px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-xs font-semibold uppercase tracking-wider">Mới</span>
-                      )}
-                    </Link>
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
+          ) : products.length === 0 ? (
+            <div className="col-span-full text-center py-10 text-muted-foreground">Chưa có sản phẩm nổi bật nào.</div>
+          ) : (
+            products.map((product, index) => {
+              const isFavorite = isInWishlist(product.id);
+              return (
+                <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.05 }} viewport={{ once: true }}>
+                  <div className="group card-luxury relative h-full flex flex-col">
+                    <div className="relative aspect-square img-zoom">
+                      <Link to={`/san-pham/${product.id}`} className="block h-full">
+                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                        <div className="absolute top-2 left-2 flex flex-col gap-1">
+                          {product.is_new && (
+                            <span className="bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm">Mới</span>
+                          )}
+                          {product.is_sale && (
+                            <span className="bg-white text-charcoal px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm">Sale</span>
+                          )}
+                        </div>
+                      </Link>
 
-                    {/* Interaction Buttons - Always visible on mobile (opacity-100), hover on desktop */}
-                    <div className="absolute top-2 right-2 md:top-3 md:right-3 flex flex-col gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity z-10 pointer-events-auto">
-                      <button onClick={() => toggleWishlist(product)} className={`p-2 md:p-2.5 rounded-full shadow-medium transition-colors ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'}`}>
-                        <Heart className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isFavorite ? 'fill-current' : ''}`} />
-                      </button>
-                      <button onClick={() => addToCart({ ...product, quantity: 1 })} className="p-2 md:p-2.5 bg-card/80 backdrop-blur-sm rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-colors">
-                        <ShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      {/* Interaction Buttons */}
+                      <div className="absolute top-2 right-2 md:top-3 md:right-3 flex flex-col gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity z-10 pointer-events-auto">
+                        <button onClick={() => toggleWishlist(product)} className={`p-2 md:p-2.5 rounded-full shadow-medium transition-colors ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'}`}>
+                          <Heart className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isFavorite ? 'fill-current' : ''}`} />
+                        </button>
+                        <button onClick={() => addToCart({ id: product.id, name: product.name, price: product.price, image: product.image_url, quantity: 1 })} className="p-2 md:p-2.5 bg-card/80 backdrop-blur-sm rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-colors">
+                          <ShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                        </button>
+                      </div>
+
+                      {/* Quick View Button */}
+                      <button onClick={() => setSelectedProduct(product)} className="hidden lg:flex absolute bottom-3 left-3 bg-card/90 backdrop-blur-sm text-foreground p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-primary hover:text-primary-foreground shadow-sm items-center gap-1.5">
+                        <Eye className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">Xem nhanh</span>
                       </button>
                     </div>
-
-                    {/* Quick View Button - Hidden on Mobile to avoid clutter, visible on Desktop hover */}
-                    <button onClick={() => setSelectedProduct(product)} className="hidden lg:flex absolute bottom-3 left-3 bg-card/90 backdrop-blur-sm text-foreground p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-primary hover:text-primary-foreground shadow-sm items-center gap-1.5">
-                      <Eye className="w-3.5 h-3.5" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider">Xem nhanh</span>
-                    </button>
+                    
+                    <div className="p-3 md:p-4 flex-1 flex flex-col">
+                      <span className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider mb-1">{product.category_id || "Nội thất"}</span>
+                      <Link to={`/san-pham/${product.id}`}>
+                        <h3 className="font-medium text-xs md:text-sm lg:text-base line-clamp-2 mb-2 group-hover:text-primary transition-colors">{product.name}</h3>
+                      </Link>
+                      <div className="mt-auto">
+                        <p className="text-sm md:text-lg font-bold text-primary">{formatPrice(product.price)}</p>
+                        {product.original_price && (
+                          <p className="text-[10px] text-muted-foreground line-through">{formatPrice(product.original_price)}</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="p-3 md:p-4">
-                    <span className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider">{product.category}</span>
-                    <Link to={product.href}><h3 className="font-medium text-xs md:text-sm lg:text-base line-clamp-2 mt-1 group-hover:text-primary transition-colors">{product.name}</h3></Link>
-                    <p className="text-sm md:text-lg font-bold text-primary mt-1 md:mt-2">{formatPrice(product.price)}</p>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
+                </motion.div>
+              );
+            })
+          )}
         </div>
       </div>
       <QuickViewSheet product={selectedProduct} isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} />

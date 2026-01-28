@@ -4,17 +4,8 @@ import { motion } from "framer-motion";
 import { Clock, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
-import categoryTvStand from "@/assets/category-tv-stand.jpg";
-import categorySofa from "@/assets/category-sofa.jpg";
-import categoryDiningTable from "@/assets/category-dining-table.jpg";
-import categoryBed from "@/assets/category-bed.jpg";
-
-const flashSaleProducts = [
-  { id: 1, name: "Kệ Tivi Gỗ Óc Chó Phong Cách Nhật", image: categoryTvStand, originalPrice: 25990000, salePrice: 19990000, href: "/san-pham/1" },
-  { id: 2, name: "Sofa Góc Chữ L Vải Nhung Cao Cấp", image: categorySofa, originalPrice: 45990000, salePrice: 35990000, href: "/san-pham/2" },
-  { id: 3, name: "Bàn Ăn Mặt Đá Sintered Stone", image: categoryDiningTable, originalPrice: 32990000, salePrice: 26990000, href: "/san-pham/3" },
-  { id: 4, name: "Giường Ngủ Bọc Da Cao Cấp", image: categoryBed, originalPrice: 38990000, salePrice: 29990000, href: "/san-pham/6" },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -23,6 +14,8 @@ function formatPrice(price: number) {
 export function FlashSale() {
   const { addToCart } = useCart();
   const [timeLeft, setTimeLeft] = useState({ hours: 4, minutes: 29, seconds: 53 });
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -34,8 +27,31 @@ export function FlashSale() {
         return { hours, minutes, seconds };
       });
     }, 1000);
+
+    fetchSaleProducts();
+
     return () => clearInterval(timer);
   }, []);
+
+  const fetchSaleProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_sale', true)
+        .order('display_order', { ascending: true })
+        .limit(4);
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error("Error loading sale products:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!isLoading && products.length === 0) return null;
 
   return (
     <section className="py-10 md:py-24 bg-cream">
@@ -54,30 +70,44 @@ export function FlashSale() {
         </motion.div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-          {flashSaleProducts.map((product, index) => (
-            <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className="group card-luxury">
-              <div className="relative aspect-square img-zoom">
-                <Link to={product.href}><img src={product.image} alt={product.name} className="w-full h-full object-cover" /></Link>
-                {/* Mobile: Always visible add button, Desktop: Hover */}
-                <div className="absolute inset-0 bg-charcoal/0 lg:group-hover:bg-charcoal/20 transition-all flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-100">
-                  <Button 
-                    size="sm" 
-                    className="shadow-lg opacity-100 lg:opacity-100" // Always visible on mobile if needed, or customize logic
-                    onClick={() => addToCart({ id: product.id, name: product.name, price: product.salePrice, image: product.image, quantity: 1 })}
-                  >
-                    <ShoppingBag className="w-4 h-4 md:mr-2" /> <span className="hidden md:inline">Thêm nhanh</span>
-                  </Button>
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
+          ) : (
+            products.map((product, index) => (
+              <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className="group card-luxury h-full flex flex-col">
+                <div className="relative aspect-square img-zoom">
+                  <Link to={`/san-pham/${product.id}`} className="block h-full">
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                  </Link>
+                  <div className="absolute inset-0 bg-charcoal/0 lg:group-hover:bg-charcoal/20 transition-all flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-100">
+                    <Button 
+                      size="sm" 
+                      className="shadow-lg opacity-100 lg:opacity-100" 
+                      onClick={() => addToCart({ id: product.id, name: product.name, price: product.price, image: product.image_url, quantity: 1 })}
+                    >
+                      <ShoppingBag className="w-4 h-4 md:mr-2" /> <span className="hidden md:inline">Thêm nhanh</span>
+                    </Button>
+                  </div>
+                  {product.original_price && (
+                    <div className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-1 rounded shadow-sm">
+                      -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="p-3 md:p-4">
-                <Link to={product.href}><h3 className="font-medium text-xs md:text-sm line-clamp-2 mb-2 md:mb-3">{product.name}</h3></Link>
-                <div className="flex flex-col">
-                  <span className="text-base md:text-lg font-bold text-primary">{formatPrice(product.salePrice)}</span>
-                  <span className="text-xs md:text-sm text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
+                <div className="p-3 md:p-4 flex-1 flex flex-col">
+                  <Link to={`/san-pham/${product.id}`}>
+                    <h3 className="font-medium text-xs md:text-sm line-clamp-2 mb-2 md:mb-3 group-hover:text-primary transition-colors">{product.name}</h3>
+                  </Link>
+                  <div className="mt-auto flex flex-col">
+                    <span className="text-base md:text-lg font-bold text-primary">{formatPrice(product.price)}</span>
+                    {product.original_price && (
+                      <span className="text-xs md:text-sm text-muted-foreground line-through">{formatPrice(product.original_price)}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          )}
         </div>
       </div>
     </section>
