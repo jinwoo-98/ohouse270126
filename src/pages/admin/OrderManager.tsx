@@ -13,7 +13,8 @@ import {
   Phone,
   Mail,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ export default function OrderManager() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,7 +65,7 @@ export default function OrderManager() {
       if (error) throw error;
       
       setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-      toast.success(`Đã cập nhật trạng thái đơn hàng thành ${newStatus}`);
+      toast.success(`Đã chuyển đơn hàng sang trạng thái: ${newStatus}`);
     } catch (error: any) {
       toast.error("Lỗi cập nhật: " + error.message);
     }
@@ -84,35 +86,67 @@ export default function OrderManager() {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
   }
 
-  const filteredOrders = orders.filter(o => 
-    o.contact_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    o.contact_phone?.includes(searchTerm)
-  );
+  const filteredOrders = orders.filter(o => {
+    const matchesSearch = 
+      o.contact_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      o.contact_phone?.includes(searchTerm);
+    
+    const matchesStatus = statusFilter === "all" || o.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Quản Lý Đơn Hàng</h1>
-          <p className="text-muted-foreground text-sm">Theo dõi và cập nhật trạng thái đơn hàng của khách.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Quản Lý Đơn Hàng</h1>
+          <p className="text-muted-foreground text-sm">Theo dõi và vận hành quy trình xử lý đơn hàng của hệ thống.</p>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b border-border bg-gray-50/50 flex flex-col sm:flex-row items-center gap-4">
-          <div className="relative flex-1 w-full sm:max-w-sm">
+        <div className="p-4 border-b border-border bg-gray-50/50 flex flex-col lg:flex-row items-center gap-4">
+          <div className="relative flex-1 w-full sm:max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
               placeholder="Tìm theo mã đơn, SĐT, Email..." 
-              className="pl-10 h-10 bg-white"
+              className="pl-10 h-11 bg-white rounded-xl"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" size="sm" className="h-10 px-4 rounded-xl gap-2 font-bold text-xs uppercase tracking-widest">
-            <Filter className="w-4 h-4" /> Lọc đơn hàng
-          </Button>
+
+          <div className="flex items-center gap-3 w-full lg:w-auto">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full lg:w-48 h-11 bg-white rounded-xl font-bold text-xs uppercase tracking-widest border-border">
+                <div className="flex items-center gap-2">
+                  <Filter className="w-3.5 h-3.5 text-primary" />
+                  <SelectValue placeholder="Lọc trạng thái" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all">Tất cả đơn hàng</SelectItem>
+                <SelectItem value="pending">Chờ xác nhận</SelectItem>
+                <SelectItem value="processing">Đang xử lý</SelectItem>
+                <SelectItem value="shipped">Đang giao hàng</SelectItem>
+                <SelectItem value="delivered">Đã hoàn thành</SelectItem>
+                <SelectItem value="cancelled">Đã hủy đơn</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {(searchTerm || statusFilter !== "all") && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => { setSearchTerm(""); setStatusFilter("all"); }}
+                className="text-xs font-bold text-muted-foreground hover:text-destructive h-11 px-4"
+              >
+                <X className="w-4 h-4 mr-1.5" /> Xóa lọc
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -131,10 +165,10 @@ export default function OrderManager() {
               {loading ? (
                 <tr><td colSpan={6} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filteredOrders.length === 0 ? (
-                <tr><td colSpan={6} className="p-12 text-center text-muted-foreground italic">Không tìm thấy đơn hàng nào.</td></tr>
+                <tr><td colSpan={6} className="p-12 text-center text-muted-foreground italic">Không tìm thấy đơn hàng nào phù hợp với bộ lọc hiện tại.</td></tr>
               ) : filteredOrders.map((order) => (
-                <>
-                  <tr key={order.id} className={`hover:bg-gray-50/80 transition-colors group ${expandedOrderId === order.id ? 'bg-gray-50' : ''}`}>
+                <React.Fragment key={order.id}>
+                  <tr className={`hover:bg-gray-50/80 transition-colors group ${expandedOrderId === order.id ? 'bg-gray-50' : ''}`}>
                     <td className="px-6 py-4">
                       <p className="font-mono text-[11px] font-bold text-primary">#{order.id.slice(0, 8).toUpperCase()}</p>
                       <p className="text-[10px] text-muted-foreground">{new Date(order.created_at).toLocaleString('vi-VN')}</p>
@@ -158,7 +192,7 @@ export default function OrderManager() {
                           defaultValue={order.status} 
                           onValueChange={(val) => updateOrderStatus(order.id, val)}
                         >
-                          <SelectTrigger className="w-32 h-8 text-[10px] font-bold uppercase tracking-widest rounded-lg bg-white">
+                          <SelectTrigger className="w-32 h-8 text-[10px] font-bold uppercase tracking-widest rounded-lg bg-white shadow-sm border-border">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="rounded-xl">
@@ -172,7 +206,7 @@ export default function OrderManager() {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className={`h-8 w-8 rounded-lg ${expandedOrderId === order.id ? 'bg-primary text-primary-foreground' : ''}`}
+                          className={`h-8 w-8 rounded-lg transition-all ${expandedOrderId === order.id ? 'bg-primary text-primary-foreground shadow-md' : 'hover:bg-secondary'}`}
                           onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
                         >
                           {expandedOrderId === order.id ? <ChevronUp className="w-4 h-4" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
@@ -194,29 +228,33 @@ export default function OrderManager() {
                           >
                             <div className="p-6 grid md:grid-cols-2 gap-8">
                               <div className="space-y-4">
-                                <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Thông tin giao hàng</h4>
-                                <div className="bg-white p-4 rounded-xl border border-border space-y-3">
+                                <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                  <MapPin className="w-3 h-3 text-primary" /> Thông tin giao hàng
+                                </h4>
+                                <div className="bg-white p-5 rounded-2xl border border-border shadow-sm space-y-3">
                                   <div className="flex items-start gap-3">
-                                    <MapPin className="w-4 h-4 text-primary mt-0.5" />
+                                    <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                                     <p className="text-sm text-charcoal leading-relaxed">{order.shipping_address}</p>
                                   </div>
                                   <div className="flex items-center gap-3">
-                                    <Phone className="w-4 h-4 text-primary" />
+                                    <Phone className="w-4 h-4 text-primary shrink-0" />
                                     <p className="text-sm font-bold">{order.contact_phone}</p>
                                   </div>
                                   <div className="flex items-center gap-3">
-                                    <Mail className="w-4 h-4 text-primary" />
+                                    <Mail className="w-4 h-4 text-primary shrink-0" />
                                     <p className="text-sm">{order.contact_email}</p>
                                   </div>
                                 </div>
                               </div>
 
                               <div className="space-y-4">
-                                <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Sản phẩm ({order.order_items?.length || 0})</h4>
-                                <div className="bg-white rounded-xl border border-border overflow-hidden divide-y divide-border">
+                                <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                  <Package className="w-3 h-3 text-primary" /> Sản phẩm ({order.order_items?.length || 0})
+                                </h4>
+                                <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border">
                                   {order.order_items?.map((item: any) => (
-                                    <div key={item.id} className="flex items-center gap-4 p-3">
-                                      <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
+                                    <div key={item.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+                                      <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
                                         <img src={item.product_image} alt="" className="w-full h-full object-cover" />
                                       </div>
                                       <div className="flex-1 min-w-0">
@@ -224,14 +262,14 @@ export default function OrderManager() {
                                         <p className="text-xs text-muted-foreground">Đơn giá: {formatPrice(item.price)}</p>
                                       </div>
                                       <div className="text-right">
-                                        <span className="text-xs font-bold bg-secondary px-2 py-1 rounded-md">x{item.quantity}</span>
+                                        <span className="text-[10px] font-bold bg-secondary px-2 py-0.5 rounded-md text-muted-foreground uppercase">x{item.quantity}</span>
                                         <p className="text-sm font-bold text-primary mt-1">{formatPrice(item.price * item.quantity)}</p>
                                       </div>
                                     </div>
                                   ))}
-                                  <div className="p-3 bg-gray-50 flex justify-between items-center text-sm font-bold">
-                                    <span>Tổng cộng</span>
-                                    <span className="text-primary text-base">{formatPrice(order.total_amount)}</span>
+                                  <div className="p-4 bg-gray-50/50 flex justify-between items-center text-sm font-bold border-t">
+                                    <span className="text-muted-foreground uppercase text-xs tracking-wider">Tổng giá trị đơn hàng</span>
+                                    <span className="text-primary text-xl font-display">{formatPrice(order.total_amount)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -241,7 +279,7 @@ export default function OrderManager() {
                       </tr>
                     )}
                   </AnimatePresence>
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
