@@ -202,7 +202,7 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 mb-8">
+              <div className="hidden sm:flex flex-col sm:flex-row gap-3 mb-8">
                 <Button size="lg" className="flex-1 btn-hero" onClick={handleAddToCart}>
                   <ShoppingBag className="w-5 h-5 mr-2" /> 
                   Thêm Vào Giỏ
@@ -318,6 +318,22 @@ export default function ProductDetailPage() {
               ))}
             </div>
           </section>
+        </div>
+
+        {/* Mobile Sticky Buy Bar */}
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border p-3 z-40 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => toggleWishlist(product)}
+              className={`p-3 rounded-lg border transition-colors ${isFavorite ? 'bg-primary/10 border-primary text-primary' : 'border-border'}`}
+            >
+              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+            </button>
+            <Button className="flex-1 btn-hero h-12 text-sm shadow-gold" onClick={handleAddToCart}>
+              <ShoppingBag className="w-4 h-4 mr-2" /> 
+              Thêm Vào Giỏ
+            </Button>
+          </div>
         </div>
       </main>
       <Footer />
