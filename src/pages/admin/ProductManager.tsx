@@ -8,7 +8,8 @@ import {
   Trash2, 
   Loader2, 
   Image as ImageIcon,
-  ExternalLink
+  ExternalLink,
+  ArrowUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ export default function ProductManager() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
+        .order('display_order', { ascending: true }) // Sắp xếp theo display_order trước
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -94,6 +96,7 @@ export default function ProductManager() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 text-[10px] uppercase tracking-widest font-bold text-muted-foreground border-b">
+                <th className="px-6 py-4 text-center w-20">Thứ tự</th>
                 <th className="px-6 py-4">Sản phẩm</th>
                 <th className="px-6 py-4">Phân loại</th>
                 <th className="px-6 py-4">Giá bán</th>
@@ -104,20 +107,25 @@ export default function ProductManager() {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  <td colSpan={6} className="px-6 py-12 text-center">
                     <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
                     <p className="mt-2 text-sm text-muted-foreground">Đang tải danh sách...</p>
                   </td>
                 </tr>
               ) : filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                     Không tìm thấy sản phẩm nào.
                   </td>
                 </tr>
               ) : (
                 filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50/80 transition-colors">
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary/50 font-mono text-xs font-bold text-muted-foreground">
+                        {product.display_order || 1000}
+                      </span>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 border border-border">

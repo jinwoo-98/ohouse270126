@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RecentlyViewed, trackProductView } from "@/components/RecentlyViewed";
+import { cn } from "@/lib/utils";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -107,6 +108,11 @@ export default function ProductDetailPage() {
   }
 
   const isFavorite = isInWishlist(product.id);
+  
+  // Use fake data if available, otherwise fallback to real or 0
+  const displayRating = product.fake_rating || 5;
+  const displayReviewCount = (product.fake_review_count || 0) + reviews.length;
+  const displaySold = product.fake_sold || 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -136,12 +142,33 @@ export default function ProductDetailPage() {
                   {product.category_id}
                 </Badge>
                 <h1 className="text-3xl md:text-4xl font-bold mt-3 text-charcoal">{product.name}</h1>
+                
+                <div className="flex items-center gap-4 mt-3">
+                  <div className="flex text-primary">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={cn("w-4 h-4", i < Math.floor(displayRating) ? "fill-current" : "text-gray-300")} />
+                    ))}
+                  </div>
+                  <span className="text-sm text-muted-foreground border-l border-border pl-4">
+                    {displayReviewCount} Đánh giá
+                  </span>
+                  {displaySold > 0 && (
+                    <span className="text-sm text-muted-foreground border-l border-border pl-4">
+                      Đã bán {displaySold}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center gap-4">
                 <span className="text-3xl font-bold text-primary">{formatPrice(product.price)}</span>
                 {product.original_price && (
                   <span className="text-xl text-muted-foreground line-through">{formatPrice(product.original_price)}</span>
+                )}
+                {product.original_price && (
+                  <Badge className="bg-destructive hover:bg-destructive text-[10px]">
+                    -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
+                  </Badge>
                 )}
               </div>
 
@@ -153,7 +180,7 @@ export default function ProductDetailPage() {
                   <span className="w-12 text-center font-bold">{quantity}</span>
                   <button onClick={() => setQuantity(quantity + 1)} className="p-4 hover:bg-secondary transition-colors"><Plus className="w-4 h-4" /></button>
                 </div>
-                <Button size="lg" className="flex-1 btn-hero h-14" onClick={() => addToCart({
+                <Button size="lg" className="flex-1 btn-hero h-14 shadow-gold" onClick={() => addToCart({
                   id: product.id,
                   name: product.name,
                   price: product.price,
@@ -192,7 +219,7 @@ export default function ProductDetailPage() {
           <Tabs defaultValue="description" className="mb-16">
             <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-8">
               <TabsTrigger value="description" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Mô tả sản phẩm</TabsTrigger>
-              <TabsTrigger value="review" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Đánh giá ({reviews.length})</TabsTrigger>
+              <TabsTrigger value="review" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Đánh giá ({displayReviewCount})</TabsTrigger>
             </TabsList>
             <TabsContent value="description" className="py-8 animate-fade-in text-muted-foreground leading-relaxed">
               {product.description || "Thông tin mô tả đang được cập nhật."}
