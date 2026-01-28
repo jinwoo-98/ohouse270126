@@ -65,6 +65,7 @@ export function HeaderSearch({ onOpenMobileMenu }: HeaderSearchProps) {
             isVisible={isSearchFocused} 
             onClose={() => setIsSearchFocused(false)}
             onKeywordClick={handleKeywordSearch}
+            searchQuery={searchQuery}
           />
         )}
       </AnimatePresence>

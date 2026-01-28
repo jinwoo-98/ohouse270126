@@ -7,7 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { 
   Loader2, Package, Calendar, ChevronRight, MapPin, 
   Plus, Trash2, ChevronDown, ChevronUp, Ticket, 
-  Clock, Heart, ShoppingBag, X, Settings
+  Clock, Heart, ShoppingBag, X, Settings, RotateCw
 } from "lucide-react";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { ProfileForm } from "@/components/profile/ProfileForm";
@@ -109,6 +109,20 @@ export default function ProfileDashboard() {
       setIsAddressDialogOpen(false);
       fetchAddresses();
     } catch (error) { toast.error("Lỗi khi thêm địa chỉ."); }
+  };
+
+  const handleReorder = (items: any[]) => {
+    items.forEach(item => {
+      addToCart({
+        id: item.product_id,
+        name: item.product_name,
+        price: item.price,
+        image: item.product_image,
+        quantity: item.quantity
+      });
+    });
+    toast.success("Đã thêm các sản phẩm vào giỏ hàng");
+    navigate("/gio-hang");
   };
 
   if (isAuthLoading || (!user && isAuthLoading)) {
@@ -372,9 +386,17 @@ export default function ProfileDashboard() {
                                       </div>
 
                                       <div className="pt-6 border-t border-border/40 flex flex-col sm:flex-row justify-between items-center gap-6">
-                                        <Button variant="outline" className="w-full sm:w-auto h-11 text-[11px] font-bold uppercase tracking-widest border-charcoal/20" asChild>
-                                          <Link to="/ho-tro/huong-dan">Hỗ trợ đơn hàng này</Link>
-                                        </Button>
+                                        <div className="flex gap-3 w-full sm:w-auto">
+                                          <Button variant="outline" className="flex-1 sm:flex-none h-11 text-[11px] font-bold uppercase tracking-widest border-charcoal/20" asChild>
+                                            <Link to="/ho-tro/huong-dan">Hỗ trợ</Link>
+                                          </Button>
+                                          <Button 
+                                            className="flex-1 sm:flex-none btn-hero h-11 shadow-gold text-[11px]" 
+                                            onClick={() => handleReorder(order.order_items)}
+                                          >
+                                            <RotateCw className="w-3.5 h-3.5 mr-2" /> Mua lại đơn này
+                                          </Button>
+                                        </div>
                                         <div className="text-center sm:text-right">
                                           <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground mr-3">Tổng cộng thanh toán:</span>
                                           <span className="text-2xl font-bold text-primary">{formatPrice(order.total_amount)}</span>

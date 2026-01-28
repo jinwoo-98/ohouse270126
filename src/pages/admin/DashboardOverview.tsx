@@ -8,7 +8,8 @@ import {
   Package,
   ArrowUpRight,
   Clock,
-  ArrowDownRight
+  ArrowDownRight,
+  Loader2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -22,16 +23,8 @@ import {
   AreaChart, 
   Area 
 } from 'recharts';
-
-const data = [
-  { name: 'T2', revenue: 4000, orders: 24 },
-  { name: 'T3', revenue: 3000, orders: 13 },
-  { name: 'T4', revenue: 2000, orders: 98 },
-  { name: 'T5', revenue: 2780, orders: 39 },
-  { name: 'T6', revenue: 1890, orders: 48 },
-  { name: 'T7', revenue: 2390, orders: 38 },
-  { name: 'CN', revenue: 3490, orders: 43 },
-];
+import { format, subDays, startOfDay, endOfDay } from "date-fns";
+import { vi } from "date-fns/locale";
 
 export default function DashboardOverview() {
   const [stats, setStats] = useState({
@@ -40,21 +33,24 @@ export default function DashboardOverview() {
     totalProducts: 0,
     totalUsers: 0
   });
+  const [chartData, setChartData] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats();
+    fetchDashboardData();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const { data: orders } = await supabase.from('orders').select('total_amount');
+      // 1. Fetch overall stats
+      const { data: orders } = await supabase.from('orders').select('total_amount, created_at');
       const totalRev = orders?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
       const { count: prodCount } = await supabase.from('products').select('*', { count: 'exact', head: true });
       const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
 
+      // 2. Fetch recent orders
       const { data: recent } = await supabase
         .from('orders')
         .select('*')
@@ -68,6 +64,34 @@ export default function DashboardOverview() {
         totalUsers: userCount || 0
       });
       setRecentOrders(recent || []);
+
+      // 3. Process Chart Data (Last 7 days)
+      const days = Array.from({ length: 7 }, (_, i) => {
+        const d = subDays(new Date(), 6 - i);
+        return {
+          date: d,
+          name: format(d, 'dd/MM', { locale: vi }),
+          fullDate: format(d, 'yyyy-MM-dd'),
+          revenue: 0,
+          orders: 0
+        };
+      });
+
+      if (orders) {
+        orders.forEach(order => {
+          const orderDate = format(new Date(order.created_at), 'yyyy-MM-dd');
+          const dayStat = days.find(d => d.fullDate === orderDate);
+          if (dayStat) {
+            dayStat.revenue += Number(order.total_amount);
+            dayStat.orders += 1;
+          }
+        });
+      }
+
+      setChartData(days);
+
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }
@@ -83,6 +107,14 @@ export default function DashboardOverview() {
     { title: "Sản phẩm", value: stats.totalProducts, icon: ShoppingBag, color: "bg-amber-500", trend: "Ổn định", isPositive: true },
     { title: "Khách hàng", value: stats.totalUsers, icon: Users, color: "bg-purple-500", trend: "-2.1%", isPositive: false },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[80vh]">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 pb-10">
@@ -125,11 +157,13 @@ export default function DashboardOverview() {
               <TrendingUp className="w-5 h-5 text-primary" />
               Doanh thu 7 ngày qua
             </h2>
-            <SelectDefaultValue />
+            <select className="text-xs font-bold uppercase tracking-widest bg-secondary/50 border-none rounded-lg px-3 py-2 outline-none">
+              <option>7 ngày qua</option>
+            </select>
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data}>
+              <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
@@ -178,15 +212,5 @@ export default function DashboardOverview() {
         </div>
       </div>
     </div>
-  );
-}
-
-function SelectDefaultValue() {
-  return (
-    <select className="text-xs font-bold uppercase tracking-widest bg-secondary/50 border-none rounded-lg px-3 py-2 outline-none">
-      <option>7 ngày qua</option>
-      <option>30 ngày qua</option>
-      <option>Năm nay</option>
-    </select>
   );
 }
