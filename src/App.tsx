@@ -8,6 +8,8 @@ import { CartProvider } from "./contexts/CartContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
 import ScrollToTop from "./components/ScrollToTop";
 import { FloatingActions } from "./components/layout/FloatingActions";
+
+// Public Pages
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
@@ -33,9 +35,13 @@ import OrderSuccessPage from "./pages/OrderSuccessPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CooperationPage from "./pages/CooperationPage";
 
+// Admin Pages
+import AdminLayout from "./layouts/AdminLayout";
+import ThemeSettings from "./pages/admin/ThemeSettings";
+import GeneralSettings from "./pages/admin/GeneralSettings";
+
 const queryClient = new QueryClient();
 
-// List of all category and subcategory slugs to avoid manual maintenance
 const categoryRoutes = [
   "noi-that", "phong-khach", "phong-ngu", "phong-an", "phong-tam", "phong-lam-viec",
   "sofa", "ban-tra", "ke-tivi", "den-san", "tu-trang-tri",
@@ -58,9 +64,9 @@ const App = () => (
           <CartProvider>
             <WishlistProvider>
               <Routes>
+                {/* Public Routes */}
                 <Route path="/" element={<Index />} />
                 
-                {/* Dynamic Category Routes */}
                 {categoryRoutes.map(slug => (
                   <Route key={slug} path={`/${slug}`} element={<CategoryPage />} />
                 ))}
@@ -97,13 +103,15 @@ const App = () => (
                 <Route path="/lien-he" element={<ContactPage />} />
                 <Route path="/hop-tac" element={<CooperationPage />} />
                 <Route path="/ho-tro/:slug" element={<SupportPage />} />
-                <Route path="/huong-dan" element={<SupportPage />} />
-                <Route path="/doi-tra" element={<SupportPage />} />
-                <Route path="/bao-hanh" element={<SupportPage />} />
-                <Route path="/thanh-toan" element={<SupportPage />} />
-                <Route path="/van-chuyen" element={<SupportPage />} />
-                <Route path="/faq" element={<SupportPage />} />
                 <Route path="*" element={<NotFound />} />
+
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<div>Dashboard Placeholder</div>} />
+                  <Route path="theme" element={<ThemeSettings />} />
+                  <Route path="settings" element={<GeneralSettings />} />
+                  <Route path="products" element={<div>Product Manager Placeholder</div>} />
+                </Route>
               </Routes>
               <FloatingActions />
             </WishlistProvider>
