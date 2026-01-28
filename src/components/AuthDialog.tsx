@@ -3,8 +3,7 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 import { useEffect } from 'react';
 
 interface AuthDialogProps {
@@ -30,26 +29,25 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
     );
   }
 
-  // Lấy URL chính xác của môi trường hiện tại (Local hoặc Preview)
+  // Lấy URL chính xác của môi trường hiện tại
   const getRedirectUrl = () => {
     let url = window.location.origin;
-    // Đảm bảo không có dấu gạch chéo ở cuối để tránh lỗi whitelist của Supabase
     url = url.endsWith('/') ? url.slice(0, -1) : url;
     return url;
   };
 
   const redirectUrl = getRedirectUrl();
 
-  // In ra console để người dùng copy vào Supabase Dashboard nếu cần
-  console.log("[AuthDialog] Redirect URL hiện tại:", redirectUrl);
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[450px] p-6 md:p-10 z-[110] overflow-y-auto max-h-[95vh] rounded-3xl">
+      <DialogContent className="sm:max-w-[450px] p-6 md:p-10 z-[110] overflow-y-auto max-h-[95vh] rounded-3xl border-none shadow-elevated">
         <DialogHeader className="text-center mb-6">
-          <DialogTitle className="text-3xl font-bold tracking-tight text-charcoal">OHOUSE</DialogTitle>
-          <p className="text-muted-foreground text-sm mt-2">
-            Đăng nhập để nhận ưu đãi thành viên và bảo mật đơn hàng
+          <div className="flex flex-col items-center mb-2">
+            <span className="text-3xl font-bold tracking-tight text-charcoal">OHOUSE</span>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold mt-1">Nội Thất Cao Cấp</span>
+          </div>
+          <p className="text-muted-foreground text-sm mt-4">
+            Đăng nhập để nhận ưu đãi thành viên và bảo mật đơn hàng của bạn.
           </p>
         </DialogHeader>
 
@@ -72,9 +70,11 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                 },
               },
               className: {
-                button: 'font-bold uppercase tracking-wider text-xs h-12',
-                input: 'h-12 border-border/60 focus:border-primary',
+                button: 'font-bold uppercase tracking-wider text-xs h-12 transition-all hover:scale-[1.02]',
+                input: 'h-12 border-border/60 focus:border-primary rounded-xl',
                 label: 'text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1',
+                anchor: 'text-xs font-bold text-primary hover:underline',
+                message: 'text-xs text-destructive mt-1',
               }
             }}
             providers={['google']}
@@ -96,26 +96,22 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                   button_label: 'Đăng Ký Thành Viên',
                   social_provider_text: 'Đăng ký bằng {{provider}}',
                   link_text: 'Chưa có tài khoản? Đăng ký tại đây',
+                },
+                forgotten_password: {
+                  email_label: 'Địa chỉ Email',
+                  button_label: 'Gửi link đặt lại mật khẩu',
+                  link_text: 'Quên mật khẩu?',
                 }
               }
             }}
           />
         </div>
 
-        <Alert className="mt-8 bg-amber-50 border-amber-200 text-amber-800">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle className="text-xs font-bold uppercase mb-1">Kiểm tra cấu hình!</AlertTitle>
-          <AlertDescription className="text-[10px] leading-relaxed">
-            Nếu nút Google quay về trang lỗi, hãy chắc chắn bạn đã thêm URL <strong>{redirectUrl}</strong> vào mục 
-            <a 
-              href="https://supabase.com/dashboard/project/kyfzqgyazmjtnxjdvetr/auth/url-configuration" 
-              target="_blank" 
-              className="font-bold underline ml-1"
-            >
-              Redirect URLs
-            </a> trong Supabase Dashboard.
-          </AlertDescription>
-        </Alert>
+        <div className="mt-6 pt-6 border-t border-border/40 text-center">
+          <p className="text-[10px] text-muted-foreground italic">
+            Bằng việc đăng nhập, bạn đồng ý với Điều khoản và Chính sách bảo mật của OHOUSE.
+          </p>
+        </div>
       </DialogContent>
     </Dialog>
   );
