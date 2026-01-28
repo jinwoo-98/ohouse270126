@@ -85,18 +85,26 @@ export function HeaderTopBanner() {
 
                 {hasCountdown && (
                   <div className="flex items-center gap-1 shrink-0 animate-fade-in">
-                    <div className="flex items-center gap-1 bg-charcoal/20 px-2 py-0.5 rounded-full border border-white/10">
+                    <div className="flex items-center gap-0.5">
                       {countdown.days > 0 && (
                         <>
-                          <span className="font-mono font-bold">{countdown.days}d</span>
-                          <span className="opacity-40 text-[8px]">:</span>
+                          <div className="bg-black text-white px-1.5 py-0.5 rounded-sm font-mono font-bold min-w-[20px] text-center border border-white/10">
+                            {countdown.days}d
+                          </div>
+                          <span className="text-[8px] font-bold mx-0.5">:</span>
                         </>
                       )}
-                      <span className="font-mono font-bold w-4 text-center">{String(countdown.hours).padStart(2, '0')}</span>
-                      <span className="opacity-40 text-[8px]">:</span>
-                      <span className="font-mono font-bold w-4 text-center">{String(countdown.minutes).padStart(2, '0')}</span>
-                      <span className="opacity-40 text-[8px]">:</span>
-                      <span className="font-mono font-bold w-4 text-center text-destructive-foreground animate-pulse">{String(countdown.seconds).padStart(2, '0')}</span>
+                      <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10">
+                        {String(countdown.hours).padStart(2, '0')}
+                      </div>
+                      <span className="text-[8px] font-bold mx-0.5">:</span>
+                      <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10">
+                        {String(countdown.minutes).padStart(2, '0')}
+                      </div>
+                      <span className="text-[8px] font-bold mx-0.5">:</span>
+                      <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10 animate-pulse">
+                        {String(countdown.seconds).padStart(2, '0')}
+                      </div>
                     </div>
                   </div>
                 )}
