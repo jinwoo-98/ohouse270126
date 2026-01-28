@@ -43,9 +43,8 @@ export default function CategoryManager() {
       if (error) throw error;
       setCategories(data || []);
       
-      // Mặc định mở rộng tất cả danh mục cha có con
-      const parentsWithChildren = data?.filter(c => !c.parent_id && data.some(child => child.parent_id === c.id)).map(p => p.id);
-      setExpandedRows(new Set(parentsWithChildren));
+      // Mặc định THU GỌN toàn bộ (không thêm ID nào vào Set)
+      setExpandedRows(new Set());
     } catch (error: any) {
       toast.error("Lỗi: " + error.message);
     } finally {
@@ -68,7 +67,7 @@ export default function CategoryManager() {
     if (!destination) return;
     if (destination.index === source.index && destination.droppableId === source.droppableId) return;
 
-    // Lấy danh sách các item cùng cấp độ đang được kéo
+    // 1. Lấy danh sách các item cùng cấp độ đang được kéo
     const itemsAtThisLevel = categories.filter(c => {
       if (type === 'PARENT') {
         return !c.parent_id && c.menu_location === activeTab;
@@ -77,32 +76,37 @@ export default function CategoryManager() {
       }
     });
 
+    // 2. Tạo mảng mới đã sắp xếp lại
     const newItems = Array.from(itemsAtThisLevel);
     const [reorderedItem] = newItems.splice(source.index, 1);
     newItems.splice(destination.index, 0, reorderedItem);
 
-    // Cập nhật state local
+    // 3. Cập nhật display_order cho mảng global và SẮP XẾP LẠI state ngay lập tức
     const updatedCategories = categories.map(c => {
       const foundInNew = newItems.find(n => n.id === c.id);
       if (foundInNew) {
         return { ...c, display_order: newItems.indexOf(foundInNew) + 1 };
       }
       return c;
-    });
+    }).sort((a, b) => a.display_order - b.display_order); // Quan trọng: Sắp xếp lại để UI nhảy vị trí
+
     setCategories(updatedCategories);
 
-    // Lưu vào DB
+    // 4. Lưu vào Database
     try {
-      for (let i = 0; i < newItems.length; i++) {
-        await supabase
+      // Chúng ta thực hiện cập nhật tuần tự hoặc batch
+      const promises = newItems.map((item, index) => 
+        supabase
           .from('categories')
-          .update({ display_order: i + 1 })
-          .eq('id', newItems[i].id);
-      }
+          .update({ display_order: index + 1 })
+          .eq('id', item.id)
+      );
+      
+      await Promise.all(promises);
       toast.success("Đã cập nhật vị trí");
     } catch (error) {
       toast.error("Lỗi khi lưu vị trí");
-      fetchCategories();
+      fetchCategories(); // Rollback nếu lỗi
     }
   };
 
@@ -111,6 +115,7 @@ export default function CategoryManager() {
       const { error } = await supabase.from('categories').update({ is_visible: !current }).eq('id', id);
       if (error) throw error;
       setCategories(categories.map(c => c.id === id ? { ...c, is_visible: !current } : c));
+      toast.success("Đã cập nhật trạng thái");
     } catch (error: any) { toast.error(error.message); }
   };
 
@@ -145,13 +150,11 @@ export default function CategoryManager() {
                         !parentId && "border-l-4 border-l-primary/20"
                       )}
                     >
-                      {/* Row Content */}
                       <div className="flex items-center p-3 md:p-4 gap-4">
                         <div {...provided.dragHandleProps} className="text-muted-foreground/30 hover:text-primary cursor-grab active:cursor-grabbing px-1">
                           <GripVertical className="w-5 h-5" />
                         </div>
 
-                        {/* Toggle Expand Button (Only for parents) */}
                         {!parentId && (
                           <button 
                             onClick={() => toggleExpand(item.id)}
@@ -204,7 +207,6 @@ export default function CategoryManager() {
                         </div>
                       </div>
 
-                      {/* Sub-items Container */}
                       {!parentId && isExpanded && (
                         <div className="bg-secondary/20 border-t border-dashed border-border/60 p-4 pl-12 md:pl-16 pb-6 rounded-b-2xl">
                           <div className="mb-4 flex items-center justify-between">
@@ -214,7 +216,6 @@ export default function CategoryManager() {
                           </div>
                           {renderList(item.id, location)}
                           
-                          {/* Empty State for Sub-items */}
                           {!hasChildren && (
                             <div className="py-8 text-center border-2 border-dashed border-border/40 rounded-xl">
                               <p className="text-xs text-muted-foreground italic">Chưa có danh mục con. Nhấn "Thêm menu mới" và chọn "{item.name}" làm cha.</p>
