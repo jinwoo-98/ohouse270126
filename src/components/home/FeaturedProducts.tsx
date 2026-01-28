@@ -19,14 +19,24 @@ export function FeaturedProducts() {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [config, setConfig] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchFeaturedProducts();
+    fetchData();
   }, []);
 
-  const fetchFeaturedProducts = async () => {
+  const fetchData = async () => {
     try {
+      // 1. Fetch Section Config
+      const { data: configData } = await supabase
+        .from('homepage_sections')
+        .select('*')
+        .eq('section_key', 'featured')
+        .single();
+      if (configData) setConfig(configData);
+
+      // 2. Fetch Featured Products
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -54,8 +64,17 @@ export function FeaturedProducts() {
           viewport={{ once: true }}
           className="text-center mb-8 md:mb-12"
         >
-          <h2 className="section-title mb-2">Sản Phẩm Nổi Bật</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">Những thiết kế được yêu thích nhất</p>
+          {config?.subtitle && (
+            <span className="text-primary font-bold uppercase tracking-[0.3em] text-[10px] mb-3 block">
+              {config.subtitle}
+            </span>
+          )}
+          <h2 className="section-title mb-2" style={{ color: config?.title_color }}>
+            {config?.title || "Sản Phẩm Nổi Bật"}
+          </h2>
+          <p className="max-w-2xl mx-auto text-sm md:text-base" style={{ color: config?.content_color }}>
+            {config?.description || "Những thiết kế được yêu thích nhất"}
+          </p>
           <Button variant="outline" asChild className="mt-4 md:mt-6">
             <Link to="/noi-that" className="group">
               Xem Tất Cả

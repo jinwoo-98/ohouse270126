@@ -6,15 +6,25 @@ import { Loader2 } from "lucide-react";
 
 export function CategoryGrid() {
   const [categories, setCategories] = useState<any[]>([]);
+  const [config, setConfig] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchHomeCategories();
+    fetchData();
   }, []);
 
-  const fetchHomeCategories = async () => {
+  const fetchData = async () => {
     try {
-      const { data, error } = await supabase
+      // 1. Fetch Section Config
+      const { data: configData } = await supabase
+        .from('homepage_sections')
+        .select('*')
+        .eq('section_key', 'categories')
+        .single();
+      if (configData) setConfig(configData);
+
+      // 2. Fetch Categories
+      const { data: catData, error } = await supabase
         .from('categories')
         .select('*')
         .eq('show_on_home', true)
@@ -22,7 +32,7 @@ export function CategoryGrid() {
         .order('display_order', { ascending: true });
 
       if (error) throw error;
-      setCategories(data || []);
+      setCategories(catData || []);
     } catch (error) {
       console.error("Error loading home categories:", error);
     } finally {
@@ -50,9 +60,16 @@ export function CategoryGrid() {
           viewport={{ once: true }}
           className="text-center mb-8 md:mb-12"
         >
-          <h2 className="section-title mb-2 md:mb-4">Danh Mục Sản Phẩm</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">
-            Khám phá bộ sưu tập nội thất cao cấp với hàng nghìn sản phẩm đa dạng
+          {config?.subtitle && (
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary mb-3 block">
+              {config.subtitle}
+            </span>
+          )}
+          <h2 className="section-title mb-2 md:mb-4" style={{ color: config?.title_color }}>
+            {config?.title || "Danh Mục Sản Phẩm"}
+          </h2>
+          <p className="max-w-2xl mx-auto text-sm md:text-base" style={{ color: config?.content_color }}>
+            {config?.description || "Khám phá bộ sưu tập nội thất cao cấp với hàng nghìn sản phẩm đa dạng"}
           </p>
         </motion.div>
 

@@ -20,6 +20,7 @@ export function ShopTheLook() {
   const { toggleWishlist, isInWishlist } = useWishlist();
   
   const [allLooks, setAllLooks] = useState<any[]>([]);
+  const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
   const [activeCategorySlug, setActiveCategorySlug] = useState<string>("");
@@ -29,11 +30,20 @@ export function ShopTheLook() {
   const [productDetails, setProductDetails] = useState<any>(null);
 
   useEffect(() => {
-    fetchLooks();
+    fetchData();
   }, []);
 
-  const fetchLooks = async () => {
+  const fetchData = async () => {
     try {
+      // 1. Fetch Section Config
+      const { data: configData } = await supabase
+        .from('homepage_sections')
+        .select('*')
+        .eq('section_key', 'shop_look')
+        .single();
+      if (configData) setConfig(configData);
+
+      // 2. Fetch Looks
       const { data, error } = await supabase
         .from('shop_looks')
         .select(`
@@ -86,10 +96,16 @@ export function ShopTheLook() {
     <section className="py-10 md:py-24 bg-secondary/20 overflow-hidden">
       <div className="container-luxury">
         <div className="text-center mb-10 md:mb-14">
-          <span className="text-primary font-bold uppercase tracking-[0.3em] text-[10px] mb-4 block">Bộ sưu tập không gian</span>
-          <h2 className="section-title mb-4">Shop The Look</h2>
-          <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
-            Khám phá những mẫu thiết kế nội thất hoàn mỹ và sở hữu ngay các sản phẩm trong ảnh chỉ với một cú chạm.
+          {config?.subtitle && (
+            <span className="text-primary font-bold uppercase tracking-[0.3em] text-[10px] mb-4 block">
+              {config.subtitle}
+            </span>
+          )}
+          <h2 className="section-title mb-4" style={{ color: config?.title_color }}>
+            {config?.title || "Shop The Look"}
+          </h2>
+          <p className="text-sm md:text-base max-w-2xl mx-auto" style={{ color: config?.content_color }}>
+            {config?.description || "Khám phá những mẫu thiết kế nội thất hoàn mỹ và sở hữu ngay các sản phẩm trong ảnh chỉ với một cú chạm."}
           </p>
         </div>
 

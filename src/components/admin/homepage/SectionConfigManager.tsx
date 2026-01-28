@@ -160,6 +160,11 @@ export function SectionConfigManager() {
                     <div className="p-4 bg-secondary/30 rounded-xl">
                       <p className="text-[10px] font-bold text-muted-foreground uppercase mb-3">Xem trước nhanh</p>
                       <div className="text-center space-y-1">
+                        {config.subtitle && (
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">
+                            {config.subtitle}
+                          </p>
+                        )}
                         <h4 style={{ color: config.title_color }} className="text-lg font-bold">{config.title}</h4>
                         <p style={{ color: config.content_color }} className="text-xs">{config.description}</p>
                       </div>
