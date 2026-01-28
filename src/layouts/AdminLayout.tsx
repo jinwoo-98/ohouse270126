@@ -10,7 +10,9 @@ import {
   X,
   Loader2,
   ShieldAlert,
-  ClipboardList
+  ClipboardList,
+  LayoutGrid,
+  MessageSquareText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +23,8 @@ const menuItems = [
   { title: "Tổng quan", icon: LayoutDashboard, href: "/admin" },
   { title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
   { title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
+  { title: "Yêu cầu thiết kế", icon: LayoutGrid, href: "/admin/design-requests" },
+  { title: "Tin nhắn", icon: MessageSquareText, href: "/admin/messages" },
   { title: "Giao diện", icon: Palette, href: "/admin/theme" },
   { title: "Cấu hình", icon: Settings, href: "/admin/settings" },
 ];
@@ -119,7 +123,7 @@ export default function AdminLayout() {
           </button>
         </div>
 
-        <nav className="p-4 space-y-1.5">
+        <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-160px)] custom-scrollbar">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.href || (item.href !== "/admin" && location.pathname.startsWith(item.href));
             return (

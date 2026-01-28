@@ -43,6 +43,8 @@ import GeneralSettings from "./pages/admin/GeneralSettings";
 import ProductManager from "./pages/admin/ProductManager";
 import ProductForm from "./pages/admin/ProductForm";
 import OrderManager from "./pages/admin/OrderManager";
+import DesignRequestManager from "./pages/admin/DesignRequestManager";
+import ContactMessageManager from "./pages/admin/ContactMessageManager";
 
 const queryClient = new QueryClient();
 
@@ -113,9 +115,11 @@ const App = () => (
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<DashboardOverview />} />
                   <Route path="orders" element={<OrderManager />} />
+                  <Route path="products" element={<ProductManager />} />
+                  <Route path="design-requests" element={<DesignRequestManager />} />
+                  <Route path="messages" element={<ContactMessageManager />} />
                   <Route path="theme" element={<ThemeSettings />} />
                   <Route path="settings" element={<GeneralSettings />} />
-                  <Route path="products" element={<ProductManager />} />
                   <Route path="products/new" element={<ProductForm />} />
                   <Route path="products/edit/:id" element={<ProductForm />} />
                 </Route>
