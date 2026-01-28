@@ -9,13 +9,14 @@ import {
   ChevronRight, 
   Eye, 
   EyeOff, 
-  GripVertical,
   Layers,
-  ArrowDownRight
+  ArrowDownRight,
+  Layout
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function CategoryManager() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -58,35 +59,22 @@ export default function CategoryManager() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Xóa danh mục này sẽ xóa cả các danh mục con bên trong. Bạn chắc chắn chứ?")) return;
+    if (!confirm("Xóa danh mục này?")) return;
     try {
       const { error } = await supabase.from('categories').delete().eq('id', id);
       if (error) throw error;
       setCategories(categories.filter(c => c.id !== id));
-      toast.success("Đã xóa danh mục");
+      toast.success("Đã xóa thành công");
     } catch (error: any) {
       toast.error("Lỗi: " + error.message);
     }
   };
 
-  // Tổ chức dữ liệu theo cấp cha-con
-  const parentCategories = categories.filter(c => !c.parent_id);
-  const getChildren = (parentId: string) => categories.filter(c => c.parent_id === parentId);
+  const renderTable = (location: string) => {
+    const filtered = categories.filter(c => c.menu_location === location && !c.parent_id);
+    const getChildren = (parentId: string) => categories.filter(c => c.parent_id === parentId);
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Quản Lý Danh Mục & Menu</h1>
-          <p className="text-muted-foreground text-sm">Quản lý cấu trúc danh mục sản phẩm và menu chính của Header.</p>
-        </div>
-        <Button asChild className="btn-hero shadow-gold">
-          <Link to="/admin/categories/new">
-            <Plus className="w-4 h-4 mr-2" /> Thêm danh mục mới
-          </Link>
-        </Button>
-      </div>
-
+    return (
       <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -102,9 +90,9 @@ export default function CategoryManager() {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
-              ) : parentCategories.length === 0 ? (
-                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground">Chưa có danh mục nào.</td></tr>
-              ) : parentCategories.map((parent) => (
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground">Chưa có dữ liệu ở vị trí này.</td></tr>
+              ) : filtered.map((parent) => (
                 <CategoryRow 
                   key={parent.id} 
                   category={parent} 
@@ -117,6 +105,41 @@ export default function CategoryManager() {
           </table>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Cấu Hình Header Menu</h1>
+          <p className="text-muted-foreground text-sm">Quản lý toàn bộ danh mục và các thanh menu trên Header.</p>
+        </div>
+        <Button asChild className="btn-hero shadow-gold">
+          <Link to="/admin/categories/new">
+            <Plus className="w-4 h-4 mr-2" /> Thêm menu mới
+          </Link>
+        </Button>
+      </div>
+
+      <Tabs defaultValue="main" className="space-y-6">
+        <TabsList className="bg-white border p-1 h-12 rounded-xl">
+          <TabsTrigger value="secondary" className="px-6 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white font-bold uppercase text-[10px] tracking-widest">
+            Hàng 3 (Dịch vụ)
+          </TabsTrigger>
+          <TabsTrigger value="main" className="px-6 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white font-bold uppercase text-[10px] tracking-widest">
+            Hàng 4 (Sản phẩm)
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="secondary" className="mt-0">
+          {renderTable('secondary')}
+        </TabsContent>
+        
+        <TabsContent value="main" className="mt-0">
+          {renderTable('main')}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -157,7 +180,6 @@ function CategoryRow({ category, children, onToggle, onDelete }: any) {
         </td>
       </tr>
       
-      {/* Render children */}
       {children.map((child: any) => (
         <tr key={child.id} className="bg-gray-50/30 hover:bg-gray-50 transition-colors">
           <td className="px-6 py-3 w-20 text-center">
@@ -175,7 +197,7 @@ function CategoryRow({ category, children, onToggle, onDelete }: any) {
           <td className="px-6 py-3 text-center">
             <button 
               onClick={() => onToggle(child.id, child.is_visible)}
-              className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border ${child.is_visible ? 'text-emerald-600 border-emerald-200 bg-emerald-50' : 'text-muted-foreground border-border bg-secondary'}`}
+              className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border \${child.is_visible ? 'text-emerald-600 border-emerald-200 bg-emerald-50' : 'text-muted-foreground border-border bg-secondary'}`}
             >
               {child.is_visible ? "Hiển thị" : "Đang ẩn"}
             </button>

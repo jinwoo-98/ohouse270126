@@ -26,7 +26,8 @@ export default function CategoryForm() {
     parent_id: "none",
     display_order: "1000",
     is_visible: true,
-    is_highlight: false
+    is_highlight: false,
+    menu_location: "main"
   });
 
   useEffect(() => {
@@ -51,7 +52,8 @@ export default function CategoryForm() {
         parent_id: data.parent_id || "none",
         display_order: data.display_order.toString(),
         is_visible: data.is_visible,
-        is_highlight: data.is_highlight
+        is_highlight: data.is_highlight,
+        menu_location: data.menu_location || "main"
       });
     }
   };
@@ -67,7 +69,8 @@ export default function CategoryForm() {
       parent_id: formData.parent_id === "none" ? null : formData.parent_id,
       display_order: parseInt(formData.display_order),
       is_visible: formData.is_visible,
-      is_highlight: formData.is_highlight
+      is_highlight: formData.is_highlight,
+      menu_location: formData.menu_location
     };
 
     try {
@@ -99,6 +102,19 @@ export default function CategoryForm() {
       </div>
 
       <form onSubmit={handleSave} className="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
+        <div className="space-y-2">
+          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground text-primary">Vị trí hiển thị trên Header</Label>
+          <Select value={formData.menu_location} onValueChange={val => setFormData({...formData, menu_location: val})}>
+            <SelectTrigger className="h-12 rounded-xl border-primary/20 bg-primary/5">
+              <SelectValue placeholder="Chọn vị trí" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="secondary">Hàng 3 (Menu dịch vụ: Showroom, Dự án...)</SelectItem>
+              <SelectItem value="main">Hàng 4 (Menu sản phẩm: Sofa, Giường...)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="space-y-2">
           <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Tên danh mục / Menu</Label>
           <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Ví dụ: Sofa Phòng Khách" required className="h-12" />
