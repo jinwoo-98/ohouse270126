@@ -26,6 +26,8 @@ export function AIContentAssistant({ onInsert, contextTitle, contentType }: AICo
       return;
     }
 
+    // Xóa kết quả cũ để hiển thị trạng thái loading
+    setResult("");
     setIsGenerating(true);
     
     // Giả lập logic AI trả về nội dung chất lượng cao theo phong cách OHOUSE
@@ -108,7 +110,15 @@ export function AIContentAssistant({ onInsert, contextTitle, contentType }: AICo
             />
           </div>
 
-          {result ? (
+          {isGenerating ? (
+            <div className="py-12 flex flex-col items-center justify-center gap-4 bg-secondary/20 rounded-2xl border border-dashed border-primary/20">
+              <Loader2 className="w-10 h-10 animate-spin text-primary" />
+              <div className="text-center">
+                <p className="text-sm font-bold text-charcoal uppercase tracking-widest">AI đang soạn thảo...</p>
+                <p className="text-[10px] text-muted-foreground mt-1 italic">Vui lòng đợi trong giây lát</p>
+              </div>
+            </div>
+          ) : result ? (
             <div className="space-y-3 animate-fade-in">
               <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center justify-between">
                 Kết quả gợi ý 
@@ -134,17 +144,8 @@ export function AIContentAssistant({ onInsert, contextTitle, contentType }: AICo
               disabled={isGenerating} 
               className="w-full btn-hero h-14 rounded-2xl shadow-gold"
             >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  AI ĐANG SUY NGHĨ...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4 mr-2" />
-                  BẮT ĐẦU VIẾT BÀI
-                </>
-              )}
+              <Send className="w-4 h-4 mr-2" />
+              BẮT ĐẦU VIẾT BÀI
             </Button>
           )}
         </div>
