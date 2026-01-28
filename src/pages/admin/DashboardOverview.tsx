@@ -12,7 +12,8 @@ import {
   ArrowDownRight,
   Loader2,
   Calendar as CalendarIcon,
-  User
+  User,
+  ChevronRight
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -99,7 +100,7 @@ export default function DashboardOverview() {
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(6); // Lấy 6 đơn để lấp đầy khung
+        .limit(6);
 
       const periodRevenue = orders?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
 
@@ -151,13 +152,13 @@ export default function DashboardOverview() {
     { title: "Tổng khách hàng", value: stats.totalUsers, icon: Users, color: "bg-purple-500", trend: "+3%", isPositive: true },
   ];
 
-  const getStatusBadge = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return <span className="w-1.5 h-1.5 rounded-full bg-amber-500" title="Chờ xác nhận" />;
-      case 'processing': return <span className="w-1.5 h-1.5 rounded-full bg-blue-500" title="Đang xử lý" />;
-      case 'shipped': return <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" title="Đang giao" />;
-      case 'delivered': return <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Hoàn thành" />;
-      default: return <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />;
+      case 'pending': return 'bg-amber-500';
+      case 'processing': return 'bg-blue-500';
+      case 'shipped': return 'bg-indigo-500';
+      case 'delivered': return 'bg-emerald-500';
+      default: return 'bg-gray-300';
     }
   };
 
@@ -211,7 +212,7 @@ export default function DashboardOverview() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-border">
           <div className="flex items-center justify-between mb-8">
             <h2 className="font-bold text-lg flex items-center gap-2">
@@ -241,46 +242,59 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-border flex flex-col">
-          <h2 className="font-bold text-lg mb-6">Đơn hàng mới nhất</h2>
-          <div className="flex-1 space-y-3 overflow-y-auto pr-1 custom-scrollbar">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-border flex flex-col h-full overflow-hidden">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-bold text-lg">Đơn hàng mới nhất</h2>
+            <Badge variant="secondary" className="bg-primary/5 text-primary font-bold text-[10px] uppercase">TOP 6</Badge>
+          </div>
+          
+          <div className="flex-1 space-y-2 overflow-y-auto pr-1 custom-scrollbar">
             {loading ? (
                <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
             ) : recentOrders.length === 0 ? (
               <div className="h-full flex items-center justify-center text-muted-foreground italic text-sm">Chưa có đơn hàng nào.</div>
             ) : recentOrders.map((order) => {
-              const customerName = order.contact_email?.split('@')[0] || "Khách lẻ";
+              const customerName = order.contact_email?.split('@')[0] || "Khách vãng lai";
               return (
-                <div key={order.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/30 transition-all border border-transparent hover:border-border/50 cursor-pointer group" onClick={() => navigate('/admin/orders')}>
-                  <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary shrink-0 relative">
-                    <User className="w-5 h-5" />
-                    <div className="absolute -bottom-1 -right-1 p-0.5 bg-white rounded-full">
-                      {getStatusBadge(order.status)}
-                    </div>
-                  </div>
-                  <div className="min-w-0 flex-1">
+                <div 
+                  key={order.id} 
+                  className="group flex flex-col p-4 rounded-xl hover:bg-secondary/30 transition-all border border-transparent hover:border-border/50 cursor-pointer bg-secondary/10"
+                  onClick={() => navigate('/admin/orders')}
+                >
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-bold truncate text-charcoal">{customerName}</p>
-                      <span className="text-[9px] font-mono text-muted-foreground">#{order.id.slice(0, 4).toUpperCase()}</span>
+                      <div className={`w-2 h-2 rounded-full ${getStatusColor(order.status)}`} />
+                      <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase">#{order.id.slice(0, 8)}</span>
                     </div>
-                    <div className="flex items-center gap-3 mt-0.5">
-                      <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {format(new Date(order.created_at), 'HH:mm')}
-                      </p>
-                      <span className="text-border">|</span>
-                      <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), 'dd/MM/yyyy')}</p>
-                    </div>
+                    <span className="text-[10px] font-bold text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      Xử lý ngay <ChevronRight className="w-3 h-3" />
+                    </span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-primary">{formatPrice(order.total_amount)}</p>
-                    <p className="text-[9px] font-bold uppercase tracking-tighter text-muted-foreground group-hover:text-primary transition-colors">Chi tiết →</p>
+
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-charcoal truncate mb-0.5">{customerName}</p>
+                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                        <Clock className="w-3 h-3" />
+                        <span>{format(new Date(order.created_at), 'HH:mm')}</span>
+                        <span className="text-border">|</span>
+                        <span>{format(new Date(order.created_at), 'dd/MM/yyyy')}</span>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-bold text-charcoal">{formatPrice(order.total_amount)}</p>
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
-          <button onClick={() => navigate('/admin/orders')} className="w-full mt-6 py-3 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary hover:text-white rounded-xl transition-all border border-dashed border-primary/40 hover:border-solid shadow-sm">
-            Tất cả đơn hàng
+          
+          <button 
+            onClick={() => navigate('/admin/orders')} 
+            className="w-full mt-6 py-4 text-[11px] font-bold uppercase tracking-[0.1em] text-primary hover:bg-primary hover:text-white rounded-xl transition-all border border-primary/20 bg-primary/5 shadow-sm"
+          >
+            Quản lý tất cả đơn hàng
           </button>
         </div>
       </div>
