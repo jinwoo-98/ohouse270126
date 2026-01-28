@@ -45,6 +45,8 @@ import ProductForm from "./pages/admin/ProductForm";
 import OrderManager from "./pages/admin/OrderManager";
 import DesignRequestManager from "./pages/admin/DesignRequestManager";
 import ContactMessageManager from "./pages/admin/ContactMessageManager";
+import PageManager from "./pages/admin/PageManager";
+import PageForm from "./pages/admin/PageForm";
 
 const queryClient = new QueryClient();
 
@@ -108,7 +110,16 @@ const App = () => (
                 <Route path="/du-an/:id" element={<ProjectDetailPage />} />
                 <Route path="/lien-he" element={<ContactPage />} />
                 <Route path="/hop-tac" element={<CooperationPage />} />
+                
+                {/* Fix route support to avoid 404 */}
                 <Route path="/ho-tro/:slug" element={<SupportPage />} />
+                <Route path="/huong-dan" element={<Navigate to="/ho-tro/huong-dan" replace />} />
+                <Route path="/doi-tra" element={<Navigate to="/ho-tro/doi-tra" replace />} />
+                <Route path="/bao-hanh" element={<Navigate to="/ho-tro/bao-hanh" replace />} />
+                <Route path="/thanh-toan" element={<Navigate to="/ho-tro/thanh-toan" replace />} />
+                <Route path="/van-chuyen" element={<Navigate to="/ho-tro/van-chuyen" replace />} />
+                <Route path="/faq" element={<Navigate to="/ho-tro/faq" replace />} />
+
                 <Route path="*" element={<NotFound />} />
 
                 {/* Admin Routes */}
@@ -118,6 +129,9 @@ const App = () => (
                   <Route path="products" element={<ProductManager />} />
                   <Route path="design-requests" element={<DesignRequestManager />} />
                   <Route path="messages" element={<ContactMessageManager />} />
+                  <Route path="pages" element={<PageManager />} />
+                  <Route path="pages/new" element={<PageForm />} />
+                  <Route path="pages/edit/:id" element={<PageForm />} />
                   <Route path="theme" element={<ThemeSettings />} />
                   <Route path="settings" element={<GeneralSettings />} />
                   <Route path="products/new" element={<ProductForm />} />

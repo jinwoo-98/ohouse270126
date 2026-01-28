@@ -13,19 +13,21 @@ import {
   ClipboardList,
   LayoutGrid,
   MessageSquareText,
-  Lock
+  Lock,
+  Files
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 const menuItems = [
   { title: "Tổng quan", icon: LayoutDashboard, href: "/admin" },
   { title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
   { title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
+  { title: "Quản lý trang", icon: Files, href: "/admin/pages" },
   { title: "Yêu cầu thiết kế", icon: LayoutGrid, href: "/admin/design-requests" },
   { title: "Tin nhắn", icon: MessageSquareText, href: "/admin/messages" },
   { title: "Giao diện", icon: Palette, href: "/admin/theme" },
@@ -45,7 +47,7 @@ export default function AdminLayout() {
       if (authLoading) return;
       
       if (!user) {
-        setIsAdmin(null); // Reset trạng thái khi không có user
+        setIsAdmin(null);
         setCheckingRole(false);
         return;
       }
@@ -90,7 +92,6 @@ export default function AdminLayout() {
     );
   }
 
-  // Trường hợp 1: Chưa đăng nhập -> Hiển thị form đăng nhập Admin
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-charcoal p-4">
@@ -147,7 +148,6 @@ export default function AdminLayout() {
     );
   }
 
-  // Trường hợp 2: Đã đăng nhập nhưng không có quyền Admin
   if (isAdmin === false) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -157,21 +157,19 @@ export default function AdminLayout() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2 font-display">Truy Cập Bị Từ Chối</h1>
           <p className="text-gray-500 mb-8 leading-relaxed font-medium">
-            Tài khoản <strong>{user?.email}</strong> không có quyền quản trị viên. Vui lòng liên hệ kỹ thuật để được cấp quyền.
+            Tài khoản <strong>{user?.email}</strong> không có quyền quản trị viên.
           </p>
           <div className="flex flex-col gap-3">
             <Button className="w-full btn-hero h-12 shadow-gold" onClick={() => navigate("/")}>Về Trang Chủ</Button>
-            <Button variant="ghost" className="h-12 font-bold text-xs uppercase tracking-widest" onClick={handleLogout}>Đăng xuất tài khoản này</Button>
+            <Button variant="ghost" className="h-12 font-bold text-xs uppercase tracking-widest" onClick={handleLogout}>Đăng xuất</Button>
           </div>
         </div>
       </div>
     );
   }
 
-  // Trường hợp 3: Đã đăng nhập và là Admin -> Hiển thị Dashboard
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
       <aside 
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-charcoal text-white transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -229,9 +227,9 @@ export default function AdminLayout() {
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold text-gray-900">{user?.email}</p>
-              <p className="text-[10px] uppercase font-bold text-primary tracking-widest">Quản trị viên cấp cao</p>
+              <p className="text-[10px] uppercase font-bold text-primary tracking-widest">Admin</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold shadow-gold">
+            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold">
               {user?.email?.charAt(0).toUpperCase()}
             </div>
           </div>
