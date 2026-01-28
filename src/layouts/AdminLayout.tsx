@@ -12,11 +12,14 @@ import {
   ShieldAlert,
   ClipboardList,
   LayoutGrid,
-  MessageSquareText
+  MessageSquareText,
+  Lock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { toast } from "sonner";
 
 const menuItems = [
@@ -42,11 +45,12 @@ export default function AdminLayout() {
       if (authLoading) return;
       
       if (!user) {
-        setIsAdmin(false);
+        setIsAdmin(null); // Reset trạng thái khi không có user
         setCheckingRole(false);
         return;
       }
 
+      setCheckingRole(true);
       try {
         const { data, error } = await supabase
           .from('profiles')
@@ -71,20 +75,79 @@ export default function AdminLayout() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/");
+    setIsAdmin(null);
+    navigate("/admin");
   };
 
-  if (authLoading || checkingRole) {
+  if (authLoading || (user && checkingRole)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-gray-500 font-medium">Đang kiểm tra quyền truy cập...</p>
+          <p className="text-gray-500 font-medium tracking-wide">Đang kiểm tra quyền truy cập...</p>
         </div>
       </div>
     );
   }
 
+  // Trường hợp 1: Chưa đăng nhập -> Hiển thị form đăng nhập Admin
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-charcoal p-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full bg-white rounded-3xl shadow-elevated p-8 md:p-10"
+        >
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold text-charcoal tracking-tight uppercase">Admin Login</h1>
+            <p className="text-muted-foreground text-sm mt-2 font-medium">Hệ thống quản trị OHOUSE.VN</p>
+          </div>
+          
+          <Auth
+            supabaseClient={supabase}
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: 'hsl(var(--primary))',
+                    brandAccent: 'hsl(var(--primary-foreground))',
+                  },
+                  radii: {
+                    borderRadiusButton: '12px',
+                    inputBorderRadius: '12px',
+                  },
+                },
+              },
+            }}
+            providers={[]}
+            theme="light"
+            localization={{
+              variables: {
+                sign_in: {
+                  email_label: 'Email quản trị',
+                  password_label: 'Mật khẩu',
+                  button_label: 'Đăng nhập hệ thống',
+                }
+              }
+            }}
+          />
+          
+          <div className="mt-8 text-center">
+            <Link to="/" className="text-xs font-bold text-muted-foreground hover:text-primary uppercase tracking-widest transition-colors">
+              Quay lại trang chủ
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Trường hợp 2: Đã đăng nhập nhưng không có quyền Admin
   if (isAdmin === false) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -92,19 +155,20 @@ export default function AdminLayout() {
           <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShieldAlert className="w-10 h-10 text-destructive" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Truy Cập Bị Từ Chối</h1>
-          <p className="text-gray-500 mb-8 leading-relaxed">
-            Tài khoản <strong>{user?.email}</strong> không có quyền quản trị viên.
+          <h1 className="text-2xl font-bold text-gray-900 mb-2 font-display">Truy Cập Bị Từ Chối</h1>
+          <p className="text-gray-500 mb-8 leading-relaxed font-medium">
+            Tài khoản <strong>{user?.email}</strong> không có quyền quản trị viên. Vui lòng liên hệ kỹ thuật để được cấp quyền.
           </p>
           <div className="flex flex-col gap-3">
-            <Button className="w-full btn-hero" onClick={() => navigate("/")}>Về Trang Chủ</Button>
-            <Button variant="ghost" onClick={handleLogout}>Đăng xuất tài khoản này</Button>
+            <Button className="w-full btn-hero h-12 shadow-gold" onClick={() => navigate("/")}>Về Trang Chủ</Button>
+            <Button variant="ghost" className="h-12 font-bold text-xs uppercase tracking-widest" onClick={handleLogout}>Đăng xuất tài khoản này</Button>
           </div>
         </div>
       </div>
     );
   }
 
+  // Trường hợp 3: Đã đăng nhập và là Admin -> Hiển thị Dashboard
   return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
@@ -137,7 +201,7 @@ export default function AdminLayout() {
                 }`}
               >
                 <item.icon className={`w-5 h-5 ${isActive ? "text-white" : "text-gray-500"}`} />
-                {item.title}
+                <span className="text-sm font-medium">{item.title}</span>
               </Link>
             );
           })}
@@ -146,7 +210,7 @@ export default function AdminLayout() {
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700/50">
           <button 
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl w-full transition-colors"
+            className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl w-full transition-colors font-bold text-xs uppercase tracking-widest"
           >
             <LogOut className="w-5 h-5" />
             Đăng xuất
@@ -165,7 +229,7 @@ export default function AdminLayout() {
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold text-gray-900">{user?.email}</p>
-              <p className="text-[10px] uppercase font-bold text-primary tracking-widest">Quản trị viên</p>
+              <p className="text-[10px] uppercase font-bold text-primary tracking-widest">Quản trị viên cấp cao</p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold shadow-gold">
               {user?.email?.charAt(0).toUpperCase()}
