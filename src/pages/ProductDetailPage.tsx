@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Heart, Minus, Plus, ShoppingBag, Truck, RefreshCw, Shield, Star, Loader2, Send } from "lucide-react";
+import { ChevronRight, Heart, Minus, Plus, ShoppingBag, Truck, RefreshCw, Shield, Star, Loader2, Send, List } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [attributes, setAttributes] = useState<any[]>([]);
   const [isReviewLoading, setIsReviewLoading] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
 
@@ -56,13 +57,29 @@ export default function ProductDetailPage() {
         image: data.image_url
       });
       
-      fetchReviews();
+      await Promise.all([fetchReviews(), fetchAttributes()]);
     } catch (error) {
       toast.error("Sản phẩm không tồn tại");
       navigate("/");
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchAttributes = async () => {
+    try {
+      const { data } = await supabase
+        .from('product_attributes')
+        .select('value, attributes(name)')
+        .eq('product_id', id);
+      
+      if (data) {
+        setAttributes(data.map(item => ({
+          name: item.attributes?.name,
+          value: item.value
+        })));
+      }
+    } catch (err) {}
   };
 
   const fetchReviews = async () => {
@@ -108,8 +125,6 @@ export default function ProductDetailPage() {
   }
 
   const isFavorite = isInWishlist(product.id);
-  
-  // Use fake data if available, otherwise fallback to real or 0
   const displayRating = product.fake_rating || 5;
   const displayReviewCount = (product.fake_review_count || 0) + reviews.length;
   const displaySold = product.fake_sold || 0;
@@ -172,7 +187,19 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+              {/* Thông số kỹ thuật tóm tắt */}
+              {attributes.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 py-4 border-y border-border/50">
+                  {attributes.slice(0, 4).map((attr, i) => (
+                    <div key={i} className="flex flex-col text-sm">
+                      <span className="text-muted-foreground text-[10px] uppercase font-bold">{attr.name}</span>
+                      <span className="font-medium text-charcoal">{Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-muted-foreground leading-relaxed line-clamp-3">{product.description?.replace(/<[^>]+>/g, '')}</p>
 
               <div className="flex items-center gap-4 pt-4">
                 <div className="flex items-center border border-border rounded-xl bg-card">
@@ -217,13 +244,40 @@ export default function ProductDetailPage() {
           </div>
 
           <Tabs defaultValue="description" className="mb-16">
-            <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-8">
-              <TabsTrigger value="description" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Mô tả sản phẩm</TabsTrigger>
-              <TabsTrigger value="review" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs">Đánh giá ({displayReviewCount})</TabsTrigger>
+            <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-8 overflow-x-auto no-scrollbar">
+              <TabsTrigger value="description" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs whitespace-nowrap">Mô tả sản phẩm</TabsTrigger>
+              <TabsTrigger value="specs" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs whitespace-nowrap">Thông số kỹ thuật</TabsTrigger>
+              <TabsTrigger value="review" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-4 px-0 font-bold uppercase tracking-widest text-xs whitespace-nowrap">Đánh giá ({displayReviewCount})</TabsTrigger>
             </TabsList>
-            <TabsContent value="description" className="py-8 animate-fade-in text-muted-foreground leading-relaxed">
-              {product.description || "Thông tin mô tả đang được cập nhật."}
+            
+            <TabsContent value="description" className="py-8 animate-fade-in">
+              <div 
+                className="prose prose-lg prose-stone max-w-none text-muted-foreground leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: product.description || "Thông tin mô tả đang được cập nhật." }}
+              />
             </TabsContent>
+
+            <TabsContent value="specs" className="py-8 animate-fade-in">
+              {attributes.length > 0 ? (
+                <div className="bg-white rounded-2xl border shadow-sm overflow-hidden max-w-2xl">
+                  <table className="w-full text-sm text-left">
+                    <tbody className="divide-y">
+                      {attributes.map((attr, i) => (
+                        <tr key={i} className="hover:bg-gray-50/50">
+                          <td className="px-6 py-4 font-bold text-muted-foreground bg-gray-50/30 w-1/3 uppercase text-xs tracking-wider">{attr.name}</td>
+                          <td className="px-6 py-4 text-charcoal font-medium">
+                            {Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-muted-foreground italic">Chưa có thông số kỹ thuật chi tiết.</p>
+              )}
+            </TabsContent>
+
             <TabsContent value="review" className="py-8 animate-fade-in">
                <div className="grid lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2 space-y-8">

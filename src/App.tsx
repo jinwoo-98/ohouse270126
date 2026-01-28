@@ -45,6 +45,8 @@ import ProductManager from "./pages/admin/ProductManager";
 import ProductForm from "./pages/admin/ProductForm";
 import CategoryManager from "./pages/admin/CategoryManager";
 import CategoryForm from "./pages/admin/CategoryForm";
+import AttributeManager from "./pages/admin/AttributeManager";
+import AttributeForm from "./pages/admin/AttributeForm";
 import OrderManager from "./pages/admin/OrderManager";
 import DesignRequestManager from "./pages/admin/DesignRequestManager";
 import ContactMessageManager from "./pages/admin/ContactMessageManager";
@@ -120,6 +122,9 @@ const App = () => (
                   <Route path="categories" element={<CategoryManager />} />
                   <Route path="categories/new" element={<CategoryForm />} />
                   <Route path="categories/edit/:id" element={<CategoryForm />} />
+                  <Route path="attributes" element={<AttributeManager />} />
+                  <Route path="attributes/new" element={<AttributeForm />} />
+                  <Route path="attributes/edit/:id" element={<AttributeForm />} />
                   <Route path="marketing" element={<MarketingTools />} />
                   <Route path="reviews" element={<ReviewManager />} />
                   <Route path="subscribers" element={<SubscriberManager />} />

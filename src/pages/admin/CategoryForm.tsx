@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Save, Loader2, Info, Home } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Info, Home, ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Select, 
   SelectContent, 
@@ -21,6 +22,9 @@ export default function CategoryForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [parents, setParents] = useState<any[]>([]);
+  const [allAttributes, setAllAttributes] = useState<any[]>([]);
+  const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
+  
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -36,6 +40,7 @@ export default function CategoryForm() {
 
   useEffect(() => {
     fetchParents();
+    fetchAttributes();
     if (id) fetchCategory();
   }, [id]);
 
@@ -46,6 +51,11 @@ export default function CategoryForm() {
       .is('parent_id', null)
       .order('display_order', { ascending: true });
     setParents(data || []);
+  };
+
+  const fetchAttributes = async () => {
+    const { data } = await supabase.from('attributes').select('*').order('name');
+    setAllAttributes(data || []);
   };
 
   const fetchCategory = async () => {
@@ -63,6 +73,16 @@ export default function CategoryForm() {
         display_order: data.display_order?.toString() || "1000",
         default_sort: data.default_sort || "manual"
       });
+
+      // Fetch existing attributes
+      const { data: catAttrs } = await supabase
+        .from('category_attributes')
+        .select('attribute_id')
+        .eq('category_id', id);
+      
+      if (catAttrs) {
+        setSelectedAttrs(catAttrs.map(x => x.attribute_id));
+      }
     }
   };
 
@@ -86,17 +106,44 @@ export default function CategoryForm() {
     };
 
     try {
+      let categoryId = id;
+      
       if (id) {
         await supabase.from('categories').update(payload).eq('id', id);
       } else {
-        await supabase.from('categories').insert(payload);
+        const { data } = await supabase.from('categories').insert(payload).select().single();
+        categoryId = data.id;
       }
+
+      // Update Attributes
+      if (categoryId) {
+        // Delete old
+        await supabase.from('category_attributes').delete().eq('category_id', categoryId);
+        
+        // Insert new
+        if (selectedAttrs.length > 0) {
+          const attrPayload = selectedAttrs.map(attrId => ({
+            category_id: categoryId,
+            attribute_id: attrId
+          }));
+          await supabase.from('category_attributes').insert(attrPayload);
+        }
+      }
+
       toast.success("Đã lưu danh mục thành công!");
       navigate("/admin/categories");
     } catch (err: any) {
       toast.error("Lỗi: " + err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleAttribute = (attrId: string) => {
+    if (selectedAttrs.includes(attrId)) {
+      setSelectedAttrs(selectedAttrs.filter(id => id !== attrId));
+    } else {
+      setSelectedAttrs([...selectedAttrs, attrId]);
     }
   };
 
@@ -114,8 +161,9 @@ export default function CategoryForm() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-8">
           <form onSubmit={handleSave} className="bg-white p-8 rounded-3xl border shadow-sm space-y-8">
+            {/* Existing Fields ... */}
             <div className="space-y-2">
               <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Vị trí menu trên Header</Label>
               <Select value={formData.menu_location} onValueChange={val => setFormData({...formData, menu_location: val})}>
@@ -210,6 +258,46 @@ export default function CategoryForm() {
               </div>
             </div>
           </form>
+
+          {/* ATTRIBUTE CONFIGURATION */}
+          <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
+            <div className="flex items-center gap-3 border-b pb-4">
+              <div className="p-2 bg-secondary rounded-lg text-charcoal"><ListFilter className="w-5 h-5" /></div>
+              <div>
+                <h3 className="font-bold text-sm uppercase tracking-widest">Cấu hình Thuộc tính</h3>
+                <p className="text-[10px] text-muted-foreground font-medium italic">Sản phẩm thuộc danh mục này sẽ có các thuộc tính nào?</p>
+              </div>
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-4">
+              {allAttributes.map(attr => (
+                <div 
+                  key={attr.id} 
+                  className={`flex items-center space-x-3 p-4 rounded-xl border transition-all cursor-pointer ${
+                    selectedAttrs.includes(attr.id) ? "bg-primary/5 border-primary/40" : "bg-white border-border hover:bg-secondary/30"
+                  }`}
+                  onClick={() => toggleAttribute(attr.id)}
+                >
+                  <Checkbox checked={selectedAttrs.includes(attr.id)} className="data-[state=checked]:bg-primary data-[state=checked]:border-primary" />
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-charcoal">{attr.name}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {attr.type === 'single' ? 'Chọn 1' : 'Chọn nhiều'} • {attr.options?.length || 0} tùy chọn
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {allAttributes.length === 0 && (
+                <div className="col-span-2 text-center py-8 text-muted-foreground text-sm italic">
+                  Chưa có thuộc tính nào. <Link to="/admin/attributes/new" className="text-primary hover:underline">Tạo ngay</Link>
+                </div>
+              )}
+            </div>
+            <p className="text-[11px] text-muted-foreground bg-blue-50 p-3 rounded-lg border border-blue-100">
+              <Info className="w-3 h-3 inline mr-1" />
+              Lưu ý: Nếu danh mục này là danh mục con, nó cũng sẽ tự động kế thừa các thuộc tính của danh mục cha khi đăng sản phẩm.
+            </p>
+          </div>
         </div>
 
         <div className="space-y-6">

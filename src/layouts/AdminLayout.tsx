@@ -23,7 +23,8 @@ import {
   FolderTree,
   MonitorPlay,
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  ListFilter
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ const allMenuItems = [
   { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
   { id: 'orders', title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
   { id: 'products', title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
+  { id: 'attributes', title: "Thuộc tính SP", icon: ListFilter, href: "/admin/attributes" },
   { id: 'categories', title: "Danh mục & Menu", icon: FolderTree, href: "/admin/categories" },
   { id: 'marketing', title: "Marketing", icon: TrendingUp, href: "/admin/marketing" },
   { id: 'reviews', title: "Đánh giá", icon: Star, href: "/admin/reviews" },

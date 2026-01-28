@@ -11,7 +11,8 @@ import {
   Image as ImageIcon,
   TrendingUp,
   Box,
-  Sparkles
+  Sparkles,
+  List
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Select, 
   SelectContent, 
@@ -39,6 +41,10 @@ export default function ProductForm() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEdit);
   const [categories, setCategories] = useState<any[]>([]);
+  
+  // Attributes state
+  const [availableAttributes, setAvailableAttributes] = useState<any[]>([]);
+  const [productAttrs, setProductAttrs] = useState<Record<string, any>>({});
   
   const [formData, setFormData] = useState({
     name: "",
@@ -64,12 +70,48 @@ export default function ProductForm() {
     if (isEdit) fetchProduct();
   }, [id]);
 
+  // Fetch attributes whenever category changes
+  useEffect(() => {
+    if (formData.category_id) {
+      fetchAttributesForCategory(formData.category_id);
+    } else {
+      setAvailableAttributes([]);
+    }
+  }, [formData.category_id]);
+
   const fetchCategories = async () => {
     const { data } = await supabase
       .from('categories')
       .select('id, name, slug, parent_id')
       .order('display_order', { ascending: true });
     setCategories(data || []);
+  };
+
+  const fetchAttributesForCategory = async (categorySlug: string) => {
+    // 1. Get Category ID and Parent ID from Slug
+    const category = categories.find(c => c.slug === categorySlug);
+    if (!category) return;
+
+    const targetCategoryIds = [category.id];
+    if (category.parent_id) targetCategoryIds.push(category.parent_id);
+
+    // 2. Fetch linked attributes
+    const { data: links } = await supabase
+      .from('category_attributes')
+      .select('attribute_id')
+      .in('category_id', targetCategoryIds);
+    
+    if (links && links.length > 0) {
+      const attrIds = links.map(l => l.attribute_id);
+      const { data: attrs } = await supabase
+        .from('attributes')
+        .select('*')
+        .in('id', attrIds);
+      
+      setAvailableAttributes(attrs || []);
+    } else {
+      setAvailableAttributes([]);
+    }
   };
 
   const fetchProduct = async () => {
@@ -100,6 +142,20 @@ export default function ProductForm() {
           fake_review_count: data.fake_review_count?.toString() || "0",
           fake_rating: data.fake_rating?.toString() || "5",
         });
+
+        // Fetch existing product attributes
+        const { data: pAttrs } = await supabase
+          .from('product_attributes')
+          .select('*')
+          .eq('product_id', id);
+        
+        if (pAttrs) {
+          const loadedAttrs: Record<string, any> = {};
+          pAttrs.forEach(item => {
+            loadedAttrs[item.attribute_id] = item.value;
+          });
+          setProductAttrs(loadedAttrs);
+        }
       }
     } catch (error) {
       toast.error("Không tìm thấy sản phẩm");
@@ -107,6 +163,23 @@ export default function ProductForm() {
     } finally {
       setFetching(false);
     }
+  };
+
+  const handleAttributeChange = (attrId: string, value: any, isMulti: boolean) => {
+    setProductAttrs(prev => {
+      if (isMulti) {
+        // Handle checkbox toggles
+        const currentVals = (prev[attrId] || []) as string[];
+        if (currentVals.includes(value)) {
+          return { ...prev, [attrId]: currentVals.filter(v => v !== value) };
+        } else {
+          return { ...prev, [attrId]: [...currentVals, value] };
+        }
+      } else {
+        // Single select
+        return { ...prev, [attrId]: [value] };
+      }
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -144,15 +217,35 @@ export default function ProductForm() {
     };
 
     try {
+      let productId = id;
+      
       if (isEdit) {
         const { error } = await supabase.from('products').update(payload).eq('id', id);
         if (error) throw error;
-        toast.success("Cập nhật sản phẩm thành công!");
       } else {
-        const { error } = await supabase.from('products').insert(payload);
+        const { data, error } = await supabase.from('products').insert(payload).select().single();
         if (error) throw error;
-        toast.success("Thêm sản phẩm mới thành công!");
+        productId = data.id;
       }
+
+      // Save attributes
+      if (productId) {
+        // 1. Delete old
+        await supabase.from('product_attributes').delete().eq('product_id', productId);
+        
+        // 2. Insert new
+        const attrPayloads = Object.entries(productAttrs).map(([attrId, val]) => ({
+          product_id: productId,
+          attribute_id: attrId,
+          value: val // Store array of values
+        })).filter(item => item.value && item.value.length > 0);
+
+        if (attrPayloads.length > 0) {
+          await supabase.from('product_attributes').insert(attrPayloads);
+        }
+      }
+
+      toast.success(isEdit ? "Cập nhật thành công!" : "Thêm sản phẩm thành công!");
       navigate("/admin/products");
     } catch (error: any) {
       toast.error("Lỗi: " + error.message);
@@ -239,10 +332,55 @@ export default function ProductForm() {
             </div>
           </div>
 
-          {/* 2. SECTION THÔNG TIN CHI TIẾT */}
+          {/* DYNAMIC ATTRIBUTES SECTION */}
+          {availableAttributes.length > 0 && (
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                <List className="w-4 h-4" /> 2. Thông số kỹ thuật
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {availableAttributes.map(attr => (
+                  <div key={attr.id} className="space-y-3">
+                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">{attr.name}</Label>
+                    
+                    {attr.type === 'single' ? (
+                      <Select 
+                        value={productAttrs[attr.id]?.[0] || ""} 
+                        onValueChange={(val) => handleAttributeChange(attr.id, val, false)}
+                      >
+                        <SelectTrigger className="h-11 rounded-xl">
+                          <SelectValue placeholder={`Chọn ${attr.name}`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {attr.options?.map((opt: string) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="flex flex-wrap gap-3 p-3 border rounded-xl bg-gray-50/50">
+                        {attr.options?.map((opt: string) => (
+                          <div key={opt} className="flex items-center space-x-2">
+                            <Checkbox 
+                              id={`${attr.id}-${opt}`}
+                              checked={productAttrs[attr.id]?.includes(opt)}
+                              onCheckedChange={() => handleAttributeChange(attr.id, opt, true)}
+                            />
+                            <Label htmlFor={`${attr.id}-${opt}`} className="text-sm font-normal cursor-pointer">{opt}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 3. SECTION THÔNG TIN CHI TIẾT */}
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Info className="w-4 h-4" /> 2. Thông tin chi tiết
+              <Info className="w-4 h-4" /> {availableAttributes.length > 0 ? "3." : "2."} Thông tin chi tiết
             </h3>
             <div className="space-y-2">
               <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tên sản phẩm đầy đủ *</Label>
@@ -254,13 +392,14 @@ export default function ProductForm() {
                 className="h-12 rounded-xl text-lg font-bold"
               />
             </div>
+            {/* Giữ lại Material/Style cũ làm fallback nếu chưa dùng attributes */}
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Chất liệu chính</Label>
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Chất liệu (Tag tìm kiếm)</Label>
                 <Input value={formData.material} onChange={(e) => setFormData({...formData, material: e.target.value})} placeholder="Gỗ Óc Chó, Da thật..." className="h-12 rounded-xl" />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Phong cách thiết kế</Label>
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Phong cách (Tag tìm kiếm)</Label>
                 <Input value={formData.style} onChange={(e) => setFormData({...formData, style: e.target.value})} placeholder="Luxury, Minimalist..." className="h-12 rounded-xl" />
               </div>
             </div>
@@ -282,7 +421,7 @@ export default function ProductForm() {
           </div>
         </div>
 
-        {/* CỘT PHỤ BÊN PHẢI */}
+        {/* CỘT PHỤ BÊN PHẢI (Giữ nguyên) */}
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
@@ -297,7 +436,7 @@ export default function ProductForm() {
             </h3>
             <div className="grid gap-4">
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Thứ tự hiển thị (Càng nhỏ càng ưu tiên)</Label>
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Thứ tự hiển thị</Label>
                 <Input type="number" value={formData.display_order} onChange={(e) => setFormData({...formData, display_order: e.target.value})} className="h-10 rounded-lg" />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -306,7 +445,7 @@ export default function ProductForm() {
                   <Input type="number" value={formData.fake_sold} onChange={(e) => setFormData({...formData, fake_sold: e.target.value})} className="h-10 rounded-lg" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Điểm sao (Max 5)</Label>
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Sao (Max 5)</Label>
                   <Input type="number" step="0.1" max="5" value={formData.fake_rating} onChange={(e) => setFormData({...formData, fake_rating: e.target.value})} className="h-10 rounded-lg" />
                 </div>
               </div>
@@ -327,7 +466,7 @@ export default function ProductForm() {
                 <Switch checked={formData.is_sale} onCheckedChange={(val) => setFormData({...formData, is_sale: val})} />
               </div>
               <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-                <span className="text-xs font-bold uppercase">Nổi Bật (Hot)</span>
+                <span className="text-xs font-bold uppercase">Nổi Bật</span>
                 <Switch checked={formData.is_featured} onCheckedChange={(val) => setFormData({...formData, is_featured: val})} />
               </div>
             </div>
