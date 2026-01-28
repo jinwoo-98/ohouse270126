@@ -5,9 +5,9 @@ import { ArrowLeft, Save, Loader2, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { toast } from "sonner";
 
 export default function NewsForm() {
@@ -76,11 +76,11 @@ export default function NewsForm() {
             </div>
             <div className="space-y-2">
               <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tóm tắt ngắn (Excerpt)</Label>
-              <Textarea value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} rows={3} placeholder="Mô tả ngắn hiển thị ở trang danh sách..." />
+              <Input value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} placeholder="Mô tả ngắn hiển thị ở trang danh sách..." />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Nội dung (HTML)</Label>
-              <Textarea value={formData.content} onChange={e => setFormData({...formData, content: e.target.value})} className="min-h-[500px] font-mono text-sm" placeholder="Nhập nội dung bài viết..." />
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Nội dung chi tiết</Label>
+              <RichTextEditor value={formData.content} onChange={val => setFormData({...formData, content: val})} />
             </div>
           </div>
         </div>

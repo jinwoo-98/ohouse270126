@@ -49,6 +49,8 @@ import PageManager from "./pages/admin/PageManager";
 import PageForm from "./pages/admin/PageForm";
 import NewsManager from "./pages/admin/NewsManager";
 import NewsForm from "./pages/admin/NewsForm";
+import ProjectManager from "./pages/admin/ProjectManager";
+import ProjectForm from "./pages/admin/ProjectForm";
 
 const queryClient = new QueryClient();
 
@@ -129,6 +131,9 @@ const App = () => (
                   <Route index element={<DashboardOverview />} />
                   <Route path="orders" element={<OrderManager />} />
                   <Route path="products" element={<ProductManager />} />
+                  <Route path="projects" element={<ProjectManager />} />
+                  <Route path="projects/new" element={<ProjectForm />} />
+                  <Route path="projects/edit/:id" element={<ProjectForm />} />
                   <Route path="design-requests" element={<DesignRequestManager />} />
                   <Route path="messages" element={<ContactMessageManager />} />
                   <Route path="pages" element={<PageManager />} />

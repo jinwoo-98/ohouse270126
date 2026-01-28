@@ -5,8 +5,8 @@ import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { toast } from "sonner";
 
 export default function PageForm() {
@@ -85,16 +85,11 @@ export default function PageForm() {
         </div>
 
         <div className="space-y-2">
-          <Label>Nội dung (Hỗ trợ mã HTML)</Label>
-          <Textarea 
+          <Label>Nội dung trang</Label>
+          <RichTextEditor 
             value={formData.content} 
-            onChange={e => setFormData({...formData, content: e.target.value})} 
-            placeholder="Nhập nội dung trang tại đây..."
-            className="min-h-[400px] font-mono text-sm leading-relaxed"
+            onChange={(val) => setFormData({...formData, content: val})} 
           />
-          <p className="text-[10px] text-muted-foreground italic">
-            Gợi ý: Bạn có thể sử dụng các thẻ HTML như {'<h3>'}, {'<p>'}, {'<ul>'}, {'<li>'} để định dạng nội dung.
-          </p>
         </div>
       </form>
     </div>
