@@ -14,7 +14,9 @@ import {
   LayoutGrid,
   MessageSquareText,
   Lock,
-  Files
+  Files,
+  Newspaper,
+  Briefcase
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +30,8 @@ const menuItems = [
   { title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
   { title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
   { title: "Quản lý trang", icon: Files, href: "/admin/pages" },
+  { title: "Tin tức", icon: Newspaper, href: "/admin/news" },
+  { title: "Dự án", icon: Briefcase, href: "/admin/projects" },
   { title: "Yêu cầu thiết kế", icon: LayoutGrid, href: "/admin/design-requests" },
   { title: "Tin nhắn", icon: MessageSquareText, href: "/admin/messages" },
   { title: "Giao diện", icon: Palette, href: "/admin/theme" },
@@ -229,7 +233,7 @@ export default function AdminLayout() {
               <p className="text-sm font-bold text-gray-900">{user?.email}</p>
               <p className="text-[10px] uppercase font-bold text-primary tracking-widest">Admin</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold shadow-gold">
               {user?.email?.charAt(0).toUpperCase()}
             </div>
           </div>

@@ -47,6 +47,8 @@ import DesignRequestManager from "./pages/admin/DesignRequestManager";
 import ContactMessageManager from "./pages/admin/ContactMessageManager";
 import PageManager from "./pages/admin/PageManager";
 import PageForm from "./pages/admin/PageForm";
+import NewsManager from "./pages/admin/NewsManager";
+import NewsForm from "./pages/admin/NewsForm";
 
 const queryClient = new QueryClient();
 
@@ -111,7 +113,7 @@ const App = () => (
                 <Route path="/lien-he" element={<ContactPage />} />
                 <Route path="/hop-tac" element={<CooperationPage />} />
                 
-                {/* Fix route support to avoid 404 */}
+                {/* Support Routes */}
                 <Route path="/ho-tro/:slug" element={<SupportPage />} />
                 <Route path="/huong-dan" element={<Navigate to="/ho-tro/huong-dan" replace />} />
                 <Route path="/doi-tra" element={<Navigate to="/ho-tro/doi-tra" replace />} />
@@ -132,6 +134,9 @@ const App = () => (
                   <Route path="pages" element={<PageManager />} />
                   <Route path="pages/new" element={<PageForm />} />
                   <Route path="pages/edit/:id" element={<PageForm />} />
+                  <Route path="news" element={<NewsManager />} />
+                  <Route path="news/new" element={<NewsForm />} />
+                  <Route path="news/edit/:id" element={<NewsForm />} />
                   <Route path="theme" element={<ThemeSettings />} />
                   <Route path="settings" element={<GeneralSettings />} />
                   <Route path="products/new" element={<ProductForm />} />

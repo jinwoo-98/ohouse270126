@@ -1,173 +1,105 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, ArrowRight, Clock } from "lucide-react";
+import { Calendar, ArrowRight, Clock, Loader2, Newspaper } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import heroLivingRoom from "@/assets/hero-living-room.jpg";
-import heroDiningRoom from "@/assets/hero-dining-room.jpg";
-import heroBedroom from "@/assets/hero-bedroom.jpg";
-import heroBathroom from "@/assets/hero-bathroom.jpg";
-
-const featuredNews = {
-  id: 1,
-  title: "Xu Hướng Nội Thất 2024: Sự Kết Hợp Hoàn Hảo Giữa Hiện Đại Và Cổ Điển",
-  excerpt: "Khám phá những xu hướng thiết kế nội thất nổi bật nhất năm 2024, từ phong cách tối giản đến sự trở lại mạnh mẽ của các yếu tố cổ điển.",
-  image: heroLivingRoom,
-  date: "15/01/2024",
-  readTime: "5 phút đọc",
-  category: "Xu Hướng",
-};
-
-const news = [
-  {
-    id: 2,
-    title: "Cách Chọn Sofa Phù Hợp Với Không Gian Phòng Khách",
-    excerpt: "Hướng dẫn chi tiết cách lựa chọn sofa hoàn hảo cho không gian sống của bạn.",
-    image: heroDiningRoom,
-    date: "12/01/2024",
-    readTime: "4 phút đọc",
-    category: "Hướng Dẫn",
-  },
-  {
-    id: 3,
-    title: "OHOUSE Khai Trương Showroom Mới Tại Đà Nẵng",
-    excerpt: "Showroom mới với diện tích 1000m2 trưng bày hàng nghìn sản phẩm nội thất cao cấp.",
-    image: heroBedroom,
-    date: "08/01/2024",
-    readTime: "3 phút đọc",
-    category: "Tin Tức",
-  },
-  {
-    id: 4,
-    title: "Bí Quyết Bố Trí Phòng Ngủ Theo Phong Thủy",
-    excerpt: "Những nguyên tắc phong thủy cơ bản giúp phòng ngủ của bạn tràn đầy năng lượng tích cực.",
-    image: heroBathroom,
-    date: "05/01/2024",
-    readTime: "6 phút đọc",
-    category: "Phong Thủy",
-  },
-  {
-    id: 5,
-    title: "Chương Trình Sale Đầu Năm - Giảm Đến 50%",
-    excerpt: "Cơ hội sở hữu nội thất cao cấp với mức giá ưu đãi nhất trong năm.",
-    image: heroLivingRoom,
-    date: "01/01/2024",
-    readTime: "2 phút đọc",
-    category: "Khuyến Mãi",
-  },
-  {
-    id: 6,
-    title: "Gỗ Óc Chó - Chất Liệu Hoàn Hảo Cho Nội Thất Cao Cấp",
-    excerpt: "Tìm hiểu về đặc tính và ưu điểm vượt trội của gỗ óc chó trong thiết kế nội thất.",
-    image: heroDiningRoom,
-    date: "28/12/2023",
-    readTime: "5 phút đọc",
-    category: "Chất Liệu",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 export default function NewsPage() {
+  const [news, setNews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  const fetchNews = async () => {
+    const { data } = await supabase
+      .from('news')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setNews(data || []);
+    setLoading(false);
+  };
+
+  const featured = news.find(n => n.is_featured) || news[0];
+  const remaining = news.filter(n => n.id !== featured?.id);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1 py-8 md:py-12">
         <div className="container-luxury">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">Tin Tức & Bài Viết</h1>
-          <p className="text-muted-foreground mb-8">Cập nhật xu hướng và kiến thức nội thất mới nhất</p>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2 uppercase tracking-widest text-charcoal">Tin Tức & Sự Kiện</h1>
+          <p className="text-muted-foreground mb-12">Cập nhật xu hướng và kiến thức nội thất mới nhất từ OHOUSE</p>
 
-          {/* Featured Article */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-12"
-          >
-            <Link to={`/tin-tuc/${featuredNews.id}`} className="group block">
-              <div className="grid md:grid-cols-2 gap-6 bg-card rounded-lg overflow-hidden shadow-subtle hover:shadow-medium transition-shadow">
-                <div className="aspect-[16/10] md:aspect-auto img-zoom">
-                  <img 
-                    src={featuredNews.image} 
-                    alt={featuredNews.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-6 md:p-8 flex flex-col justify-center">
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-medium w-fit mb-4">
-                    {featuredNews.category}
-                  </span>
-                  <h2 className="text-xl md:text-2xl font-bold mb-4 group-hover:text-primary transition-colors">
-                    {featuredNews.title}
-                  </h2>
-                  <p className="text-muted-foreground mb-4 line-clamp-2">
-                    {featuredNews.excerpt}
-                  </p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      {featuredNews.date}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {featuredNews.readTime}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
-
-          {/* News Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {news.map((article, index) => (
-              <motion.div
-                key={article.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Link to={`/tin-tuc/${article.id}`} className="group block card-luxury h-full">
-                  <div className="aspect-[16/10] img-zoom">
-                    <img 
-                      src={article.image} 
-                      alt={article.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-medium">
-                      {article.category}
-                    </span>
-                    <h3 className="text-lg font-semibold mt-3 mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                      {article.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                      {article.excerpt}
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {article.date}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {article.readTime}
-                      </span>
+          {news.length === 0 ? (
+            <div className="text-center py-20 bg-secondary/20 rounded-3xl">
+              <Newspaper className="w-16 h-16 mx-auto text-muted-foreground/20 mb-4" />
+              <p className="text-muted-foreground">Hiện chưa có bài viết nào được đăng.</p>
+            </div>
+          ) : (
+            <>
+              {/* Featured News */}
+              {featured && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-16">
+                  <Link to={`/tin-tuc/${featured.id}`} className="group block">
+                    <div className="grid md:grid-cols-2 gap-8 bg-card rounded-3xl overflow-hidden shadow-subtle hover:shadow-medium transition-all">
+                      <div className="aspect-[16/10] md:aspect-auto img-zoom overflow-hidden bg-secondary/30">
+                        <img src={featured.image_url} alt={featured.title} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="p-8 md:p-12 flex flex-col justify-center">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-4 block">Tin nổi bật</span>
+                        <h2 className="text-2xl md:text-3xl font-bold mb-4 group-hover:text-primary transition-colors leading-tight">{featured.title}</h2>
+                        <p className="text-muted-foreground mb-8 line-clamp-3 leading-relaxed">{featured.excerpt}</p>
+                        <div className="flex items-center gap-6 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                          <span className="flex items-center gap-2"><Calendar className="w-4 h-4" /> {new Date(featured.created_at).toLocaleDateString('vi-VN')}</span>
+                          <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> {featured.read_time || '5 phút đọc'}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+                  </Link>
+                </motion.div>
+              )}
 
-          {/* Load More */}
-          <div className="text-center mt-12">
-            <Button variant="outline">
-              Xem Thêm Bài Viết
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
+              {/* News Grid */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {remaining.map((article, index) => (
+                  <motion.div
+                    key={article.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <Link to={`/tin-tuc/${article.id}`} className="group block h-full">
+                      <div className="card-luxury h-full flex flex-col rounded-3xl border border-border/40 overflow-hidden">
+                        <div className="aspect-[16/10] overflow-hidden bg-secondary/30">
+                          <img src={article.image_url} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        </div>
+                        <div className="p-6 flex flex-col flex-1">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3 block">{article.category || 'Xu Hướng'}</span>
+                          <h3 className="text-lg font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{article.title}</h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-6 flex-1">{article.excerpt}</p>
+                          <div className="pt-4 border-t border-border/40 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            <span>{new Date(article.created_at).toLocaleDateString('vi-VN')}</span>
+                            <span className="text-primary group-hover:translate-x-1 transition-transform">Xem thêm +</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </main>
 
