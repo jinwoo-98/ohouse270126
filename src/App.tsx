@@ -57,6 +57,7 @@ import ProjectForm from "./pages/admin/ProjectForm";
 import ReviewManager from "./pages/admin/ReviewManager";
 import SubscriberManager from "./pages/admin/SubscriberManager";
 import MarketingTools from "./pages/admin/MarketingTools";
+import TeamManager from "./pages/admin/TeamManager";
 
 const queryClient = new QueryClient();
 
@@ -74,7 +75,6 @@ const App = () => (
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />
                 
-                {/* Specific Pages first */}
                 <Route path="/tim-kiem" element={<SearchPage />} />
                 <Route path="/san-pham/:id" element={<ProductDetailPage />} />
                 <Route path="/gio-hang" element={<CartPage />} />
@@ -135,11 +135,10 @@ const App = () => (
                   <Route path="news/edit/:id" element={<NewsForm />} />
                   <Route path="theme" element={<ThemeSettings />} />
                   <Route path="settings" element={<GeneralSettings />} />
+                  <Route path="team" element={<TeamManager />} />
                 </Route>
 
-                {/* Catch-all for Categories (MUST BE LAST) */}
                 <Route path="/:slug" element={<CategoryPage />} />
-                
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <FloatingActions />
