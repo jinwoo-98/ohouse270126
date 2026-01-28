@@ -19,12 +19,18 @@ export function HeaderTopBanner() {
     fetchSettings();
   }, []);
 
-  // Xử lý bộ đếm ngược
+  const messages = settings?.top_banner_messages || [];
+  const currentMsg = messages[currentMsgIndex];
+
+  // Logic đếm ngược dựa trên thông điệp hiện tại
   useEffect(() => {
-    if (!settings?.top_banner_countdown) return;
+    if (!currentMsg?.end_time) {
+      setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      return;
+    }
 
     const timer = setInterval(() => {
-      const end = new Date(settings.top_banner_countdown).getTime();
+      const end = new Date(currentMsg.end_time).getTime();
       const now = new Date().getTime();
       const distance = end - now;
 
@@ -42,32 +48,28 @@ export function HeaderTopBanner() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [settings?.top_banner_countdown]);
+  }, [currentMsgIndex, messages, currentMsg?.end_time]);
 
-  // Xử lý xoay vòng thông điệp
-  const messages = settings?.top_banner_messages || [];
+  // Xoay vòng thông điệp
   useEffect(() => {
     if (messages.length > 1) {
       const interval = setInterval(() => {
         setCurrentMsgIndex((prev) => (prev + 1) % messages.length);
-      }, 5000);
+      }, 6000);
       return () => clearInterval(interval);
     }
-  }, [messages]);
+  }, [messages.length]);
 
   if (loading) return <div className="bg-primary h-10 flex items-center justify-center"><Loader2 className="w-4 h-4 animate-spin text-white" /></div>;
-  
-  // Nếu không có tin nhắn nào trong mảng JSONB, thử dùng field text cũ
-  const displayMessages = messages.length > 0 ? messages : (settings?.top_banner_text ? [{ text: settings.top_banner_text, link: settings.top_banner_link }] : []);
-  if (displayMessages.length === 0) return null;
+  if (messages.length === 0) return null;
 
-  const currentMsg = displayMessages[currentMsgIndex];
+  const hasCountdown = currentMsg?.end_time && (countdown.days > 0 || countdown.hours > 0 || countdown.minutes > 0 || countdown.seconds > 0);
 
   return (
     <div className="bg-primary text-primary-foreground overflow-hidden">
       <div className="container-luxury flex items-center justify-between h-10 text-[10px] md:text-xs">
         <div className="flex items-center gap-2 md:gap-4 flex-1">
-          <div className="relative h-6 flex-1 max-w-[400px] overflow-hidden">
+          <div className="relative h-6 flex-1 max-w-[450px] overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentMsgIndex}
@@ -75,32 +77,32 @@ export function HeaderTopBanner() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.5 }}
-                className="absolute inset-0 flex items-center"
+                className="absolute inset-0 flex items-center gap-3"
               >
                 <Link to={currentMsg.link || "/sale"} className="font-bold underline underline-offset-2 hover:no-underline truncate">
                   {currentMsg.text}
                 </Link>
+
+                {hasCountdown && (
+                  <div className="flex items-center gap-1 shrink-0 animate-fade-in">
+                    <div className="flex items-center gap-1 bg-charcoal/20 px-2 py-0.5 rounded-full border border-white/10">
+                      {countdown.days > 0 && (
+                        <>
+                          <span className="font-mono font-bold">{countdown.days}d</span>
+                          <span className="opacity-40 text-[8px]">:</span>
+                        </>
+                      )}
+                      <span className="font-mono font-bold w-4 text-center">{String(countdown.hours).padStart(2, '0')}</span>
+                      <span className="opacity-40 text-[8px]">:</span>
+                      <span className="font-mono font-bold w-4 text-center">{String(countdown.minutes).padStart(2, '0')}</span>
+                      <span className="opacity-40 text-[8px]">:</span>
+                      <span className="font-mono font-bold w-4 text-center text-destructive-foreground animate-pulse">{String(countdown.seconds).padStart(2, '0')}</span>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             </AnimatePresence>
           </div>
-          
-          {settings.top_banner_countdown && (
-            <div className="flex items-center gap-1 shrink-0">
-              <div className="flex items-center gap-1 bg-charcoal/20 px-2 py-0.5 rounded-full border border-white/10">
-                {countdown.days > 0 && (
-                   <>
-                    <span className="font-mono font-bold">{countdown.days}d</span>
-                    <span className="opacity-40 text-[8px]">:</span>
-                   </>
-                )}
-                <span className="font-mono font-bold w-4 text-center">{String(countdown.hours).padStart(2, '0')}</span>
-                <span className="opacity-40 text-[8px]">:</span>
-                <span className="font-mono font-bold w-4 text-center">{String(countdown.minutes).padStart(2, '0')}</span>
-                <span className="opacity-40 text-[8px]">:</span>
-                <span className="font-mono font-bold w-4 text-center text-destructive-foreground animate-pulse">{String(countdown.seconds).padStart(2, '0')}</span>
-              </div>
-            </div>
-          )}
         </div>
         
         {settings.top_banner_shipping && (

@@ -12,7 +12,8 @@ import {
   Plus, 
   Trash2, 
   Clock,
-  ExternalLink
+  ExternalLink,
+  Calendar
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -24,8 +25,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 export function HeaderMenuManager() {
   const [categories, setCategories] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>({
-    top_banner_messages: [{ text: "", link: "" }],
-    top_banner_countdown: "",
+    top_banner_messages: [{ text: "", link: "", end_time: "" }],
     top_banner_shipping: "",
     logo_url: ""
   });
@@ -46,9 +46,12 @@ export function HeaderMenuManager() {
       setSettings({
         ...setData,
         top_banner_messages: (setData.top_banner_messages && setData.top_banner_messages.length > 0) 
-          ? setData.top_banner_messages 
-          : [{ text: setData.top_banner_text || "", link: setData.top_banner_link || "" }],
-        top_banner_countdown: setData.top_banner_countdown ? new Date(setData.top_banner_countdown).toISOString().slice(0, 16) : ""
+          ? setData.top_banner_messages.map((m: any) => ({
+              ...m,
+              // Đảm bảo định dạng datetime-local (YYYY-MM-DDThh:mm)
+              end_time: m.end_time ? new Date(m.end_time).toISOString().slice(0, 16) : ""
+            }))
+          : [{ text: "", link: "", end_time: "" }]
       });
     }
     setLoading(false);
@@ -57,7 +60,7 @@ export function HeaderMenuManager() {
   const handleAddMessage = () => {
     setSettings({
       ...settings,
-      top_banner_messages: [...settings.top_banner_messages, { text: "", link: "" }]
+      top_banner_messages: [...settings.top_banner_messages, { text: "", link: "", end_time: "" }]
     });
   };
 
@@ -67,7 +70,7 @@ export function HeaderMenuManager() {
     setSettings({ ...settings, top_banner_messages: newMessages });
   };
 
-  const handleUpdateMessage = (index: number, field: 'text' | 'link', value: string) => {
+  const handleUpdateMessage = (index: number, field: string, value: string) => {
     const newMessages = [...settings.top_banner_messages];
     newMessages[index][field] = value;
     setSettings({ ...settings, top_banner_messages: newMessages });
@@ -89,15 +92,15 @@ export function HeaderMenuManager() {
     try {
       const { data: existing } = await supabase.from('site_settings').select('id').single();
       
-      // Lọc bỏ các tin nhắn trống
-      const filteredMessages = settings.top_banner_messages.filter((m: any) => m.text.trim() !== "");
+      const filteredMessages = settings.top_banner_messages
+        .filter((m: any) => m.text.trim() !== "")
+        .map((m: any) => ({
+          ...m,
+          end_time: m.end_time ? new Date(m.end_time).toISOString() : null
+        }));
       
       const payload = {
         top_banner_messages: filteredMessages,
-        // Sync ngược lại field cũ để đảm bảo tương thích nếu cần
-        top_banner_text: filteredMessages[0]?.text || "",
-        top_banner_link: filteredMessages[0]?.link || "",
-        top_banner_countdown: settings.top_banner_countdown ? new Date(settings.top_banner_countdown).toISOString() : null,
         top_banner_shipping: settings.top_banner_shipping,
         logo_url: settings.logo_url,
         updated_at: new Date()
@@ -109,6 +112,7 @@ export function HeaderMenuManager() {
         await supabase.from('site_settings').insert(payload);
       }
       toast.success("Đã lưu cấu hình Header");
+      fetchData(); // Refresh to clean format
     } catch (e: any) {
       toast.error("Lỗi: " + e.message);
     } finally {
@@ -121,14 +125,14 @@ export function HeaderMenuManager() {
   return (
     <div className="grid lg:grid-cols-2 gap-8 mt-6">
       <div className="space-y-6">
-        {/* ROW 1: TOP BANNER MESSAGES */}
+        {/* ROW 1: DYNAMIC MESSAGES WITH COUNTDOWN */}
         <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b pb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg text-primary"><Megaphone className="w-5 h-5" /></div>
               <div>
                 <h3 className="font-bold text-sm">Dòng 1: Danh sách thông điệp</h3>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Hiển thị luân phiên ở thanh trên cùng</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Nhiều tin nhắn kèm đếm ngược riêng biệt</p>
               </div>
             </div>
             <Button size="sm" variant="outline" onClick={handleAddMessage} className="h-8 text-[10px] font-bold uppercase rounded-lg">
@@ -136,64 +140,67 @@ export function HeaderMenuManager() {
             </Button>
           </div>
           
-          <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-6 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
             {settings.top_banner_messages.map((msg: any, idx: number) => (
-              <div key={idx} className="p-4 bg-secondary/20 rounded-2xl border border-border/50 relative group/msg">
-                <div className="grid gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-[9px] uppercase font-bold text-muted-foreground">Nội dung #{idx + 1}</Label>
+              <div key={idx} className="p-5 bg-secondary/20 rounded-2xl border border-border/50 relative group/msg space-y-4">
+                <div className="flex items-center justify-between">
+                   <Badge variant="secondary" className="bg-primary/10 text-primary text-[9px] uppercase font-bold px-2">Thông điệp #{idx + 1}</Badge>
+                   <button 
+                    onClick={() => handleRemoveMessage(idx)}
+                    className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="grid gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] uppercase font-bold text-muted-foreground">Nội dung hiển thị</Label>
                     <Input 
                       value={msg.text} 
                       onChange={e => handleUpdateMessage(idx, 'text', e.target.value)}
-                      placeholder="VD: Flash Sale: GIẢM ĐẾN 60%..."
-                      className="h-9 text-sm"
+                      placeholder="VD: Xả kho 50% - Chỉ hôm nay"
+                      className="h-10 text-sm font-bold rounded-xl"
                     />
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-[9px] uppercase font-bold text-muted-foreground">Đường dẫn liên kết</Label>
-                    <Input 
-                      value={msg.link} 
-                      onChange={e => handleUpdateMessage(idx, 'link', e.target.value)}
-                      placeholder="/sale"
-                      className="h-9 text-sm"
-                    />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] uppercase font-bold text-muted-foreground">Link liên kết</Label>
+                      <Input 
+                        value={msg.link} 
+                        onChange={e => handleUpdateMessage(idx, 'link', e.target.value)}
+                        placeholder="/sale"
+                        className="h-10 text-sm rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
+                        <Clock className="w-3 h-3 text-destructive" /> Hạn đếm ngược
+                      </Label>
+                      <Input 
+                        type="datetime-local" 
+                        value={msg.end_time} 
+                        onChange={e => handleUpdateMessage(idx, 'end_time', e.target.value)}
+                        className="h-10 text-sm rounded-xl"
+                      />
+                    </div>
                   </div>
                 </div>
-                <button 
-                  onClick={() => handleRemoveMessage(idx)}
-                  className="absolute top-2 right-2 p-1.5 text-muted-foreground hover:text-destructive opacity-0 group-hover/msg:opacity-100 transition-opacity"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
               </div>
             ))}
           </div>
 
-          <div className="pt-4 border-t border-dashed space-y-4">
-             <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-destructive" />
-                <h4 className="text-xs font-bold uppercase">Thời gian đếm ngược (Header)</h4>
-             </div>
-             <div className="grid md:grid-cols-2 gap-4">
-               <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Hạn kết thúc</Label>
-                  <Input 
-                    type="datetime-local" 
-                    value={settings.top_banner_countdown} 
-                    onChange={e => setSettings({...settings, top_banner_countdown: e.target.value})} 
-                    className="h-11 rounded-xl"
-                  />
-               </div>
-               <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Text vận chuyển</Label>
-                  <Input 
-                    value={settings.top_banner_shipping} 
-                    onChange={e => setSettings({...settings, top_banner_shipping: e.target.value})} 
-                    placeholder="Miễn Phí Vận Chuyển"
-                    className="h-11 rounded-xl"
-                  />
-               </div>
-             </div>
+          <div className="pt-4 border-t border-dashed">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Text vận chuyển (Bên phải Header)</Label>
+              <Input 
+                value={settings.top_banner_shipping} 
+                onChange={e => setSettings({...settings, top_banner_shipping: e.target.value})} 
+                placeholder="Miễn Phí Vận Chuyển"
+                className="h-11 rounded-xl"
+              />
+            </div>
           </div>
         </div>
 
