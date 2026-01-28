@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, ShoppingBag, ArrowRight, Eye } from "lucide-react";
+import { Heart, ShoppingBag, ArrowRight, Eye, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
+import { cn } from "@/lib/utils";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -71,6 +72,10 @@ export function FeaturedProducts() {
           ) : (
             products.map((product, index) => {
               const isFavorite = isInWishlist(product.id);
+              const rating = product.fake_rating || 5;
+              const reviews = product.fake_review_count || 0;
+              const sold = product.fake_sold || 0;
+
               return (
                 <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.05 }} viewport={{ once: true }}>
                   <div className="group card-luxury relative h-full flex flex-col">
@@ -87,17 +92,12 @@ export function FeaturedProducts() {
                         </div>
                       </Link>
 
-                      {/* Interaction Buttons */}
                       <div className="absolute top-2 right-2 md:top-3 md:right-3 flex flex-col gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity z-10 pointer-events-auto">
                         <button onClick={() => toggleWishlist(product)} className={`p-2 md:p-2.5 rounded-full shadow-medium transition-colors ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'}`}>
                           <Heart className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isFavorite ? 'fill-current' : ''}`} />
                         </button>
-                        <button onClick={() => addToCart({ id: product.id, name: product.name, price: product.price, image: product.image_url, quantity: 1 })} className="p-2 md:p-2.5 bg-card/80 backdrop-blur-sm rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-colors">
-                          <ShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                        </button>
                       </div>
 
-                      {/* Quick View Button */}
                       <button onClick={() => setSelectedProduct(product)} className="hidden lg:flex absolute bottom-3 left-3 bg-card/90 backdrop-blur-sm text-foreground p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-primary hover:text-primary-foreground shadow-sm items-center gap-1.5">
                         <Eye className="w-3.5 h-3.5" />
                         <span className="text-[10px] font-bold uppercase tracking-wider">Xem nhanh</span>
@@ -105,14 +105,28 @@ export function FeaturedProducts() {
                     </div>
                     
                     <div className="p-3 md:p-4 flex-1 flex flex-col">
-                      <span className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wider mb-1">{product.category_id || "Nội thất"}</span>
+                      <div className="flex items-center gap-1 mb-1">
+                        <div className="flex text-primary">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className={cn("w-2.5 h-2.5", i < Math.floor(rating) ? "fill-current" : "text-gray-300")} />
+                          ))}
+                        </div>
+                        <span className="text-[9px] text-muted-foreground">({reviews})</span>
+                      </div>
+                      
                       <Link to={`/san-pham/${product.id}`}>
-                        <h3 className="font-medium text-xs md:text-sm lg:text-base line-clamp-2 mb-2 group-hover:text-primary transition-colors">{product.name}</h3>
+                        <h3 className="font-medium text-xs md:text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors">{product.name}</h3>
                       </Link>
+                      
                       <div className="mt-auto">
-                        <p className="text-sm md:text-lg font-bold text-primary">{formatPrice(product.price)}</p>
-                        {product.original_price && (
-                          <p className="text-[10px] text-muted-foreground line-through">{formatPrice(product.original_price)}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm md:text-lg font-bold text-primary">{formatPrice(product.price)}</p>
+                          {product.original_price && (
+                            <p className="text-[10px] text-muted-foreground line-through">{formatPrice(product.original_price)}</p>
+                          )}
+                        </div>
+                        {sold > 0 && (
+                          <p className="text-[10px] text-muted-foreground mt-1">Đã bán {sold}</p>
                         )}
                       </div>
                     </div>
