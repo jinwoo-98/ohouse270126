@@ -13,6 +13,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 import { Badge } from "@/components/ui/badge";
+import { SubcategoryList } from "@/components/category/SubcategoryList";
 
 const categoryInfo: Record<string, { title: string; description: string }> = {
   "phong-khach": { title: "Phòng Khách", description: "Nội thất phòng khách sang trọng, hiện đại" },
@@ -76,6 +77,8 @@ export default function CategoryPage() {
           </div>
         </div>
 
+        <SubcategoryList currentSlug={categorySlug} />
+
         <div className="container-luxury py-8">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">{category.title}</h1>
           <p className="text-muted-foreground">{category.description}</p>
@@ -84,7 +87,7 @@ export default function CategoryPage() {
         <div className="container-luxury pb-16">
           <div className="flex flex-col lg:flex-row gap-8">
             <aside className={`lg:w-64 flex-shrink-0 ${showFilters ? 'block fixed inset-0 z-40 bg-background p-6 lg:static lg:p-0' : 'hidden lg:block'}`}>
-              <div className="lg:bg-card lg:rounded-lg lg:p-5 lg:shadow-subtle lg:sticky lg:top-24">
+              <div className="lg:bg-card lg:rounded-lg lg:p-5 lg:shadow-subtle lg:sticky lg:top-48">
                 {showFilters && (
                   <div className="flex justify-between items-center mb-6 lg:hidden">
                     <h3 className="font-bold text-xl">Bộ Lọc</h3>
