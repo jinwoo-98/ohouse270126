@@ -149,16 +149,17 @@ export default function CategoryPage() {
         </div>
 
         <div className="container-luxury">
-          <div className="flex flex-col lg:flex-row gap-12 items-start">
+          <div className="flex flex-col lg:flex-row gap-12 items-start relative">
+            {/* Sidebar Filter - Desktop - Independent Scroll */}
             <AnimatePresence mode="wait">
               {isSidebarVisible && (
                 <motion.aside 
                   initial={{ opacity: 0, x: -20, width: 0 }}
                   animate={{ opacity: 1, x: 0, width: 280 }}
                   exit={{ opacity: 0, x: -20, width: 0 }}
-                  className="hidden lg:block shrink-0 overflow-visible sticky top-24"
+                  className="hidden lg:block shrink-0 sticky top-24 z-10"
                 >
-                  <div className="w-[280px] space-y-10 max-h-[calc(100vh-120px)] overflow-y-auto no-scrollbar pb-10">
+                  <div className="w-[280px] space-y-10 max-h-[calc(100vh-140px)] overflow-y-auto pr-4 custom-scrollbar">
                     <SubcategoryList currentSlug={categorySlug} />
                     
                     <div className="space-y-10 pt-4">
@@ -207,6 +208,7 @@ export default function CategoryPage() {
               )}
             </AnimatePresence>
 
+            {/* Product Grid */}
             <div className="flex-1 min-w-0">
               <div className={cn(
                 "grid grid-cols-2 gap-4 md:gap-8 lg:gap-10",
