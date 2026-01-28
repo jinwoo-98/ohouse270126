@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, SlidersHorizontal, Heart, ShoppingBag, X, Eye, Star, Percent, ArrowUpDown } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, Heart, ShoppingBag, X, Eye, Star, Percent, ArrowUpDown, Check } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton"
 import { Badge } from "@/components/ui/badge";
 import { SubcategoryList } from "@/components/category/SubcategoryList";
 import { cn } from "@/lib/utils";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const categoryInfo: Record<string, { title: string; description: string; parent?: string }> = {
   "phong-khach": { title: "Phòng Khách", description: "Không gian sống sang trọng" },
@@ -101,8 +102,8 @@ export default function CategoryPage() {
           isScrolled ? "fixed top-0 left-0 right-0 shadow-subtle py-2" : "relative py-3 mb-8"
         )}>
           <div className="container-luxury flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              {/* Filter Button */}
+            <div className="flex items-center gap-2 md:gap-6">
+              {/* Desktop Filter Toggle */}
               <button 
                 onClick={() => setIsSidebarVisible(!isSidebarVisible)}
                 className="hidden lg:flex items-center gap-3 px-5 py-2 border border-charcoal/20 hover:bg-secondary transition-all text-xs font-bold uppercase tracking-widest"
@@ -111,17 +112,80 @@ export default function CategoryPage() {
                 <ArrowUpDown className="w-4 h-4" />
               </button>
 
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setShowFiltersMobile(true)}
-                className="lg:hidden h-10 px-6 border-charcoal/20 rounded-none gap-2 font-bold text-xs uppercase tracking-widest"
-              >
-                Bộ lọc <SlidersHorizontal className="w-4 h-4" />
-              </Button>
+              {/* Mobile Filter Sheet */}
+              <Sheet open={showFiltersMobile} onOpenChange={setShowFiltersMobile}>
+                <SheetTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="lg:hidden h-10 px-4 md:px-6 border-charcoal/20 rounded-none gap-2 font-bold text-xs uppercase tracking-widest"
+                  >
+                    Bộ lọc <SlidersHorizontal className="w-4 h-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-full sm:max-w-xs p-0 flex flex-col z-[100]">
+                  <SheetHeader className="p-6 border-b border-border">
+                    <SheetTitle className="text-left font-bold text-sm uppercase tracking-widest">Bộ lọc sản phẩm</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+                    {/* Sale Toggle in Mobile Sheet */}
+                    <div className="flex items-center justify-between p-4 bg-secondary/30 rounded-xl">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold uppercase tracking-widest">Chỉ hiện hàng SALE</span>
+                        <span className="text-[10px] text-muted-foreground italic">Xem các sản phẩm đang ưu đãi</span>
+                      </div>
+                      <Switch 
+                        checked={filters.saleOnly} 
+                        onCheckedChange={(val) => updateFilters({ saleOnly: val })}
+                        className="data-[state=checked]:bg-charcoal"
+                      />
+                    </div>
 
-              {/* Sale Toggle - Moved to Left */}
-              <div className="flex items-center gap-3 ml-2">
+                    <SubcategoryList currentSlug={categorySlug} />
+
+                    <div className="space-y-8">
+                      <div>
+                        <h4 className="font-bold mb-4 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Khoảng giá</h4>
+                        <div className="space-y-3">
+                          {priceRanges.map((range) => (
+                            <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
+                              <Checkbox 
+                                checked={filters.priceRange.includes(range.value)} 
+                                onCheckedChange={() => toggleFilter('priceRange', range.value)} 
+                                className="border-charcoal/20 data-[state=checked]:bg-charcoal"
+                              />
+                              <span className="text-sm font-medium">{range.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h4 className="font-bold mb-4 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Chất liệu</h4>
+                        <div className="space-y-3">
+                          {materials.map((material) => (
+                            <label key={material} className="flex items-center gap-3 cursor-pointer group">
+                              <Checkbox 
+                                checked={filters.materials.includes(material)} 
+                                onCheckedChange={() => toggleFilter('materials', material)} 
+                                className="border-charcoal/20 data-[state=checked]:bg-charcoal"
+                              />
+                              <span className="text-sm font-medium">{material}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 border-t border-border bg-card">
+                    <Button className="w-full btn-hero h-12 text-xs font-bold" onClick={() => setShowFiltersMobile(false)}>Xem {products.length} sản phẩm</Button>
+                    <Button variant="ghost" className="w-full mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground" onClick={clearFilters}>Xóa bộ lọc</Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+
+              {/* Sale Toggle - Desktop Only */}
+              <div className="hidden lg:flex items-center gap-3 ml-2">
                 <Switch 
                   checked={filters.saleOnly} 
                   onCheckedChange={(val) => updateFilters({ saleOnly: val })}
@@ -131,16 +195,17 @@ export default function CategoryPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-8">
-              <div className="hidden md:block">
+            <div className="flex items-center gap-4 md:gap-8">
+              {/* Sort Selection - Visible on both Mobile (as button-like select) and Desktop */}
+              <div className="relative">
                 <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
-                  <SelectTrigger className="w-48 border-none bg-transparent hover:text-primary focus:ring-0 text-xs font-bold uppercase tracking-widest h-auto p-0 shadow-none">
-                    <SelectValue placeholder="Sắp xếp theo" />
+                  <SelectTrigger className="w-32 md:w-48 border border-charcoal/20 lg:border-none bg-transparent hover:text-primary focus:ring-0 text-[10px] md:text-xs font-bold uppercase tracking-widest h-10 lg:h-auto px-3 lg:p-0 shadow-none rounded-none">
+                    <SelectValue placeholder="Sắp xếp" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="rounded-xl z-[110]">
                     <SelectItem value="newest">Mới nhất</SelectItem>
-                    <SelectItem value="price-asc">Giá: Thấp đến Cao</SelectItem>
-                    <SelectItem value="price-desc">Giá: Cao đến Thấp</SelectItem>
+                    <SelectItem value="price-asc">Giá thấp đến cao</SelectItem>
+                    <SelectItem value="price-desc">Giá cao đến thấp</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
