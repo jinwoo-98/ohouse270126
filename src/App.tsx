@@ -37,10 +37,12 @@ import CooperationPage from "./pages/CooperationPage";
 
 // Admin Pages
 import AdminLayout from "./layouts/AdminLayout";
+import DashboardOverview from "./pages/admin/DashboardOverview";
 import ThemeSettings from "./pages/admin/ThemeSettings";
 import GeneralSettings from "./pages/admin/GeneralSettings";
 import ProductManager from "./pages/admin/ProductManager";
 import ProductForm from "./pages/admin/ProductForm";
+import OrderManager from "./pages/admin/OrderManager";
 
 const queryClient = new QueryClient();
 
@@ -109,7 +111,8 @@ const App = () => (
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<Navigate to="products" replace />} />
+                  <Route index element={<DashboardOverview />} />
+                  <Route path="orders" element={<OrderManager />} />
                   <Route path="theme" element={<ThemeSettings />} />
                   <Route path="settings" element={<GeneralSettings />} />
                   <Route path="products" element={<ProductManager />} />

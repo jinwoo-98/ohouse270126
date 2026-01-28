@@ -9,7 +9,8 @@ import {
   Menu,
   X,
   Loader2,
-  ShieldAlert
+  ShieldAlert,
+  ClipboardList
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,9 +19,10 @@ import { toast } from "sonner";
 
 const menuItems = [
   { title: "Tổng quan", icon: LayoutDashboard, href: "/admin" },
+  { title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
   { title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
   { title: "Giao diện", icon: Palette, href: "/admin/theme" },
-  { title: "Cấu hình chung", icon: Settings, href: "/admin/settings" },
+  { title: "Cấu hình", icon: Settings, href: "/admin/settings" },
 ];
 
 export default function AdminLayout() {
@@ -88,7 +90,7 @@ export default function AdminLayout() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Truy Cập Bị Từ Chối</h1>
           <p className="text-gray-500 mb-8 leading-relaxed">
-            Tài khoản <strong>{user?.email}</strong> không có quyền quản trị viên. Vui lòng liên hệ kỹ thuật để được cấp quyền.
+            Tài khoản <strong>{user?.email}</strong> không có quyền quản trị viên.
           </p>
           <div className="flex flex-col gap-3">
             <Button className="w-full btn-hero" onClick={() => navigate("/")}>Về Trang Chủ</Button>
@@ -119,7 +121,7 @@ export default function AdminLayout() {
 
         <nav className="p-4 space-y-1.5">
           {menuItems.map((item) => {
-            const isActive = location.pathname === item.href;
+            const isActive = location.pathname === item.href || (item.href !== "/admin" && location.pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
@@ -148,7 +150,6 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-6 lg:px-8">
           <button 
@@ -169,9 +170,7 @@ export default function AdminLayout() {
         </header>
 
         <main className="flex-1 overflow-auto p-6 lg:p-8 bg-gray-50/50">
-          <div className="animate-fade-in">
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
       </div>
     </div>
