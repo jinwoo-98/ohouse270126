@@ -39,6 +39,8 @@ import CooperationPage from "./pages/CooperationPage";
 import AdminLayout from "./layouts/AdminLayout";
 import ThemeSettings from "./pages/admin/ThemeSettings";
 import GeneralSettings from "./pages/admin/GeneralSettings";
+import ProductManager from "./pages/admin/ProductManager";
+import ProductForm from "./pages/admin/ProductForm";
 
 const queryClient = new QueryClient();
 
@@ -107,10 +109,12 @@ const App = () => (
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<div>Dashboard Placeholder</div>} />
+                  <Route index element={<Navigate to="products" replace />} />
                   <Route path="theme" element={<ThemeSettings />} />
                   <Route path="settings" element={<GeneralSettings />} />
-                  <Route path="products" element={<div>Product Manager Placeholder</div>} />
+                  <Route path="products" element={<ProductManager />} />
+                  <Route path="products/new" element={<ProductForm />} />
+                  <Route path="products/edit/:id" element={<ProductForm />} />
                 </Route>
               </Routes>
               <FloatingActions />
