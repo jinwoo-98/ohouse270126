@@ -4,7 +4,11 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Loader2, Package, Calendar, ChevronRight, MapPin, Plus, Trash2, ChevronDown, ChevronUp, Ticket, Star, Clock, Settings, ShoppingBag, X } from "lucide-react";
+import { 
+  Loader2, Package, Calendar, ChevronRight, MapPin, 
+  Plus, Trash2, ChevronDown, ChevronUp, Ticket, 
+  Star, Clock, Settings, ShoppingBag, X, Heart 
+} from "lucide-react";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { PasswordChangeForm } from "@/components/profile/PasswordChangeForm";
