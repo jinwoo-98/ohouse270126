@@ -35,7 +35,6 @@ export function ShopTheLook() {
 
   const fetchData = async () => {
     try {
-      // 1. Fetch Section Config
       const { data: configData } = await supabase
         .from('homepage_sections')
         .select('*')
@@ -43,7 +42,6 @@ export function ShopTheLook() {
         .single();
       if (configData) setConfig(configData);
 
-      // 2. Fetch Looks
       const { data, error } = await supabase
         .from('shop_looks')
         .select(`
@@ -97,7 +95,7 @@ export function ShopTheLook() {
       <div className="container-luxury">
         <div className="text-center mb-10 md:mb-14">
           {config?.subtitle && (
-            <span className="text-primary font-bold uppercase tracking-[0.3em] text-[10px] mb-4 block">
+            <span className="font-bold uppercase tracking-[0.3em] text-[10px] mb-4 block" style={{ color: config.subtitle_color }}>
               {config.subtitle}
             </span>
           )}

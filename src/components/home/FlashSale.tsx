@@ -24,11 +24,9 @@ export function FlashSale() {
 
   const fetchData = async () => {
     try {
-      // 1. Fetch Config
       const { data: configData } = await supabase.from('homepage_sections').select('*').eq('section_key', 'flash_sale').single();
       if (configData) setConfig(configData);
 
-      // 2. Fetch Products
       const { data: prodData } = await supabase.from('products').select('*').eq('is_sale', true).order('display_order').limit(4);
       setProducts(prodData || []);
     } finally {
@@ -66,7 +64,7 @@ export function FlashSale() {
       <div className="container-luxury">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className="text-center mb-8 md:mb-12">
           {config?.subtitle && (
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary mb-3 block">
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] mb-3 block" style={{ color: config.subtitle_color }}>
               {config.subtitle}
             </span>
           )}

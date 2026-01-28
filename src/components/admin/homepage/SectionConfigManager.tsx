@@ -58,6 +58,7 @@ export function SectionConfigManager() {
           subtitle: config.subtitle,
           description: config.description,
           title_color: config.title_color,
+          subtitle_color: config.subtitle_color,
           content_color: config.content_color,
           extra_data: config.extra_data,
           updated_at: new Date()
@@ -91,7 +92,6 @@ export function SectionConfigManager() {
           return (
             <TabsContent key={s.key} value={s.key} className="animate-fade-in outline-none">
               <div className="grid lg:grid-cols-2 gap-8">
-                {/* Cột trái: Văn bản */}
                 <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-6">
                   <div className="flex items-center gap-2 border-b pb-4">
                     <Type className="w-4 h-4 text-primary" />
@@ -101,15 +101,15 @@ export function SectionConfigManager() {
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label className="text-[10px] uppercase font-bold text-muted-foreground">Tiêu đề chính</Label>
-                      <Input value={config.title} onChange={e => handleUpdateField(s.key, 'title', e.target.value)} className="h-12 font-bold" />
+                      <Input value={config.title || ""} onChange={e => handleUpdateField(s.key, 'title', e.target.value)} className="h-12 font-bold" />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-[10px] uppercase font-bold text-muted-foreground">Tiêu đề phụ / Subtitle</Label>
-                      <Input value={config.subtitle} onChange={e => handleUpdateField(s.key, 'subtitle', e.target.value)} />
+                      <Input value={config.subtitle || ""} onChange={e => handleUpdateField(s.key, 'subtitle', e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-[10px] uppercase font-bold text-muted-foreground">Mô tả chi tiết</Label>
-                      <Textarea value={config.description} onChange={e => handleUpdateField(s.key, 'description', e.target.value)} rows={3} />
+                      <Textarea value={config.description || ""} onChange={e => handleUpdateField(s.key, 'description', e.target.value)} rows={3} />
                     </div>
 
                     {s.key === 'flash_sale' && (
@@ -125,14 +125,12 @@ export function SectionConfigManager() {
                               value={config.extra_data?.end_time ? new Date(config.extra_data.end_time).toISOString().slice(0, 16) : ""}
                               onChange={e => handleUpdateExtra(s.key, 'end_time', new Date(e.target.value).toISOString())} 
                             />
-                            <p className="text-[9px] text-muted-foreground italic">Gợi ý: Chọn thời điểm trong tương lai để bộ đếm bắt đầu chạy ngược.</p>
                          </div>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Cột phải: Style */}
                 <div className="space-y-6">
                   <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-6">
                     <div className="flex items-center gap-2 border-b pb-4">
@@ -140,19 +138,26 @@ export function SectionConfigManager() {
                       <h3 className="font-bold text-sm uppercase tracking-widest">Màu sắc & Kiểu dáng</h3>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label className="text-[10px] font-bold uppercase">Màu tiêu đề</Label>
+                        <Label className="text-[10px] font-bold uppercase">Màu tiêu đề phụ</Label>
                         <div className="flex gap-2">
-                          <Input type="color" value={config.title_color} onChange={e => handleUpdateField(s.key, 'title_color', e.target.value)} className="w-12 h-12 p-1" />
-                          <Input value={config.title_color} onChange={e => handleUpdateField(s.key, 'title_color', e.target.value)} className="font-mono text-xs uppercase" />
+                          <Input type="color" value={config.subtitle_color || "#b08d55"} onChange={e => handleUpdateField(s.key, 'subtitle_color', e.target.value)} className="w-12 h-12 p-1" />
+                          <Input value={config.subtitle_color || "#b08d55"} onChange={e => handleUpdateField(s.key, 'subtitle_color', e.target.value)} className="font-mono text-xs uppercase" />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-[10px] font-bold uppercase">Màu nội dung</Label>
+                        <Label className="text-[10px] font-bold uppercase">Màu tiêu đề chính</Label>
                         <div className="flex gap-2">
-                          <Input type="color" value={config.content_color} onChange={e => handleUpdateField(s.key, 'content_color', e.target.value)} className="w-12 h-12 p-1" />
-                          <Input value={config.content_color} onChange={e => handleUpdateField(s.key, 'content_color', e.target.value)} className="font-mono text-xs uppercase" />
+                          <Input type="color" value={config.title_color || "#1a1a1a"} onChange={e => handleUpdateField(s.key, 'title_color', e.target.value)} className="w-12 h-12 p-1" />
+                          <Input value={config.title_color || "#1a1a1a"} onChange={e => handleUpdateField(s.key, 'title_color', e.target.value)} className="font-mono text-xs uppercase" />
+                        </div>
+                      </div>
+                      <div className="space-y-2 md:col-span-2">
+                        <Label className="text-[10px] font-bold uppercase">Màu nội dung mô tả</Label>
+                        <div className="flex gap-2">
+                          <Input type="color" value={config.content_color || "#666666"} onChange={e => handleUpdateField(s.key, 'content_color', e.target.value)} className="w-12 h-12 p-1" />
+                          <Input value={config.content_color || "#666666"} onChange={e => handleUpdateField(s.key, 'content_color', e.target.value)} className="font-mono text-xs uppercase" />
                         </div>
                       </div>
                     </div>
@@ -161,12 +166,12 @@ export function SectionConfigManager() {
                       <p className="text-[10px] font-bold text-muted-foreground uppercase mb-3">Xem trước nhanh</p>
                       <div className="text-center space-y-1">
                         {config.subtitle && (
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">
+                          <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: config.subtitle_color || "#b08d55" }}>
                             {config.subtitle}
                           </p>
                         )}
-                        <h4 style={{ color: config.title_color }} className="text-lg font-bold">{config.title}</h4>
-                        <p style={{ color: config.content_color }} className="text-xs">{config.description}</p>
+                        <h4 style={{ color: config.title_color || "#1a1a1a" }} className="text-lg font-bold">{config.title || "Tiêu đề"}</h4>
+                        <p style={{ color: config.content_color || "#666666" }} className="text-xs">{config.description || "Mô tả ngắn"}</p>
                       </div>
                     </div>
                   </div>

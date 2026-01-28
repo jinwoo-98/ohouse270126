@@ -61,7 +61,7 @@ export function CategoryGrid() {
           className="text-center mb-8 md:mb-12"
         >
           {config?.subtitle && (
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary mb-3 block">
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] mb-3 block" style={{ color: config.subtitle_color }}>
               {config.subtitle}
             </span>
           )}
@@ -102,7 +102,6 @@ export function CategoryGrid() {
             </motion.div>
           ))}
           
-          {/* Default Sale Category Tile if not in list */}
           {!categories.some(c => c.is_highlight) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}

@@ -28,7 +28,6 @@ export function FeaturedProducts() {
 
   const fetchData = async () => {
     try {
-      // 1. Fetch Section Config
       const { data: configData } = await supabase
         .from('homepage_sections')
         .select('*')
@@ -36,7 +35,6 @@ export function FeaturedProducts() {
         .single();
       if (configData) setConfig(configData);
 
-      // 2. Fetch Featured Products
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -65,7 +63,7 @@ export function FeaturedProducts() {
           className="text-center mb-8 md:mb-12"
         >
           {config?.subtitle && (
-            <span className="text-primary font-bold uppercase tracking-[0.3em] text-[10px] mb-3 block">
+            <span className="font-bold uppercase tracking-[0.3em] text-[10px] mb-3 block" style={{ color: config.subtitle_color }}>
               {config.subtitle}
             </span>
           )}
