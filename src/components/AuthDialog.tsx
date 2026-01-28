@@ -77,7 +77,7 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                 label: 'text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1',
               }
             }}
-            providers={['google', 'facebook']}
+            providers={['google']}
             redirectTo={redirectUrl}
             onlyThirdPartyProviders={false}
             view="sign_in"
@@ -106,7 +106,7 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle className="text-xs font-bold uppercase mb-1">Kiểm tra cấu hình!</AlertTitle>
           <AlertDescription className="text-[10px] leading-relaxed">
-            Nếu nút Google/Facebook quay về trang lỗi, hãy chắc chắn bạn đã thêm URL <strong>{redirectUrl}</strong> vào mục 
+            Nếu nút Google quay về trang lỗi, hãy chắc chắn bạn đã thêm URL <strong>{redirectUrl}</strong> vào mục 
             <a 
               href="https://supabase.com/dashboard/project/kyfzqgyazmjtnxjdvetr/auth/url-configuration" 
               target="_blank" 
