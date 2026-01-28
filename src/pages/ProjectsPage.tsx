@@ -1,76 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, ArrowRight, Maximize } from "lucide-react";
+import { MapPin, ArrowRight, Maximize, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import heroLivingRoom from "@/assets/hero-living-room.jpg";
-import heroDiningRoom from "@/assets/hero-dining-room.jpg";
-import heroBedroom from "@/assets/hero-bedroom.jpg";
-import heroBathroom from "@/assets/hero-bathroom.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 const categories = ["Tất Cả", "Căn Hộ", "Biệt Thự", "Nhà Phố", "Văn Phòng", "Khách Sạn"];
 
-const projects = [
-  {
-    id: 1,
-    title: "Penthouse The Marq - Quận 1",
-    category: "Căn Hộ",
-    location: "TP. Hồ Chí Minh",
-    area: "250m²",
-    image: heroLivingRoom,
-    style: "Luxury Modern",
-  },
-  {
-    id: 2,
-    title: "Biệt Thự Vinhomes Central Park",
-    category: "Biệt Thự",
-    location: "TP. Hồ Chí Minh",
-    area: "450m²",
-    image: heroDiningRoom,
-    style: "Contemporary",
-  },
-  {
-    id: 3,
-    title: "Căn Hộ Masteri Thảo Điền",
-    category: "Căn Hộ",
-    location: "TP. Hồ Chí Minh",
-    area: "120m²",
-    image: heroBedroom,
-    style: "Scandinavian",
-  },
-  {
-    id: 4,
-    title: "Nhà Phố Thảo Điền",
-    category: "Nhà Phố",
-    location: "TP. Hồ Chí Minh",
-    area: "180m²",
-    image: heroBathroom,
-    style: "Modern Classic",
-  },
-  {
-    id: 5,
-    title: "Văn Phòng Landmark 81",
-    category: "Văn Phòng",
-    location: "TP. Hồ Chí Minh",
-    area: "500m²",
-    image: heroLivingRoom,
-    style: "Corporate Modern",
-  },
-  {
-    id: 6,
-    title: "Khách Sạn Boutique Hội An",
-    category: "Khách Sạn",
-    location: "Hội An",
-    area: "1200m²",
-    image: heroDiningRoom,
-    style: "Indochine Fusion",
-  },
-];
-
 export default function ProjectsPage() {
   const [activeCategory, setActiveCategory] = useState("Tất Cả");
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setProjects(data || []);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProjects = activeCategory === "Tất Cả" 
     ? projects 
@@ -119,50 +83,56 @@ export default function ProjectsPage() {
             </div>
 
             {/* Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProjects.map((project, index) => (
-                <motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  layout
-                >
-                  <Link to={`/du-an/${project.id}`} className="group block card-luxury">
-                    <div className="relative aspect-[4/3] img-zoom">
-                      <img 
-                        src={project.image} 
-                        alt={project.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        <span className="bg-card text-foreground px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-                          <Maximize className="w-4 h-4" />
-                          Xem Chi Tiết
+            {loading ? (
+              <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>
+            ) : filteredProjects.length === 0 ? (
+              <div className="text-center py-20 text-muted-foreground">Chưa có dự án nào trong danh mục này.</div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProjects.map((project, index) => (
+                  <motion.div
+                    key={project.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    layout
+                  >
+                    <Link to={`/du-an/${project.id}`} className="group block card-luxury">
+                      <div className="relative aspect-[4/3] img-zoom">
+                        <img 
+                          src={project.image_url} 
+                          alt={project.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <span className="bg-card text-foreground px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+                            <Maximize className="w-4 h-4" />
+                            Xem Chi Tiết
+                          </span>
+                        </div>
+                        <span className="absolute top-3 left-3 bg-card/90 backdrop-blur-sm text-foreground px-3 py-1 rounded text-xs font-medium">
+                          {project.category}
                         </span>
                       </div>
-                      <span className="absolute top-3 left-3 bg-card/90 backdrop-blur-sm text-foreground px-3 py-1 rounded text-xs font-medium">
-                        {project.category}
-                      </span>
-                    </div>
-                    <div className="p-5">
-                      <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
-                        {project.title}
-                      </h3>
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          {project.location}
-                        </span>
-                        <span>{project.area}</span>
+                      <div className="p-5">
+                        <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
+                          {project.title}
+                        </h3>
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-4 h-4" />
+                            {project.location}
+                          </span>
+                          <span>{project.area}</span>
+                        </div>
+                        <p className="text-xs text-primary mt-2 font-medium">{project.style}</p>
                       </div>
-                      <p className="text-xs text-primary mt-2 font-medium">{project.style}</p>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
