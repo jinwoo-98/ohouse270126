@@ -248,9 +248,9 @@ export default function DashboardOverview() {
             <Badge variant="secondary" className="bg-primary/5 text-primary font-bold text-[10px] uppercase">TOP 6</Badge>
           </div>
           
-          <div className="flex-1 space-y-2 overflow-y-auto pr-1 custom-scrollbar">
+          <div className="flex-1 space-y-3 overflow-y-auto pr-1 custom-scrollbar">
             {loading ? (
-               <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+               <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
             ) : recentOrders.length === 0 ? (
               <div className="h-full flex items-center justify-center text-muted-foreground italic text-sm">Chưa có đơn hàng nào.</div>
             ) : recentOrders.map((order) => {
@@ -258,32 +258,30 @@ export default function DashboardOverview() {
               return (
                 <div 
                   key={order.id} 
-                  className="group flex flex-col p-4 rounded-xl hover:bg-secondary/30 transition-all border border-transparent hover:border-border/50 cursor-pointer bg-secondary/10"
+                  className="group flex flex-col p-4 rounded-xl hover:bg-secondary/30 transition-all border border-transparent hover:border-border/50 cursor-pointer bg-secondary/10 gap-2"
                   onClick={() => navigate('/admin/orders')}
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  {/* Line 1: Mã đơn & Trạng thái */}
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${getStatusColor(order.status)}`} />
-                      <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase">#{order.id.slice(0, 8)}</span>
+                      <div className={`w-2 h-2 rounded-full ${getStatusColor(order.status)} shadow-sm`} />
+                      <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider">#{order.id.slice(0, 8)}</span>
                     </div>
-                    <span className="text-[10px] font-bold text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      Xử lý ngay <ChevronRight className="w-3 h-3" />
-                    </span>
+                    <ChevronRight className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />
                   </div>
 
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-charcoal truncate mb-0.5">{customerName}</p>
-                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                        <Clock className="w-3 h-3" />
-                        <span>{format(new Date(order.created_at), 'HH:mm')}</span>
-                        <span className="text-border">|</span>
-                        <span>{format(new Date(order.created_at), 'dd/MM/yyyy')}</span>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold text-charcoal">{formatPrice(order.total_amount)}</p>
-                    </div>
+                  {/* Line 2: Tên khách hàng */}
+                  <p className="text-sm font-bold text-charcoal truncate">{customerName}</p>
+
+                  {/* Line 3: Giá trị đơn hàng */}
+                  <p className="text-base font-bold text-primary">{formatPrice(order.total_amount)}</p>
+
+                  {/* Line 4: Thời gian chi tiết */}
+                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{format(new Date(order.created_at), 'HH:mm')}</span>
+                    <span className="text-border mx-1">|</span>
+                    <span>{format(new Date(order.created_at), 'dd/MM/yyyy')}</span>
                   </div>
                 </div>
               );
