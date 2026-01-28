@@ -38,39 +38,48 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
     try {
       let query = supabase.from('products').select('*');
 
-      // Filter by Category
-      if (categorySlug !== 'noi-that' && categorySlug !== 'sale' && categorySlug !== 'moi' && categorySlug !== 'ban-chay') {
+      // 1. Lọc theo Danh mục (nếu không phải các trang đặc biệt)
+      const specialPages = ['noi-that', 'sale', 'moi', 'ban-chay'];
+      if (!specialPages.includes(categorySlug)) {
         query = query.eq('category_id', categorySlug);
       }
 
-      // Filter by Search
+      // 2. Lọc theo trang đặc biệt
+      if (categorySlug === 'sale' || filters.saleOnly) {
+        query = query.eq('is_sale', true);
+      }
+      if (categorySlug === 'moi') {
+        query = query.eq('is_new', true);
+      }
+
+      // 3. Tìm kiếm từ khóa
       if (filters.searchQuery) {
         query = query.ilike('name', `%${filters.searchQuery}%`);
       }
 
-      // Filter by Sale
-      if (filters.saleOnly || categorySlug === 'sale') {
-        query = query.eq('is_sale', true);
-      }
-
-      // Sorting Logic
-      if (filters.sortBy === 'price-asc') {
+      // 4. Sắp xếp (Sorting Logic)
+      // Trang Bán Chạy luôn ưu tiên sắp xếp theo lượt bán (fake_sold)
+      if (categorySlug === 'ban-chay') {
+        query = query.order('fake_sold', { ascending: false }).order('display_order', { ascending: true });
+      } 
+      // Các trường hợp sắp xếp khác
+      else if (filters.sortBy === 'price-asc') {
         query = query.order('price', { ascending: true });
       } else if (filters.sortBy === 'price-desc') {
         query = query.order('price', { ascending: false });
       } else if (filters.sortBy === 'popular') {
-        // Nếu chọn phổ biến, ưu tiên xếp theo fake_sold
         query = query.order('fake_sold', { ascending: false }).order('display_order', { ascending: true });
       } else {
-        // Mặc định (Newest): Ưu tiên Display Order trước, sau đó đến ngày tạo
+        // Mặc định: Ưu tiên Display Order (thứ tự hiển thị) -> Ngày tạo mới nhất
         query = query.order('display_order', { ascending: true }).order('created_at', { ascending: false });
       }
 
       const { data, error } = await query;
       if (error) throw error;
 
-      // Client side filtering for price
+      // 5. Lọc Client-side (Giá, Chất liệu, Phong cách)
       let filteredData = data || [];
+      
       if (filters.priceRange.length > 0) {
         filteredData = filteredData.filter(p => {
           return filters.priceRange.some(rangeKey => {
@@ -79,6 +88,8 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
           });
         });
       }
+
+      // TODO: Thêm logic lọc materials/styles nếu DB có cột tương ứng (hiện tại chưa có nên tạm bỏ qua)
 
       setProducts(filteredData);
     } catch (err) {

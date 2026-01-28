@@ -13,6 +13,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const priceRanges = [
   { label: "Dưới 10 triệu", value: "0-10" },
@@ -21,7 +22,7 @@ const priceRanges = [
   { label: "Trên 50 triệu", value: "50+" },
 ];
 
-const materials = ["Gỗ Óc Chó", "Gỗ Sồi", "Đá Marble", "Da Thật", "Vải Nhung", "Inox Mạ Vàng", "Kính Cường Lực", "Gỗ Công Nghiệp", "Pha Lê", "Kim Loại"];
+const materials = ["Gỗ Óc Chó", "Gỗ Sồi", "Đá Marble", "Da Thật", "Vải Nhung", "Kim Loại"];
 const styles = ["Luxury", "Minimalist", "Modern", "Classic"];
 
 function formatPrice(price: number) {
@@ -87,18 +88,6 @@ export default function SearchPage() {
                 </div>
 
                 <div className="mb-6">
-                  <h4 className="font-semibold mb-3 text-sm uppercase tracking-wide">Phong Cách</h4>
-                  <div className="space-y-2">
-                    {styles.map((style) => (
-                      <label key={style} className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox checked={filters.styles.includes(style)} onCheckedChange={() => toggleFilter('styles', style)} />
-                        <span className="text-sm">{style}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-6">
                   <h4 className="font-semibold mb-3 text-sm uppercase tracking-wide">Chất Liệu</h4>
                   <div className="space-y-2">
                     {materials.map((material) => (
@@ -127,9 +116,9 @@ export default function SearchPage() {
                       <SelectTrigger className="w-40 h-9 text-sm"><SelectValue placeholder="Sắp xếp" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="newest">Mới nhất</SelectItem>
+                        <SelectItem value="popular">Phổ biến nhất</SelectItem>
                         <SelectItem value="price-asc">Giá tăng dần</SelectItem>
                         <SelectItem value="price-desc">Giá giảm dần</SelectItem>
-                        <SelectItem value="popular">Phổ biến nhất</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -150,13 +139,6 @@ export default function SearchPage() {
                         <Badge key={val} variant="secondary" className="pl-3 pr-1 py-1 gap-1 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20">
                           {priceRanges.find(r => r.value === val)?.label}
                           <button onClick={() => toggleFilter('priceRange', val)} className="p-0.5 hover:bg-primary/20 rounded-full transition-colors"><X className="w-3 h-3" /></button>
-                        </Badge>
-                      ))}
-
-                      {filters.styles.map(val => (
-                        <Badge key={val} variant="secondary" className="pl-3 pr-1 py-1 gap-1 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20">
-                          {val}
-                          <button onClick={() => toggleFilter('styles', val)} className="p-0.5 hover:bg-primary/20 rounded-full transition-colors"><X className="w-3 h-3" /></button>
                         </Badge>
                       ))}
 
@@ -187,6 +169,10 @@ export default function SearchPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                   {products.map((product, index) => {
                     const isFavorite = isInWishlist(product.id);
+                    const rating = product.fake_rating || 5;
+                    const reviews = product.fake_review_count || 0;
+                    const sold = product.fake_sold || 0;
+
                     return (
                       <motion.div
                         key={product.id}
@@ -196,11 +182,11 @@ export default function SearchPage() {
                       >
                         <div className="group card-luxury relative h-full flex flex-col">
                           <div className="relative aspect-square img-zoom">
-                            <Link to={`/san-pham/${product.id}`} className="block">
-                              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                            <Link to={`/san-pham/${product.id}`} className="block h-full">
+                              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                               <div className="absolute top-2 left-2 flex flex-col gap-1">
-                                {product.isNew && <span className="bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">Mới</span>}
-                                {product.isSale && <span className="bg-destructive text-destructive-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">Sale</span>}
+                                {product.is_new && <span className="bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm">Mới</span>}
+                                {product.is_sale && <span className="bg-white text-charcoal px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm">Sale</span>}
                               </div>
                             </Link>
                             
@@ -210,7 +196,7 @@ export default function SearchPage() {
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  toggleWishlist({ ...product });
+                                  toggleWishlist(product);
                                 }}
                                 className={`p-2.5 rounded-full shadow-medium transition-all pointer-events-auto ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-primary hover:text-primary-foreground'}`}
                               >
@@ -220,7 +206,7 @@ export default function SearchPage() {
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  addToCart({ ...product, quantity: 1 });
+                                  addToCart({ id: product.id, name: product.name, price: product.price, image: product.image_url, quantity: 1 });
                                 }}
                                 className="p-2.5 bg-card rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-all pointer-events-auto"
                               >
@@ -244,13 +230,21 @@ export default function SearchPage() {
                             
                             <div className="flex items-center gap-1 mb-3">
                               <div className="flex text-primary">
-                                {[1, 2, 3, 4, 5].map(i => <Star key={i} className={`w-3 h-3 ${i <= 4 ? 'fill-current' : ''}`} />)}
+                                {[...Array(5)].map((_, i) => (
+                                  <Star key={i} className={cn("w-3 h-3", i < Math.floor(rating) ? "fill-current" : "text-gray-300")} />
+                                ))}
                               </div>
-                              <span className="text-[10px] text-muted-foreground ml-1">(12)</span>
+                              <span className="text-[10px] text-muted-foreground ml-1">({reviews})</span>
                             </div>
 
                             <div className="mt-auto">
-                              <span className="text-base font-bold text-primary">{formatPrice(product.price)}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-base font-bold text-primary">{formatPrice(product.price)}</span>
+                                {product.original_price && (
+                                  <span className="text-xs text-muted-foreground line-through">{formatPrice(product.original_price)}</span>
+                                )}
+                              </div>
+                              {sold > 0 && <p className="text-[10px] text-muted-foreground mt-1">Đã bán {sold}</p>}
                             </div>
                           </div>
                         </div>
