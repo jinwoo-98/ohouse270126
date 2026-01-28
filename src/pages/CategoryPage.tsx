@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, SlidersHorizontal, Heart, ShoppingBag, X, Eye, Star, Percent, ArrowUpDown, Check } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, Heart, ShoppingBag, X, Eye, Star, ArrowUpDown } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -13,27 +13,26 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
-import { Badge } from "@/components/ui/badge";
 import { SubcategoryList } from "@/components/category/SubcategoryList";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
-const categoryInfo: Record<string, { title: string; description: string; parent?: string }> = {
-  "phong-khach": { title: "Phòng Khách", description: "Không gian sống sang trọng" },
-  "phong-ngu": { title: "Phòng Ngủ", description: "Giấc ngủ trọn vẹn" },
-  "phong-an": { title: "Phòng Ăn", description: "Bữa cơm gia đình ấm cúng" },
-  "ban-ghe": { title: "Bàn & Ghế", description: "Bộ sưu tập bàn ghế cao cấp" },
-  "den-trang-tri": { title: "Đèn Trang Trí", description: "Ánh sáng hoàn mỹ" },
-  "decor": { title: "Decor", description: "Điểm nhấn cho ngôi nhà" },
-  "noi-that": { title: "Tất Cả Nội Thất", description: "Khám phá toàn bộ sản phẩm" },
-  "sale": { title: "Khuyến Mãi", description: "Sản phẩm ưu đãi đặc biệt" },
-  "ban-chay": { title: "Bán Chạy", description: "Sản phẩm được yêu thích nhất" },
-  "moi": { title: "Sản Phẩm Mới", description: "Bộ sưu tập mới nhất" },
-  "sofa": { title: "Ghế Sofa", description: "Sofa da, sofa vải cao cấp", parent: "phong-khach" },
-  "ban-tra": { title: "Bàn Trà", description: "Bàn trà đá, bàn trà gỗ", parent: "phong-khach" },
-  "ke-tivi": { title: "Kệ Tivi", description: "Kệ tivi hiện đại", parent: "phong-khach" },
-  "giuong": { title: "Giường Ngủ", description: "Giường bọc da, giường gỗ sồi", parent: "phong-ngu" },
-  "ban-an": { title: "Bàn Ăn", description: "Bàn ăn mặt đá, bàn ăn gỗ", parent: "phong-an" },
+const categoryInfo: Record<string, { title: string; parent?: string }> = {
+  "phong-khach": { title: "Phòng Khách" },
+  "phong-ngu": { title: "Phòng Ngủ" },
+  "phong-an": { title: "Phòng Ăn" },
+  "ban-ghe": { title: "Bàn & Ghế" },
+  "den-trang-tri": { title: "Đèn Trang Trí" },
+  "decor": { title: "Decor" },
+  "noi-that": { title: "Tất Cả Nội Thất" },
+  "sale": { title: "Khuyến Mãi" },
+  "ban-chay": { title: "Bán Chạy" },
+  "moi": { title: "Sản Phẩm Mới" },
+  "sofa": { title: "Ghế Sofa", parent: "phong-khach" },
+  "ban-tra": { title: "Bàn Trà", parent: "phong-khach" },
+  "ke-tivi": { title: "Kệ Tivi", parent: "phong-khach" },
+  "giuong": { title: "Giường Ngủ", parent: "phong-ngu" },
+  "ban-an": { title: "Bàn Ăn", parent: "phong-an" },
 };
 
 const priceRanges = [
@@ -69,7 +68,7 @@ export default function CategoryPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   
-  const category = categoryInfo[categorySlug] || { title: "Danh Mục", description: "Khám phá sản phẩm" };
+  const category = categoryInfo[categorySlug] || { title: "Danh Mục" };
   const parentCategory = category.parent ? categoryInfo[category.parent] : null;
 
   return (
@@ -88,7 +87,7 @@ export default function CategoryPage() {
                   <ChevronRight className="w-3 h-3" />
                 </>
               )}
-              <span className="text-foreground">{category.title}</span>
+              <span className="text-foreground capitalize">{category.title}</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold text-charcoal mb-8 uppercase tracking-widest">{category.title}</h1>
           </div>
@@ -163,12 +162,13 @@ export default function CategoryPage() {
             </div>
 
             <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
-              <SelectTrigger className="w-32 md:w-48 border border-charcoal/20 lg:border-none bg-transparent text-[10px] md:text-xs font-bold uppercase tracking-widest h-10 shadow-none rounded-none">
+              <SelectTrigger className="w-36 md:w-48 border border-charcoal/20 lg:border-none bg-transparent text-[10px] md:text-xs font-bold uppercase tracking-widest h-10 shadow-none rounded-none">
                 <SelectValue placeholder="Sắp xếp" />
               </SelectTrigger>
               <SelectContent className="rounded-xl z-[110]">
+                <SelectItem value="manual">Thứ tự ưu tiên (Mặc định)</SelectItem>
                 <SelectItem value="newest">Mới nhất</SelectItem>
-                <SelectItem value="popular">Phổ biến nhất</SelectItem>
+                <SelectItem value="popular">Bán chạy nhất</SelectItem>
                 <SelectItem value="price-asc">Giá thấp đến cao</SelectItem>
                 <SelectItem value="price-desc">Giá cao đến thấp</SelectItem>
               </SelectContent>
@@ -235,43 +235,47 @@ export default function CategoryPage() {
 
             <div className="flex-1 min-w-0">
               <div className={cn("grid grid-cols-2 gap-4 md:gap-8 lg:gap-10", isSidebarVisible ? "xl:grid-cols-3" : "xl:grid-cols-4")}>
-                {isLoading ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />) : products.map((product, index) => (
-                  <motion.div key={product.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: index * 0.05 }}>
-                    <div className="group relative h-full flex flex-col">
-                      <div className="relative aspect-[3/4] overflow-hidden bg-secondary/30">
-                        <Link to={`/san-pham/${product.id}`} className="block h-full">
-                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                          <div className="absolute top-4 left-4 flex flex-col gap-1">
-                            {product.is_sale && <span className="bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-charcoal shadow-sm">Sale</span>}
-                            {product.is_new && <span className="bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm">New</span>}
+                {isLoading ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />) : products.length === 0 ? (
+                  <div className="col-span-full py-20 text-center text-muted-foreground">Chưa có sản phẩm nào trong danh mục này.</div>
+                ) : (
+                  products.map((product, index) => (
+                    <motion.div key={product.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: index * 0.05 }}>
+                      <div className="group relative h-full flex flex-col">
+                        <div className="relative aspect-[3/4] overflow-hidden bg-secondary/30">
+                          <Link to={`/san-pham/${product.id}`} className="block h-full">
+                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            <div className="absolute top-4 left-4 flex flex-col gap-1">
+                              {product.is_sale && <span className="bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-charcoal shadow-sm">Sale</span>}
+                              {product.is_new && <span className="bg-primary px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm">New</span>}
+                            </div>
+                          </Link>
+                          <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <button onClick={() => toggleWishlist(product)} className={cn("p-3 bg-white rounded-full shadow-sm hover:bg-charcoal hover:text-white transition-colors", isInWishlist(product.id) && "bg-charcoal text-white")}>
+                              <Heart className={cn("w-4 h-4", isInWishlist(product.id) && "fill-current")} />
+                            </button>
                           </div>
-                        </Link>
-                        <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                          <button onClick={() => toggleWishlist(product)} className={cn("p-3 bg-white rounded-full shadow-sm hover:bg-charcoal hover:text-white transition-colors", isInWishlist(product.id) && "bg-charcoal text-white")}>
-                            <Heart className={cn("w-4 h-4", isInWishlist(product.id) && "fill-current")} />
-                          </button>
+                          <button onClick={() => setSelectedProduct(product)} className="absolute bottom-4 left-4 right-4 bg-white py-3 text-[10px] font-bold uppercase tracking-widest text-charcoal opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-md hover:bg-charcoal hover:text-white">Xem nhanh</button>
                         </div>
-                        <button onClick={() => setSelectedProduct(product)} className="absolute bottom-4 left-4 right-4 bg-white py-3 text-[10px] font-bold uppercase tracking-widest text-charcoal opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-md hover:bg-charcoal hover:text-white">Xem nhanh</button>
+                        <div className="pt-5 flex-1 flex flex-col">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="flex text-primary">
+                              {[...Array(5)].map((_, i) => <Star key={i} className={cn("w-3 h-3", i < Math.floor(product.fake_rating || 5) ? "fill-current" : "text-gray-300")} />)}
+                            </div>
+                            <span className="text-[10px] text-muted-foreground">({product.fake_review_count || 0})</span>
+                          </div>
+                          <Link to={`/san-pham/${product.id}`}><h3 className="text-sm font-medium text-charcoal hover:text-primary transition-colors line-clamp-2 mb-2">{product.name}</h3></Link>
+                          <div className="mt-auto">
+                            <div className="flex items-center gap-3">
+                              <span className="text-base font-bold text-charcoal">{formatPrice(product.price)}</span>
+                              {product.original_price && <span className="text-xs text-muted-foreground line-through">{formatPrice(product.original_price)}</span>}
+                            </div>
+                            {product.fake_sold > 0 && <p className="text-[10px] text-muted-foreground mt-1">Đã bán {product.fake_sold}</p>}
+                          </div>
+                        </div>
                       </div>
-                      <div className="pt-5 flex-1 flex flex-col">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="flex text-primary">
-                            {[...Array(5)].map((_, i) => <Star key={i} className={cn("w-3 h-3", i < Math.floor(product.fake_rating || 5) ? "fill-current" : "text-gray-300")} />)}
-                          </div>
-                          <span className="text-[10px] text-muted-foreground">({product.fake_review_count || 0})</span>
-                        </div>
-                        <Link to={`/san-pham/${product.id}`}><h3 className="text-sm font-medium text-charcoal hover:text-primary transition-colors line-clamp-2 mb-2">{product.name}</h3></Link>
-                        <div className="mt-auto">
-                          <div className="flex items-center gap-3">
-                            <span className="text-base font-bold text-charcoal">{formatPrice(product.price)}</span>
-                            {product.original_price && <span className="text-xs text-muted-foreground line-through">{formatPrice(product.original_price)}</span>}
-                          </div>
-                          {product.fake_sold > 0 && <p className="text-[10px] text-muted-foreground mt-1">Đã bán {product.fake_sold}</p>}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  ))
+                )}
               </div>
             </div>
           </div>

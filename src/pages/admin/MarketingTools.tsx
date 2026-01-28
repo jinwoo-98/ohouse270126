@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   TrendingUp, 
@@ -9,8 +9,8 @@ import {
   Loader2, 
   CheckCircle2,
   AlertCircle,
-  Search,
-  Filter
+  Filter,
+  ListOrdered
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,12 +27,18 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { mainCategories, productCategories } from "@/constants/header-data";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function MarketingTools() {
   const [loading, setLoading] = useState(false);
   const [selectionType, setSelectionType] = useState<"category" | "product">("category");
   const [targetId, setTargetId] = useState("all");
   const [updateZeroOnly, setUpdateZeroOnly] = useState(false);
+
+  // Sorting State
+  const [sortCategory, setSortCategory] = useState("");
+  const [productsToSort, setProductsToSort] = useState<any[]>([]);
+  const [sortLoading, setSortLoading] = useState(false);
 
   // Stats Range State
   const [stats, setStats] = useState({
@@ -55,7 +61,6 @@ export default function MarketingTools() {
     
     setLoading(true);
     try {
-      // 1. Lấy danh sách sản phẩm mục tiêu
       let query = supabase.from('products').select('id, fake_sold');
 
       if (selectionType === 'category' && targetId !== 'all') {
@@ -72,7 +77,6 @@ export default function MarketingTools() {
         return;
       }
 
-      // 2. Lọc hàng chưa có lượt bán nếu được yêu cầu
       const filteredProducts = updateZeroOnly 
         ? products.filter(p => !p.fake_sold || p.fake_sold === 0) 
         : products;
@@ -82,8 +86,6 @@ export default function MarketingTools() {
         return;
       }
 
-      // 3. Thực hiện cập nhật từng sản phẩm với số liệu ngẫu nhiên
-      // Chúng ta dùng loop để mỗi sản phẩm có 1 con số khác nhau
       const updatePromises = filteredProducts.map(p => {
         const payload: any = { updated_at: new Date() };
         
@@ -108,7 +110,7 @@ export default function MarketingTools() {
 
       await Promise.all(updatePromises);
 
-      toast.success(`Đã cập nhật thành công ${filteredProducts.length} sản phẩm với số liệu ngẫu nhiên!`);
+      toast.success(`Đã cập nhật thành công ${filteredProducts.length} sản phẩm!`);
     } catch (error: any) {
       toast.error("Lỗi: " + error.message);
     } finally {
@@ -116,221 +118,253 @@ export default function MarketingTools() {
     }
   };
 
+  const fetchProductsForSorting = async (categorySlug: string) => {
+    setSortLoading(true);
+    try {
+      let query = supabase
+        .from('products')
+        .select('id, name, display_order, image_url')
+        .order('display_order', { ascending: true });
+
+      if (categorySlug) {
+        // Tìm category ID nếu cần, hoặc dùng slug trực tiếp như hiện tại
+        // Logic tìm con:
+        const { data: categoryData } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('slug', categorySlug)
+          .single();
+
+        if (categoryData) {
+           const { data: children } = await supabase.from('categories').select('slug').eq('parent_id', categoryData.id);
+           const slugs = [categorySlug, ...(children?.map(c => c.slug) || [])];
+           query = query.in('category_id', slugs);
+        } else {
+           query = query.eq('category_id', categorySlug);
+        }
+      }
+
+      const { data } = await query.limit(50); // Lấy 50 sp đầu để sắp xếp
+      setProductsToSort(data || []);
+    } finally {
+      setSortLoading(false);
+    }
+  };
+
+  const handleUpdateOrder = async (id: string, newOrder: string) => {
+    const order = parseInt(newOrder);
+    if (isNaN(order)) return;
+
+    // Optimistic update
+    setProductsToSort(prev => prev.map(p => p.id === id ? { ...p, display_order: order } : p).sort((a, b) => a.display_order - b.display_order));
+
+    await supabase.from('products').update({ display_order: order }).eq('id', id);
+  };
+
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-20">
+    <div className="max-w-5xl mx-auto pb-20 space-y-6">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <TrendingUp className="w-6 h-6 text-primary" />
-          Chiến Dịch Marketing Hàng Loạt
+          Chiến Dịch Marketing & Sắp Xếp
         </h1>
-        <p className="text-muted-foreground text-sm">Điều phối hiển thị và "chim mồi" số liệu một cách tự nhiên cho hệ thống.</p>
+        <p className="text-muted-foreground text-sm">Quản lý số liệu ảo và thứ tự ưu tiên hiển thị sản phẩm.</p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Bước 1: Phạm vi tác động */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-6 h-full">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Filter className="w-4 h-4" /> 1. Phạm vi tác động
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Chọn loại đối tượng</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button 
-                    variant={selectionType === 'category' ? 'default' : 'outline'} 
-                    size="sm" 
-                    onClick={() => { setSelectionType('category'); setTargetId('all'); }}
-                    className="text-[10px] h-9"
-                  >
-                    Theo Danh Mục
-                  </Button>
-                  <Button 
-                    variant={selectionType === 'product' ? 'default' : 'outline'} 
-                    size="sm" 
-                    onClick={() => { setSelectionType('product'); setTargetId('all'); }}
-                    className="text-[10px] h-9"
-                  >
-                    Sản Phẩm Đơn
-                  </Button>
-                </div>
-              </div>
+      <Tabs defaultValue="marketing" className="space-y-6">
+        <TabsList className="bg-white border p-1 rounded-xl h-12 w-full justify-start">
+          <TabsTrigger value="marketing" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white uppercase font-bold text-xs">Tạo số liệu ảo</TabsTrigger>
+          <TabsTrigger value="sorting" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white uppercase font-bold text-xs">Sắp xếp vị trí</TabsTrigger>
+        </TabsList>
 
-              {selectionType === 'category' ? (
-                <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-muted-foreground">Danh mục mục tiêu</Label>
-                  <Select value={targetId} onValueChange={setTargetId}>
-                    <SelectTrigger className="h-11 rounded-xl">
-                      <SelectValue placeholder="Chọn danh mục" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="all">Toàn bộ website</SelectItem>
-                      {mainCategories.filter(c => c.dropdownKey).map(parent => (
-                        <SelectGroup key={parent.dropdownKey}>
-                          <SelectLabel className="text-primary font-bold">{parent.name}</SelectLabel>
-                          {/* Parent category itself */}
-                          <SelectItem value={parent.dropdownKey!}>— Tất cả {parent.name}</SelectItem>
-                          {/* Child categories */}
-                          {productCategories[parent.dropdownKey!]?.map(child => (
-                            <SelectItem key={child.href} value={child.href.replace('/', '')}>
-                              &nbsp;&nbsp;&nbsp;{child.name}
-                            </SelectItem>
+        <TabsContent value="marketing">
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1 space-y-6">
+              <div className="bg-white p-6 rounded-2xl border shadow-sm space-y-6 h-full">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                  <Filter className="w-4 h-4" /> 1. Phạm vi tác động
+                </h3>
+                
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase font-bold text-muted-foreground">Chọn loại đối tượng</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        variant={selectionType === 'category' ? 'default' : 'outline'} 
+                        size="sm" 
+                        onClick={() => { setSelectionType('category'); setTargetId('all'); }}
+                        className="text-[10px] h-9"
+                      >
+                        Theo Danh Mục
+                      </Button>
+                      <Button 
+                        variant={selectionType === 'product' ? 'default' : 'outline'} 
+                        size="sm" 
+                        onClick={() => { setSelectionType('product'); setTargetId('all'); }}
+                        className="text-[10px] h-9"
+                      >
+                        Sản Phẩm Đơn
+                      </Button>
+                    </div>
+                  </div>
+
+                  {selectionType === 'category' ? (
+                    <div className="space-y-2">
+                      <Label className="text-[10px] uppercase font-bold text-muted-foreground">Danh mục mục tiêu</Label>
+                      <Select value={targetId} onValueChange={setTargetId}>
+                        <SelectTrigger className="h-11 rounded-xl">
+                          <SelectValue placeholder="Chọn danh mục" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl">
+                          <SelectItem value="all">Toàn bộ website</SelectItem>
+                          {mainCategories.filter(c => c.dropdownKey).map(parent => (
+                            <SelectGroup key={parent.dropdownKey}>
+                              <SelectLabel className="text-primary font-bold">{parent.name}</SelectLabel>
+                              <SelectItem value={parent.dropdownKey!}>— Tất cả {parent.name}</SelectItem>
+                              {productCategories[parent.dropdownKey!]?.map(child => (
+                                <SelectItem key={child.href} value={child.href.replace('/', '')}>
+                                  &nbsp;&nbsp;&nbsp;{child.name}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
                           ))}
-                        </SelectGroup>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-muted-foreground">Mã sản phẩm (ID)</Label>
-                  <Input 
-                    placeholder="Dán ID sản phẩm vào đây..." 
-                    value={targetId === 'all' ? '' : targetId}
-                    onChange={(e) => setTargetId(e.target.value)}
-                    className="h-11 rounded-xl font-mono text-xs"
-                  />
-                </div>
-              )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label className="text-[10px] uppercase font-bold text-muted-foreground">Mã sản phẩm (ID)</Label>
+                      <Input 
+                        placeholder="Dán ID sản phẩm vào đây..." 
+                        value={targetId === 'all' ? '' : targetId}
+                        onChange={(e) => setTargetId(e.target.value)}
+                        className="h-11 rounded-xl font-mono text-xs"
+                      />
+                    </div>
+                  )}
 
-              <div className="pt-4 border-t border-border/50">
-                <div className="flex items-center space-x-3 p-3 bg-secondary/30 rounded-xl cursor-pointer hover:bg-secondary/50 transition-colors" onClick={() => setUpdateZeroOnly(!updateZeroOnly)}>
-                  <Checkbox checked={updateZeroOnly} onCheckedChange={(val) => setUpdateZeroOnly(!!val)} />
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-bold">Chỉ hàng chưa có lượt bán</span>
-                    <span className="text-[9px] text-muted-foreground italic">Giúp kích cầu sản phẩm mới đăng</span>
+                  <div className="pt-4 border-t border-border/50">
+                    <div className="flex items-center space-x-3 p-3 bg-secondary/30 rounded-xl cursor-pointer hover:bg-secondary/50 transition-colors" onClick={() => setUpdateZeroOnly(!updateZeroOnly)}>
+                      <Checkbox checked={updateZeroOnly} onCheckedChange={(val) => setUpdateZeroOnly(!!val)} />
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-bold">Chỉ hàng chưa có lượt bán</span>
+                        <span className="text-[9px] text-muted-foreground italic">Giúp kích cầu sản phẩm mới đăng</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Bước 2: Cấu hình số liệu ngẫu nhiên */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-8 rounded-2xl border shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-8 flex items-center gap-2">
-              <Zap className="w-4 h-4" /> 2. Thiết lập khoảng số liệu ngẫu nhiên
-            </h3>
-            
-            <div className="grid gap-8">
-              {/* Lượt bán */}
-              <div className="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                <Label className="md:col-span-1 flex items-center gap-2 text-xs font-bold uppercase">
-                  <ShoppingBag className="w-4 h-4 text-emerald-500" /> Lượt bán
-                </Label>
-                <div className="md:col-span-4 flex items-center gap-4">
-                  <Input 
-                    type="number" 
-                    placeholder="Tối thiểu" 
-                    value={stats.min_sold}
-                    onChange={(e) => setStats({...stats, min_sold: e.target.value})}
-                    className="h-12 rounded-xl"
-                  />
-                  <span className="text-muted-foreground">đến</span>
-                  <Input 
-                    type="number" 
-                    placeholder="Tối đa" 
-                    value={stats.max_sold}
-                    onChange={(e) => setStats({...stats, max_sold: e.target.value})}
-                    className="h-12 rounded-xl"
-                  />
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white p-8 rounded-2xl border shadow-sm">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-8 flex items-center gap-2">
+                  <Zap className="w-4 h-4" /> 2. Thiết lập số liệu ngẫu nhiên
+                </h3>
+                
+                <div className="grid gap-8">
+                  {/* Fields for fake stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                    <Label className="md:col-span-1 flex items-center gap-2 text-xs font-bold uppercase"><ShoppingBag className="w-4 h-4 text-emerald-500" /> Lượt bán</Label>
+                    <div className="md:col-span-4 flex items-center gap-4">
+                      <Input type="number" placeholder="Min" value={stats.min_sold} onChange={(e) => setStats({...stats, min_sold: e.target.value})} className="h-12 rounded-xl" />
+                      <span className="text-muted-foreground">-</span>
+                      <Input type="number" placeholder="Max" value={stats.max_sold} onChange={(e) => setStats({...stats, max_sold: e.target.value})} className="h-12 rounded-xl" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                    <Label className="md:col-span-1 flex items-center gap-2 text-xs font-bold uppercase"><Star className="w-4 h-4 text-amber-500" /> Số ĐG</Label>
+                    <div className="md:col-span-4 flex items-center gap-4">
+                      <Input type="number" placeholder="Min" value={stats.min_reviews} onChange={(e) => setStats({...stats, min_reviews: e.target.value})} className="h-12 rounded-xl" />
+                      <span className="text-muted-foreground">-</span>
+                      <Input type="number" placeholder="Max" value={stats.max_reviews} onChange={(e) => setStats({...stats, max_reviews: e.target.value})} className="h-12 rounded-xl" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
+                    <Label className="md:col-span-1 flex items-center gap-2 text-xs font-bold uppercase">⭐ Điểm sao</Label>
+                    <div className="md:col-span-4 flex items-center gap-4">
+                      <Input type="number" step="0.1" placeholder="4.0" value={stats.min_rating} onChange={(e) => setStats({...stats, min_rating: e.target.value})} className="h-12 rounded-xl" />
+                      <span className="text-muted-foreground">-</span>
+                      <Input type="number" step="0.1" placeholder="5.0" value={stats.max_rating} onChange={(e) => setStats({...stats, max_rating: e.target.value})} className="h-12 rounded-xl" />
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Đánh giá */}
-              <div className="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                <Label className="md:col-span-1 flex items-center gap-2 text-xs font-bold uppercase">
-                  <Star className="w-4 h-4 text-amber-500" /> Số ĐG
-                </Label>
-                <div className="md:col-span-4 flex items-center gap-4">
-                  <Input 
-                    type="number" 
-                    placeholder="Tối thiểu" 
-                    value={stats.min_reviews}
-                    onChange={(e) => setStats({...stats, min_reviews: e.target.value})}
-                    className="h-12 rounded-xl"
-                  />
-                  <span className="text-muted-foreground">đến</span>
-                  <Input 
-                    type="number" 
-                    placeholder="Tối đa" 
-                    value={stats.max_reviews}
-                    onChange={(e) => setStats({...stats, max_reviews: e.target.value})}
-                    className="h-12 rounded-xl"
-                  />
-                </div>
-              </div>
-
-              {/* Điểm sao */}
-              <div className="grid grid-cols-1 md:grid-cols-5 items-center gap-4">
-                <Label className="md:col-span-1 flex items-center gap-2 text-xs font-bold uppercase">
-                  ⭐ Điểm sao
-                </Label>
-                <div className="md:col-span-4 flex items-center gap-4">
-                  <Input 
-                    type="number" 
-                    step="0.1"
-                    placeholder="Min (4.0)" 
-                    value={stats.min_rating}
-                    onChange={(e) => setStats({...stats, min_rating: e.target.value})}
-                    className="h-12 rounded-xl"
-                  />
-                  <span className="text-muted-foreground">đến</span>
-                  <Input 
-                    type="number" 
-                    step="0.1"
-                    placeholder="Max (5.0)" 
-                    value={stats.max_rating}
-                    onChange={(e) => setStats({...stats, max_rating: e.target.value})}
-                    className="h-12 rounded-xl"
-                  />
-                </div>
-              </div>
-
-              {/* Thứ tự hiển thị */}
-              <div className="grid grid-cols-1 md:grid-cols-5 items-center gap-4 pt-6 border-t border-dashed">
-                <Label className="md:col-span-1 text-xs font-bold uppercase">Ưu tiên (Fix)</Label>
-                <div className="md:col-span-4">
-                  <Input 
-                    type="number" 
-                    placeholder="Nhập 1 để đưa lên đầu, mặc định 1000" 
-                    value={stats.display_order}
-                    onChange={(e) => setStats({...stats, display_order: e.target.value})}
-                    className="h-12 rounded-xl"
-                  />
+                <div className="mt-12">
+                  <Button onClick={handleBulkUpdate} disabled={loading} className="w-full btn-hero h-14 shadow-gold rounded-2xl flex items-center justify-center gap-3 text-sm font-bold">
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                    XÁC NHẬN CHẠY
+                  </Button>
                 </div>
               </div>
             </div>
-
-            <div className="mt-12">
-              <Button 
-                onClick={handleBulkUpdate} 
-                disabled={loading} 
-                className="w-full btn-hero h-14 shadow-gold rounded-2xl flex items-center justify-center gap-3 text-sm font-bold"
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-                XÁC NHẬN CHẠY CHIẾN DỊCH MARKETING
-              </Button>
-              <p className="text-[10px] text-center text-muted-foreground mt-4 italic">
-                * Hệ thống sẽ tự động gieo số khác nhau cho mỗi sản phẩm để đảm bảo tính tự nhiên.
-              </p>
-            </div>
           </div>
+        </TabsContent>
 
-          <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100 flex gap-4">
-            <AlertCircle className="w-6 h-6 text-amber-600 shrink-0" />
-            <div className="space-y-1">
-              <h4 className="text-sm font-bold text-amber-900 uppercase tracking-wide">Mẹo Marketing</h4>
-              <p className="text-xs text-amber-700 leading-relaxed">
-                Nên chọn <strong>"Chỉ hàng chưa có lượt bán"</strong> cho các sản phẩm mới đăng, gieo lượt bán từ 10-30 và đánh giá 4.8-5.0 sao để tăng uy tín tức thì. 
-                Sản phẩm nổi bật nên đặt **Thứ tự hiển thị** nhỏ hơn 100.
-              </p>
+        <TabsContent value="sorting">
+          <div className="bg-white p-6 rounded-2xl border shadow-sm">
+            <div className="flex items-center gap-6 mb-8 p-4 bg-secondary/20 rounded-xl">
+              <div className="flex-1">
+                <Label className="text-xs font-bold uppercase tracking-widest mb-2 block">Chọn danh mục để sắp xếp</Label>
+                <Select value={sortCategory} onValueChange={(val) => { setSortCategory(val); fetchProductsForSorting(val); }}>
+                  <SelectTrigger className="h-12 bg-white rounded-xl">
+                    <SelectValue placeholder="Chọn danh mục" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {mainCategories.filter(c => c.dropdownKey).map(parent => (
+                      <SelectGroup key={parent.dropdownKey}>
+                        <SelectLabel className="text-primary font-bold">{parent.name}</SelectLabel>
+                        <SelectItem value={parent.dropdownKey!}>— Tất cả {parent.name}</SelectItem>
+                        {productCategories[parent.dropdownKey!]?.map(child => (
+                          <SelectItem key={child.href} value={child.href.replace('/', '')}>&nbsp;&nbsp;&nbsp;{child.name}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-muted-foreground mt-6">
+                  * Nhập số thứ tự từ 1-20 để đưa sản phẩm lên đầu danh sách.<br/>
+                  * Mặc định sản phẩm mới sẽ có thứ tự 1000.
+                </p>
+              </div>
             </div>
+
+            {sortLoading ? (
+              <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>
+            ) : productsToSort.length === 0 ? (
+              <div className="text-center py-20 text-muted-foreground">Vui lòng chọn danh mục để bắt đầu sắp xếp.</div>
+            ) : (
+              <div className="space-y-2">
+                <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-secondary/50 rounded-lg text-[10px] uppercase font-bold text-muted-foreground">
+                  <div className="col-span-1 text-center">Vị trí</div>
+                  <div className="col-span-1">Hình ảnh</div>
+                  <div className="col-span-10">Tên sản phẩm</div>
+                </div>
+                {productsToSort.map((product) => (
+                  <div key={product.id} className="grid grid-cols-12 gap-4 items-center p-2 border border-border rounded-lg bg-white hover:shadow-md transition-all">
+                    <div className="col-span-1">
+                      <Input 
+                        type="number" 
+                        className={`h-10 text-center font-bold ${product.display_order <= 20 ? 'text-primary border-primary bg-primary/5' : 'text-muted-foreground'}`}
+                        value={product.display_order}
+                        onChange={(e) => handleUpdateOrder(product.id, e.target.value)}
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-border">
+                        <img src={product.image_url} className="w-full h-full object-cover" />
+                      </div>
+                    </div>
+                    <div className="col-span-10 font-medium text-sm text-charcoal">{product.name}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -27,7 +27,8 @@ export default function CategoryForm() {
     is_visible: true,
     is_highlight: false,
     menu_location: "main",
-    display_order: "1000"
+    display_order: "1000",
+    default_sort: "manual"
   });
 
   useEffect(() => {
@@ -54,7 +55,8 @@ export default function CategoryForm() {
         is_visible: data.is_visible,
         is_highlight: data.is_highlight,
         menu_location: data.menu_location || "main",
-        display_order: data.display_order?.toString() || "1000"
+        display_order: data.display_order?.toString() || "1000",
+        default_sort: data.default_sort || "manual"
       });
     }
   };
@@ -72,7 +74,8 @@ export default function CategoryForm() {
       is_visible: formData.is_visible,
       is_highlight: formData.is_highlight,
       menu_location: formData.menu_location,
-      display_order: parseInt(formData.display_order) || 1000
+      display_order: parseInt(formData.display_order) || 1000,
+      default_sort: formData.default_sort
     };
 
     try {
@@ -134,19 +137,36 @@ export default function CategoryForm() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Danh mục cha</Label>
-            <Select value={formData.parent_id} onValueChange={val => setFormData({...formData, parent_id: val})}>
-              <SelectTrigger className="h-12 rounded-xl">
-                <SelectValue placeholder="Chọn danh mục cha" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="none">-- Không có (Danh mục gốc) --</SelectItem>
-                {parents.filter(p => p.id !== id).map(p => (
-                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Danh mục cha</Label>
+              <Select value={formData.parent_id} onValueChange={val => setFormData({...formData, parent_id: val})}>
+                <SelectTrigger className="h-12 rounded-xl">
+                  <SelectValue placeholder="Chọn danh mục cha" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="none">-- Không có (Danh mục gốc) --</SelectItem>
+                  {parents.filter(p => p.id !== id).map(p => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sắp xếp mặc định</Label>
+              <Select value={formData.default_sort} onValueChange={val => setFormData({...formData, default_sort: val})}>
+                <SelectTrigger className="h-12 rounded-xl">
+                  <SelectValue placeholder="Chọn kiểu sắp xếp" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="manual">Thứ tự ưu tiên (Thủ công)</SelectItem>
+                  <SelectItem value="newest">Mới nhất</SelectItem>
+                  <SelectItem value="popular">Bán chạy nhất</SelectItem>
+                  <SelectItem value="price-asc">Giá thấp đến cao</SelectItem>
+                  <SelectItem value="price-desc">Giá cao đến thấp</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 

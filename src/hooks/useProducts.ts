@@ -1,11 +1,11 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Filters {
   priceRange: string[];
   materials: string[];
   styles: string[];
-  sortBy: 'newest' | 'price-asc' | 'price-desc' | 'popular';
+  sortBy: 'manual' | 'newest' | 'price-asc' | 'price-desc' | 'popular';
   searchQuery?: string;
   saleOnly?: boolean;
 }
@@ -24,10 +24,28 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
     priceRange: [],
     materials: [],
     styles: [],
-    sortBy: 'newest',
+    sortBy: 'manual', // Mặc định là sắp xếp thủ công (display_order)
     searchQuery: initialSearch || '',
     saleOnly: categorySlug === 'sale',
   });
+
+  // Fetch category default sort setting
+  useEffect(() => {
+    async function fetchDefaultSort() {
+      if (['noi-that', 'sale', 'moi', 'ban-chay'].includes(categorySlug)) return;
+      
+      const { data } = await supabase
+        .from('categories')
+        .select('default_sort')
+        .eq('slug', categorySlug)
+        .single();
+        
+      if (data?.default_sort) {
+        setFilters(prev => ({ ...prev, sortBy: data.default_sort as any }));
+      }
+    }
+    fetchDefaultSort();
+  }, [categorySlug]);
 
   useEffect(() => {
     fetchProducts();
@@ -37,18 +55,44 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
     setIsLoading(true);
     try {
       let query = supabase.from('products').select('*');
+      let targetSlugs = [categorySlug];
 
-      // 1. Lọc theo Danh mục
+      // 1. Xử lý danh mục cha - con
       const specialPages = ['noi-that', 'sale', 'moi', 'ban-chay'];
       if (!specialPages.includes(categorySlug)) {
-        query = query.eq('category_id', categorySlug);
+        // Kiểm tra xem đây có phải danh mục cha không
+        const { data: categoryData } = await supabase
+          .from('categories')
+          .select('id, slug')
+          .eq('slug', categorySlug)
+          .single();
+
+        if (categoryData) {
+          // Tìm các danh mục con của nó
+          const { data: children } = await supabase
+            .from('categories')
+            .select('slug')
+            .eq('parent_id', categoryData.id);
+          
+          if (children && children.length > 0) {
+            const childSlugs = children.map(c => c.slug);
+            targetSlugs = [...targetSlugs, ...childSlugs];
+          }
+        }
+        
+        // Lọc sản phẩm thuộc danh sách slugs (cha hoặc con đều lấy được)
+        query = query.in('category_id', targetSlugs);
       }
 
+      // Các bộ lọc đặc biệt
       if (categorySlug === 'sale' || filters.saleOnly) {
         query = query.eq('is_sale', true);
       }
       if (categorySlug === 'moi') {
         query = query.eq('is_new', true);
+      }
+      if (categorySlug === 'ban-chay') {
+        query = query.order('fake_sold', { ascending: false });
       }
 
       // 2. Tìm kiếm
@@ -56,33 +100,39 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
         query = query.ilike('name', `%${filters.searchQuery}%`);
       }
 
-      // 3. Lọc theo Chất liệu (nếu có chọn)
+      // 3. Lọc thuộc tính
       if (filters.materials.length > 0) {
         query = query.in('material', filters.materials);
       }
-
-      // 4. Lọc theo Phong cách (nếu có chọn)
       if (filters.styles.length > 0) {
         query = query.in('style', filters.styles);
       }
 
-      // 5. Sắp xếp
-      if (categorySlug === 'ban-chay') {
-        query = query.order('fake_sold', { ascending: false });
-      } else if (filters.sortBy === 'price-asc') {
-        query = query.order('price', { ascending: true });
-      } else if (filters.sortBy === 'price-desc') {
-        query = query.order('price', { ascending: false });
-      } else if (filters.sortBy === 'popular') {
-        query = query.order('fake_sold', { ascending: false });
-      } else {
-        query = query.order('display_order', { ascending: true }).order('created_at', { ascending: false });
+      // 4. Sắp xếp
+      switch (filters.sortBy) {
+        case 'price-asc':
+          query = query.order('price', { ascending: true });
+          break;
+        case 'price-desc':
+          query = query.order('price', { ascending: false });
+          break;
+        case 'popular':
+          query = query.order('fake_sold', { ascending: false });
+          break;
+        case 'newest':
+          query = query.order('created_at', { ascending: false });
+          break;
+        case 'manual':
+        default:
+          // Sắp xếp theo display_order nhỏ nhất lên đầu (ưu tiên)
+          query = query.order('display_order', { ascending: true }).order('created_at', { ascending: false });
+          break;
       }
 
       const { data, error } = await query;
       if (error) throw error;
 
-      // 6. Lọc khoảng giá (Client-side vì logic phức tạp)
+      // 5. Lọc khoảng giá (Client-side)
       let filteredData = data || [];
       if (filters.priceRange.length > 0) {
         filteredData = filteredData.filter(p => {
@@ -121,7 +171,7 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
       priceRange: [],
       materials: [],
       styles: [],
-      sortBy: 'newest',
+      sortBy: 'manual',
       searchQuery: '',
       saleOnly: false,
     });
