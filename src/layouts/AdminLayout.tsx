@@ -20,7 +20,8 @@ import {
   Star,
   Users,
   TrendingUp,
-  FolderTree
+  FolderTree,
+  MonitorPlay
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +32,7 @@ import { motion } from "framer-motion";
 
 const menuItems = [
   { title: "Tổng quan", icon: LayoutDashboard, href: "/admin" },
+  { title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
   { title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
   { title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
   { title: "Danh mục & Menu", icon: FolderTree, href: "/admin/categories" },

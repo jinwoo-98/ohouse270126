@@ -40,6 +40,7 @@ import AdminLayout from "./layouts/AdminLayout";
 import DashboardOverview from "./pages/admin/DashboardOverview";
 import ThemeSettings from "./pages/admin/ThemeSettings";
 import GeneralSettings from "./pages/admin/GeneralSettings";
+import HomepageManager from "./pages/admin/HomepageManager";
 import ProductManager from "./pages/admin/ProductManager";
 import ProductForm from "./pages/admin/ProductForm";
 import CategoryManager from "./pages/admin/CategoryManager";
@@ -110,6 +111,7 @@ const App = () => (
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<DashboardOverview />} />
+                  <Route path="homepage" element={<HomepageManager />} />
                   <Route path="orders" element={<OrderManager />} />
                   <Route path="products" element={<ProductManager />} />
                   <Route path="products/new" element={<ProductForm />} />
