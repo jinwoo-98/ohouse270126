@@ -12,11 +12,13 @@ export function useCategories() {
         .order('display_order', { ascending: true });
 
       if (error) throw error;
+      if (!data) return { mainCategories: [], productCategories: {} };
 
-      // Tổ chức lại dữ liệu
+      // Lấy danh mục cha (không có parent_id)
       const mainItems = data.filter(c => !c.parent_id);
-      const subItemsMap: Record<string, any[]> = {};
       
+      // Tạo map danh mục con
+      const subItemsMap: Record<string, any[]> = {};
       data.forEach(c => {
         if (c.parent_id) {
           const parent = data.find(p => p.id === c.parent_id);
