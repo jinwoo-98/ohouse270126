@@ -22,7 +22,8 @@ import {
   TrendingUp,
   FolderTree,
   MonitorPlay,
-  ShieldCheck
+  ShieldCheck,
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 const allMenuItems = [
   { id: 'dashboard', title: "Tổng quan", icon: LayoutDashboard, href: "/admin" },
@@ -59,31 +61,37 @@ export default function AdminLayout() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [fetchingProfile, setFetchingProfile] = useState(true);
 
-  useEffect(() => {
-    async function fetchProfile() {
-      if (authLoading) return;
-      if (!user) {
-        setFetchingProfile(false);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role, permissions')
-          .eq('id', user.id)
-          .single();
-        
-        if (error) throw error;
-        setUserProfile(data);
-      } catch (err) {
-        console.error("Error fetching profile:", err);
-      } finally {
-        setFetchingProfile(false);
-      }
+  const fetchProfile = async () => {
+    if (!user) {
+      setFetchingProfile(false);
+      return;
     }
 
-    fetchProfile();
+    setFetchingProfile(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role, permissions')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) {
+        console.error("Profile fetch error:", error);
+        // Nếu không có profile, thử tạo mới (cho trường hợp trigger thất bại)
+        if (error.code === 'PGRST116') {
+           await supabase.from('profiles').insert({ id: user.id, email: user.email, role: 'user' });
+        }
+      }
+      setUserProfile(data || { role: 'user' });
+    } catch (err) {
+      console.error("Unexpected error:", err);
+    } finally {
+      setFetchingProfile(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!authLoading) fetchProfile();
   }, [user, authLoading]);
 
   const handleLogout = async () => {
@@ -127,9 +135,22 @@ export default function AdminLayout() {
         <div className="max-w-md w-full bg-white rounded-2xl shadow-elevated p-8 text-center border border-destructive/20">
           <ShieldAlert className="w-20 h-20 text-destructive mx-auto mb-6" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Truy Cập Bị Từ Chối</h1>
-          <p className="text-gray-500 mb-4">Tài khoản <strong>{user.email}</strong> hiện có vai trò là <strong>{role || 'khách hàng'}</strong>.</p>
-          <p className="text-sm text-muted-foreground mb-8 italic">Vui lòng liên hệ Quản trị viên để được cấp quyền Biên tập viên.</p>
-          <Button className="w-full btn-hero" onClick={() => navigate("/")}>Về Trang Chủ</Button>
+          
+          <div className="bg-secondary/50 rounded-xl p-4 mb-6 text-left space-y-2">
+            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Thông tin tài khoản:</p>
+            <p className="text-sm">Email: <strong>{user.email}</strong></p>
+            <p className="text-sm">Vai trò: <Badge variant="outline" className="ml-1 uppercase text-[10px] font-bold">{role || 'null'}</Badge></p>
+          </div>
+
+          <p className="text-sm text-muted-foreground mb-8 italic">Vui lòng đảm bảo bạn đã chạy lệnh SQL gán quyền Admin/Editor và thử làm mới trang.</p>
+          
+          <div className="flex flex-col gap-3">
+            <Button className="w-full btn-hero" onClick={() => fetchProfile()}>
+              <RefreshCw className="w-4 h-4 mr-2" /> Thử làm mới quyền
+            </Button>
+            <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => navigate("/")}>Về Trang Chủ</Button>
+            <Button variant="link" className="text-destructive text-[10px]" onClick={handleLogout}>Đăng xuất để đổi tài khoản khác</Button>
+          </div>
         </div>
       </div>
     );
@@ -139,7 +160,7 @@ export default function AdminLayout() {
   const allowedMenuItems = allMenuItems.filter(item => {
     if (role === 'admin') return true;
     if (item.id === 'dashboard') return true;
-    if (item.id === 'team') return false; // Chỉ Admin mới quản lý được đội ngũ
+    if (item.id === 'team') return false; 
     return permissions[item.id] === true;
   });
 
