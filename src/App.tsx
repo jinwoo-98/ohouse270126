@@ -42,6 +42,8 @@ import ThemeSettings from "./pages/admin/ThemeSettings";
 import GeneralSettings from "./pages/admin/GeneralSettings";
 import ProductManager from "./pages/admin/ProductManager";
 import ProductForm from "./pages/admin/ProductForm";
+import CategoryManager from "./pages/admin/CategoryManager";
+import CategoryForm from "./pages/admin/CategoryForm";
 import OrderManager from "./pages/admin/OrderManager";
 import DesignRequestManager from "./pages/admin/DesignRequestManager";
 import ContactMessageManager from "./pages/admin/ContactMessageManager";
@@ -136,6 +138,9 @@ const App = () => (
                   <Route path="products" element={<ProductManager />} />
                   <Route path="products/new" element={<ProductForm />} />
                   <Route path="products/edit/:id" element={<ProductForm />} />
+                  <Route path="categories" element={<CategoryManager />} />
+                  <Route path="categories/new" element={<CategoryForm />} />
+                  <Route path="categories/edit/:id" element={<CategoryForm />} />
                   <Route path="marketing" element={<MarketingTools />} />
                   <Route path="reviews" element={<ReviewManager />} />
                   <Route path="subscribers" element={<SubscriberManager />} />

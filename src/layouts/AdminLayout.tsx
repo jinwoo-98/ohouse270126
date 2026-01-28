@@ -19,7 +19,8 @@ import {
   Briefcase,
   Star,
   Users,
-  TrendingUp
+  TrendingUp,
+  FolderTree
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +33,7 @@ const menuItems = [
   { title: "Tổng quan", icon: LayoutDashboard, href: "/admin" },
   { title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
   { title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
+  { title: "Danh mục & Menu", icon: FolderTree, href: "/admin/categories" },
   { title: "Marketing", icon: TrendingUp, href: "/admin/marketing" },
   { title: "Đánh giá", icon: Star, href: "/admin/reviews" },
   { title: "Quản lý trang", icon: Files, href: "/admin/pages" },
