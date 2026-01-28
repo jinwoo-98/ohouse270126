@@ -2,7 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutGrid, ImageIcon, Upload, Loader2, Megaphone, Flag, Image as LucideImage, Save } from "lucide-react";
+import { 
+  LayoutGrid, 
+  ImageIcon, 
+  Loader2, 
+  Megaphone, 
+  Image as LucideImage, 
+  Save, 
+  Plus, 
+  Trash2, 
+  Clock,
+  ExternalLink
+} from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,8 +24,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 export function HeaderMenuManager() {
   const [categories, setCategories] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>({
-    top_banner_text: "",
-    top_banner_link: "",
+    top_banner_messages: [{ text: "", link: "" }],
     top_banner_countdown: "",
     top_banner_shipping: "",
     logo_url: ""
@@ -35,10 +45,32 @@ export function HeaderMenuManager() {
     if (setData) {
       setSettings({
         ...setData,
+        top_banner_messages: (setData.top_banner_messages && setData.top_banner_messages.length > 0) 
+          ? setData.top_banner_messages 
+          : [{ text: setData.top_banner_text || "", link: setData.top_banner_link || "" }],
         top_banner_countdown: setData.top_banner_countdown ? new Date(setData.top_banner_countdown).toISOString().slice(0, 16) : ""
       });
     }
     setLoading(false);
+  };
+
+  const handleAddMessage = () => {
+    setSettings({
+      ...settings,
+      top_banner_messages: [...settings.top_banner_messages, { text: "", link: "" }]
+    });
+  };
+
+  const handleRemoveMessage = (index: number) => {
+    const newMessages = [...settings.top_banner_messages];
+    newMessages.splice(index, 1);
+    setSettings({ ...settings, top_banner_messages: newMessages });
+  };
+
+  const handleUpdateMessage = (index: number, field: 'text' | 'link', value: string) => {
+    const newMessages = [...settings.top_banner_messages];
+    newMessages[index][field] = value;
+    setSettings({ ...settings, top_banner_messages: newMessages });
   };
 
   const handleUpdateCategory = async (id: string, payload: any) => {
@@ -56,10 +88,16 @@ export function HeaderMenuManager() {
     setSaving(true);
     try {
       const { data: existing } = await supabase.from('site_settings').select('id').single();
+      
+      // Lọc bỏ các tin nhắn trống
+      const filteredMessages = settings.top_banner_messages.filter((m: any) => m.text.trim() !== "");
+      
       const payload = {
-        top_banner_text: settings.top_banner_text,
-        top_banner_link: settings.top_banner_link,
-        top_banner_countdown: settings.top_banner_countdown || null,
+        top_banner_messages: filteredMessages,
+        // Sync ngược lại field cũ để đảm bảo tương thích nếu cần
+        top_banner_text: filteredMessages[0]?.text || "",
+        top_banner_link: filteredMessages[0]?.link || "",
+        top_banner_countdown: settings.top_banner_countdown ? new Date(settings.top_banner_countdown).toISOString() : null,
         top_banner_shipping: settings.top_banner_shipping,
         logo_url: settings.logo_url,
         updated_at: new Date()
@@ -82,44 +120,80 @@ export function HeaderMenuManager() {
 
   return (
     <div className="grid lg:grid-cols-2 gap-8 mt-6">
-      {/* CỘT 1: QUẢN LÝ DÒNG 1 & 2 HEADER */}
       <div className="space-y-6">
+        {/* ROW 1: TOP BANNER MESSAGES */}
         <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
-          <div className="flex items-center gap-3 border-b pb-4">
-            <div className="p-2 bg-primary/10 rounded-lg text-primary"><Megaphone className="w-5 h-5" /></div>
-            <div>
-              <h3 className="font-bold">Dòng 1: Thanh thông báo (Top Banner)</h3>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Nội dung chạy ở trên cùng website</p>
+          <div className="flex items-center justify-between border-b pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg text-primary"><Megaphone className="w-5 h-5" /></div>
+              <div>
+                <h3 className="font-bold text-sm">Dòng 1: Danh sách thông điệp</h3>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Hiển thị luân phiên ở thanh trên cùng</p>
+              </div>
             </div>
+            <Button size="sm" variant="outline" onClick={handleAddMessage} className="h-8 text-[10px] font-bold uppercase rounded-lg">
+              <Plus className="w-3 h-3 mr-1" /> Thêm tin
+            </Button>
           </div>
           
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-[10px] uppercase font-bold text-muted-foreground">Thông điệp chính</Label>
-              <Input 
-                value={settings.top_banner_text} 
-                onChange={e => setSettings({...settings, top_banner_text: e.target.value})}
-                placeholder="VD: Flash Sale: GIẢM ĐẾN 60%..."
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Link khi nhấn</Label>
-                <Input value={settings.top_banner_link} onChange={e => setSettings({...settings, top_banner_link: e.target.value})} placeholder="/sale" />
+          <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+            {settings.top_banner_messages.map((msg: any, idx: number) => (
+              <div key={idx} className="p-4 bg-secondary/20 rounded-2xl border border-border/50 relative group/msg">
+                <div className="grid gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-[9px] uppercase font-bold text-muted-foreground">Nội dung #{idx + 1}</Label>
+                    <Input 
+                      value={msg.text} 
+                      onChange={e => handleUpdateMessage(idx, 'text', e.target.value)}
+                      placeholder="VD: Flash Sale: GIẢM ĐẾN 60%..."
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[9px] uppercase font-bold text-muted-foreground">Đường dẫn liên kết</Label>
+                    <Input 
+                      value={msg.link} 
+                      onChange={e => handleUpdateMessage(idx, 'link', e.target.value)}
+                      placeholder="/sale"
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                </div>
+                <button 
+                  onClick={() => handleRemoveMessage(idx)}
+                  className="absolute top-2 right-2 p-1.5 text-muted-foreground hover:text-destructive opacity-0 group-hover/msg:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Hạn đếm ngược</Label>
-                <Input 
-                  type="datetime-local" 
-                  value={settings.top_banner_countdown} 
-                  onChange={e => setSettings({...settings, top_banner_countdown: e.target.value})} 
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] uppercase font-bold text-muted-foreground">Thông tin vận chuyển (Bên phải)</Label>
-              <Input value={settings.top_banner_shipping} onChange={e => setSettings({...settings, top_banner_shipping: e.target.value})} placeholder="Miễn Phí Vận Chuyển" />
-            </div>
+            ))}
+          </div>
+
+          <div className="pt-4 border-t border-dashed space-y-4">
+             <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-destructive" />
+                <h4 className="text-xs font-bold uppercase">Thời gian đếm ngược (Header)</h4>
+             </div>
+             <div className="grid md:grid-cols-2 gap-4">
+               <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Hạn kết thúc</Label>
+                  <Input 
+                    type="datetime-local" 
+                    value={settings.top_banner_countdown} 
+                    onChange={e => setSettings({...settings, top_banner_countdown: e.target.value})} 
+                    className="h-11 rounded-xl"
+                  />
+               </div>
+               <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Text vận chuyển</Label>
+                  <Input 
+                    value={settings.top_banner_shipping} 
+                    onChange={e => setSettings({...settings, top_banner_shipping: e.target.value})} 
+                    placeholder="Miễn Phí Vận Chuyển"
+                    className="h-11 rounded-xl"
+                  />
+               </div>
+             </div>
           </div>
         </div>
 
@@ -127,15 +201,11 @@ export function HeaderMenuManager() {
           <div className="flex items-center gap-3 border-b pb-4">
             <div className="p-2 bg-primary/10 rounded-lg text-primary"><LucideImage className="w-5 h-5" /></div>
             <div>
-              <h3 className="font-bold">Dòng 2: Logo thương hiệu</h3>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Logo hiển thị chính trên website</p>
+              <h3 className="font-bold text-sm">Dòng 2: Logo thương hiệu</h3>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Thay đổi Logo hiển thị trên toàn trang</p>
             </div>
           </div>
-          
-          <div className="space-y-4">
-            <ImageUpload value={settings.logo_url} onChange={(url) => setSettings({...settings, logo_url: url})} />
-            <p className="text-[10px] text-muted-foreground italic">Ảnh PNG trong suốt sẽ hiển thị đẹp nhất.</p>
-          </div>
+          <ImageUpload value={settings.logo_url} onChange={(url) => setSettings({...settings, logo_url: url})} />
         </div>
 
         <Button onClick={handleSaveSettings} disabled={saving} className="w-full btn-hero h-14 shadow-gold">
@@ -144,13 +214,12 @@ export function HeaderMenuManager() {
         </Button>
       </div>
 
-      {/* CỘT 2: QUẢN LÝ DANH MỤC TRANG CHỦ */}
       <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6 h-fit">
         <div className="flex items-center gap-3 border-b pb-4">
           <div className="p-2 bg-primary/10 rounded-lg text-primary"><LayoutGrid className="w-5 h-5" /></div>
           <div>
-            <h3 className="font-bold">Danh mục hiển thị (Trang Chủ)</h3>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Bật "Hiện ở Home" và tải ảnh để hiện ở lưới danh mục</p>
+            <h3 className="font-bold text-sm">Danh mục hiển thị (Trang Chủ)</h3>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Bật "Hiện ở Home" để hiện ở lưới danh mục</p>
           </div>
         </div>
         
@@ -164,16 +233,16 @@ export function HeaderMenuManager() {
                     <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-border flex items-center justify-center">
                       {cat.image_url ? <img src={cat.image_url} className="w-full h-full object-cover" /> : <ImageIcon className="w-4 h-4 text-gray-300" />}
                     </div>
-                    <span className="font-bold text-sm">{cat.name}</span>
+                    <span className="font-bold text-xs">{cat.name}</span>
                   </div>
                   <div className="flex flex-col items-center gap-1">
-                    <span className="text-[8px] font-bold uppercase text-muted-foreground">Hiện ở Home</span>
+                    <span className="text-[8px] font-bold uppercase text-muted-foreground">Home</span>
                     <Switch checked={cat.show_on_home} onCheckedChange={(val) => handleUpdateCategory(cat.id, { show_on_home: val })} />
                   </div>
                 </div>
                 {children.map(child => (
                   <div key={child.id} className="flex items-center justify-between p-2 ml-8 border-l-2 border-dashed border-border/60">
-                    <span className="text-xs font-medium text-charcoal/70">— {child.name}</span>
+                    <span className="text-[11px] font-medium text-charcoal/70">— {child.name}</span>
                     <Switch checked={child.show_on_home} onCheckedChange={(val) => handleUpdateCategory(child.id, { show_on_home: val })} />
                   </div>
                 ))}
