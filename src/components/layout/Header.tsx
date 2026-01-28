@@ -24,7 +24,7 @@ export function Header() {
           <div className="flex items-center justify-between h-12 md:h-14 gap-4">
             <HeaderSearch onOpenMobileMenu={() => setIsMobileMenuOpen(true)} />
 
-            <Link to="/" className="flex items-center flex-shrink-0">
+            <Link to="/trangchu" className="flex items-center flex-shrink-0">
               <div className="flex flex-col items-center">
                 <span className="text-2xl md:text-3xl font-bold tracking-tight text-charcoal leading-none">OHOUSE</span>
                 <span className="text-[8px] md:text-[9px] uppercase tracking-[0.25em] text-muted-foreground mt-0.5">Nội Thất Cao Cấp</span>

@@ -90,7 +90,7 @@ export function Footer() {
         {/* Desktop View */}
         <div className="hidden lg:grid grid-cols-5 gap-8">
           <div className="col-span-2">
-            <Link to="/" className="inline-block mb-6">
+            <Link to="/trangchu" className="inline-block mb-6">
               <span className="text-3xl font-display font-bold">OHOUSE</span>
               <span className="block text-[10px] uppercase tracking-[0.3em] text-taupe mt-1">Nội Thất Cao Cấp</span>
             </Link>
@@ -132,7 +132,7 @@ export function Footer() {
         {/* Mobile View - Accordion Style */}
         <div className="lg:hidden space-y-8">
           <div className="text-center mb-8">
-            <Link to="/" className="inline-block">
+            <Link to="/trangchu" className="inline-block">
               <span className="text-3xl font-display font-bold">OHOUSE</span>
             </Link>
           </div>

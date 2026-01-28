@@ -72,8 +72,9 @@ const App = () => (
           <CartProvider>
             <WishlistProvider>
               <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Index />} />
+                {/* Chuyển hướng / sang /trangchu */}
+                <Route path="/" element={<Navigate to="/trangchu" replace />} />
+                <Route path="/trangchu" element={<Index />} />
                 
                 <Route path="/tim-kiem" element={<SearchPage />} />
                 <Route path="/san-pham/:id" element={<ProductDetailPage />} />
