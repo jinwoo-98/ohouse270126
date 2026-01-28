@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Save, Loader2, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Image as ImageIcon, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
 import { toast } from "sonner";
 
 export default function NewsForm() {
@@ -79,7 +80,14 @@ export default function NewsForm() {
               <Input value={formData.excerpt} onChange={e => setFormData({...formData, excerpt: e.target.value})} placeholder="Mô tả ngắn hiển thị ở trang danh sách..." />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Nội dung chi tiết</Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Nội dung chi tiết</Label>
+                <AIContentAssistant 
+                  contentType="news" 
+                  contextTitle={formData.title} 
+                  onInsert={(val) => setFormData({...formData, content: val})} 
+                />
+              </div>
               <RichTextEditor value={formData.content} onChange={val => setFormData({...formData, content: val})} />
             </div>
           </div>

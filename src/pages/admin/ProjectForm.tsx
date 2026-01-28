@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
 import { toast } from "sonner";
 
 export default function ProjectForm() {
@@ -83,7 +84,14 @@ export default function ProjectForm() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Nội dung chi tiết</Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Nội dung chi tiết</Label>
+                <AIContentAssistant 
+                  contentType="project" 
+                  contextTitle={formData.title} 
+                  onInsert={(val) => setFormData({...formData, description: val})} 
+                />
+              </div>
               <RichTextEditor value={formData.description} onChange={val => setFormData({...formData, description: val})} />
             </div>
           </div>

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
 import { toast } from "sonner";
 
 export default function PageForm() {
@@ -85,7 +86,14 @@ export default function PageForm() {
         </div>
 
         <div className="space-y-2">
-          <Label>Nội dung trang</Label>
+          <div className="flex items-center justify-between mb-2">
+            <Label>Nội dung trang</Label>
+            <AIContentAssistant 
+              contentType="page" 
+              contextTitle={formData.title} 
+              onInsert={(val) => setFormData({...formData, content: val})} 
+            />
+          </div>
           <RichTextEditor 
             value={formData.content} 
             onChange={(val) => setFormData({...formData, content: val})} 
