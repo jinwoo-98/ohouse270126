@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { ALL_PRODUCTS, Product } from "@/constants/products";
+import { useState, useMemo, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Filters {
   priceRange: string[];
@@ -10,94 +10,76 @@ interface Filters {
   saleOnly?: boolean;
 }
 
-const categoryMap: Record<string, string[]> = {
-  "phong-khach": ["ke-tivi", "sofa", "ban-tra", "den-trang-tri"],
-  "phong-ngu": ["giuong", "phong-ngu"],
-  "phong-an": ["ban-an"],
-  "sale": ALL_PRODUCTS.filter(p => p.isSale).map(p => p.categorySlug),
-};
-
 const priceRangeMap: Record<string, [number, number]> = {
   "0-10": [0, 10000000],
   "10-20": [10000000, 20000000],
   "20-50": [20000000, 50000000],
-  "50+": [50000000, Infinity],
+  "50+": [50000000, 999999999],
 };
 
-export function useProducts(slug: string, initialSearch?: string) {
+export function useProducts(categorySlug: string, initialSearch?: string) {
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<Filters>({
     priceRange: [],
     materials: [],
     styles: [],
     sortBy: 'newest',
     searchQuery: initialSearch || '',
-    saleOnly: false,
+    saleOnly: categorySlug === 'sale',
   });
-  const [isLoading, setIsLoading] = useState(false);
 
-  const rawProducts = useMemo(() => {
+  useEffect(() => {
+    fetchProducts();
+  }, [categorySlug, filters.sortBy, filters.saleOnly, filters.searchQuery]);
+
+  const fetchProducts = async () => {
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 300);
+    try {
+      let query = supabase.from('products').select('*');
 
-    let result = [...ALL_PRODUCTS];
+      // Filter by Category
+      if (categorySlug !== 'noi-that' && categorySlug !== 'sale' && categorySlug !== 'moi' && categorySlug !== 'ban-chay') {
+        // Simple mapping for demonstration
+        query = query.eq('category_id', categorySlug);
+      }
 
-    if (slug !== "noi-that") {
-      const targetSlugs = categoryMap[slug] || [slug];
-      result = result.filter(p => targetSlugs.includes(p.categorySlug) || slug === p.categorySlug);
-    }
+      // Filter by Search
+      if (filters.searchQuery) {
+        query = query.ilike('name', `%${filters.searchQuery}%`);
+      }
 
-    return result;
-  }, [slug]);
+      // Filter by Sale
+      if (filters.saleOnly || categorySlug === 'sale') {
+        query = query.eq('is_sale', true);
+      }
 
-  const filteredAndSortedProducts = useMemo(() => {
-    let result = [...rawProducts];
+      // Sorting
+      if (filters.sortBy === 'price-asc') query = query.order('price', { ascending: true });
+      else if (filters.sortBy === 'price-desc') query = query.order('price', { ascending: false });
+      else query = query.order('created_at', { ascending: false });
 
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
-      result = result.filter(p => 
-        p.name.toLowerCase().includes(query) || 
-        p.material.toLowerCase().includes(query)
-      );
-    }
+      const { data, error } = await query;
+      if (error) throw error;
 
-    if (filters.saleOnly) {
-      result = result.filter(p => p.isSale);
-    }
-
-    if (filters.priceRange.length > 0) {
-      result = result.filter(product => {
-        return filters.priceRange.some(rangeKey => {
-          const [min, max] = priceRangeMap[rangeKey];
-          return product.price >= min && product.price < max;
+      // Client side filtering for price (simpler for this demo)
+      let filteredData = data || [];
+      if (filters.priceRange.length > 0) {
+        filteredData = filteredData.filter(p => {
+          return filters.priceRange.some(rangeKey => {
+            const [min, max] = priceRangeMap[rangeKey];
+            return p.price >= min && p.price <= max;
+          });
         });
-      });
-    }
+      }
 
-    if (filters.materials.length > 0) {
-      result = result.filter(product => filters.materials.includes(product.material));
+      setProducts(filteredData);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    } finally {
+      setIsLoading(false);
     }
-
-    if (filters.styles.length > 0) {
-      result = result.filter(product => filters.styles.includes(product.style));
-    }
-
-    switch (filters.sortBy) {
-      case 'price-asc':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'newest':
-        result.sort((a, b) => b.id - a.id);
-        break;
-      case 'popular':
-        result.sort(() => Math.random() - 0.5);
-        break;
-    }
-
-    return result;
-  }, [rawProducts, filters]);
+  };
 
   const updateFilters = (newFilters: Partial<Filters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
@@ -126,7 +108,7 @@ export function useProducts(slug: string, initialSearch?: string) {
   };
 
   return {
-    products: filteredAndSortedProducts,
+    products,
     filters,
     updateFilters,
     toggleFilter,
