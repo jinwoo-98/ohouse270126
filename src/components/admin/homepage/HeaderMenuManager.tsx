@@ -130,78 +130,78 @@ export function HeaderMenuManager() {
 
   return (
     <div className="grid lg:grid-cols-2 gap-8 mt-6">
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* ROW 1: CAMPAIGN MESSAGES */}
         <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b pb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg text-primary"><Megaphone className="w-5 h-5" /></div>
               <div>
-                <h3 className="font-bold text-sm uppercase tracking-widest">Chiến dịch Header Banner</h3>
-                <p className="text-[10px] text-muted-foreground font-medium italic">Thiết lập các thông báo chạy ở đầu trang</p>
+                <h3 className="font-bold text-sm uppercase tracking-widest">Tin nhắn Top Banner</h3>
+                <p className="text-[10px] text-muted-foreground font-medium italic">Các thông báo chạy ở đầu trang</p>
               </div>
             </div>
             <Button size="sm" variant="outline" onClick={handleAddMessage} className="h-9 px-4 text-[10px] font-bold uppercase rounded-xl border-primary/20 text-primary hover:bg-primary/5">
-              <Plus className="w-3.5 h-3.5 mr-1.5" /> Thêm tin mới
+              <Plus className="w-3.5 h-3.5 mr-1.5" /> Thêm tin
             </Button>
           </div>
           
-          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-6 max-h-[650px] overflow-y-auto pr-2 pb-10 custom-scrollbar">
             {settings.top_banner_messages.map((msg: any, idx: number) => {
               const isExpired = msg.end_time && new Date(msg.end_time) < new Date();
               
               return (
                 <div key={idx} className={cn(
-                  "p-5 rounded-2xl border transition-all relative group/msg",
-                  isExpired ? "bg-gray-50 border-gray-200 opacity-80" : "bg-secondary/20 border-border/50 hover:border-primary/30"
+                  "p-6 rounded-2xl border transition-all relative group/msg shadow-sm",
+                  isExpired ? "bg-gray-50 border-gray-200 opacity-80" : "bg-white border-border/50 hover:border-primary/40"
                 )}>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-5">
                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-primary/10 text-primary text-[9px] uppercase font-bold px-2 py-0.5">Tin nhắn #{idx + 1}</Badge>
-                        {isExpired && <Badge variant="destructive" className="text-[9px] uppercase font-bold px-2 py-0.5">Đã hết hạn</Badge>}
+                        <Badge variant="secondary" className="bg-primary/10 text-primary text-[9px] uppercase font-bold px-2 py-0.5">Chiến dịch #{idx + 1}</Badge>
+                        {isExpired && <Badge variant="destructive" className="text-[9px] uppercase font-bold px-2 py-0.5">Hết hạn</Badge>}
                      </div>
                      <button 
                       onClick={() => handleRemoveMessage(idx)}
-                      className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-destructive/10"
+                      className="p-2 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-destructive/10"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="space-y-1.5">
+                  <div className="space-y-5">
+                    <div className="space-y-2">
                       <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                        Nội dung hiển thị
+                        Nội dung thông báo
                       </Label>
                       <Input 
                         value={msg.text} 
                         onChange={e => handleUpdateMessage(idx, 'text', e.target.value)}
                         placeholder="VD: Flash Sale: Giảm 50% toàn bộ bàn ăn"
-                        className="h-11 text-sm font-bold rounded-xl border-border/60 focus:border-primary"
+                        className="h-11 text-sm font-bold rounded-xl bg-secondary/10 border-none focus-visible:ring-1 focus-visible:ring-primary"
                       />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div className="space-y-2">
                         <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                          <LinkIcon className="w-3 h-3" /> Đường dẫn liên kết
+                          <LinkIcon className="w-3 h-3 text-primary" /> Liên kết (Link)
                         </Label>
                         <Input 
                           value={msg.link} 
                           onChange={e => handleUpdateMessage(idx, 'link', e.target.value)}
-                          placeholder="/sale hoặc /phong-khach"
-                          className="h-10 text-xs rounded-xl border-border/60"
+                          placeholder="/sale"
+                          className="h-11 text-xs rounded-xl"
                         />
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                          <Clock className="w-3 h-3 text-destructive" /> Thời gian kết thúc
+                          <Clock className="w-3 h-3 text-destructive" /> Thời hạn (Hết hạn lúc)
                         </Label>
                         <Input 
                           type="datetime-local" 
                           value={msg.end_time} 
                           onChange={e => handleUpdateMessage(idx, 'end_time', e.target.value)}
-                          className="h-10 text-xs rounded-xl border-border/60"
+                          className="h-11 text-xs rounded-xl focus:ring-1"
                         />
                       </div>
                     </div>
@@ -213,12 +213,12 @@ export function HeaderMenuManager() {
 
           <div className="pt-6 border-t border-dashed space-y-4">
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Thông tin vận chuyển (Góc phải Header)</Label>
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Vận chuyển (Phải Header)</Label>
               <Input 
                 value={settings.top_banner_shipping} 
                 onChange={e => setSettings({...settings, top_banner_shipping: e.target.value})} 
-                placeholder="Ví dụ: Miễn Phí Vận Chuyển Đơn Từ 5TR"
-                className="h-12 rounded-xl bg-secondary/10 border-border/40 font-bold"
+                placeholder="Miễn Phí Vận Chuyển Đơn Từ 5TR"
+                className="h-12 rounded-xl bg-secondary/30 border-none font-bold"
               />
             </div>
           </div>
@@ -229,7 +229,7 @@ export function HeaderMenuManager() {
             <div className="p-2 bg-primary/10 rounded-lg text-primary"><LucideImage className="w-5 h-5" /></div>
             <div>
               <h3 className="font-bold text-sm uppercase tracking-widest">Logo Website</h3>
-              <p className="text-[10px] text-muted-foreground font-medium">Cập nhật hình ảnh nhận diện thương hiệu</p>
+              <p className="text-[10px] text-muted-foreground font-medium">Hình ảnh nhận diện thương hiệu</p>
             </div>
           </div>
           <ImageUpload value={settings.logo_url} onChange={(url) => setSettings({...settings, logo_url: url})} />
@@ -237,7 +237,7 @@ export function HeaderMenuManager() {
 
         <Button onClick={handleSaveSettings} disabled={saving} className="w-full btn-hero h-14 shadow-gold rounded-2xl flex items-center justify-center gap-3">
           {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-          CẬP NHẬT CẤU HÌNH BANNER & LOGO
+          CẬP NHẬT CẤU HÌNH HEADER
         </Button>
       </div>
 
@@ -245,16 +245,16 @@ export function HeaderMenuManager() {
         <div className="flex items-center gap-3 border-b pb-4">
           <div className="p-2 bg-primary/10 rounded-lg text-primary"><LayoutGrid className="w-5 h-5" /></div>
           <div>
-            <h3 className="font-bold text-sm uppercase tracking-widest">Cấu hình lưới danh mục</h3>
-            <p className="text-[10px] text-muted-foreground font-medium">Chọn danh mục xuất hiện ở Trang Chủ</p>
+            <h3 className="font-bold text-sm uppercase tracking-widest">Danh mục ở Trang Chủ</h3>
+            <p className="text-[10px] text-muted-foreground font-medium">Bật "Hiện ở Home" để hiện ở lưới danh mục</p>
           </div>
         </div>
         
-        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+        <div className="space-y-3 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
           <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10 mb-4 flex items-center gap-3">
              <AlertCircle className="w-4 h-4 text-primary shrink-0" />
-             <p className="text-[10px] text-primary-foreground/80 font-medium leading-relaxed">
-               Ghi chú: Danh mục sẽ hiển thị theo đúng thứ tự (Display Order) bạn đã thiết lập trong phần Quản lý Danh Mục.
+             <p className="text-[10px] text-primary-foreground/80 font-medium leading-relaxed italic">
+               Gợi ý: Chỉ nên chọn khoảng 4-8 danh mục chính để hiển thị ngoài trang chủ để đảm bảo tính thẩm mỹ.
              </p>
           </div>
 
@@ -269,7 +269,7 @@ export function HeaderMenuManager() {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-bold text-xs text-charcoal">{cat.name}</span>
-                      <span className="text-[9px] font-mono text-muted-foreground uppercase">Order: {cat.display_order}</span>
+                      <span className="text-[9px] font-mono text-muted-foreground uppercase">Thứ tự: {cat.display_order}</span>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
