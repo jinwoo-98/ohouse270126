@@ -12,7 +12,8 @@ const modules = {
     [{ 'header': [1, 2, 3, false] }],
     ['bold', 'italic', 'underline', 'strike', 'blockquote'],
     [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
-    ['link', 'clean'],
+    ['link', 'image', 'video'], // Thêm link, ảnh và video vào toolbar
+    ['clean'],
     [{ 'color': [] }, { 'background': [] }],
     [{ 'align': [] }],
   ],
@@ -20,7 +21,7 @@ const modules = {
 
 const formats = [
   'header', 'bold', 'italic', 'underline', 'strike', 'blockquote',
-  'list', 'bullet', 'indent', 'link', 'color', 'background', 'align'
+  'list', 'bullet', 'indent', 'link', 'image', 'video', 'color', 'background', 'align'
 ];
 
 export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
@@ -33,8 +34,22 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         modules={modules}
         formats={formats}
         placeholder={placeholder}
-        className="min-h-[300px] rounded-lg overflow-hidden"
+        className="min-h-[350px] rounded-lg overflow-hidden"
       />
+      <style>{`
+        .ql-container {
+          min-height: 300px;
+          font-size: 16px;
+        }
+        .ql-editor img {
+          max-width: 100%;
+          height: auto;
+        }
+        .ql-editor iframe {
+          width: 100%;
+          aspect-ratio: 16 / 9;
+        }
+      `}</style>
     </div>
   );
 }
