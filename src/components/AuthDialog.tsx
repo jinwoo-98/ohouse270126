@@ -56,6 +56,8 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
               },
             },
           }}
+          // QUAN TRỌNG: redirectTo giúp Supabase biết quay lại đâu sau khi đăng nhập Google/FB thành công
+          redirectTo={window.location.origin}
           providers={['google', 'facebook']}
           view="sign_in"
           localization={{
@@ -64,7 +66,7 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                 email_label: 'Email',
                 password_label: 'Mật khẩu',
                 button_label: 'Đăng Nhập',
-                social_provider_text: 'Hoặc tiếp tục với',
+                social_provider_text: 'Tiếp tục với {{provider}}',
                 link_text: 'Đã có tài khoản? Đăng nhập',
                 forgotten_password: 'Quên mật khẩu?',
               },
@@ -72,7 +74,7 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                 email_label: 'Email',
                 password_label: 'Mật khẩu',
                 button_label: 'Đăng Ký Ngay',
-                social_provider_text: 'Hoặc tiếp tục với',
+                social_provider_text: 'Tiếp tục với {{provider}}',
                 link_text: 'Chưa có tài khoản? Đăng ký',
               },
               forgotten_password: {
@@ -81,10 +83,6 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                 email_label: 'Email',
                 loading_button_label: 'Đang gửi...',
                 confirmation_text: 'Vui lòng kiểm tra email để khôi phục mật khẩu.',
-              },
-              update_password: {
-                password_label: 'Mật khẩu mới',
-                button_label: 'Cập nhật mật khẩu',
               },
             },
           }}
