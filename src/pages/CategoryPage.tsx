@@ -18,19 +18,19 @@ import { Badge } from "@/components/ui/badge";
 import { SubcategoryList } from "@/components/category/SubcategoryList";
 import { cn } from "@/lib/utils";
 
-const categoryInfo: Record<string, { title: string; description: string }> = {
+const categoryInfo: Record<string, { title: string; description: string; parent?: string }> = {
   "phong-khach": { title: "Phòng Khách", description: "Nội thất phòng khách sang trọng, hiện đại" },
   "phong-ngu": { title: "Phòng Ngủ", description: "Giường, tủ, bàn trang điểm cao cấp" },
   "phong-an": { title: "Phòng Ăn", description: "Bàn ăn, ghế ăn, tủ rượu đẳng cấp" },
   "phong-tam": { title: "Phòng Tắm", description: "Thiết bị vệ sinh và phụ kiện phòng tắm" },
   "phong-lam-viec": { title: "Văn Phòng", description: "Bàn làm việc, ghế công thái học" },
   "den-trang-tri": { title: "Đèn & Decor", description: "Đèn trang trí và phụ kiện decor" },
-  "sofa": { title: "Sofa & Ghế", description: "Sofa góc, sofa văng, ghế thư giãn" },
-  "ke-tivi": { title: "Kệ Tivi", description: "Kệ tivi gỗ, kệ tivi kết hợp tủ" },
-  "ban-an": { title: "Bàn Ăn", description: "Bàn ăn đá, bàn ăn gỗ cao cấp" },
-  "ban-tra": { title: "Bàn Trà", description: "Bàn trà phòng khách đa dạng" },
-  "ban-lam-viec": { title: "Bàn Làm Việc", description: "Bàn làm việc hiện đại" },
-  "giuong": { title: "Giường Ngủ", description: "Giường ngủ bọc da, giường gỗ" },
+  "sofa": { title: "Sofa & Ghế", description: "Sofa góc, sofa văng, ghế thư giãn", parent: "phong-khach" },
+  "ke-tivi": { title: "Kệ Tivi", description: "Kệ tivi gỗ, kệ tivi kết hợp tủ", parent: "phong-khach" },
+  "ban-an": { title: "Bàn Ăn", description: "Bàn ăn đá, bàn ăn gỗ cao cấp", parent: "phong-an" },
+  "ban-tra": { title: "Bàn Trà", description: "Bàn trà phòng khách đa dạng", parent: "phong-khach" },
+  "ban-lam-viec": { title: "Bàn Làm Việc", description: "Bàn làm việc hiện đại", parent: "phong-lam-viec" },
+  "giuong": { title: "Giường Ngủ", description: "Giường ngủ bọc da, giường gỗ", parent: "phong-ngu" },
   "sale": { title: "Khuyến Mãi", description: "Sản phẩm giảm giá đặc biệt" },
   "noi-that": { title: "Tất Cả Nội Thất", description: "Khám phá toàn bộ bộ sưu tập" },
 };
@@ -63,6 +63,7 @@ export default function CategoryPage() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   
   const category = categoryInfo[categorySlug] || { title: "Danh Mục", description: "Khám phá sản phẩm" };
+  const parentCategory = category.parent ? categoryInfo[category.parent] : null;
   const hasActiveFilters = filters.priceRange.length > 0 || filters.materials.length > 0 || filters.styles.length > 0;
 
   return (
@@ -76,6 +77,16 @@ export default function CategoryPage() {
             <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-muted-foreground">
               <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
               <ChevronRight className="w-3 h-3" />
+              
+              {parentCategory && (
+                <>
+                  <Link to={`/${category.parent}`} className="hover:text-primary transition-colors">
+                    {parentCategory.title}
+                  </Link>
+                  <ChevronRight className="w-3 h-3" />
+                </>
+              )}
+              
               <span className="text-foreground">{category.title}</span>
             </div>
           </div>
