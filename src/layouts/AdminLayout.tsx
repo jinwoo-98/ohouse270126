@@ -129,10 +129,10 @@ export default function AdminLayout() {
 
   // Lọc menu dựa trên quyền
   const allowedMenuItems = allMenuItems.filter(item => {
-    if (role === 'admin') return true; // Admin thấy tất cả
-    if (item.id === 'dashboard') return true; // Editor luôn thấy dashboard
-    if (item.id === 'team') return false; // Chỉ Admin mới thấy trang Quản lý đội ngũ
-    return permissions[item.id] === true; // Editor thấy theo permissions đã cấp
+    if (role === 'admin') return true;
+    if (item.id === 'dashboard') return true;
+    if (item.id === 'team') return false;
+    return permissions[item.id] === true;
   });
 
   return (
@@ -151,12 +151,23 @@ export default function AdminLayout() {
         </nav>
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700/50"><button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl w-full transition-colors font-bold text-xs uppercase"><LogOut className="w-5 h-5" /> Đăng xuất</button></div>
       </aside>
+      
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <header className="h-20 bg-white border-b flex items-center justify-between px-6 lg:px-8">
-          <button className="lg:hidden p-2" onClick={() => setIsSidebarOpen(true)}><Menu className="w-6 h-6" /></button>
+          {/* Mobile Menu Button - Chỉ hiện trên mobile */}
+          <button className="lg:hidden p-2 -ml-2" onClick={() => setIsSidebarOpen(true)}><Menu className="w-6 h-6" /></button>
+          
+          {/* Spacer để đẩy info về bên phải khi không có button mobile */}
+          <div className="hidden lg:block"></div>
+
           <div className="flex items-center gap-4">
-            <div className="text-right"><p className="text-sm font-bold">{user?.email}</p><Badge variant="outline" className="text-[8px] uppercase">{role}</Badge></div>
-            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold uppercase">{user?.email?.charAt(0)}</div>
+            <div className="text-right">
+              <p className="text-sm font-bold text-charcoal">{user?.email}</p>
+              <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/30 text-primary bg-primary/5">{role}</Badge>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold uppercase shadow-gold shrink-0">
+              {user?.email?.charAt(0)}
+            </div>
           </div>
         </header>
         <main className="flex-1 overflow-auto p-6 lg:p-8 bg-gray-50/50"><Outlet /></main>
