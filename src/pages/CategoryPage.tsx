@@ -1,14 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, SlidersHorizontal, Heart, ShoppingBag, X, Eye, Star, Percent, LayoutGrid, ListFilter } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, Heart, ShoppingBag, X, Eye, Star, Percent, ArrowUpDown } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
@@ -19,7 +18,6 @@ import { SubcategoryList } from "@/components/category/SubcategoryList";
 import { cn } from "@/lib/utils";
 
 const categoryInfo: Record<string, { title: string; description: string; parent?: string }> = {
-  // Main
   "phong-khach": { title: "Phòng Khách", description: "Không gian sống sang trọng" },
   "phong-ngu": { title: "Phòng Ngủ", description: "Giấc ngủ trọn vẹn" },
   "phong-an": { title: "Phòng Ăn", description: "Bữa cơm gia đình ấm cúng" },
@@ -30,40 +28,11 @@ const categoryInfo: Record<string, { title: string; description: string; parent?
   "sale": { title: "Khuyến Mãi", description: "Sản phẩm ưu đãi đặc biệt" },
   "ban-chay": { title: "Bán Chạy", description: "Sản phẩm được yêu thích nhất" },
   "moi": { title: "Sản Phẩm Mới", description: "Bộ sưu tập mới nhất" },
-
-  // Subcategories - Phòng Khách
   "sofa": { title: "Ghế Sofa", description: "Sofa da, sofa vải cao cấp", parent: "phong-khach" },
   "ban-tra": { title: "Bàn Trà", description: "Bàn trà đá, bàn trà gỗ", parent: "phong-khach" },
   "ke-tivi": { title: "Kệ Tivi", description: "Kệ tivi hiện đại", parent: "phong-khach" },
-  "den-san": { title: "Đèn Sàn", description: "Đèn đứng trang trí", parent: "phong-khach" },
-  "tu-trang-tri": { title: "Tủ Trang Trí", description: "Tủ decor phòng khách", parent: "phong-khach" },
-
-  // Subcategories - Phòng Ngủ
   "giuong": { title: "Giường Ngủ", description: "Giường bọc da, giường gỗ sồi", parent: "phong-ngu" },
-  "tu-quan-ao": { title: "Tủ Quần Áo", description: "Tủ áo gỗ cao cấp", parent: "phong-ngu" },
-  "ban-trang-diem": { title: "Bàn Trang Điểm", description: "Góc làm đẹp tinh tế", parent: "phong-ngu" },
-  "den-ngu": { title: "Đèn Ngủ", description: "Ánh sáng ấm áp", parent: "phong-ngu" },
-
-  // Subcategories - Phòng Ăn
   "ban-an": { title: "Bàn Ăn", description: "Bàn ăn mặt đá, bàn ăn gỗ", parent: "phong-an" },
-  "ghe-an": { title: "Ghế Ăn", description: "Ghế ăn bọc da cao cấp", parent: "phong-an" },
-  "tu-ruou": { title: "Tủ Rượu", description: "Tủ trưng bày sang trọng", parent: "phong-an" },
-  "den-chum": { title: "Đèn Chùm", description: "Đèn chùm pha lê cao cấp", parent: "phong-an" },
-
-  // Subcategories - Bàn Ghế
-  "ghe-thu-gian": { title: "Ghế Thư Giãn", description: "Tận hưởng không gian riêng", parent: "ban-ghe" },
-  "ban-lam-viec": { title: "Bàn Làm Việc", description: "Cảm hứng sáng tạo", parent: "phong-lam-viec" },
-  "ban-console": { title: "Bàn Console", description: "Điểm nhấn hành lang", parent: "ban-ghe" },
-
-  // Subcategories - Đèn
-  "den-ban": { title: "Đèn Bàn", description: "Đèn bàn làm việc, trang trí", parent: "den-trang-tri" },
-  "den-tuong": { title: "Đèn Tường", description: "Đèn trang trí treo tường", parent: "den-trang-tri" },
-
-  // Subcategories - Decor
-  "tranh": { title: "Tranh Trang Trí", description: "Tranh treo tường nghệ thuật", parent: "decor" },
-  "tham": { title: "Thảm Trải Sàn", description: "Thảm phòng khách, phòng ngủ", parent: "decor" },
-  "guong": { title: "Gương Soi", description: "Gương trang trí cao cấp", parent: "decor" },
-  "binh-hoa": { title: "Bình Hoa", description: "Bình gốm sứ decor", parent: "decor" },
 };
 
 const priceRanges = [
@@ -73,7 +42,7 @@ const priceRanges = [
   { label: "Trên 50 triệu", value: "50+" },
 ];
 
-const materials = ["Gỗ Óc Chó", "Gỗ Sồi", "Đá Marble", "Da Thật", "Vải Nhung", "Inox Mạ Vàng", "Kính Cường Lực", "Gỗ Công Nghiệp", "Pha Lê", "Kim Loại"];
+const materials = ["Gỗ Óc Chó", "Gỗ Sồi", "Đá Marble", "Da Thật", "Vải Nhung", "Kim Loại"];
 const styles = ["Luxury", "Minimalist", "Modern", "Classic"];
 
 function formatPrice(price: number) {
@@ -82,8 +51,7 @@ function formatPrice(price: number) {
 
 export default function CategoryPage() {
   const location = useLocation();
-  const pathSegment = location.pathname.split('/').pop() || 'noi-that';
-  const categorySlug = pathSegment;
+  const categorySlug = location.pathname.split('/').pop() || 'noi-that';
   
   const { products, filters, updateFilters, toggleFilter, clearFilters, isLoading } = useProducts(categorySlug);
   const { addToCart } = useCart();
@@ -92,20 +60,28 @@ export default function CategoryPage() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 200);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   
-  const category = categoryInfo[categorySlug] || { title: "Danh Mục", description: "Khám phá bộ sưu tập sản phẩm" };
+  const category = categoryInfo[categorySlug] || { title: "Danh Mục", description: "Khám phá sản phẩm" };
   const parentCategory = category.parent ? categoryInfo[category.parent] : null;
-  const hasActiveFilters = filters.priceRange.length > 0 || filters.materials.length > 0 || filters.styles.length > 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1">
-        <div className="bg-secondary/30 py-3">
-          <div className="container-luxury !max-w-[1600px]">
-            <div className="flex items-center gap-2 text-[10px] md:text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
+        {/* Top Header Section */}
+        <div className="pt-6 pb-2">
+          <div className="container-luxury">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-[10px] md:text-xs font-medium text-muted-foreground mb-8">
+              <Link to="/" className="hover:text-primary transition-colors">Home</Link>
               <ChevronRight className="w-3 h-3" />
               {parentCategory && (
                 <>
@@ -115,104 +91,189 @@ export default function CategoryPage() {
               )}
               <span className="text-foreground">{category.title}</span>
             </div>
+
+            {/* Category Title */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal mb-10">
+              {category.title}
+            </h1>
           </div>
         </div>
 
-        <div className="container-luxury py-6 md:py-8 !max-w-[1600px] !px-4 md:!px-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            <aside className={cn("hidden lg:block transition-all duration-500 overflow-hidden", isSidebarVisible ? "w-72 opacity-100 mr-4" : "w-0 opacity-0 mr-0")}>
-              <div className="w-72 sticky top-28 space-y-8">
-                <SubcategoryList currentSlug={categorySlug} />
-                <div className="space-y-8 pt-8 border-t border-border/50">
-                  <h3 className="font-bold text-sm uppercase tracking-widest text-charcoal">Bộ Lọc Chi Tiết</h3>
-                  <div className="animate-fade-in">
-                    <h4 className="font-bold mb-4 text-[11px] uppercase tracking-widest text-muted-foreground">Khoảng Giá</h4>
-                    <div className="space-y-2.5">
-                      {priceRanges.map((range) => (
-                        <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
-                          <Checkbox checked={filters.priceRange.includes(range.value)} onCheckedChange={() => toggleFilter('priceRange', range.value)} className="border-border/60 data-[state=checked]:bg-primary" />
-                          <span className="text-sm text-foreground/80 group-hover:text-primary transition-colors">{range.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="animate-fade-in">
-                    <h4 className="font-bold mb-4 text-[11px] uppercase tracking-widest text-muted-foreground">Chất Liệu</h4>
-                    <div className="space-y-2.5">
-                      {materials.map((material) => (
-                        <label key={material} className="flex items-center gap-3 cursor-pointer group">
-                          <Checkbox checked={filters.materials.includes(material)} onCheckedChange={() => toggleFilter('materials', material)} className="border-border/60 data-[state=checked]:bg-primary" />
-                          <span className="text-sm text-foreground/80 group-hover:text-primary transition-colors">{material}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <Button variant="ghost" className="w-full text-destructive hover:bg-destructive/10 text-xs font-bold uppercase tracking-widest h-11" onClick={clearFilters}>Thiết lập lại</Button>
-                </div>
-              </div>
-            </aside>
+        {/* Sticky Filter Bar - Full Width when scrolled */}
+        <div className={cn(
+          "z-40 transition-all duration-300 border-y border-border/40 bg-background/95 backdrop-blur-md",
+          isScrolled ? "fixed top-0 left-0 right-0 shadow-subtle py-3" : "relative py-4 mb-8"
+        )}>
+          <div className="container-luxury flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {/* Filter Button - Match Style */}
+              <button 
+                onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+                className="hidden lg:flex items-center gap-3 px-5 py-2.5 border border-charcoal/20 hover:bg-secondary transition-all text-sm font-medium"
+              >
+                {isSidebarVisible ? "Hide Filter" : "Show Filter"}
+                <ArrowUpDown className="w-4 h-4" />
+              </button>
 
-            <div className="flex-1 min-w-0">
-              <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md py-4 border-b border-border/60 mb-8 -mx-4 px-4 md:-mx-8 md:px-8">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 md:gap-4">
-                    <div className="flex items-center gap-4">
-                      <h1 className="hidden md:block text-sm font-bold uppercase tracking-[0.2em] text-charcoal whitespace-nowrap">{category.title}</h1>
-                      <div className="h-4 w-[1px] bg-border/50 hidden md:block" />
-                      <Button variant="ghost" size="sm" onClick={() => setIsSidebarVisible(!isSidebarVisible)} className="hidden lg:flex h-10 px-3 rounded-xl hover:bg-secondary gap-2 text-xs font-bold uppercase tracking-widest">
-                        {isSidebarVisible ? <X className="w-4 h-4" /> : <ListFilter className="w-4 h-4" />}
-                        {isSidebarVisible ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowFiltersMobile(true)}
+                className="lg:hidden h-11 px-6 border-charcoal/20 rounded-none gap-2 font-medium"
+              >
+                Filters <SlidersHorizontal className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-8">
+              {/* Sale Switch - Match Style */}
+              <div className="flex items-center gap-3">
+                <Switch 
+                  checked={filters.saleOnly} 
+                  onCheckedChange={(val) => updateFilters({ saleOnly: val })}
+                  className="data-[state=checked]:bg-charcoal"
+                />
+                <span className="text-sm font-medium text-charcoal">Sale</span>
+              </div>
+
+              <div className="hidden md:block">
+                <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
+                  <SelectTrigger className="w-48 border-none bg-transparent hover:text-primary focus:ring-0 text-sm font-medium h-auto p-0 shadow-none">
+                    <SelectValue placeholder="Sort By" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="newest">Featured</SelectItem>
+                    <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                    <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="container-luxury">
+          <div className="flex flex-col lg:flex-row gap-12">
+            {/* Sidebar Filter - Desktop */}
+            <AnimatePresence mode="wait">
+              {isSidebarVisible && (
+                <motion.aside 
+                  initial={{ opacity: 0, x: -20, width: 0 }}
+                  animate={{ opacity: 1, x: 0, width: 280 }}
+                  exit={{ opacity: 0, x: -20, width: 0 }}
+                  className="hidden lg:block shrink-0 overflow-hidden"
+                >
+                  <div className="w-[280px] space-y-10">
+                    <SubcategoryList currentSlug={categorySlug} />
+                    
+                    <div className="space-y-10 pt-4">
+                      <div className="border-t border-border/40 pt-8">
+                        <h4 className="font-bold mb-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Price</h4>
+                        <div className="space-y-3">
+                          {priceRanges.map((range) => (
+                            <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
+                              <Checkbox 
+                                checked={filters.priceRange.includes(range.value)} 
+                                onCheckedChange={() => toggleFilter('priceRange', range.value)} 
+                                className="border-charcoal/20 data-[state=checked]:bg-charcoal"
+                              />
+                              <span className="text-sm font-medium text-foreground/80 group-hover:text-charcoal">{range.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="border-t border-border/40 pt-8">
+                        <h4 className="font-bold mb-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Material</h4>
+                        <div className="space-y-3">
+                          {materials.map((material) => (
+                            <label key={material} className="flex items-center gap-3 cursor-pointer group">
+                              <Checkbox 
+                                checked={filters.materials.includes(material)} 
+                                onCheckedChange={() => toggleFilter('materials', material)} 
+                                className="border-charcoal/20 data-[state=checked]:bg-charcoal"
+                              />
+                              <span className="text-sm font-medium text-foreground/80 group-hover:text-charcoal">{material}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <Button 
+                        variant="ghost" 
+                        className="w-full text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-destructive p-0 h-auto justify-start" 
+                        onClick={clearFilters}
+                      >
+                        Reset All Filters
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => setShowFiltersMobile(true)} className="lg:hidden h-10 px-4 rounded-xl border-border/60 gap-2"><SlidersHorizontal className="w-4 h-4" /> Lọc</Button>
-                    </div>
-                    <div className="h-6 w-[1px] bg-border/50 mx-1 hidden lg:block" />
-                    <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border/40 hover:border-primary/40 transition-colors cursor-pointer group" onClick={() => updateFilters({ saleOnly: !filters.saleOnly })}>
-                      <div className={cn("p-1.5 rounded-lg transition-colors", filters.saleOnly ? "bg-destructive text-white" : "bg-destructive/10 text-destructive group-hover:bg-destructive group-hover:text-white")}><Percent className="w-3.5 h-3.5" /></div>
-                      <span className="text-[11px] font-bold uppercase tracking-widest text-foreground/80 hidden sm:block">Giảm giá</span>
-                      <Switch checked={filters.saleOnly} onCheckedChange={(val) => updateFilters({ saleOnly: val })} onClick={(e) => e.stopPropagation()} className="scale-75 data-[state=checked]:bg-destructive" />
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="hidden xl:inline text-[10px] font-bold uppercase tracking-widest text-muted-foreground mr-2">{products.length} Sản phẩm</span>
-                    <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
-                      <SelectTrigger className="w-36 md:w-44 h-10 text-xs font-bold uppercase tracking-widest border-border/60 rounded-xl bg-card">
-                        <SelectValue placeholder="Sắp xếp" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl border-border/60 shadow-elevated">
-                        <SelectItem value="newest" className="text-xs font-medium uppercase tracking-widest">Mới nhất</SelectItem>
-                        <SelectItem value="price-asc" className="text-xs font-medium uppercase tracking-widest">Giá tăng dần</SelectItem>
-                        <SelectItem value="price-desc" className="text-xs font-medium uppercase tracking-widest">Giá giảm dần</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
+                </motion.aside>
+              )}
+            </AnimatePresence>
 
-              <div className={cn("grid grid-cols-2 gap-4 md:gap-6 lg:gap-8", isSidebarVisible ? "md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5")}>
-                {isLoading ? Array.from({ length: 10 }).map((_, i) => <ProductCardSkeleton key={i} />) : products.map((product, index) => {
+            {/* Product Grid */}
+            <div className="flex-1">
+              <div className={cn(
+                "grid grid-cols-2 gap-4 md:gap-8 lg:gap-10",
+                isSidebarVisible ? "xl:grid-cols-3" : "xl:grid-cols-4"
+              )}>
+                {isLoading ? (
+                  Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)
+                ) : products.map((product, index) => {
                   const isFavorite = isInWishlist(product.id);
                   return (
-                    <motion.div key={`${product.id}-${isSidebarVisible}`} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: index * 0.03 }}>
-                      <div className="group card-luxury relative h-full flex flex-col bg-card border border-border/40">
-                        <div className="relative aspect-square img-zoom">
-                          <Link to={`/san-pham/${product.id}`} className="block">
-                            <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                            <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-                              {product.isNew && <span className="bg-primary text-primary-foreground px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest shadow-lg">Mới</span>}
-                              {product.isSale && <span className="bg-destructive text-destructive-foreground px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest shadow-lg">Sale</span>}
-                            </div>
+                    <motion.div 
+                      key={product.id} 
+                      layout
+                      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} 
+                      transition={{ duration: 0.4, delay: index * 0.05 }}
+                    >
+                      <div className="group relative h-full flex flex-col">
+                        <div className="relative aspect-[3/4] overflow-hidden bg-secondary/30">
+                          <Link to={`/san-pham/${product.id}`} className="block h-full">
+                            <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                            {product.isSale && (
+                              <span className="absolute top-4 left-4 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-charcoal shadow-sm">
+                                Sale
+                              </span>
+                            )}
                           </Link>
-                          <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all z-20 pointer-events-none">
-                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product); }} className={`p-2.5 rounded-full shadow-medium transition-all pointer-events-auto ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card/90 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'}`}><Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} /></button>
-                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart({ ...product, quantity: 1 }); }} className="p-2.5 bg-card/90 backdrop-blur-sm rounded-full shadow-medium hover:bg-primary hover:text-primary-foreground transition-all pointer-events-auto"><ShoppingBag className="w-4 h-4" /></button>
+                          
+                          {/* Actions on Hover */}
+                          <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <button 
+                              onClick={() => toggleWishlist(product)}
+                              className={cn(
+                                "p-3 bg-white rounded-full shadow-sm hover:bg-charcoal hover:text-white transition-colors",
+                                isFavorite && "bg-charcoal text-white"
+                              )}
+                            >
+                              <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
+                            </button>
                           </div>
-                          <button onClick={() => setSelectedProduct(product)} className="absolute bottom-4 left-4 right-4 bg-card/95 backdrop-blur-md text-charcoal py-2.5 rounded-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all z-10 hover:bg-primary hover:text-primary-foreground shadow-elevated flex items-center justify-center gap-2 border border-border/40"><Eye className="w-4 h-4" /> <span className="text-[10px] font-bold uppercase tracking-widest">Xem nhanh</span></button>
+
+                          <button 
+                            onClick={() => setSelectedProduct(product)}
+                            className="absolute bottom-4 left-4 right-4 bg-white py-3 text-[10px] font-bold uppercase tracking-widest text-charcoal opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-md hover:bg-charcoal hover:text-white"
+                          >
+                            Quick View
+                          </button>
                         </div>
-                        <div className="p-5 flex-1 flex flex-col">
-                          <Link to={`/san-pham/${product.id}`}><h3 className="font-bold text-sm line-clamp-2 group-hover:text-primary transition-colors mb-3 leading-snug h-10">{product.name}</h3></Link>
-                          <div className="mt-auto flex flex-col">
-                            <span className="text-lg font-bold text-charcoal">{formatPrice(product.price)}</span>
-                            {product.originalPrice && <span className="text-xs text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>}
+
+                        <div className="pt-5 flex-1 flex flex-col">
+                          <Link to={`/san-pham/${product.id}`}>
+                            <h3 className="text-sm font-medium text-charcoal hover:text-primary transition-colors line-clamp-2 mb-2">
+                              {product.name}
+                            </h3>
+                          </Link>
+                          <div className="mt-auto">
+                            <div className="flex items-center gap-3">
+                              <span className="text-base font-bold text-charcoal">{formatPrice(product.price)}</span>
+                              {product.originalPrice && (
+                                <span className="text-xs text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -220,10 +281,18 @@ export default function CategoryPage() {
                   );
                 })}
               </div>
+
+              {products.length === 0 && !isLoading && (
+                <div className="py-32 text-center border-t border-border/40">
+                  <h3 className="text-xl font-bold mb-2">No products found</h3>
+                  <p className="text-muted-foreground text-sm">Try adjusting your filters to find what you're looking for.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </main>
+
       <QuickViewSheet product={selectedProduct} isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} />
       <Footer />
     </div>
