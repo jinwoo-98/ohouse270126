@@ -67,14 +67,20 @@ export default function AdminLayout() {
         return;
       }
 
-      const { data } = await supabase
-        .from('profiles')
-        .select('role, permissions')
-        .eq('id', user.id)
-        .single();
-      
-      setUserProfile(data);
-      setFetchingProfile(false);
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role, permissions')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) throw error;
+        setUserProfile(data);
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      } finally {
+        setFetchingProfile(false);
+      }
     }
 
     fetchProfile();
@@ -90,7 +96,7 @@ export default function AdminLayout() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-gray-500 font-medium tracking-wide">Đang kiểm tra quyền...</p>
+          <p className="text-gray-500 font-medium tracking-wide">Đang kiểm tra quyền truy cập...</p>
         </div>
       </div>
     );
@@ -103,6 +109,7 @@ export default function AdminLayout() {
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4"><Lock className="w-8 h-8 text-primary" /></div>
             <h1 className="text-2xl font-bold text-charcoal tracking-tight uppercase">Admin Login</h1>
+            <p className="text-xs text-muted-foreground mt-2">Dành cho Quản trị viên & Biên tập viên</p>
           </div>
           <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={[]} theme="light" />
         </motion.div>
@@ -120,7 +127,8 @@ export default function AdminLayout() {
         <div className="max-w-md w-full bg-white rounded-2xl shadow-elevated p-8 text-center border border-destructive/20">
           <ShieldAlert className="w-20 h-20 text-destructive mx-auto mb-6" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Truy Cập Bị Từ Chối</h1>
-          <p className="text-gray-500 mb-8">Tài khoản này không có quyền quản trị.</p>
+          <p className="text-gray-500 mb-4">Tài khoản <strong>{user.email}</strong> hiện có vai trò là <strong>{role || 'khách hàng'}</strong>.</p>
+          <p className="text-sm text-muted-foreground mb-8 italic">Vui lòng liên hệ Quản trị viên để được cấp quyền Biên tập viên.</p>
           <Button className="w-full btn-hero" onClick={() => navigate("/")}>Về Trang Chủ</Button>
         </div>
       </div>
@@ -131,7 +139,7 @@ export default function AdminLayout() {
   const allowedMenuItems = allMenuItems.filter(item => {
     if (role === 'admin') return true;
     if (item.id === 'dashboard') return true;
-    if (item.id === 'team') return false;
+    if (item.id === 'team') return false; // Chỉ Admin mới quản lý được đội ngũ
     return permissions[item.id] === true;
   });
 
@@ -144,22 +152,24 @@ export default function AdminLayout() {
         </div>
         <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-160px)] custom-scrollbar">
           {allowedMenuItems.map((item) => (
-            <Link key={item.href} to={item.href} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${location.pathname === item.href || (item.href !== "/admin" && location.pathname.startsWith(item.href)) ? "bg-primary text-white font-bold" : "text-gray-400 hover:bg-gray-800"}`}>
+            <Link key={item.href} to={item.href} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${location.pathname === item.href || (item.href !== "/admin" && location.pathname.startsWith(item.href)) ? "bg-primary text-white font-bold shadow-md" : "text-gray-400 hover:bg-gray-800"}`}>
               <item.icon className="w-5 h-5" /><span className="text-sm">{item.title}</span>
             </Link>
           ))}
+          {allowedMenuItems.length <= 1 && role === 'editor' && (
+             <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 mt-4">
+                <p className="text-[10px] text-primary font-bold uppercase mb-2">Thông báo</p>
+                <p className="text-[11px] text-gray-400 leading-relaxed">Bạn chưa được cấp quyền truy cập mục nào. Vui lòng liên hệ Admin.</p>
+             </div>
+          )}
         </nav>
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700/50"><button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl w-full transition-colors font-bold text-xs uppercase"><LogOut className="w-5 h-5" /> Đăng xuất</button></div>
       </aside>
       
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <header className="h-20 bg-white border-b flex items-center justify-between px-6 lg:px-8">
-          {/* Mobile Menu Button - Chỉ hiện trên mobile */}
           <button className="lg:hidden p-2 -ml-2" onClick={() => setIsSidebarOpen(true)}><Menu className="w-6 h-6" /></button>
-          
-          {/* Spacer để đẩy info về bên phải khi không có button mobile */}
           <div className="hidden lg:block"></div>
-
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-sm font-bold text-charcoal">{user?.email}</p>
