@@ -23,7 +23,7 @@ const categoryInfo: Record<string, { title: string; description: string; parent?
   "phong-an": { title: "Phòng Ăn", description: "Bữa cơm gia đình ấm cúng" },
   "ban-ghe": { title: "Bàn & Ghế", description: "Bộ sưu tập bàn ghế cao cấp" },
   "den-trang-tri": { title: "Đèn Trang Trí", description: "Ánh sáng hoàn mỹ" },
-  "decor": { title: "Decor & Trang Trí", description: "Điểm nhấn cho ngôi nhà" },
+  "decor": { title: "Decor", description: "Điểm nhấn cho ngôi nhà" },
   "noi-that": { title: "Tất Cả Nội Thất", description: "Khám phá toàn bộ sản phẩm" },
   "sale": { title: "Khuyến Mãi", description: "Sản phẩm ưu đãi đặc biệt" },
   "ban-chay": { title: "Bán Chạy", description: "Sản phẩm được yêu thích nhất" },
@@ -43,7 +43,6 @@ const priceRanges = [
 ];
 
 const materials = ["Gỗ Óc Chó", "Gỗ Sồi", "Đá Marble", "Da Thật", "Vải Nhung", "Kim Loại"];
-const styles = ["Luxury", "Minimalist", "Modern", "Classic"];
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -76,12 +75,10 @@ export default function CategoryPage() {
       <Header />
       
       <main className="flex-1">
-        {/* Top Header Section */}
         <div className="pt-6 pb-2">
           <div className="container-luxury">
-            {/* Breadcrumb */}
-            <div className="flex items-center gap-2 text-[10px] md:text-xs font-medium text-muted-foreground mb-8">
-              <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+            <div className="flex items-center gap-2 text-[10px] md:text-xs font-medium text-muted-foreground mb-6">
+              <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
               <ChevronRight className="w-3 h-3" />
               {parentCategory && (
                 <>
@@ -92,26 +89,23 @@ export default function CategoryPage() {
               <span className="text-foreground">{category.title}</span>
             </div>
 
-            {/* Category Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal mb-10">
+            <h1 className="text-2xl md:text-3xl font-bold text-charcoal mb-8 uppercase tracking-widest">
               {category.title}
             </h1>
           </div>
         </div>
 
-        {/* Sticky Filter Bar - Full Width when scrolled */}
         <div className={cn(
           "z-40 transition-all duration-300 border-y border-border/40 bg-background/95 backdrop-blur-md",
-          isScrolled ? "fixed top-0 left-0 right-0 shadow-subtle py-3" : "relative py-4 mb-8"
+          isScrolled ? "fixed top-0 left-0 right-0 shadow-subtle py-2" : "relative py-3 mb-8"
         )}>
           <div className="container-luxury flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {/* Filter Button - Match Style */}
               <button 
                 onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-                className="hidden lg:flex items-center gap-3 px-5 py-2.5 border border-charcoal/20 hover:bg-secondary transition-all text-sm font-medium"
+                className="hidden lg:flex items-center gap-3 px-5 py-2 border border-charcoal/20 hover:bg-secondary transition-all text-xs font-bold uppercase tracking-widest"
               >
-                {isSidebarVisible ? "Hide Filter" : "Show Filter"}
+                {isSidebarVisible ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
                 <ArrowUpDown className="w-4 h-4" />
               </button>
 
@@ -119,32 +113,31 @@ export default function CategoryPage() {
                 variant="outline" 
                 size="sm" 
                 onClick={() => setShowFiltersMobile(true)}
-                className="lg:hidden h-11 px-6 border-charcoal/20 rounded-none gap-2 font-medium"
+                className="lg:hidden h-10 px-6 border-charcoal/20 rounded-none gap-2 font-bold text-xs uppercase tracking-widest"
               >
-                Filters <SlidersHorizontal className="w-4 h-4" />
+                Bộ lọc <SlidersHorizontal className="w-4 h-4" />
               </Button>
             </div>
 
             <div className="flex items-center gap-8">
-              {/* Sale Switch - Match Style */}
               <div className="flex items-center gap-3">
                 <Switch 
                   checked={filters.saleOnly} 
                   onCheckedChange={(val) => updateFilters({ saleOnly: val })}
                   className="data-[state=checked]:bg-charcoal"
                 />
-                <span className="text-sm font-medium text-charcoal">Sale</span>
+                <span className="text-xs font-bold uppercase tracking-widest text-charcoal">Sale</span>
               </div>
 
               <div className="hidden md:block">
                 <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
-                  <SelectTrigger className="w-48 border-none bg-transparent hover:text-primary focus:ring-0 text-sm font-medium h-auto p-0 shadow-none">
-                    <SelectValue placeholder="Sort By" />
+                  <SelectTrigger className="w-48 border-none bg-transparent hover:text-primary focus:ring-0 text-xs font-bold uppercase tracking-widest h-auto p-0 shadow-none">
+                    <SelectValue placeholder="Sắp xếp theo" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
-                    <SelectItem value="newest">Featured</SelectItem>
-                    <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                    <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                    <SelectItem value="newest">Mới nhất</SelectItem>
+                    <SelectItem value="price-asc">Giá: Thấp đến Cao</SelectItem>
+                    <SelectItem value="price-desc">Giá: Cao đến Thấp</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -154,7 +147,6 @@ export default function CategoryPage() {
 
         <div className="container-luxury">
           <div className="flex flex-col lg:flex-row gap-12">
-            {/* Sidebar Filter - Desktop */}
             <AnimatePresence mode="wait">
               {isSidebarVisible && (
                 <motion.aside 
@@ -168,7 +160,7 @@ export default function CategoryPage() {
                     
                     <div className="space-y-10 pt-4">
                       <div className="border-t border-border/40 pt-8">
-                        <h4 className="font-bold mb-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Price</h4>
+                        <h4 className="font-bold mb-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Khoảng giá</h4>
                         <div className="space-y-3">
                           {priceRanges.map((range) => (
                             <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
@@ -184,7 +176,7 @@ export default function CategoryPage() {
                       </div>
 
                       <div className="border-t border-border/40 pt-8">
-                        <h4 className="font-bold mb-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Material</h4>
+                        <h4 className="font-bold mb-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Chất liệu</h4>
                         <div className="space-y-3">
                           {materials.map((material) => (
                             <label key={material} className="flex items-center gap-3 cursor-pointer group">
@@ -201,10 +193,10 @@ export default function CategoryPage() {
 
                       <Button 
                         variant="ghost" 
-                        className="w-full text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-destructive p-0 h-auto justify-start" 
+                        className="w-full text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-destructive p-0 h-auto justify-start" 
                         onClick={clearFilters}
                       >
-                        Reset All Filters
+                        Xóa tất cả bộ lọc
                       </Button>
                     </div>
                   </div>
@@ -212,7 +204,6 @@ export default function CategoryPage() {
               )}
             </AnimatePresence>
 
-            {/* Product Grid */}
             <div className="flex-1">
               <div className={cn(
                 "grid grid-cols-2 gap-4 md:gap-8 lg:gap-10",
@@ -240,7 +231,6 @@ export default function CategoryPage() {
                             )}
                           </Link>
                           
-                          {/* Actions on Hover */}
                           <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
                             <button 
                               onClick={() => toggleWishlist(product)}
@@ -257,7 +247,7 @@ export default function CategoryPage() {
                             onClick={() => setSelectedProduct(product)}
                             className="absolute bottom-4 left-4 right-4 bg-white py-3 text-[10px] font-bold uppercase tracking-widest text-charcoal opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-md hover:bg-charcoal hover:text-white"
                           >
-                            Quick View
+                            Xem nhanh
                           </button>
                         </div>
 
@@ -284,8 +274,8 @@ export default function CategoryPage() {
 
               {products.length === 0 && !isLoading && (
                 <div className="py-32 text-center border-t border-border/40">
-                  <h3 className="text-xl font-bold mb-2">No products found</h3>
-                  <p className="text-muted-foreground text-sm">Try adjusting your filters to find what you're looking for.</p>
+                  <h3 className="text-xl font-bold mb-2">Không tìm thấy sản phẩm</h3>
+                  <p className="text-muted-foreground text-sm">Hãy thử thay đổi bộ lọc để tìm thấy món đồ bạn ưng ý.</p>
                 </div>
               )}
             </div>
