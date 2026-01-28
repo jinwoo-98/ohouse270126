@@ -9,7 +9,8 @@ import {
   Loader2, 
   Image as ImageIcon,
   ExternalLink,
-  ArrowUp
+  Star,
+  ShoppingBag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +32,7 @@ export default function ProductManager() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .order('display_order', { ascending: true }) // Sắp xếp theo display_order trước
+        .order('display_order', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -45,11 +46,9 @@ export default function ProductManager() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
-
     try {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
-      
       setProducts(products.filter(p => p.id !== id));
       toast.success("Đã xóa sản phẩm thành công");
     } catch (error: any) {
@@ -69,13 +68,11 @@ export default function ProductManager() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Quản Lý Sản Phẩm</h1>
-          <p className="text-muted-foreground">Danh sách toàn bộ sản phẩm trên hệ thống.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Quản Lý Sản Phẩm</h1>
+          <p className="text-muted-foreground text-sm">Quản lý kho hàng và cấu hình hiển thị Marketing.</p>
         </div>
-        <Button asChild className="btn-hero shadow-gold">
-          <Link to="/admin/products/new">
-            <Plus className="w-4 h-4 mr-2" /> Thêm sản phẩm mới
-          </Link>
+        <Button asChild className="btn-hero shadow-gold px-8 h-12">
+          <Link to="/admin/products/new"><Plus className="w-4 h-4 mr-2" /> Thêm sản phẩm</Link>
         </Button>
       </div>
 
@@ -93,99 +90,68 @@ export default function ProductManager() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50 text-[10px] uppercase tracking-widest font-bold text-muted-foreground border-b">
-                <th className="px-6 py-4 text-center w-20">Thứ tự</th>
+                <th className="px-6 py-4 text-center w-16">Thứ tự</th>
                 <th className="px-6 py-4">Sản phẩm</th>
-                <th className="px-6 py-4">Phân loại</th>
                 <th className="px-6 py-4">Giá bán</th>
+                <th className="px-6 py-4">Marketing (Ảo)</th>
                 <th className="px-6 py-4 text-center">Trạng thái</th>
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
-                    <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-                    <p className="mt-2 text-sm text-muted-foreground">Đang tải danh sách...</p>
-                  </td>
-                </tr>
+                <tr><td colSpan={6} className="px-6 py-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filteredProducts.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                    Không tìm thấy sản phẩm nào.
+                <tr><td colSpan={6} className="px-6 py-12 text-center text-muted-foreground italic">Không tìm thấy sản phẩm.</td></tr>
+              ) : filteredProducts.map((product) => (
+                <tr key={product.id} className="hover:bg-gray-50/80 transition-colors">
+                  <td className="px-6 py-4 text-center">
+                    <span className="font-mono text-xs font-bold text-muted-foreground">{product.display_order || 1000}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-border">
+                        {product.image_url ? <img src={product.image_url} alt="" className="w-full h-full object-cover" /> : <ImageIcon className="w-5 h-5 m-auto text-gray-300 mt-3.5" />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-charcoal truncate max-w-[200px]">{product.name}</p>
+                        <Badge variant="outline" className="text-[9px] uppercase tracking-widest mt-1 py-0 px-1.5 h-4">{product.category_id}</Badge>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-sm font-bold text-primary">{formatPrice(product.price)}</p>
+                    {product.original_price && <p className="text-[10px] text-muted-foreground line-through">{formatPrice(product.original_price)}</p>}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-charcoal">
+                        <ShoppingBag className="w-3 h-3 text-emerald-500" /> {product.fake_sold || 0} đã bán
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-charcoal">
+                        <Star className="w-3 h-3 text-amber-500 fill-amber-500" /> {product.fake_rating || 5.0} ({product.fake_review_count || 0})
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center gap-1.5">
+                      {product.is_new && <Badge className="bg-blue-500 text-[8px] h-4 px-1 uppercase">Mới</Badge>}
+                      {product.is_sale && <Badge className="bg-red-500 text-[8px] h-4 px-1 uppercase">Sale</Badge>}
+                      {product.is_featured && <Badge className="bg-amber-500 text-[8px] h-4 px-1 uppercase">Nổi bật</Badge>}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="icon" asChild title="Xem chi tiết"><Link to={`/san-pham/${product.id}`} target="_blank"><ExternalLink className="w-4 h-4 text-muted-foreground" /></Link></Button>
+                      <Button variant="ghost" size="icon" asChild title="Sửa"><Link to={`/admin/products/edit/${product.id}`}><Edit className="w-4 h-4 text-blue-600" /></Link></Button>
+                      <Button variant="ghost" size="icon" title="Xóa" onClick={() => handleDelete(product.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                    </div>
                   </td>
                 </tr>
-              ) : (
-                filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50/80 transition-colors">
-                    <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary/50 font-mono text-xs font-bold text-muted-foreground">
-                        {product.display_order || 1000}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 border border-border">
-                          {product.image_url ? (
-                            <img src={product.image_url} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                              <ImageIcon className="w-5 h-5" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-charcoal truncate">{product.name}</p>
-                          <p className="text-[10px] text-muted-foreground font-mono">ID: {product.id.slice(0,8)}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge variant="secondary" className="bg-primary/5 text-primary border-none">
-                        {product.category_id || "Chưa phân loại"}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-bold text-primary">{formatPrice(product.price)}</p>
-                      {product.original_price && (
-                        <p className="text-[11px] text-muted-foreground line-through">{formatPrice(product.original_price)}</p>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex justify-center gap-2">
-                        {product.is_new && <Badge className="bg-blue-500 text-[9px] h-5">Mới</Badge>}
-                        {product.is_sale && <Badge className="bg-red-500 text-[9px] h-5">Sale</Badge>}
-                        {product.is_featured && <Badge className="bg-amber-500 text-[9px] h-5">Nổi bật</Badge>}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon" asChild title="Xem trên web">
-                          <Link to={`/san-pham/${product.id}`} target="_blank">
-                            <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" size="icon" asChild title="Chỉnh sửa">
-                          <Link to={`/admin/products/edit/${product.id}`}>
-                            <Edit className="w-4 h-4 text-blue-600" />
-                          </Link>
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          title="Xóa"
-                          onClick={() => handleDelete(product.id)}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
         </div>

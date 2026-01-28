@@ -18,7 +18,8 @@ import {
   Newspaper,
   Briefcase,
   Star,
-  Users
+  Users,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +32,7 @@ const menuItems = [
   { title: "Tổng quan", icon: LayoutDashboard, href: "/admin" },
   { title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
   { title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
+  { title: "Marketing", icon: TrendingUp, href: "/admin/marketing" },
   { title: "Đánh giá", icon: Star, href: "/admin/reviews" },
   { title: "Quản lý trang", icon: Files, href: "/admin/pages" },
   { title: "Tin tức", icon: Newspaper, href: "/admin/news" },

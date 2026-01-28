@@ -53,6 +53,7 @@ import ProjectManager from "./pages/admin/ProjectManager";
 import ProjectForm from "./pages/admin/ProjectForm";
 import ReviewManager from "./pages/admin/ReviewManager";
 import SubscriberManager from "./pages/admin/SubscriberManager";
+import MarketingTools from "./pages/admin/MarketingTools";
 
 const queryClient = new QueryClient();
 
@@ -135,6 +136,7 @@ const App = () => (
                   <Route path="products" element={<ProductManager />} />
                   <Route path="products/new" element={<ProductForm />} />
                   <Route path="products/edit/:id" element={<ProductForm />} />
+                  <Route path="marketing" element={<MarketingTools />} />
                   <Route path="reviews" element={<ReviewManager />} />
                   <Route path="subscribers" element={<SubscriberManager />} />
                   <Route path="projects" element={<ProjectManager />} />
