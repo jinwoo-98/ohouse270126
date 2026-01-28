@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   TrendingUp, 
@@ -9,24 +10,52 @@ import {
   ArrowUpRight,
   Clock,
   ArrowDownRight,
-  Loader2
+  Loader2,
+  Calendar as CalendarIcon,
+  Filter
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { 
-  BarChart, 
-  Bar, 
+  AreaChart, 
+  Area, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area 
+  ResponsiveContainer 
 } from 'recharts';
-import { format, subDays, startOfDay, endOfDay } from "date-fns";
+import { 
+  format, 
+  subDays, 
+  startOfDay, 
+  endOfDay, 
+  startOfWeek, 
+  startOfMonth, 
+  startOfYear,
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  isSameDay,
+  isSameMonth,
+  subMonths
+} from "date-fns";
 import { vi } from "date-fns/locale";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+
+type TimeRange = 'today' | 'week' | 'month' | 'year' | 'custom';
 
 export default function DashboardOverview() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState<TimeRange>('week');
+  const [customDates, setCustomDates] = useState({ start: "", end: "" });
+  
   const [stats, setStats] = useState({
     totalOrders: 0,
     totalRevenue: 0,
@@ -35,63 +64,87 @@ export default function DashboardOverview() {
   });
   const [chartData, setChartData] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [timeRange, customDates]);
 
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch overall stats
-      const { data: orders } = await supabase.from('orders').select('total_amount, created_at');
-      const totalRev = orders?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
+      // 1. Xác định khoảng thời gian
+      let startDate: Date;
+      let endDate = endOfDay(new Date());
+
+      switch (timeRange) {
+        case 'today': startDate = startOfDay(new Date()); break;
+        case 'week': startDate = startOfWeek(new Date(), { weekStartsOn: 1 }); break;
+        case 'month': startDate = startOfMonth(new Date()); break;
+        case 'year': startDate = startOfYear(new Date()); break;
+        case 'custom': 
+          startDate = customDates.start ? new Date(customDates.start) : subDays(new Date(), 30);
+          endDate = customDates.end ? endOfDay(new Date(customDates.end)) : endOfDay(new Date());
+          break;
+        default: startDate = subDays(new Date(), 7);
+      }
+
+      // 2. Lấy dữ liệu đơn hàng trong khoảng thời gian
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('total_amount, created_at')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString());
+
+      // 3. Lấy dữ liệu tổng quát (luôn lấy tổng kho và tổng user)
       const { count: prodCount } = await supabase.from('products').select('*', { count: 'exact', head: true });
       const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
 
-      // 2. Fetch recent orders
+      // 4. Lấy đơn hàng mới nhất (Top 5)
       const { data: recent } = await supabase
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(5);
 
+      const periodRevenue = orders?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
+
       setStats({
         totalOrders: orders?.length || 0,
-        totalRevenue: totalRev,
+        totalRevenue: periodRevenue,
         totalProducts: prodCount || 0,
         totalUsers: userCount || 0
       });
       setRecentOrders(recent || []);
 
-      // 3. Process Chart Data (Last 7 days)
-      const days = Array.from({ length: 7 }, (_, i) => {
-        const d = subDays(new Date(), 6 - i);
-        return {
-          date: d,
-          name: format(d, 'dd/MM', { locale: vi }),
-          fullDate: format(d, 'yyyy-MM-dd'),
-          revenue: 0,
-          orders: 0
-        };
-      });
+      // 5. Xử lý dữ liệu biểu đồ dựa trên TimeRange
+      let processedChartData: any[] = [];
 
-      if (orders) {
-        orders.forEach(order => {
-          const orderDate = format(new Date(order.created_at), 'yyyy-MM-dd');
-          const dayStat = days.find(d => d.fullDate === orderDate);
-          if (dayStat) {
-            dayStat.revenue += Number(order.total_amount);
-            dayStat.orders += 1;
-          }
+      if (timeRange === 'year') {
+        // Gom nhóm theo tháng
+        const months = eachMonthOfInterval({ start: startDate, end: endDate });
+        processedChartData = months.map(month => {
+          const monthOrders = orders?.filter(o => isSameMonth(new Date(o.created_at), month)) || [];
+          return {
+            name: format(month, 'MMM', { locale: vi }),
+            revenue: monthOrders.reduce((sum, o) => sum + Number(o.total_amount), 0)
+          };
+        });
+      } else {
+        // Gom nhóm theo ngày cho Today, Week, Month, Custom
+        const days = eachDayOfInterval({ start: startDate, end: endDate });
+        processedChartData = days.map(day => {
+          const dayOrders = orders?.filter(o => isSameDay(new Date(o.created_at), day)) || [];
+          return {
+            name: format(day, 'dd/MM', { locale: vi }),
+            revenue: dayOrders.reduce((sum, o) => sum + Number(o.total_amount), 0)
+          };
         });
       }
 
-      setChartData(days);
+      setChartData(processedChartData);
 
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
@@ -102,30 +155,52 @@ export default function DashboardOverview() {
   }
 
   const statCards = [
-    { title: "Doanh thu", value: formatPrice(stats.totalRevenue), icon: DollarSign, color: "bg-emerald-500", trend: "+12.5%", isPositive: true },
-    { title: "Đơn hàng", value: stats.totalOrders, icon: Package, color: "bg-blue-500", trend: "+5.2%", isPositive: true },
-    { title: "Sản phẩm", value: stats.totalProducts, icon: ShoppingBag, color: "bg-amber-500", trend: "Ổn định", isPositive: true },
-    { title: "Khách hàng", value: stats.totalUsers, icon: Users, color: "bg-purple-500", trend: "-2.1%", isPositive: false },
+    { title: "Doanh thu kỳ này", value: formatPrice(stats.totalRevenue), icon: DollarSign, color: "bg-emerald-500", trend: "+12%", isPositive: true },
+    { title: "Đơn hàng mới", value: stats.totalOrders, icon: Package, color: "bg-blue-500", trend: "+5%", isPositive: true },
+    { title: "Tổng sản phẩm", value: stats.totalProducts, icon: ShoppingBag, color: "bg-amber-500", trend: "Ổn định", isPositive: true },
+    { title: "Tổng khách hàng", value: stats.totalUsers, icon: Users, color: "bg-purple-500", trend: "+3%", isPositive: true },
   ];
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[80vh]">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Tổng Quan Kinh Doanh</h1>
-          <p className="text-muted-foreground text-sm">Chào mừng bạn trở lại, đây là những gì đang diễn ra với OHOUSE.</p>
+          <p className="text-muted-foreground text-sm">Theo dõi hiệu quả hoạt động của OHOUSE theo thời gian.</p>
         </div>
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground bg-white px-4 py-2 rounded-xl shadow-sm border">
-          <Clock className="w-4 h-4" />
-          Cập nhật: {new Date().toLocaleTimeString('vi-VN')}
+        <div className="flex flex-wrap items-center gap-3">
+          {timeRange === 'custom' && (
+            <div className="flex items-center gap-2 bg-white p-1 rounded-xl border shadow-sm">
+              <Input 
+                type="date" 
+                className="h-8 border-none text-[10px] w-32" 
+                value={customDates.start}
+                onChange={(e) => setCustomDates({...customDates, start: e.target.value})}
+              />
+              <span className="text-muted-foreground">-</span>
+              <Input 
+                type="date" 
+                className="h-8 border-none text-[10px] w-32" 
+                value={customDates.end}
+                onChange={(e) => setCustomDates({...customDates, end: e.target.value})}
+              />
+            </div>
+          )}
+          <Select value={timeRange} onValueChange={(val: TimeRange) => setTimeRange(val)}>
+            <SelectTrigger className="w-44 h-11 bg-white rounded-xl shadow-sm border-border font-bold text-xs uppercase tracking-widest">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4 text-primary" />
+                <SelectValue placeholder="Chọn khoảng thời gian" />
+              </div>
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="today">Hôm nay</SelectItem>
+              <SelectItem value="week">Tuần này</SelectItem>
+              <SelectItem value="month">Tháng này</SelectItem>
+              <SelectItem value="year">Năm nay</SelectItem>
+              <SelectItem value="custom">Tùy chỉnh...</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -155,43 +230,49 @@ export default function DashboardOverview() {
           <div className="flex items-center justify-between mb-8">
             <h2 className="font-bold text-lg flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary" />
-              Doanh thu 7 ngày qua
+              Biểu đồ doanh thu
             </h2>
-            <select className="text-xs font-bold uppercase tracking-widest bg-secondary/50 border-none rounded-lg px-3 py-2 outline-none">
-              <option>7 ngày qua</option>
-            </select>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-3 py-1 bg-secondary/50 rounded-full">
+              {timeRange === 'year' ? 'Thống kê theo tháng' : 'Thống kê theo ngày'}
+            </div>
           </div>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#888'}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#888'}} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                  formatter={(value: number) => [formatPrice(value), 'Doanh thu']}
-                />
-                <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="h-[350px] w-full">
+            {loading ? (
+              <div className="h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#888'}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#888'}} tickFormatter={(v) => v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                    formatter={(value: number) => [formatPrice(value), 'Doanh thu']}
+                  />
+                  <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-border flex flex-col">
           <h2 className="font-bold text-lg mb-6">Đơn hàng mới nhất</h2>
           <div className="flex-1 space-y-4">
-            {recentOrders.length === 0 ? (
+            {loading ? (
+               <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+            ) : recentOrders.length === 0 ? (
               <div className="h-full flex items-center justify-center text-muted-foreground italic text-sm">
                 Chưa có đơn hàng nào.
               </div>
             ) : recentOrders.map((order) => (
-              <div key={order.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/30 transition-colors border border-transparent hover:border-border">
+              <div key={order.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/30 transition-colors border border-transparent hover:border-border cursor-pointer" onClick={() => navigate('/admin/orders')}>
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                   <Package className="w-5 h-5" />
                 </div>
@@ -201,12 +282,15 @@ export default function DashboardOverview() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-primary">{formatPrice(order.total_amount)}</p>
-                  <p className="text-[10px] text-muted-foreground">{new Date(order.created_at).toLocaleDateString('vi-VN')}</p>
+                  <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), 'dd/MM')}</p>
                 </div>
               </div>
             ))}
           </div>
-          <button className="w-full mt-6 py-3 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary/5 rounded-xl transition-colors border border-dashed border-primary/20">
+          <button 
+            onClick={() => navigate('/admin/orders')}
+            className="w-full mt-6 py-3 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary hover:text-white rounded-xl transition-all border border-dashed border-primary/40 hover:border-solid shadow-sm"
+          >
             Xem tất cả đơn hàng
           </button>
         </div>
