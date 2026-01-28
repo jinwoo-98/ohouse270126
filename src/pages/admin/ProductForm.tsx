@@ -18,6 +18,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue,
+  SelectGroup,
+  SelectLabel
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export default function ProductForm() {
@@ -27,6 +36,7 @@ export default function ProductForm() {
   
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEdit);
+  const [categories, setCategories] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -48,8 +58,17 @@ export default function ProductForm() {
   });
 
   useEffect(() => {
+    fetchCategories();
     if (isEdit) fetchProduct();
   }, [id]);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('categories')
+      .select('id, name, slug, parent_id')
+      .order('display_order', { ascending: true });
+    setCategories(data || []);
+  };
 
   const fetchProduct = async () => {
     try {
@@ -94,6 +113,10 @@ export default function ProductForm() {
       toast.error("Vui lòng tải lên ảnh đại diện sản phẩm");
       return;
     }
+    if (!formData.category_id) {
+      toast.error("Vui lòng chọn danh mục sản phẩm");
+      return;
+    }
 
     setLoading(true);
     const slug = formData.slug || formData.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
@@ -135,6 +158,9 @@ export default function ProductForm() {
       setLoading(false);
     }
   };
+
+  // Tổ chức danh mục theo cấp cha-con để hiển thị đẹp hơn
+  const parentCategories = categories.filter(c => !c.parent_id);
 
   if (fetching) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
@@ -208,8 +234,32 @@ export default function ProductForm() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Danh mục (Slug)</Label>
-              <Input value={formData.category_id} onChange={(e) => setFormData({...formData, category_id: e.target.value})} placeholder="sofa, ban-an..." className="h-12" />
+              <Label>Danh mục sản phẩm *</Label>
+              <Select 
+                value={formData.category_id} 
+                onValueChange={(val) => setFormData({...formData, category_id: val})}
+              >
+                <SelectTrigger className="h-12 rounded-xl">
+                  <SelectValue placeholder="Chọn một danh mục" />
+                </SelectTrigger>
+                <SelectContent className="max-h-80 rounded-xl">
+                  {parentCategories.map(parent => (
+                    <SelectGroup key={parent.id}>
+                      <SelectLabel className="font-bold text-primary">{parent.name}</SelectLabel>
+                      <SelectItem value={parent.slug}>-- {parent.name} (Tất cả)</SelectItem>
+                      {categories.filter(c => c.parent_id === parent.id).map(child => (
+                        <SelectItem key={child.id} value={child.slug}>
+                          &nbsp;&nbsp;&nbsp;{child.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                  {/* Trường hợp các danh mục đặc biệt không thuộc cha nào */}
+                  {categories.filter(c => !c.parent_id && !categories.some(child => child.parent_id === c.id)).map(cat => (
+                    <SelectItem key={cat.id} value={cat.slug}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
