@@ -7,7 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
 import ScrollToTop from "./components/ScrollToTop";
-import { BackToTop } from "./components/layout/BackToTop";
+import { FloatingActions } from "./components/layout/FloatingActions";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
@@ -105,7 +105,7 @@ const App = () => (
                 <Route path="/faq" element={<SupportPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-              <BackToTop />
+              <FloatingActions />
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>
