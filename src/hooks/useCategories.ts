@@ -9,7 +9,7 @@ export function useCategories() {
         .from('categories')
         .select('*')
         .eq('is_visible', true)
-        .order('display_order', { ascending: true });
+        .order('name', { ascending: true }); // Sắp xếp tự động theo tên thay vì số thứ tự
 
       if (error) throw error;
 
