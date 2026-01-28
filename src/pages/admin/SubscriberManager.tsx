@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Trash2, Loader2, Copy, Mail, Calendar, UserCheck, BellRing, User } from "lucide-react";
+import { Search, Trash2, Loader2, Copy, Mail, Calendar, UserCheck, BellRing, User, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
