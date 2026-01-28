@@ -26,7 +26,8 @@ export default function CategoryForm() {
     parent_id: "none",
     is_visible: true,
     is_highlight: false,
-    menu_location: "main"
+    menu_location: "main",
+    display_order: "1000"
   });
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export default function CategoryForm() {
       .from('categories')
       .select('id, name')
       .is('parent_id', null)
-      .order('name', { ascending: true });
+      .order('display_order', { ascending: true });
     setParents(data || []);
   };
 
@@ -52,7 +53,8 @@ export default function CategoryForm() {
         parent_id: data.parent_id || "none",
         is_visible: data.is_visible,
         is_highlight: data.is_highlight,
-        menu_location: data.menu_location || "main"
+        menu_location: data.menu_location || "main",
+        display_order: data.display_order?.toString() || "1000"
       });
     }
   };
@@ -61,7 +63,6 @@ export default function CategoryForm() {
     e.preventDefault();
     setLoading(true);
     
-    // Auto-generate slug if empty
     const slug = formData.slug || formData.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
     
     const payload = {
@@ -71,8 +72,7 @@ export default function CategoryForm() {
       is_visible: formData.is_visible,
       is_highlight: formData.is_highlight,
       menu_location: formData.menu_location,
-      // Default to 1000 or ignore if not using order field
-      display_order: 1000 
+      display_order: parseInt(formData.display_order) || 1000
     };
 
     try {
@@ -104,48 +104,34 @@ export default function CategoryForm() {
       </div>
 
       <form onSubmit={handleSave} className="bg-white p-8 rounded-3xl border shadow-sm space-y-8">
-        <div className="space-y-4">
-          <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex gap-4">
-            <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong>Vị trí hiển thị:</strong> Chọn "Hàng 4" cho các danh mục sản phẩm chính (Sofa, Giường...) và "Hàng 3" cho các menu dịch vụ (Showroom, Dự án...).
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Vị trí menu trên Header</Label>
-            <Select value={formData.menu_location} onValueChange={val => setFormData({...formData, menu_location: val})}>
-              <SelectTrigger className="h-12 rounded-xl">
-                <SelectValue placeholder="Chọn vị trí" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                <SelectItem value="main">Hàng 4 (Menu Sản Phẩm)</SelectItem>
-                <SelectItem value="secondary">Hàng 3 (Menu Dịch Vụ & Hỗ Trợ)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-2">
+          <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Vị trí menu trên Header</Label>
+          <Select value={formData.menu_location} onValueChange={val => setFormData({...formData, menu_location: val})}>
+            <SelectTrigger className="h-12 rounded-xl">
+              <SelectValue placeholder="Chọn vị trí" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="main">Hàng 4 (Menu Sản Phẩm)</SelectItem>
+              <SelectItem value="secondary">Hàng 3 (Menu Dịch Vụ & Hỗ Trợ)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid gap-6">
           <div className="space-y-2">
             <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tên danh mục / Menu</Label>
-            <Input 
-              value={formData.name} 
-              onChange={e => setFormData({...formData, name: e.target.value})} 
-              placeholder="Ví dụ: Sofa Phòng Khách" 
-              required 
-              className="h-12 rounded-xl"
-            />
+            <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Ví dụ: Sofa Phòng Khách" required className="h-12 rounded-xl" />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Đường dẫn (Slug)</Label>
-            <Input 
-              value={formData.slug} 
-              onChange={e => setFormData({...formData, slug: e.target.value})} 
-              placeholder="sofa-phong-khach" 
-              className="h-12 rounded-xl font-mono text-xs" 
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Đường dẫn (Slug)</Label>
+              <Input value={formData.slug} onChange={e => setFormData({...formData, slug: e.target.value})} placeholder="sofa-phong-khach" className="h-12 rounded-xl font-mono text-xs" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Thứ tự hiển thị</Label>
+              <Input type="number" value={formData.display_order} onChange={e => setFormData({...formData, display_order: e.target.value})} className="h-12 rounded-xl" />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -161,7 +147,6 @@ export default function CategoryForm() {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-[9px] text-muted-foreground italic">Nếu chọn danh mục cha, mục này sẽ xuất hiện trong dropdown của mục đó.</p>
           </div>
         </div>
 
