@@ -3,7 +3,8 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2 } from "lucide-react";
+import { Loader2, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AuthDialogProps {
   isOpen: boolean;
@@ -21,10 +22,13 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
     );
   }
 
+  // Lấy origin hiện tại để redirect chính xác (ví dụ: localhost:8080 hoặc domain của bạn)
+  const redirectUrl = window.location.origin;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] p-6 md:p-8 z-[110]">
-        <DialogHeader className="text-center">
+      <DialogContent className="sm:max-w-[425px] p-6 md:p-8 z-[110] overflow-y-auto max-h-[90vh]">
+        <DialogHeader className="text-center mb-4">
           <DialogTitle className="text-2xl font-bold">Chào Mừng Đến OHOUSE</DialogTitle>
           <p className="text-muted-foreground text-sm">
             Đăng nhập để trải nghiệm mua sắm tốt hơn
@@ -40,25 +44,17 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                 colors: {
                   brand: 'hsl(var(--primary))',
                   brandAccent: 'hsl(var(--primary-foreground))',
-                  defaultButtonBackground: 'hsl(var(--secondary))',
-                  defaultButtonBackgroundHover: 'hsl(var(--secondary-foreground))',
-                  defaultButtonBorder: 'hsl(var(--border))',
-                  inputBackground: 'hsl(var(--background))',
-                  inputBorder: 'hsl(var(--border))',
-                  inputBorderHover: 'hsl(var(--primary))',
-                  inputBorderFocus: 'hsl(var(--primary))',
-                  inputText: 'hsl(var(--foreground))',
                 },
                 radii: {
-                  borderRadiusButton: '0.5rem',
-                  inputBorderRadius: '0.5rem',
+                  borderRadiusButton: '0.75rem',
+                  inputBorderRadius: '0.75rem',
                 },
               },
             },
           }}
-          // QUAN TRỌNG: redirectTo giúp Supabase biết quay lại đâu sau khi đăng nhập Google/FB thành công
-          redirectTo={window.location.origin}
           providers={['google', 'facebook']}
+          redirectTo={redirectUrl}
+          onlyThirdPartyProviders={false}
           view="sign_in"
           localization={{
             variables: {
@@ -67,26 +63,27 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                 password_label: 'Mật khẩu',
                 button_label: 'Đăng Nhập',
                 social_provider_text: 'Tiếp tục với {{provider}}',
-                link_text: 'Đã có tài khoản? Đăng nhập',
-                forgotten_password: 'Quên mật khẩu?',
-              },
-              sign_up: {
-                email_label: 'Email',
-                password_label: 'Mật khẩu',
-                button_label: 'Đăng Ký Ngay',
-                social_provider_text: 'Tiếp tục với {{provider}}',
-                link_text: 'Chưa có tài khoản? Đăng ký',
-              },
-              forgotten_password: {
-                link_text: 'Quên mật khẩu?',
-                button_label: 'Gửi hướng dẫn khôi phục',
-                email_label: 'Email',
-                loading_button_label: 'Đang gửi...',
-                confirmation_text: 'Vui lòng kiểm tra email để khôi phục mật khẩu.',
               },
             },
           }}
         />
+
+        <div className="mt-6 pt-4 border-t">
+          <Alert className="bg-primary/5 border-primary/20">
+            <Info className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-[10px] text-muted-foreground leading-relaxed">
+              <strong>Lưu ý:</strong> Để Google/Facebook hoạt động, bạn cần cấu hình Client ID trong 
+              <a 
+                href="https://supabase.com/dashboard/project/kyfzqgyazmjtnxjdvetr/auth/providers" 
+                target="_blank" 
+                rel="noreferrer"
+                className="text-primary underline ml-1"
+              >
+                Supabase Dashboard
+              </a>.
+            </AlertDescription>
+          </Alert>
+        </div>
       </DialogContent>
     </Dialog>
   );
