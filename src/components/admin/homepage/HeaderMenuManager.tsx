@@ -181,7 +181,7 @@ export function HeaderMenuManager() {
                       />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-5">
                       <div className="space-y-2">
                         <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
                           <LinkIcon className="w-3 h-3 text-primary" /> Liên kết (Link)
@@ -193,15 +193,16 @@ export function HeaderMenuManager() {
                           className="h-11 text-xs rounded-xl"
                         />
                       </div>
-                      <div className="space-y-2">
+                      
+                      <div className="space-y-2 pt-2 border-t border-dashed border-border/40">
                         <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                          <Clock className="w-3 h-3 text-destructive" /> Thời hạn (Hết hạn lúc)
+                          <Clock className="w-3 h-3 text-destructive" /> Thời gian tự động kết thúc (Hết hạn lúc)
                         </Label>
                         <Input 
                           type="datetime-local" 
                           value={msg.end_time} 
                           onChange={e => handleUpdateMessage(idx, 'end_time', e.target.value)}
-                          className="h-11 text-xs rounded-xl focus:ring-1"
+                          className="h-12 text-sm rounded-xl focus:ring-1 border-primary/20 bg-primary/5"
                         />
                       </div>
                     </div>

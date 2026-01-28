@@ -129,20 +129,25 @@ export function SectionConfigManager() {
                         <div className="p-2 bg-primary/20 rounded-lg text-primary"><Clock className="w-5 h-5" /></div>
                         <div>
                           <h3 className="font-bold text-sm uppercase tracking-widest">Cấu hình Đếm Ngược</h3>
-                          <p className="text-[10px] text-taupe font-medium">Thiết lập thời hạn kết thúc Flash Sale</p>
+                          <p className="text-[10px] text-taupe font-medium">Thời gian tự động ẩn Flash Sale</p>
                         </div>
                       </div>
                       
                       <div className="space-y-4">
-                        <div className="bg-white/5 p-5 rounded-2xl border border-white/10 space-y-4">
-                          <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary block">Hạn chót Flash Sale</Label>
+                        <div className="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-4">
+                          <Label className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary block">Hạn chót chương trình</Label>
                           <Input 
                             type="datetime-local" 
-                            className="h-12 bg-white/10 border-white/20 text-cream focus:border-primary rounded-xl"
+                            className="h-14 bg-white/10 border-white/30 text-cream focus:border-primary rounded-xl text-lg font-mono"
                             value={config.extra_data?.end_time ? new Date(config.extra_data.end_time).toISOString().slice(0, 16) : ""}
                             onChange={e => handleUpdateExtra(s.key, 'end_time', new Date(e.target.value).toISOString())} 
                           />
-                          <p className="text-[10px] italic text-taupe">Lưu ý: Bộ đếm ngược sẽ tự động xuất hiện ngoài trang chủ nếu thời gian còn hiệu lực.</p>
+                          <div className="flex items-start gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                             <AlertCircle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                             <p className="text-[10px] italic text-taupe leading-relaxed">
+                               Gợi ý: Thiết lập thời gian trong tương lai. Khi hết giờ, bộ đếm ngược trên trang chủ sẽ tự động dừng.
+                             </p>
+                          </div>
                         </div>
                       </div>
                     </div>
