@@ -1,24 +1,5 @@
 import { useState, useMemo } from "react";
-import categoryTvStand from "@/assets/category-tv-stand.jpg";
-import categorySofa from "@/assets/category-sofa.jpg";
-import categoryDiningTable from "@/assets/category-dining-table.jpg";
-import categoryCoffeeTable from "@/assets/category-coffee-table.jpg";
-import categoryDesk from "@/assets/category-desk.jpg";
-import categoryBed from "@/assets/category-bed.jpg";
-import categoryLighting from "@/assets/category-lighting.jpg";
-
-interface Product {
-  id: number;
-  name: string;
-  image: string;
-  price: number;
-  originalPrice?: number;
-  isNew?: boolean;
-  isSale?: boolean;
-  categorySlug: string;
-  material: string;
-  style: 'Luxury' | 'Minimalist' | 'Modern' | 'Classic';
-}
+import { ALL_PRODUCTS, Product } from "@/constants/products";
 
 interface Filters {
   priceRange: string[];
@@ -28,24 +9,6 @@ interface Filters {
   searchQuery?: string;
   saleOnly?: boolean;
 }
-
-const ALL_PRODUCTS: Product[] = [
-  { id: 1, name: "Kệ Tivi Gỗ Óc Chó Kết Hợp Đá", image: categoryTvStand, price: 25990000, originalPrice: 32990000, isNew: true, isSale: true, categorySlug: "ke-tivi", material: "Gỗ Óc Chó", style: 'Luxury' },
-  { id: 2, name: "Sofa Góc Chữ L Vải Nhung Ý", image: categorySofa, price: 45990000, categorySlug: "sofa", material: "Vải Nhung", style: 'Modern' },
-  { id: 3, name: "Bàn Ăn Mặt Đá Marble 6 Ghế", image: categoryDiningTable, price: 32990000, originalPrice: 38990000, isSale: true, categorySlug: "ban-an", material: "Đá Marble", style: 'Luxury' },
-  { id: 4, name: "Bàn Trà Tròn Mặt Kính Cường Lực", image: categoryCoffeeTable, price: 12990000, categorySlug: "ban-tra", material: "Kính Cường Lực", style: 'Minimalist' },
-  { id: 5, name: "Bàn Làm Việc Gỗ Sồi Tự Nhiên", image: categoryDesk, price: 18990000, isNew: true, categorySlug: "ban-lam-viec", material: "Gỗ Sồi", style: 'Modern' },
-  { id: 6, name: "Giường Ngủ Bọc Da Ý Cao Cấp", image: categoryBed, price: 38990000, originalPrice: 45990000, isSale: true, categorySlug: "giuong", material: "Da Thật", style: 'Luxury' },
-  { id: 7, name: "Đèn Chùm Pha Lê Phong Cách Châu Âu", image: categoryLighting, price: 15990000, categorySlug: "den-trang-tri", material: "Pha Lê", style: 'Luxury' },
-  { id: 8, name: "Sofa Đơn Bọc Da Thật", image: categorySofa, price: 19990000, isNew: true, categorySlug: "sofa", material: "Da Thật", style: 'Classic' },
-  { id: 9, name: "Kệ Tivi Treo Tường Hiện Đại", image: categoryTvStand, price: 14990000, categorySlug: "ke-tivi", material: "Gỗ Công Nghiệp", style: 'Minimalist' },
-  { id: 10, name: "Bàn Ăn Gỗ Óc Chó 8 Ghế", image: categoryDiningTable, price: 42990000, originalPrice: 52990000, isSale: true, categorySlug: "ban-an", material: "Gỗ Óc Chó", style: 'Luxury' },
-  { id: 11, name: "Bàn Trà Gỗ Tần Bì Bắc Âu", image: categoryCoffeeTable, price: 8990000, categorySlug: "ban-tra", material: "Gỗ Sồi", style: 'Minimalist' },
-  { id: 12, name: "Đèn Sàn Trang Trí Phòng Khách", image: categoryLighting, price: 6990000, isNew: true, categorySlug: "den-trang-tri", material: "Kim Loại", style: 'Modern' },
-  { id: 13, name: "Ghế Thư Giãn Da Bò", image: categorySofa, price: 15000000, categorySlug: "sofa", material: "Da Thật", style: 'Modern' },
-  { id: 14, name: "Tủ Quần Áo Gỗ Sồi", image: categoryBed, price: 22000000, categorySlug: "phong-ngu", material: "Gỗ Sồi", style: 'Modern' },
-  { id: 15, name: "Bàn Console Đá", image: categoryDesk, price: 55000000, categorySlug: "phong-khach", material: "Đá Marble", style: 'Luxury' },
-];
 
 const categoryMap: Record<string, string[]> = {
   "phong-khach": ["ke-tivi", "sofa", "ban-tra", "den-trang-tri"],
