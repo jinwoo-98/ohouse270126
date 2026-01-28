@@ -26,41 +26,84 @@ export function AIContentAssistant({ onInsert, contextTitle, contentType }: AICo
       return;
     }
 
-    // Xóa kết quả cũ để hiển thị trạng thái loading
     setResult("");
     setIsGenerating(true);
     
-    // Giả lập logic AI trả về nội dung chất lượng cao theo phong cách OHOUSE
     setTimeout(() => {
       let mockResponse = "";
       const title = contextTitle || "Nội thất cao cấp";
+      const isLongRequest = prompt.toLowerCase().includes("dài") || prompt.toLowerCase().includes("chi tiết") || prompt.toLowerCase().includes("sâu");
+      
+      const extraPromptSection = prompt ? `<p className="bg-primary/5 p-3 rounded-lg border-l-4 border-primary"><strong>Lưu ý theo yêu cầu:</strong> Hệ thống đã tối ưu nội dung tập trung vào: <em>${prompt}</em></p>` : "";
 
       if (contentType === 'news') {
-        mockResponse = `<h2>${title}</h2>
-<p>Trong thế giới nội thất hiện đại, <strong>${title}</strong> đang trở thành xu hướng dẫn đầu, mang lại không gian sống đẳng cấp và tinh tế cho mọi gia đình. Tại OHOUSE, chúng tôi tin rằng mỗi chi tiết nhỏ đều góp phần tạo nên một kiệt tác nghệ thuật trong ngôi nhà của bạn.</p>
-<h3>1. Sự tinh tế trong thiết kế</h3>
-<p>Thiết kế mang phong cách này chú trọng vào sự tối giản nhưng không kém phần sang trọng. Các vật liệu cao cấp như gỗ óc chó, đá tự nhiên và da thật được kết hợp hài hòa, tạo nên cảm giác ấm cúng và quyền quý.</p>
-<h3>2. Công năng vượt trội</h3>
-<p>Không chỉ dừng lại ở vẻ đẹp bên ngoài, công năng sử dụng cũng được tối ưu hóa. Từng món đồ nội thất đều được nghiên cứu kỹ lưỡng về nhân trắc học, đảm bảo sự thoải mái tuyệt đối cho người sử dụng.</p>
-<p>Hãy cùng OHOUSE khám phá thêm nhiều ý tưởng sáng tạo cho không gian sống của bạn trong các bài viết tiếp theo.</p>`;
+        mockResponse = `
+${extraPromptSection}
+<h2>${title}: Xu Hướng Kiến Trúc Đẳng Cấp Năm 2024</h2>
+<p>Trong kỷ nguyên mới của ngành thiết kế nội thất, <strong>${title}</strong> không chỉ đơn thuần là việc sắp xếp đồ đạc mà còn là nghệ thuật thể hiện phong cách sống của gia chủ. Tại OHOUSE, chúng tôi luôn đi tiên phong trong việc cập nhật những tinh hoa thiết kế từ Châu Âu để áp dụng vào không gian sống Việt.</p>
+
+<h3>1. Tầm quan trọng của sự hài hòa trong không gian</h3>
+<p>Một không gian sống lý tưởng cần đạt được sự cân bằng giữa công năng và thẩm mỹ. Việc ứng dụng ${title} giúp tối ưu hóa diện tích sử dụng, đồng thời tạo ra những điểm nhấn thị giác ấn tượng. Chúng tôi chú trọng vào việc sử dụng ánh sáng tự nhiên và các gam màu trung tính để tạo cảm giác thư giãn tuyệt đối.</p>
+
+<h3>2. Lựa chọn vật liệu cao cấp - Chìa khóa của sự sang trọng</h3>
+<p>Để hiện thực hóa ý tưởng về ${title}, việc lựa chọn vật liệu đóng vai trò quyết định. OHOUSE ưu tiên các loại gỗ tự nhiên như Gỗ Óc Chó Bắc Mỹ, Gỗ Sồi Nga kết hợp cùng đá Sintered Stone và da bò thật nhập khẩu từ Ý. Sự kết hợp giữa vân gỗ ấm áp và bề mặt đá lạnh tạo nên một bản giao hưởng vật liệu đầy tinh tế.</p>
+
+${isLongRequest ? `
+<h3>3. Công nghệ thông minh và sự bền vững</h3>
+<p>Không dừng lại ở vẻ bề ngoài, nội dung chi tiết về ${title} còn bao gồm cả tính bền vững. Các sản phẩm của chúng tôi sử dụng sơn Inchem 7 lớp chống trầy xước, đảm bảo độ bền màu lên đến hàng chục năm. Ngoài ra, việc tích hợp các phụ kiện thông minh từ Blum, Hafele giúp trải nghiệm sử dụng trở nên mượt mà và đẳng cấp hơn bao giờ hết.</p>
+
+<h3>4. Tầm nhìn và sứ mệnh kiến tạo</h3>
+<p>Chúng tôi hiểu rằng mỗi ngôi nhà là một câu chuyện riêng. Vì vậy, trong từng bài viết và dự án về ${title}, đội ngũ kiến trúc sư luôn dành thời gian nghiên cứu kỹ lưỡng thói quen sinh hoạt của gia chủ để đưa ra những giải pháp tối ưu nhất, mang đậm dấu ấn cá nhân.</p>
+` : ""}
+
+<p>Kết luận, việc đầu tư vào <strong>${title}</strong> chính là đầu tư vào chất lượng cuộc sống lâu dài. Hãy để OHOUSE đồng hành cùng bạn trên hành trình xây dựng tổ ấm trong mơ.</p>`;
       } else if (contentType === 'project') {
-        mockResponse = `<h3>Tổng quan dự án: ${title}</h3>
-<p>Dự án <strong>${title}</strong> là một trong những công trình tiêu biểu mà đội ngũ kiến trúc sư OHOUSE tâm huyết thực hiện. Với mục tiêu kiến tạo một không gian sống "Đẳng cấp - Riêng tư - Sang trọng", chúng tôi đã sử dụng những giải pháp thiết kế thông minh nhất.</p>
-<ul>
-  <li><strong>Phong cách:</strong> Modern Luxury kết hợp Classic.</li>
-  <li><strong>Vật liệu chủ đạo:</strong> Gỗ óc chó Bắc Mỹ, Inox mạ PVD và Đá Marble Ý.</li>
-  <li><strong>Điểm nhấn:</strong> Hệ thống ánh sáng thông minh giúp tôn vinh các đường nét kiến trúc vào ban đêm.</li>
-</ul>
-<p>Mỗi căn phòng trong dự án đều được cá nhân hóa theo phong cách sống của gia chủ, tạo nên một bản sắc riêng không thể trộn lẫn.</p>`;
+        mockResponse = `
+${extraPromptSection}
+<h1>Dự Án Tiêu Biểu: ${title}</h1>
+<p>Dự án <strong>${title}</strong> là một minh chứng điển hình cho triết lý thiết kế "Sang trọng từ sự tối giản" mà OHOUSE đang theo đuổi. Công trình được hoàn thiện sau 6 tháng tư vấn, thiết kế và thi công tỉ mỉ đến từng chi tiết nhỏ nhất.</p>
+
+<div className="grid md:grid-cols-2 gap-4 my-6">
+  <div className="p-4 bg-secondary/50 rounded-xl"><strong>Phong cách:</strong> Modern Luxury & Neoclassic</div>
+  <div className="p-4 bg-secondary/50 rounded-xl"><strong>Diện tích:</strong> Phân khúc cao cấp</div>
+</div>
+
+<h3>Ý tưởng thiết kế chủ đạo</h3>
+<p>Gia chủ mong muốn một không gian mở, kết nối các thành viên trong gia đình nhưng vẫn đảm bảo sự riêng tư cần thiết. Với dự án ${title}, chúng tôi đã sử dụng giải pháp thông tầng và vách kính lớn để tận dụng tối đa ánh sáng tự nhiên. Mọi góc nhìn trong căn nhà đều được tính toán để trở thành một "khung tranh" sống động.</p>
+
+<h3>Chi tiết các không gian chức năng</h3>
+<p><strong>Phòng khách:</strong> Tâm điểm là bộ sofa da bò Ý màu nâu hạt dẻ phối cùng bàn trà mặt đá Marble trắng Volakas. Hệ tủ tivi được thiết kế kịch trần bằng gỗ óc chó tạo vẻ uy nghi và sang trọng.</p>
+<p><strong>Phòng ăn:</strong> Sử dụng bộ bàn ăn 8 ghế phong cách hoàng gia, kết hợp đèn chùm pha lê cao cấp tạo không gian ấm cúng cho những bữa tiệc gia đình.</p>
+
+${isLongRequest ? `
+<h3>Giải pháp kỹ thuật và vật liệu đặc biệt</h3>
+<p>Trong quá trình thi công ${title}, chúng tôi đã áp dụng công nghệ xử lý gỗ tiên tiến để đảm bảo không bị cong vênh dưới thời tiết khắc nghiệt. Toàn bộ hệ thống điện thông minh (Smart Home) được tích hợp ngầm, giúp gia chủ điều khiển toàn bộ thiết bị chỉ qua một chạm trên smartphone.</p>
+<p>Sự hài lòng của khách hàng sau khi nhận bàn giao dự án ${title} chính là động lực lớn nhất để đội ngũ OHOUSE tiếp tục sáng tạo và cống hiến.</p>
+` : ""}
+`;
       } else {
-        mockResponse = `<h2>${title}</h2>
-<p>Chào mừng quý khách đến với trang thông tin của OHOUSE. Nội dung dưới đây trình bày chi tiết về <strong>${title}</strong> nhằm giúp khách hàng có cái nhìn rõ nét và tin tưởng nhất khi sử dụng dịch vụ của chúng tôi.</p>
-<p>Chúng tôi cam kết minh bạch, tận tâm và chuyên nghiệp trong mọi quy trình làm việc. Nếu có bất kỳ thắc mắc nào, quý khách vui lòng liên hệ hotline 1900 888 999 để được hỗ trợ trực tiếp.</p>`;
+        mockResponse = `
+${extraPromptSection}
+<h2>Thông Tin Chi Tiết Về ${title}</h2>
+<p>Chào mừng quý khách đến với chuyên mục hỗ trợ của OHOUSE. Dưới đây là các thông tin chi tiết và chính thức về <strong>${title}</strong>. Chúng tôi hy vọng những nội dung này sẽ giúp quý khách hiểu rõ hơn về quy trình làm việc cũng như các cam kết chất lượng của chúng tôi.</p>
+
+<h3>1. Quy trình thực hiện chuyên nghiệp</h3>
+<p>Đối với mọi nội dung liên quan đến ${title}, chúng tôi áp dụng quy trình kiểm soát chặt chẽ gồm 5 bước: Tiếp nhận yêu cầu - Khảo sát thực tế - Lên phương án 3D - Phê duyệt vật liệu - Thi công và bàn giao. Mỗi bước đều có biên bản nghiệm thu rõ ràng để đảm bảo quyền lợi khách hàng.</p>
+
+<h3>2. Cam kết từ OHOUSE</h3>
+<p>Chúng tôi tự hào mang đến dịch vụ ${title} với sự tận tâm cao nhất. Đội ngũ nhân sự được đào tạo bài bản, có kiến thức sâu rộng về phong thủy và kiến trúc hiện đại sẽ trực tiếp tư vấn cho quý khách.</p>
+
+${isLongRequest ? `
+<h3>3. Các lưu ý quan trọng khi tham khảo ${title}</h3>
+<p>Quý khách nên lưu ý rằng các thông tin về ${title} có thể thay đổi tùy theo điều kiện thực tế của từng công trình và yêu cầu cụ thể của chủ đầu tư. Để có được báo giá và phương án chính xác nhất, chúng tôi khuyến khích quý khách đặt lịch hẹn tư vấn trực tiếp tại Showroom hoặc yêu cầu kiến trúc sư khảo sát tận nơi.</p>
+<p>Mọi thắc mắc bổ sung về ${title}, quý khách vui lòng liên hệ bộ phận CSKH qua hotline 1900 888 999 để được phản hồi trong vòng 2 giờ làm việc.</p>
+` : ""}
+`;
       }
 
       setResult(mockResponse);
       setIsGenerating(false);
-      toast.success("AI đã soạn thảo xong nội dung!");
+      toast.success("AI đã soạn thảo xong nội dung dài!");
     }, 2000);
   };
 
@@ -103,7 +146,7 @@ export function AIContentAssistant({ onInsert, contextTitle, contentType }: AICo
           <div className="space-y-2">
             <Label className="text-xs font-bold uppercase text-muted-foreground">Yêu cầu bổ sung (Tùy chọn)</Label>
             <Textarea 
-              placeholder="Ví dụ: Viết theo phong cách tối giản, tập trung vào chất liệu gỗ sồi..." 
+              placeholder="Gợi ý: 'viết thật dài và chi tiết', 'phân tích sâu về gỗ óc chó', 'viết phong cách tối giản'..." 
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               className="rounded-xl border-border/60 focus:border-primary min-h-[80px]"
@@ -114,8 +157,8 @@ export function AIContentAssistant({ onInsert, contextTitle, contentType }: AICo
             <div className="py-12 flex flex-col items-center justify-center gap-4 bg-secondary/20 rounded-2xl border border-dashed border-primary/20">
               <Loader2 className="w-10 h-10 animate-spin text-primary" />
               <div className="text-center">
-                <p className="text-sm font-bold text-charcoal uppercase tracking-widest">AI đang soạn thảo...</p>
-                <p className="text-[10px] text-muted-foreground mt-1 italic">Vui lòng đợi trong giây lát</p>
+                <p className="text-sm font-bold text-charcoal uppercase tracking-widest">AI đang phân tích và soạn thảo nội dung dài...</p>
+                <p className="text-[10px] text-muted-foreground mt-1 italic">Nội dung đang được tối ưu hóa theo yêu cầu của bạn</p>
               </div>
             </div>
           ) : result ? (
