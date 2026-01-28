@@ -7,7 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { 
   Loader2, Package, Calendar, ChevronRight, MapPin, 
   Plus, Trash2, ChevronDown, ChevronUp, Ticket, 
-  Clock, Heart, ShoppingBag, X
+  Clock, Heart, ShoppingBag, X, Settings
 } from "lucide-react";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { ProfileForm } from "@/components/profile/ProfileForm";
