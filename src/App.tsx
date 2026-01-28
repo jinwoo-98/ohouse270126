@@ -51,6 +51,8 @@ import NewsManager from "./pages/admin/NewsManager";
 import NewsForm from "./pages/admin/NewsForm";
 import ProjectManager from "./pages/admin/ProjectManager";
 import ProjectForm from "./pages/admin/ProjectForm";
+import ReviewManager from "./pages/admin/ReviewManager";
+import SubscriberManager from "./pages/admin/SubscriberManager";
 
 const queryClient = new QueryClient();
 
@@ -131,6 +133,10 @@ const App = () => (
                   <Route index element={<DashboardOverview />} />
                   <Route path="orders" element={<OrderManager />} />
                   <Route path="products" element={<ProductManager />} />
+                  <Route path="products/new" element={<ProductForm />} />
+                  <Route path="products/edit/:id" element={<ProductForm />} />
+                  <Route path="reviews" element={<ReviewManager />} />
+                  <Route path="subscribers" element={<SubscriberManager />} />
                   <Route path="projects" element={<ProjectManager />} />
                   <Route path="projects/new" element={<ProjectForm />} />
                   <Route path="projects/edit/:id" element={<ProjectForm />} />
@@ -144,8 +150,6 @@ const App = () => (
                   <Route path="news/edit/:id" element={<NewsForm />} />
                   <Route path="theme" element={<ThemeSettings />} />
                   <Route path="settings" element={<GeneralSettings />} />
-                  <Route path="products/new" element={<ProductForm />} />
-                  <Route path="products/edit/:id" element={<ProductForm />} />
                 </Route>
               </Routes>
               <FloatingActions />

@@ -16,7 +16,9 @@ import {
   Lock,
   Files,
   Newspaper,
-  Briefcase
+  Briefcase,
+  Star,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,11 +31,13 @@ const menuItems = [
   { title: "Tổng quan", icon: LayoutDashboard, href: "/admin" },
   { title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
   { title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
+  { title: "Đánh giá", icon: Star, href: "/admin/reviews" },
   { title: "Quản lý trang", icon: Files, href: "/admin/pages" },
   { title: "Tin tức", icon: Newspaper, href: "/admin/news" },
   { title: "Dự án", icon: Briefcase, href: "/admin/projects" },
   { title: "Yêu cầu thiết kế", icon: LayoutGrid, href: "/admin/design-requests" },
   { title: "Tin nhắn", icon: MessageSquareText, href: "/admin/messages" },
+  { title: "Người đăng ký", icon: Users, href: "/admin/subscribers" },
   { title: "Giao diện", icon: Palette, href: "/admin/theme" },
   { title: "Cấu hình", icon: Settings, href: "/admin/settings" },
 ];
