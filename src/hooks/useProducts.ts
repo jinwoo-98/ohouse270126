@@ -26,6 +26,7 @@ interface Filters {
   styles: string[];
   sortBy: 'newest' | 'price-asc' | 'price-desc' | 'popular';
   searchQuery?: string;
+  saleOnly?: boolean;
 }
 
 const ALL_PRODUCTS: Product[] = [
@@ -67,6 +68,7 @@ export function useProducts(slug: string, initialSearch?: string) {
     styles: [],
     sortBy: 'newest',
     searchQuery: initialSearch || '',
+    saleOnly: false,
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -93,6 +95,10 @@ export function useProducts(slug: string, initialSearch?: string) {
         p.name.toLowerCase().includes(query) || 
         p.material.toLowerCase().includes(query)
       );
+    }
+
+    if (filters.saleOnly) {
+      result = result.filter(p => p.isSale);
     }
 
     if (filters.priceRange.length > 0) {
@@ -152,6 +158,7 @@ export function useProducts(slug: string, initialSearch?: string) {
       styles: [],
       sortBy: 'newest',
       searchQuery: '',
+      saleOnly: false,
     });
   };
 

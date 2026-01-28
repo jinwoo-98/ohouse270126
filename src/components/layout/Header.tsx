@@ -16,7 +16,7 @@ export function Header() {
   const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-card shadow-sm">
+    <header className="relative z-50 bg-card shadow-sm">
       <HeaderTopBanner />
 
       <div className="bg-card">
