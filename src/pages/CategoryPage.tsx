@@ -95,12 +95,14 @@ export default function CategoryPage() {
           </div>
         </div>
 
+        {/* Sticky Filter Bar */}
         <div className={cn(
           "z-40 transition-all duration-300 border-y border-border/40 bg-background/95 backdrop-blur-md",
           isScrolled ? "fixed top-0 left-0 right-0 shadow-subtle py-2" : "relative py-3 mb-8"
         )}>
           <div className="container-luxury flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
+              {/* Filter Button */}
               <button 
                 onClick={() => setIsSidebarVisible(!isSidebarVisible)}
                 className="hidden lg:flex items-center gap-3 px-5 py-2 border border-charcoal/20 hover:bg-secondary transition-all text-xs font-bold uppercase tracking-widest"
@@ -117,10 +119,9 @@ export default function CategoryPage() {
               >
                 Bộ lọc <SlidersHorizontal className="w-4 h-4" />
               </Button>
-            </div>
 
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-3">
+              {/* Sale Toggle - Moved to Left */}
+              <div className="flex items-center gap-3 ml-2">
                 <Switch 
                   checked={filters.saleOnly} 
                   onCheckedChange={(val) => updateFilters({ saleOnly: val })}
@@ -128,7 +129,9 @@ export default function CategoryPage() {
                 />
                 <span className="text-xs font-bold uppercase tracking-widest text-charcoal">Sale</span>
               </div>
+            </div>
 
+            <div className="flex items-center gap-8">
               <div className="hidden md:block">
                 <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
                   <SelectTrigger className="w-48 border-none bg-transparent hover:text-primary focus:ring-0 text-xs font-bold uppercase tracking-widest h-auto p-0 shadow-none">
@@ -146,16 +149,16 @@ export default function CategoryPage() {
         </div>
 
         <div className="container-luxury">
-          <div className="flex flex-col lg:flex-row gap-12">
+          <div className="flex flex-col lg:flex-row gap-12 items-start">
             <AnimatePresence mode="wait">
               {isSidebarVisible && (
                 <motion.aside 
                   initial={{ opacity: 0, x: -20, width: 0 }}
                   animate={{ opacity: 1, x: 0, width: 280 }}
                   exit={{ opacity: 0, x: -20, width: 0 }}
-                  className="hidden lg:block shrink-0 overflow-hidden"
+                  className="hidden lg:block shrink-0 overflow-visible sticky top-24"
                 >
-                  <div className="w-[280px] space-y-10">
+                  <div className="w-[280px] space-y-10 max-h-[calc(100vh-120px)] overflow-y-auto no-scrollbar pb-10">
                     <SubcategoryList currentSlug={categorySlug} />
                     
                     <div className="space-y-10 pt-4">
@@ -204,7 +207,7 @@ export default function CategoryPage() {
               )}
             </AnimatePresence>
 
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className={cn(
                 "grid grid-cols-2 gap-4 md:gap-8 lg:gap-10",
                 isSidebarVisible ? "xl:grid-cols-3" : "xl:grid-cols-4"
