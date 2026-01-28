@@ -71,7 +71,10 @@ export default function CategoryManager() {
   };
 
   const renderTable = (location: string) => {
-    const filtered = categories.filter(c => c.menu_location === location && !c.parent_id);
+    // Chỉ lọc danh mục CHA theo vị trí
+    const parents = categories.filter(c => c.menu_location === location && !c.parent_id);
+    
+    // Hàm lấy danh mục con (không quan tâm location của con, chỉ cần khớp parent_id)
     const getChildren = (parentId: string) => categories.filter(c => c.parent_id === parentId);
 
     return (
@@ -90,9 +93,9 @@ export default function CategoryManager() {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
-              ) : filtered.length === 0 ? (
+              ) : parents.length === 0 ? (
                 <tr><td colSpan={5} className="p-12 text-center text-muted-foreground">Chưa có dữ liệu ở vị trí này.</td></tr>
-              ) : filtered.map((parent) => (
+              ) : parents.map((parent) => (
                 <CategoryRow 
                   key={parent.id} 
                   category={parent} 
@@ -197,7 +200,7 @@ function CategoryRow({ category, children, onToggle, onDelete }: any) {
           <td className="px-6 py-3 text-center">
             <button 
               onClick={() => onToggle(child.id, child.is_visible)}
-              className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border \${child.is_visible ? 'text-emerald-600 border-emerald-200 bg-emerald-50' : 'text-muted-foreground border-border bg-secondary'}`}
+              className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border ${child.is_visible ? 'text-emerald-600 border-emerald-200 bg-emerald-50' : 'text-muted-foreground border-border bg-secondary'}`}
             >
               {child.is_visible ? "Hiển thị" : "Đang ẩn"}
             </button>

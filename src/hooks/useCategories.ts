@@ -13,23 +13,29 @@ export function useCategories() {
 
       if (error) throw error;
 
-      // 1. Lọc các liên kết cho Hàng 3 (secondary)
-      const secondaryItems = data
+      const categories = data || [];
+
+      // 1. Lọc các liên kết cho Hàng 3 (secondary) - Chỉ lấy cấp cao nhất
+      const secondaryItems = categories
         .filter(c => c.menu_location === 'secondary' && !c.parent_id)
         .map(c => ({
           name: c.name,
           href: c.slug.startsWith('/') ? c.slug : `/${c.slug}`
         }));
 
-      // 2. Lọc các liên kết cho Hàng 4 (main)
-      const mainItems = data.filter(c => c.menu_location === 'main' && !c.parent_id);
+      // 2. Lọc các liên kết cho Hàng 4 (main) - Chỉ lấy cấp cao nhất
+      const mainItems = categories.filter(c => c.menu_location === 'main' && !c.parent_id);
       
+      // 3. Xây dựng bản đồ danh mục con
       const subItemsMap: Record<string, any[]> = {};
-      data.forEach(c => {
+      
+      categories.forEach(c => {
         if (c.parent_id) {
-          const parent = data.find(p => p.id === c.parent_id);
+          const parent = categories.find(p => p.id === c.parent_id);
           if (parent) {
-            if (!subItemsMap[parent.slug]) subItemsMap[parent.slug] = [];
+            if (!subItemsMap[parent.slug]) {
+              subItemsMap[parent.slug] = [];
+            }
             subItemsMap[parent.slug].push({
               name: c.name,
               href: c.slug.startsWith('/') ? c.slug : `/${c.slug}`
@@ -43,7 +49,7 @@ export function useCategories() {
         mainCategories: mainItems.map(c => ({
           name: c.name,
           href: c.slug.startsWith('/') ? c.slug : `/${c.slug}`,
-          hasDropdown: data.some(child => child.parent_id === c.id),
+          hasDropdown: categories.some(child => child.parent_id === c.id),
           dropdownKey: c.slug,
           isHighlight: c.is_highlight
         })),
