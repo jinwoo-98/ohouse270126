@@ -3,27 +3,34 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { productCategories } from "@/constants/header-data";
+import { useCategories } from "@/hooks/useCategories";
 
 interface SubcategoryListProps {
   currentSlug: string;
 }
 
 export function SubcategoryList({ currentSlug }: SubcategoryListProps) {
-  // Lấy danh sách danh mục con của slug hiện tại
-  const items = productCategories[currentSlug] || [];
+  const { data, isLoading } = useCategories();
   
-  // Nếu không có danh mục con (là cấp cuối cùng), ẩn luôn phần này theo yêu cầu
+  if (isLoading) return null;
+
+  // Lấy danh sách danh mục con của slug hiện tại từ dữ liệu thật của DB
+  const productCategoriesMap = data?.productCategories || {};
+  const items = productCategoriesMap[currentSlug] || [];
+  
+  // Nếu không có danh mục con trong database, ẩn luôn phần "Danh mục liên quan"
   if (items.length === 0) {
     return null;
   }
 
   return (
-    <div className="mb-8">
+    <div className="mb-8 animate-fade-in">
       <h4 className="font-bold mb-4 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Danh mục liên quan</h4>
       <div className="flex flex-col gap-1">
         {items.map((item, index) => {
-          const isActive = item.href === `/${currentSlug}`;
+          // Xử lý so sánh href chính xác
+          const itemSlug = item.href.replace(/^\//, '');
+          const isActive = itemSlug === currentSlug;
           
           return (
             <motion.div
@@ -41,6 +48,7 @@ export function SubcategoryList({ currentSlug }: SubcategoryListProps) {
                 }`}
               >
                 <span>{item.name}</span>
+                <div className={`w-1 h-1 rounded-full bg-primary transition-all ${isActive ? 'opacity-100' : 'opacity-0'}`} />
               </Link>
             </motion.div>
           );
