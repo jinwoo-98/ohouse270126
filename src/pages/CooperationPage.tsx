@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Building2, Users, MessageSquare, Briefcase, Phone, Mail, CheckCircle2, Loader2, Send } from "lucide-react";
+import { Building2, Users, MessageSquare, Briefcase, Phone, Mail, CheckCircle2, Loader2, Send, ChevronRight } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 const partnerTypes = [
@@ -33,6 +34,15 @@ export default function CooperationPage() {
       <Header />
       
       <main className="flex-1">
+        {/* Breadcrumb */}
+        <div className="bg-secondary/50 py-3 border-b border-border/40">
+          <div className="container-luxury flex items-center gap-2 text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
+            <ChevronRight className="w-3 h-3" />
+            <span className="text-foreground">Hợp tác kinh doanh</span>
+          </div>
+        </div>
+
         <section className="bg-charcoal text-cream py-16 md:py-24 relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle,hsl(var(--primary))_0%,transparent_70%)]" />
@@ -42,8 +52,8 @@ export default function CooperationPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <span className="text-primary font-bold uppercase tracking-[0.3em] text-xs mb-4 block">B2B & Partnerships</span>
               <h1 className="text-4xl md:text-6xl font-bold mb-6">Hợp Tác Cùng OHOUSE</h1>
-              <p className="text-taupe max-w-2xl mx-auto text-lg">
-                Cùng nhau kiến tạo những không gian sống đẳng cấp và phát triển bền vững trong ngành nội thất.
+              <p className="text-taupe max-w-2xl mx-auto text-lg leading-relaxed">
+                Cùng nhau kiến tạo những không gian sống đẳng cấp và phát triển bền vững trong ngành nội thất cao cấp.
               </p>
             </motion.div>
           </div>

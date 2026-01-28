@@ -1,10 +1,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Phone, Mail, MapPin, MessageCircle, Facebook, Send, Bot, ExternalLink, ArrowRight } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Facebook, Send, Bot, ExternalLink, ArrowRight, ChevronRight, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { AIChatWindow } from "@/components/contact/AIChatWindow";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const contactChannels = [
   {
@@ -56,12 +62,46 @@ const contactChannels = [
 
 export default function ContactPage() {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      const { error } = await supabase.from('contact_messages').insert({
+        name: formData.get('name'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        subject: formData.get('subject'),
+        message: formData.get('message'),
+      });
+
+      if (error) throw error;
+      toast.success("Cảm ơn bạn! OHOUSE đã nhận được tin nhắn và sẽ phản hồi sớm nhất.");
+      (e.target as HTMLFormElement).reset();
+    } catch (error) {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại sau.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1">
+        {/* Breadcrumb */}
+        <div className="bg-secondary/50 py-3 border-b border-border/40">
+          <div className="container-luxury flex items-center gap-2 text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
+            <ChevronRight className="w-3 h-3" />
+            <span className="text-foreground">Liên hệ</span>
+          </div>
+        </div>
+
         <section className="bg-charcoal text-cream py-16 md:py-24 relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary rounded-full blur-3xl" />
@@ -70,15 +110,16 @@ export default function ContactPage() {
           
           <div className="container-luxury text-center relative z-10">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <span className="text-primary font-bold uppercase tracking-[0.3em] text-xs mb-4 block">Chúng tôi ở đây để giúp bạn</span>
+              <span className="text-primary font-bold uppercase tracking-[0.3em] text-xs mb-4 block">Hỗ trợ khách hàng</span>
               <h1 className="text-4xl md:text-6xl font-bold mb-6">Liên Hệ Với OHOUSE</h1>
-              <p className="text-taupe max-w-2xl mx-auto text-lg">
-                Chọn phương thức thuận tiện nhất cho bạn. Đội ngũ chúng tôi luôn sẵn sàng hỗ trợ mọi thắc mắc.
+              <p className="text-taupe max-w-2xl mx-auto text-lg leading-relaxed">
+                Đội ngũ chuyên viên tư vấn của chúng tôi luôn sẵn sàng hỗ trợ bạn kiến tạo không gian sống trong mơ.
               </p>
             </motion.div>
           </div>
         </section>
 
+        {/* Quick Contact Grid */}
         <section className="py-16 md:py-24">
           <div className="container-luxury">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -126,42 +167,82 @@ export default function ContactPage() {
           </div>
         </section>
 
-        <section className="py-20 bg-secondary/30">
+        {/* Traditional Contact Form Section */}
+        <section className="py-20 bg-secondary/20">
           <div className="container-luxury">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="grid lg:grid-cols-2 gap-16 items-start">
               <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-                <h2 className="text-3xl font-bold mb-6">Ghé Thăm Showroom</h2>
-                <p className="text-muted-foreground mb-8 leading-relaxed">
-                  Trải nghiệm tận mắt các sản phẩm nội thất cao cấp tại không gian trưng bày sang trọng của OHOUSE.
+                <h2 className="text-3xl font-bold mb-6">Để Lại Lời Nhắn</h2>
+                <p className="text-muted-foreground mb-10 leading-relaxed">
+                  Bạn có yêu cầu đặc biệt hoặc cần tư vấn sâu về thiết kế trọn gói? Hãy để lại thông tin, chuyên viên của OHOUSE sẽ liên hệ lại ngay.
                 </p>
-                <div className="space-y-6">
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-charcoal text-cream rounded-xl flex items-center justify-center flex-shrink-0">
+                
+                <div className="space-y-8">
+                  <div className="flex gap-5">
+                    <div className="w-12 h-12 bg-charcoal text-cream rounded-xl flex items-center justify-center shrink-0">
                       <MapPin className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-bold">Showroom TP.HCM</h4>
+                      <h4 className="font-bold mb-1">Showroom Flagship</h4>
                       <p className="text-sm text-muted-foreground">123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh</p>
                     </div>
                   </div>
-                  <div className="flex gap-4">
-                    <div className="w-12 h-12 bg-charcoal text-cream rounded-xl flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-5 h-5" />
+                  <div className="flex gap-5">
+                    <div className="w-12 h-12 bg-charcoal text-cream rounded-xl flex items-center justify-center shrink-0">
+                      <Phone className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-bold">Showroom Hà Nội</h4>
-                      <p className="text-sm text-muted-foreground">456 Phố Huế, Quận Hai Bà Trưng, Hà Nội</p>
+                      <h4 className="font-bold mb-1">Hotline CSKH</h4>
+                      <p className="text-sm text-muted-foreground">1900 888 999 (8h00 - 21h00)</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-5">
+                    <div className="w-12 h-12 bg-charcoal text-cream rounded-xl flex items-center justify-center shrink-0">
+                      <Mail className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold mb-1">Email Hỗ Trợ</h4>
+                      <p className="text-sm text-muted-foreground">info@ohouse.vn</p>
                     </div>
                   </div>
                 </div>
               </motion.div>
-              
-              <div className="aspect-video bg-muted rounded-3xl overflow-hidden shadow-medium border border-border/50 flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <MapPin className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p className="font-bold text-sm uppercase tracking-widest">Bản đồ vị trí Showroom</p>
-                </div>
-              </div>
+
+              <motion.div 
+                initial={{ opacity: 0, x: 30 }} 
+                whileInView={{ opacity: 1, x: 0 }} 
+                viewport={{ once: true }}
+                className="bg-card p-8 md:p-10 rounded-3xl shadow-elevated border border-border/40"
+              >
+                <form onSubmit={handleMessageSubmit} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Họ và tên</Label>
+                      <Input name="name" placeholder="Ví dụ: Nguyễn Văn A" required className="h-12 rounded-xl" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Số điện thoại</Label>
+                      <Input name="phone" placeholder="0909xxxxxx" required className="h-12 rounded-xl" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Địa chỉ Email</Label>
+                    <Input name="email" type="email" placeholder="example@email.com" required className="h-12 rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Chủ đề cần hỗ trợ</Label>
+                    <Input name="subject" placeholder="Ví dụ: Bảo hành sản phẩm, Tư vấn thiết kế..." required className="h-12 rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Nội dung tin nhắn</Label>
+                    <Textarea name="message" placeholder="Mô tả chi tiết yêu cầu của bạn..." rows={4} required className="rounded-xl resize-none" />
+                  </div>
+                  <Button type="submit" className="w-full btn-hero h-14 text-sm font-bold shadow-gold" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Send className="w-5 h-5 mr-2" />}
+                    Gửi Tin Nhắn Ngay
+                  </Button>
+                </form>
+              </motion.div>
             </div>
           </div>
         </section>
