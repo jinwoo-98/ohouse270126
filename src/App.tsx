@@ -30,6 +30,7 @@ import InspirationPage from "./pages/InspirationPage";
 import DesignServicePage from "./pages/DesignServicePage";
 import SearchPage from "./pages/SearchPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,7 @@ const App = () => (
                 <Route path="/yeu-thich" element={<WishlistPage />} />
                 <Route path="/lich-su-xem" element={<RecentlyViewedPage />} />
                 <Route path="/dat-hang-thanh-cong" element={<OrderSuccessPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 
                 {/* Sửa lại định tuyến tài khoản để tránh bị lặp giao diện */}
                 <Route path="/tai-khoan" element={<ProfileDashboard />}>

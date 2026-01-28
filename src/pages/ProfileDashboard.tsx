@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Loader2, Package, Calendar, ChevronRight, MapPin, Plus, Trash2, ChevronDown, ChevronUp, Ticket, Star, Clock } from "lucide-react";
+import { Loader2, Package, Calendar, ChevronRight, MapPin, Plus, Trash2, ChevronDown, ChevronUp, Ticket, Star, Clock, Settings } from "lucide-react";
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { ProfileForm } from "@/components/profile/ProfileForm";
+import { PasswordChangeForm } from "@/components/profile/PasswordChangeForm";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -327,7 +328,7 @@ export default function ProfileDashboard() {
                   </div>
                 )}
                 
-                {location.pathname === "/tai-khoan/cai-dat" && <p className="text-muted-foreground italic">Tính năng đang được cập nhật...</p>}
+                {location.pathname === "/tai-khoan/cai-dat" && <PasswordChangeForm />}
                 
                 <Outlet />
               </div>
