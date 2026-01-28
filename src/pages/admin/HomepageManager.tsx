@@ -17,27 +17,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { mainCategories } from "@/constants/header-data";
 
 export default function HomepageManager() {
   const [loading, setLoading] = useState(true);
   const [slides, setSlides] = useState<any[]>([]);
   const [trending, setTrending] = useState<any[]>([]);
   const [looks, setLooks] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]); // For search/select
+  const [products, setProducts] = useState<any[]>([]); 
   
-  // Slide Form
   const [isSlideOpen, setIsSlideOpen] = useState(false);
   const [editingSlide, setEditingSlide] = useState<any>(null);
 
-  // Trending Form
   const [newKeyword, setNewKeyword] = useState("");
 
-  // Shop The Look Form
   const [isLookOpen, setIsLookOpen] = useState(false);
   const [editingLook, setEditingLook] = useState<any>(null);
-  const [lookItems, setLookItems] = useState<any[]>([]); // Temp items for editing look
+  const [lookItems, setLookItems] = useState<any[]>([]); 
 
-  // Flash Sale / Featured
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -62,15 +59,13 @@ export default function HomepageManager() {
     setProducts(data || []);
   };
 
-  // --- SLIDE LOGIC ---
   const handleSaveSlide = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // ... logic save slide (giữ nguyên logic cũ, thêm trường mới)
     const formData = new FormData(e.currentTarget);
     const payload = {
       title: formData.get('title'),
       subtitle: formData.get('subtitle'),
-      description: editingSlide?.description, // From RichText
+      description: editingSlide?.description, 
       cta_text: formData.get('cta_text'),
       cta_link: formData.get('cta_link'),
       image_url: editingSlide?.image_url || '',
@@ -98,7 +93,6 @@ export default function HomepageManager() {
     fetchData();
   };
 
-  // --- TRENDING LOGIC ---
   const addKeyword = async () => {
     if (!newKeyword.trim()) return;
     await supabase.from('trending_keywords').insert({ keyword: newKeyword.trim() });
@@ -110,30 +104,29 @@ export default function HomepageManager() {
     fetchData();
   };
 
-  // --- SHOP THE LOOK LOGIC ---
   const handleSaveLook = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const lookPayload = {
       title: formData.get('title'),
+      category_id: editingLook?.category_id,
       image_url: editingLook?.image_url,
       is_active: true
     };
 
     if (!lookPayload.image_url) { toast.error("Thiếu ảnh không gian"); return; }
+    if (!lookPayload.category_id) { toast.error("Vui lòng chọn danh mục phòng"); return; }
 
     try {
       let lookId = editingLook?.id;
       if (lookId) {
         await supabase.from('shop_looks').update(lookPayload).eq('id', lookId);
-        // Delete old items to simpler replace logic (or refined update)
         await supabase.from('shop_look_items').delete().eq('look_id', lookId);
       } else {
         const { data } = await supabase.from('shop_looks').insert(lookPayload).select().single();
         lookId = data.id;
       }
 
-      // Insert Items
       if (lookItems.length > 0) {
         const items = lookItems.map(item => ({
           look_id: lookId,
@@ -150,7 +143,6 @@ export default function HomepageManager() {
     } catch (e: any) { toast.error("Lỗi: " + e.message); }
   };
 
-  // --- PRODUCT FLAGS LOGIC ---
   const toggleProductFlag = async (id: string, field: 'is_sale' | 'is_featured', current: boolean) => {
     await supabase.from('products').update({ [field]: !current }).eq('id', id);
     setProducts(products.map(p => p.id === id ? { ...p, [field]: !current } : p));
@@ -176,7 +168,6 @@ export default function HomepageManager() {
           <TabsTrigger value="trending" className="rounded-lg h-10 px-4 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Xu Hướng Tìm Kiếm</TabsTrigger>
         </TabsList>
 
-        {/* --- TAB 1: SLIDES --- */}
         <TabsContent value="slides" className="space-y-6 mt-6">
           <div className="flex justify-end">
             <Button onClick={() => { setEditingSlide({ text_color: '#ffffff', text_align: 'center', is_active: true }); setIsSlideOpen(true); }} className="btn-hero h-10 shadow-gold"><Plus className="w-4 h-4 mr-2" /> Thêm Slide</Button>
@@ -205,7 +196,6 @@ export default function HomepageManager() {
           </div>
         </TabsContent>
 
-        {/* --- TAB 2: FLASH SALE & FEATURED --- */}
         <TabsContent value="flash_featured" className="space-y-6 mt-6">
           <div className="bg-white p-6 rounded-2xl border shadow-sm">
             <div className="flex items-center gap-4 mb-6">
@@ -244,7 +234,6 @@ export default function HomepageManager() {
           </div>
         </TabsContent>
 
-        {/* --- TAB 3: SHOP THE LOOK --- */}
         <TabsContent value="looks" className="space-y-6 mt-6">
           <div className="flex justify-end">
             <Button onClick={() => { setEditingLook({}); setLookItems([]); setIsLookOpen(true); }} className="btn-hero h-10 shadow-gold"><Plus className="w-4 h-4 mr-2" /> Thêm Look Mới</Button>
@@ -254,9 +243,6 @@ export default function HomepageManager() {
               <div key={look.id} className="bg-white rounded-2xl border shadow-sm overflow-hidden group">
                 <div className="relative aspect-square">
                   <img src={look.image_url} className="w-full h-full object-cover" />
-                  {look.shop_look_items.map((item: any) => (
-                    <div key={item.id} className="absolute w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center text-primary text-xs font-bold" style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}>+</div>
-                  ))}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                     <Button size="sm" variant="secondary" onClick={() => { 
                       setEditingLook(look); 
@@ -267,6 +253,7 @@ export default function HomepageManager() {
                   </div>
                 </div>
                 <div className="p-4">
+                  <Badge variant="outline" className="mb-2 uppercase tracking-widest text-[9px]">{look.category_id}</Badge>
                   <h3 className="font-bold text-center">{look.title}</h3>
                   <p className="text-xs text-muted-foreground text-center">{look.shop_look_items.length} sản phẩm gắn thẻ</p>
                 </div>
@@ -275,7 +262,6 @@ export default function HomepageManager() {
           </div>
         </TabsContent>
 
-        {/* --- TAB 4: TRENDING --- */}
         <TabsContent value="trending" className="space-y-6 mt-6">
           <div className="bg-white p-6 rounded-2xl border shadow-sm max-w-2xl">
             <div className="flex gap-4 mb-6">
@@ -294,9 +280,6 @@ export default function HomepageManager() {
         </TabsContent>
       </Tabs>
 
-      {/* --- DIALOGS --- */}
-      
-      {/* 1. Slide Dialog */}
       <Dialog open={isSlideOpen} onOpenChange={setIsSlideOpen}>
         <DialogContent className="max-w-3xl rounded-3xl h-[90vh] overflow-y-auto custom-scrollbar">
           <DialogHeader><DialogTitle>Cấu Hình Slide</DialogTitle></DialogHeader>
@@ -353,7 +336,6 @@ export default function HomepageManager() {
         </DialogContent>
       </Dialog>
 
-      {/* 2. Look Dialog */}
       <Dialog open={isLookOpen} onOpenChange={setIsLookOpen}>
         <DialogContent className="max-w-4xl rounded-3xl h-[90vh] overflow-y-auto custom-scrollbar">
           <DialogHeader><DialogTitle>Cấu Hình Shop The Look</DialogTitle></DialogHeader>
@@ -361,6 +343,19 @@ export default function HomepageManager() {
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="space-y-2"><Label>Tên không gian</Label><Input name="title" defaultValue={editingLook?.title} required placeholder="Phòng khách hiện đại..." /></div>
+                
+                <div className="space-y-2">
+                  <Label>Thuộc danh mục phòng</Label>
+                  <Select value={editingLook?.category_id} onValueChange={(val) => setEditingLook({...editingLook, category_id: val})}>
+                    <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Chọn phòng..." /></SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      {mainCategories.filter(c => c.dropdownKey).map(c => (
+                        <SelectItem key={c.dropdownKey} value={c.dropdownKey!}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Ảnh không gian</Label>
                   <ImageUpload value={editingLook?.image_url} onChange={(url) => setEditingLook(prev => ({...prev, image_url: url}))} />
@@ -374,22 +369,22 @@ export default function HomepageManager() {
                       setLookItems([...lookItems, { product_id: pid, product_name: product.name, x_position: 50, y_position: 50 }]);
                     }
                   }}>
-                    <SelectTrigger><SelectValue placeholder="Chọn sản phẩm..." /></SelectTrigger>
-                    <SelectContent className="max-h-60">
+                    <SelectTrigger className="rounded-xl"><SelectValue placeholder="Chọn sản phẩm..." /></SelectTrigger>
+                    <SelectContent className="max-h-60 rounded-xl">
                       {products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   
-                  <div className="space-y-4 max-h-60 overflow-y-auto custom-scrollbar">
+                  <div className="space-y-4 max-h-40 overflow-y-auto custom-scrollbar pr-2">
                     {lookItems.map((item, idx) => (
                       <div key={idx} className="bg-white p-3 rounded-lg border text-xs space-y-2">
                         <div className="flex justify-between font-bold">
-                          <span>{item.product_name || item.product_id}</span>
+                          <span className="truncate flex-1 pr-2">{item.product_name || item.product_id}</span>
                           <button type="button" onClick={() => setLookItems(lookItems.filter((_, i) => i !== idx))} className="text-destructive"><X className="w-3 h-3" /></button>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label className="text-[9px]">Vị trí ngang (X: {item.x_position}%)</Label>
+                            <Label className="text-[9px]">Vị trí X: {item.x_position}%</Label>
                             <Slider value={[item.x_position]} max={100} step={1} onValueChange={([val]) => {
                               const newItems = [...lookItems];
                               newItems[idx].x_position = val;
@@ -397,7 +392,7 @@ export default function HomepageManager() {
                             }} />
                           </div>
                           <div>
-                            <Label className="text-[9px]">Vị trí dọc (Y: {item.y_position}%)</Label>
+                            <Label className="text-[9px]">Vị trí Y: {item.y_position}%</Label>
                             <Slider value={[item.y_position]} max={100} step={1} onValueChange={([val]) => {
                               const newItems = [...lookItems];
                               newItems[idx].y_position = val;
@@ -411,7 +406,6 @@ export default function HomepageManager() {
                 </div>
               </div>
 
-              {/* Preview Area */}
               <div className="bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden border relative aspect-square">
                 {editingLook?.image_url ? (
                   <div className="relative w-full h-full">
@@ -419,20 +413,19 @@ export default function HomepageManager() {
                     {lookItems.map((item, idx) => (
                       <div 
                         key={idx} 
-                        className="absolute w-6 h-6 bg-white rounded-full shadow-elevated border-2 border-primary flex items-center justify-center text-primary font-bold text-xs transform -translate-x-1/2 -translate-y-1/2 cursor-help"
+                        className="absolute w-6 h-6 bg-white rounded-full shadow-elevated border-2 border-primary flex items-center justify-center text-primary font-bold text-xs transform -translate-x-1/2 -translate-y-1/2"
                         style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                        title={item.product_name}
                       >
                         +
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <span className="text-muted-foreground text-sm">Xem trước ảnh</span>
+                  <span className="text-muted-foreground text-sm">Xem trước ảnh không gian</span>
                 )}
               </div>
             </div>
-            <Button type="submit" className="w-full btn-hero">Lưu Look</Button>
+            <Button type="submit" className="w-full btn-hero h-12">Lưu Lookbook</Button>
           </form>
         </DialogContent>
       </Dialog>

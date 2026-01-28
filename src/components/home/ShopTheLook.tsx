@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, ShoppingBag, ChevronRight, ChevronLeft, ArrowRight, Heart, Check, Loader2 } from "lucide-react";
+import { Plus, ShoppingBag, ChevronRight, ChevronLeft, ArrowRight, Heart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { supabase } from "@/integrations/supabase/client";
+import { mainCategories } from "@/constants/header-data";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -17,9 +18,13 @@ export function ShopTheLook() {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   
-  const [looks, setLooks] = useState<any[]>([]);
+  const [allLooks, setAllLooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentLookIndex, setCurrentLookIndex] = useState(0);
+  
+  // State quản lý danh mục và ảnh hiện tại
+  const [activeCategorySlug, setActiveCategorySlug] = useState<string>("");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [productDetails, setProductDetails] = useState<any>(null);
 
@@ -42,7 +47,13 @@ export function ShopTheLook() {
         .order('display_order');
 
       if (error) throw error;
-      setLooks(data || []);
+      setAllLooks(data || []);
+
+      // Mặc định chọn danh mục đầu tiên có dữ liệu
+      if (data && data.length > 0) {
+        const firstWithData = mainCategories.find(c => data.some(l => l.category_id === c.dropdownKey));
+        if (firstWithData) setActiveCategorySlug(firstWithData.dropdownKey!);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -50,111 +61,146 @@ export function ShopTheLook() {
     }
   };
 
+  // Lấy danh sách ảnh thuộc danh mục đang chọn
+  const currentCategoryLooks = allLooks.filter(l => l.category_id === activeCategorySlug);
+  const activeLook = currentCategoryLooks[currentImageIndex];
+
+  // Cập nhật thông tin sản phẩm khi click hotspot
   useEffect(() => {
-    if (selectedProductId && looks.length > 0) {
-      // Find detail in current look items
-      const item = looks[currentLookIndex].shop_look_items.find((i: any) => i.product_id === selectedProductId);
+    if (selectedProductId && activeLook) {
+      const item = activeLook.shop_look_items.find((i: any) => i.product_id === selectedProductId);
       if (item && item.products) {
         setProductDetails(item.products);
       }
     }
-  }, [selectedProductId, looks, currentLookIndex]);
+  }, [selectedProductId, activeLook]);
 
-  const goToNext = () => setCurrentLookIndex((prev) => (prev + 1) % looks.length);
-  const goToPrev = () => setCurrentLookIndex((prev) => (prev - 1 + looks.length) % looks.length);
+  const goToNext = () => setCurrentImageIndex((prev) => (prev + 1) % currentCategoryLooks.length);
+  const goToPrev = () => setCurrentImageIndex((prev) => (prev - 1 + currentCategoryLooks.length) % currentCategoryLooks.length);
 
   if (loading) return <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
-  if (looks.length === 0) return null;
+  if (allLooks.length === 0) return null;
 
-  const activeLook = looks[currentLookIndex];
+  // Lọc các danh mục cha ở Header có tồn tại dữ liệu Lookbook
+  const categoriesWithLooks = mainCategories.filter(c => 
+    c.dropdownKey && allLooks.some(l => l.category_id === c.dropdownKey)
+  );
 
   return (
     <section className="py-10 md:py-24 bg-secondary/20 overflow-hidden">
       <div className="container-luxury">
-        <div className="text-center mb-8 md:mb-10">
-          <h2 className="section-title mb-2 md:mb-4">Shop The Look</h2>
-          <p className="text-muted-foreground text-sm md:text-base">Mua sắm trực tiếp từ những không gian thiết kế ấn tượng</p>
+        <div className="text-center mb-10 md:mb-14">
+          <span className="text-primary font-bold uppercase tracking-[0.3em] text-[10px] mb-4 block">Bộ sưu tập không gian</span>
+          <h2 className="section-title mb-4">Shop The Look</h2>
+          <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
+            Khám phá những mẫu thiết kế nội thất hoàn mỹ và sở hữu ngay các sản phẩm trong ảnh chỉ với một cú chạm.
+          </p>
         </div>
 
-        {/* Look Tabs Navigation */}
-        <div className="flex justify-center gap-2 mb-8 overflow-x-auto pb-2 no-scrollbar px-4">
-          {looks.map((look, idx) => (
+        {/* Category Tabs (Từ Header Row 4) */}
+        <div className="flex justify-center gap-2 mb-10 overflow-x-auto pb-2 no-scrollbar px-4">
+          {categoriesWithLooks.map((cat) => (
             <button
-              key={look.id}
-              onClick={() => { setCurrentLookIndex(idx); setSelectedProductId(null); }}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-full border transition-all whitespace-nowrap ${
-                idx === currentLookIndex 
-                  ? 'bg-charcoal text-cream border-charcoal' 
-                  : 'bg-transparent border-border text-muted-foreground hover:border-charcoal'
+              key={cat.dropdownKey}
+              onClick={() => { 
+                setActiveCategorySlug(cat.dropdownKey!); 
+                setCurrentImageIndex(0); 
+                setSelectedProductId(null); 
+              }}
+              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap ${
+                cat.dropdownKey === activeCategorySlug 
+                  ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
+                  : 'bg-white border-border text-muted-foreground hover:border-charcoal'
               }`}
             >
-              {look.title}
+              {cat.name}
             </button>
           ))}
         </div>
 
-        <div className="relative rounded-2xl overflow-hidden bg-background shadow-elevated border border-border/50">
+        <div className="relative rounded-3xl overflow-hidden bg-background shadow-elevated border border-border/40">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={activeLook.id} 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="relative aspect-[4/3] md:aspect-[2/1] w-full" 
-            >
-              <img
-                src={activeLook.image_url}
-                alt={activeLook.title}
-                className="w-full h-full object-cover"
-              />
-              
-              {/* Product Hotspots */}
-              <div className="absolute inset-0 bg-black/5">
-                {activeLook.shop_look_items.map((item: any) => (
-                  <TooltipProvider key={item.id}>
-                    <Tooltip delayDuration={100}>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => setSelectedProductId(selectedProductId === item.product_id ? null : item.product_id)}
-                          className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/95 shadow-elevated flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-10 group"
-                          style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                        >
-                          <span className="absolute w-full h-full rounded-full bg-white/50 animate-ping opacity-75 group-hover:hidden"></span>
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </TooltipTrigger>
-                      {item.products && (
-                        <TooltipContent side="top" className="bg-charcoal text-cream border-charcoal p-3 shadow-medium hidden md:block">
-                          <p className="font-semibold text-sm">{item.products.name}</p>
-                          <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                ))}
-              </div>
+            {activeLook ? (
+              <motion.div
+                key={activeLook.id} 
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="relative aspect-[4/3] md:aspect-[21/9] w-full group" 
+              >
+                <img
+                  src={activeLook.image_url}
+                  alt={activeLook.title}
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* Hotspots */}
+                <div className="absolute inset-0 bg-black/5">
+                  {activeLook.shop_look_items.map((item: any) => (
+                    <TooltipProvider key={item.id}>
+                      <Tooltip delayDuration={0}>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => setSelectedProductId(selectedProductId === item.product_id ? null : item.product_id)}
+                            className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/95 shadow-elevated flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-10 group/dot"
+                            style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
+                          >
+                            <span className="absolute w-full h-full rounded-full bg-white/50 animate-ping opacity-75 group-hover/dot:hidden"></span>
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        {item.products && (
+                          <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 shadow-elevated rounded-xl hidden md:block">
+                            <p className="font-bold text-xs uppercase tracking-wider">{item.products.name}</p>
+                            <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                  ))}
+                </div>
 
-              {/* Navigation Arrows */}
-              {looks.length > 1 && (
-                <>
-                  <button onClick={goToPrev} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors z-20">
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button onClick={goToNext} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors z-20">
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </>
-              )}
-            </motion.div>
+                {/* Arrows to switch between looks IN SAME category */}
+                {currentCategoryLooks.length > 1 && (
+                  <>
+                    <button onClick={goToPrev} className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-all z-20 opacity-0 group-hover:opacity-100">
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button onClick={goToNext} className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-all z-20 opacity-0 group-hover:opacity-100">
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                    
+                    {/* Pagination indicators inside the image */}
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                      {currentCategoryLooks.map((_, idx) => (
+                        <div 
+                          key={idx} 
+                          className={`h-1.5 rounded-full transition-all ${idx === currentImageIndex ? 'w-8 bg-white' : 'w-2 bg-white/40'}`} 
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+                
+                {/* Title badge */}
+                <div className="absolute top-6 left-6 bg-charcoal/80 backdrop-blur-md text-cream px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border border-white/10">
+                  {activeLook.title}
+                </div>
+              </motion.div>
+            ) : (
+              <div className="aspect-[21/9] flex items-center justify-center text-muted-foreground italic">
+                Đang cập nhật hình ảnh không gian cho danh mục này...
+              </div>
+            )}
           </AnimatePresence>
 
-          {/* Product Sheet Detail */}
+          {/* Product Sheet for Mobile & Quick View */}
           <Sheet open={!!selectedProductId} onOpenChange={(open) => !open && setSelectedProductId(null)}>
-            <SheetContent className="w-full sm:max-w-[450px] p-0 flex flex-col z-[100]">
+            <SheetContent side="right" className="w-full sm:max-w-[450px] p-0 flex flex-col z-[150] border-none shadow-elevated">
               {productDetails && (
                 <>
-                  <div className="flex-1 overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto custom-scrollbar">
                     <div className="relative aspect-square">
                       <img 
                         src={productDetails.image_url} 
@@ -163,59 +209,64 @@ export function ShopTheLook() {
                       />
                       <button 
                         onClick={() => toggleWishlist(productDetails)}
-                        className={`absolute top-4 right-14 p-2.5 rounded-full shadow-medium transition-all ${
+                        className={`absolute top-4 right-4 p-3 rounded-full shadow-elevated transition-all ${
                           isInWishlist(productDetails.id)
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'
+                            ? 'bg-primary text-white'
+                            : 'bg-white/80 backdrop-blur-md hover:bg-primary hover:text-white'
                         }`}
                       >
                         <Heart className={`w-5 h-5 ${isInWishlist(productDetails.id) ? 'fill-current' : ''}`} />
                       </button>
                     </div>
 
-                    <div className="p-6 md:p-8 space-y-6 pb-24">
-                      <SheetHeader className="space-y-2">
-                        <SheetTitle className="text-xl md:text-2xl font-bold leading-tight text-left">
+                    <div className="p-8 space-y-6">
+                      <SheetHeader className="space-y-3">
+                        <Badge variant="outline" className="w-fit text-[9px] uppercase tracking-widest text-primary border-primary">
+                          {productDetails.category_id}
+                        </Badge>
+                        <SheetTitle className="text-2xl font-bold leading-tight text-left text-charcoal">
                           {productDetails.name}
                         </SheetTitle>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl md:text-2xl font-bold text-primary">
+                        <div className="flex items-center gap-4">
+                          <span className="text-2xl font-bold text-primary">
                             {formatPrice(productDetails.price)}
                           </span>
                           {productDetails.original_price && (
-                            <span className="text-base md:text-lg text-muted-foreground line-through">
+                            <span className="text-lg text-muted-foreground line-through">
                               {formatPrice(productDetails.original_price)}
                             </span>
                           )}
                         </div>
                       </SheetHeader>
 
-                      <SheetDescription className="text-sm md:text-base text-muted-foreground leading-relaxed text-left">
-                        {productDetails.description || 'Chưa có mô tả chi tiết.'}
+                      <SheetDescription className="text-sm md:text-base text-muted-foreground leading-relaxed text-left border-t border-border/40 pt-6">
+                        {productDetails.description || 'Sản phẩm nội thất cao cấp với thiết kế tinh xảo, chất liệu thượng hạng giúp nâng tầm không gian sống của bạn.'}
                       </SheetDescription>
                     </div>
                   </div>
 
-                  <div className="p-4 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-                    <div className="flex gap-3">
-                      <Button variant="outline" className="flex-1 h-12 text-sm font-semibold" asChild onClick={() => setSelectedProductId(null)}>
+                  <div className="p-6 border-t border-border/40 bg-card sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.03)]">
+                    <div className="flex gap-4">
+                      <Button variant="outline" className="flex-1 h-14 text-xs font-bold uppercase tracking-widest border-charcoal/20" asChild onClick={() => setSelectedProductId(null)}>
                         <Link to={`/san-pham/${productDetails.id}`}>
-                          Xem Chi Tiết
-                          <ArrowRight className="w-4 h-4 ml-2" />
+                          Xem chi tiết
                         </Link>
                       </Button>
                       <Button 
-                        className="flex-[1.5] btn-hero h-12 text-sm font-bold shadow-gold"
-                        onClick={() => addToCart({
-                          id: productDetails.id,
-                          name: productDetails.name,
-                          price: productDetails.price,
-                          image: productDetails.image_url,
-                          quantity: 1
-                        })}
+                        className="flex-[1.5] btn-hero h-14 text-xs font-bold shadow-gold"
+                        onClick={() => {
+                          addToCart({
+                            id: productDetails.id,
+                            name: productDetails.name,
+                            price: productDetails.price,
+                            image: productDetails.image_url,
+                            quantity: 1
+                          });
+                          setSelectedProductId(null);
+                        }}
                       >
                         <ShoppingBag className="w-4 h-4 mr-2" />
-                        Thêm Vào Giỏ
+                        Thêm vào giỏ
                       </Button>
                     </div>
                   </div>
