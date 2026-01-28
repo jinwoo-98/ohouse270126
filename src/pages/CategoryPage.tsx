@@ -20,36 +20,50 @@ import { cn } from "@/lib/utils";
 
 const categoryInfo: Record<string, { title: string; description: string; parent?: string }> = {
   // Main
-  "phong-khach": { title: "Phòng Khách", description: "Nội thất phòng khách sang trọng" },
-  "phong-ngu": { title: "Phòng Ngủ", description: "Giường ngủ và tủ quần áo cao cấp" },
-  "phong-an": { title: "Phòng Ăn", description: "Bàn ăn và ghế ăn tinh tế" },
-  "phong-tam": { title: "Phòng Tắm", description: "Thiết bị vệ sinh cao cấp" },
-  "phong-lam-viec": { title: "Văn Phòng", description: "Bàn làm việc hiện đại" },
+  "phong-khach": { title: "Phòng Khách", description: "Không gian sống sang trọng" },
+  "phong-ngu": { title: "Phòng Ngủ", description: "Giấc ngủ trọn vẹn" },
+  "phong-an": { title: "Phòng Ăn", description: "Bữa cơm gia đình ấm cúng" },
+  "ban-ghe": { title: "Bàn & Ghế", description: "Bộ sưu tập bàn ghế cao cấp" },
   "den-trang-tri": { title: "Đèn Trang Trí", description: "Ánh sáng hoàn mỹ" },
-  "decor": { title: "Decor", description: "Phụ kiện trang trí" },
-  "ban-ghe": { title: "Bàn & Ghế", description: "Bộ sưu tập bàn ghế" },
-  "noi-that": { title: "Tất Cả Nội Thất", description: "Khám phá toàn bộ bộ sưu tập" },
+  "decor": { title: "Decor & Trang Trí", description: "Điểm nhấn cho ngôi nhà" },
+  "noi-that": { title: "Tất Cả Nội Thất", description: "Khám phá toàn bộ sản phẩm" },
   "sale": { title: "Khuyến Mãi", description: "Sản phẩm ưu đãi đặc biệt" },
-  "ban-chay": { title: "Bán Chạy", description: "Top sản phẩm được yêu thích" },
+  "ban-chay": { title: "Bán Chạy", description: "Sản phẩm được yêu thích nhất" },
   "moi": { title: "Sản Phẩm Mới", description: "Bộ sưu tập mới nhất" },
-  
-  // Sub
-  "sofa": { title: "Sofa & Ghế", description: "Sofa góc, sofa văng", parent: "phong-khach" },
-  "ban-tra": { title: "Bàn Trà", description: "Bàn trà đá, gỗ", parent: "phong-khach" },
-  "ke-tivi": { title: "Kệ Tivi", description: "Kệ tivi gỗ óc chó", parent: "phong-khach" },
-  "den-san": { title: "Đèn Sàn", description: "Đèn sàn hiện đại", parent: "phong-khach" },
-  "tu-trang-tri": { title: "Tủ Trang Trí", description: "Tủ kệ decor", parent: "phong-khach" },
-  "giuong": { title: "Giường Ngủ", description: "Giường bọc da", parent: "phong-ngu" },
-  "tu-quan-ao": { title: "Tủ Quần Áo", description: "Tủ gỗ sồi", parent: "phong-ngu" },
-  "ban-trang-diem": { title: "Bàn Trang Điểm", description: "Góc làm đẹp", parent: "phong-ngu" },
-  "den-ngu": { title: "Đèn Ngủ", description: "Ánh sáng thư giãn", parent: "phong-ngu" },
-  "ban-an": { title: "Bàn Ăn", description: "Bàn ăn hiện đại", parent: "phong-an" },
-  "ghe-an": { title: "Ghế Ăn", description: "Ghế ăn bọc da", parent: "phong-an" },
-  "tu-ruou": { title: "Tủ Rượu", description: "Không gian trưng bày", parent: "phong-an" },
-  "den-chum": { title: "Đèn Chùm", description: "Ánh sáng sang trọng", parent: "phong-an" },
-  "ghe-thu-gian": { title: "Ghế Thư Giãn", description: "Tận hưởng không gian", parent: "ban-ghe" },
+
+  // Subcategories - Phòng Khách
+  "sofa": { title: "Ghế Sofa", description: "Sofa da, sofa vải cao cấp", parent: "phong-khach" },
+  "ban-tra": { title: "Bàn Trà", description: "Bàn trà đá, bàn trà gỗ", parent: "phong-khach" },
+  "ke-tivi": { title: "Kệ Tivi", description: "Kệ tivi hiện đại", parent: "phong-khach" },
+  "den-san": { title: "Đèn Sàn", description: "Đèn đứng trang trí", parent: "phong-khach" },
+  "tu-trang-tri": { title: "Tủ Trang Trí", description: "Tủ decor phòng khách", parent: "phong-khach" },
+
+  // Subcategories - Phòng Ngủ
+  "giuong": { title: "Giường Ngủ", description: "Giường bọc da, giường gỗ sồi", parent: "phong-ngu" },
+  "tu-quan-ao": { title: "Tủ Quần Áo", description: "Tủ áo gỗ cao cấp", parent: "phong-ngu" },
+  "ban-trang-diem": { title: "Bàn Trang Điểm", description: "Góc làm đẹp tinh tế", parent: "phong-ngu" },
+  "den-ngu": { title: "Đèn Ngủ", description: "Ánh sáng ấm áp", parent: "phong-ngu" },
+
+  // Subcategories - Phòng Ăn
+  "ban-an": { title: "Bàn Ăn", description: "Bàn ăn mặt đá, bàn ăn gỗ", parent: "phong-an" },
+  "ghe-an": { title: "Ghế Ăn", description: "Ghế ăn bọc da cao cấp", parent: "phong-an" },
+  "tu-ruou": { title: "Tủ Rượu", description: "Tủ trưng bày sang trọng", parent: "phong-an" },
+  "den-chum": { title: "Đèn Chùm", description: "Đèn chùm pha lê cao cấp", parent: "phong-an" },
+
+  // Subcategories - Bàn Ghế
+  "ghe-thu-gian": { title: "Ghế Thư Giãn", description: "Tận hưởng không gian riêng", parent: "ban-ghe" },
   "ban-lam-viec": { title: "Bàn Làm Việc", description: "Cảm hứng sáng tạo", parent: "phong-lam-viec" },
   "ban-console": { title: "Bàn Console", description: "Điểm nhấn hành lang", parent: "ban-ghe" },
+
+  // Subcategories - Đèn
+  "den-ban": { title: "Đèn Bàn", description: "Đèn bàn làm việc, trang trí", parent: "den-trang-tri" },
+  "den-tuong": { title: "Đèn Tường", description: "Đèn trang trí treo tường", parent: "den-trang-tri" },
+
+  // Subcategories - Decor
+  "tranh": { title: "Tranh Trang Trí", description: "Tranh treo tường nghệ thuật", parent: "decor" },
+  "tham": { title: "Thảm Trải Sàn", description: "Thảm phòng khách, phòng ngủ", parent: "decor" },
+  "guong": { title: "Gương Soi", description: "Gương trang trí cao cấp", parent: "decor" },
+  "binh-hoa": { title: "Bình Hoa", description: "Bình gốm sứ decor", parent: "decor" },
 };
 
 const priceRanges = [
@@ -79,7 +93,7 @@ export default function CategoryPage() {
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   
-  const category = categoryInfo[categorySlug] || { title: "Danh Mục", description: "Khám phá sản phẩm" };
+  const category = categoryInfo[categorySlug] || { title: "Danh Mục", description: "Khám phá bộ sưu tập sản phẩm" };
   const parentCategory = category.parent ? categoryInfo[category.parent] : null;
   const hasActiveFilters = filters.priceRange.length > 0 || filters.materials.length > 0 || filters.styles.length > 0;
 

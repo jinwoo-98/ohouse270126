@@ -34,6 +34,18 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 const queryClient = new QueryClient();
 
+// List of all category and subcategory slugs to avoid manual maintenance
+const categoryRoutes = [
+  "noi-that", "phong-khach", "phong-ngu", "phong-an", "phong-tam", "phong-lam-viec",
+  "sofa", "ban-tra", "ke-tivi", "den-san", "tu-trang-tri",
+  "giuong", "tu-quan-ao", "ban-trang-diem", "den-ngu",
+  "ban-an", "ghe-an", "tu-ruou", "den-chum",
+  "ban-ghe", "ghe-thu-gian", "ban-lam-viec", "ban-console",
+  "den-trang-tri", "den-ban", "den-tuong",
+  "decor", "tranh", "tham", "guong", "binh-hoa",
+  "sale", "ban-chay", "moi"
+];
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -46,24 +58,12 @@ const App = () => (
             <WishlistProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/noi-that" element={<CategoryPage />} />
-                <Route path="/phong-khach" element={<CategoryPage />} />
-                <Route path="/phong-ngu" element={<CategoryPage />} />
-                <Route path="/phong-an" element={<CategoryPage />} />
-                <Route path="/phong-tam" element={<CategoryPage />} />
-                <Route path="/phong-lam-viec" element={<CategoryPage />} />
-                <Route path="/sofa" element={<CategoryPage />} />
-                <Route path="/ban-an" element={<CategoryPage />} />
-                <Route path="/ban-tra" element={<CategoryPage />} />
-                <Route path="/ke-tivi" element={<CategoryPage />} />
-                <Route path="/giuong" element={<CategoryPage />} />
-                <Route path="/ban-lam-viec" element={<CategoryPage />} />
-                <Route path="/den-trang-tri" element={<CategoryPage />} />
-                <Route path="/decor" element={<CategoryPage />} />
-                <Route path="/sale" element={<CategoryPage />} />
-                <Route path="/ban-ghe" element={<CategoryPage />} />
-                <Route path="/ban-chay" element={<CategoryPage />} />
-                <Route path="/moi" element={<CategoryPage />} />
+                
+                {/* Dynamic Category Routes */}
+                {categoryRoutes.map(slug => (
+                  <Route key={slug} path={`/${slug}`} element={<CategoryPage />} />
+                ))}
+
                 <Route path="/tim-kiem" element={<SearchPage />} />
                 <Route path="/san-pham/:id" element={<ProductDetailPage />} />
                 <Route path="/gio-hang" element={<CartPage />} />
