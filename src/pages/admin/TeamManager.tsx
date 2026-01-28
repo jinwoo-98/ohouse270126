@@ -10,7 +10,9 @@ import {
   CheckCircle2,
   Mail,
   Phone,
-  Settings
+  Settings,
+  UserCheck,
+  UserPlus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +46,7 @@ export default function TeamManager() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingUser, setEditingUser] = useState<any>(null);
   const [isPermsOpen, setIsPermsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "staff">("staff");
 
   useEffect(() => {
     fetchUsers();
@@ -98,27 +101,95 @@ export default function TeamManager() {
     }
   };
 
-  const filtered = users.filter(u => 
-    u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.phone?.includes(searchTerm) ||
-    u.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = users.filter(u => {
+    const matchesSearch = 
+      u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.phone?.includes(searchTerm) ||
+      u.id.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (activeTab === "staff") {
+      return matchesSearch && (u.role === 'admin' || u.role === 'editor');
+    }
+    return matchesSearch;
+  });
+
+  const stats = {
+    totalAdmins: users.filter(u => u.role === 'admin').length,
+    totalEditors: users.filter(u => u.role === 'editor').length,
+    totalUsers: users.filter(u => u.role === 'user').length,
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <UserCog className="w-7 h-7 text-primary" />
             Quản Lý Nhân Sự & Phân Quyền
           </h1>
-          <p className="text-muted-foreground text-sm">Chỉ định tài khoản dựa trên Email/SĐT và cấp quyền Dashboard.</p>
+          <p className="text-muted-foreground text-sm">Quản lý đội ngũ quản trị viên và biên tập viên vận hành hệ thống.</p>
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-2xl border shadow-sm border-l-4 border-l-primary">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Quản trị viên</p>
+              <p className="text-2xl font-bold text-charcoal">{stats.totalAdmins}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border shadow-sm border-l-4 border-l-blue-500">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-600">
+              <UserCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Biên tập viên</p>
+              <p className="text-2xl font-bold text-charcoal">{stats.totalEditors}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border shadow-sm border-l-4 border-l-gray-300">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500">
+              <Users className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Khách hàng</p>
+              <p className="text-2xl font-bold text-charcoal">{stats.totalUsers}</p>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b bg-gray-50/50">
-          <div className="relative max-w-sm">
+        <div className="p-4 border-b bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex gap-1 p-1 bg-secondary/50 rounded-xl">
+            <Button 
+              variant={activeTab === 'staff' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setActiveTab('staff')}
+              className="text-[10px] uppercase font-bold h-9 rounded-lg"
+            >
+              Danh sách Nhân sự
+            </Button>
+            <Button 
+              variant={activeTab === 'all' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setActiveTab('all')}
+              className="text-[10px] uppercase font-bold h-9 rounded-lg"
+            >
+              Tất cả tài khoản
+            </Button>
+          </div>
+
+          <div className="relative max-w-sm w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
               placeholder="Tìm theo Email hoặc Số điện thoại..." 
@@ -133,7 +204,8 @@ export default function TeamManager() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50 text-[10px] uppercase tracking-widest font-bold text-muted-foreground border-b">
-                <th className="px-6 py-4">Tài khoản (Email/SĐT)</th>
+                <th className="px-6 py-4">Tài khoản nhân sự</th>
+                <th className="px-6 py-4">Số điện thoại</th>
                 <th className="px-6 py-4">Vai trò</th>
                 <th className="px-6 py-4">Quyền truy cập</th>
                 <th className="px-6 py-4 text-right">Thao tác</th>
@@ -141,22 +213,33 @@ export default function TeamManager() {
             </thead>
             <tbody className="divide-y divide-border">
               {loading ? (
-                <tr><td colSpan={4} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
+                <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={4} className="p-12 text-center text-muted-foreground italic">Không tìm thấy tài khoản phù hợp.</td></tr>
+                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground italic">Không tìm thấy tài khoản phù hợp trong danh mục này.</td></tr>
               ) : filtered.map((u) => (
                 <tr key={u.id} className="hover:bg-gray-50/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary shrink-0 border border-primary/10">
-                        <Mail className="w-5 h-5" />
+                      <div className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center font-bold shrink-0 border",
+                        u.role === 'admin' ? "bg-primary/10 text-primary border-primary/20" : 
+                        u.role === 'editor' ? "bg-blue-50 text-blue-600 border-blue-100" : 
+                        "bg-gray-50 text-gray-400 border-gray-100"
+                      )}>
+                        {u.email?.charAt(0).toUpperCase() || 'U'}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-charcoal truncate">{u.email || "Chưa cập nhật Email"}</p>
-                        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground font-medium">
-                          <Phone className="w-3 h-3" /> {u.phone || "N/A"}
-                        </div>
+                        <p className="text-sm font-bold text-charcoal truncate">
+                          {u.email || <span className="text-destructive font-normal italic">Chưa xác thực email</span>}
+                        </p>
+                        <p className="text-[10px] font-mono text-muted-foreground uppercase mt-0.5">{u.id.slice(0, 12)}...</p>
                       </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2 text-sm text-charcoal font-medium">
+                      <Phone className="w-3.5 h-3.5 text-primary" />
+                      {u.phone || "---"}
                     </div>
                   </td>
                   <td className="px-6 py-4">
