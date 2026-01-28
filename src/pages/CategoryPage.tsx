@@ -264,7 +264,7 @@ export default function CategoryPage() {
                           <button onClick={() => toggleFilter('priceRange', val)} className="p-0.5 hover:bg-primary/20 rounded-full transition-colors"><X className="w-3 h-3" /></button>
                         </Badge>
                       ))}
-                      <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[10px] font-bold uppercase tracking-widest h-7 px-2 text-muted-foreground hover:text-destructive">Xóa hết</button>
+                      <Button variant="ghost" size="sm" onClick={clearFilters} className="text-[10px] font-bold uppercase tracking-widest h-7 px-2 text-muted-foreground hover:text-destructive">Xóa hết</Button>
                     </motion.div>
                   )}
                 </AnimatePresence>
