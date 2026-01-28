@@ -2,22 +2,23 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Plus, Edit, Trash2, Loader2, Save, Image as ImageIcon, 
-  MonitorPlay, Zap, Search, Eye, ShoppingBag, PlusCircle, X
+  MonitorPlay, Zap, Search, Eye, ShoppingBag, PlusCircle, X,
+  Layers, LayoutGrid, ChevronRight, ChevronDown, CheckCircle2, EyeOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { mainCategories } from "@/constants/header-data";
+import { mainCategories as hardcodedMain } from "@/constants/header-data";
+import { cn } from "@/lib/utils";
 
 export default function HomepageManager() {
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ export default function HomepageManager() {
   const [trending, setTrending] = useState<any[]>([]);
   const [looks, setLooks] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]); 
+  const [categories, setCategories] = useState<any[]>([]);
   
   const [isSlideOpen, setIsSlideOpen] = useState(false);
   const [editingSlide, setEditingSlide] = useState<any>(null);
@@ -40,6 +42,7 @@ export default function HomepageManager() {
   useEffect(() => {
     fetchData();
     fetchProducts();
+    fetchCategories();
   }, []);
 
   const fetchData = async () => {
@@ -57,6 +60,11 @@ export default function HomepageManager() {
   const fetchProducts = async () => {
     const { data } = await supabase.from('products').select('id, name, is_sale, is_featured, image_url');
     setProducts(data || []);
+  };
+
+  const fetchCategories = async () => {
+    const { data } = await supabase.from('categories').select('*').order('display_order');
+    setCategories(data || []);
   };
 
   const handleSaveSlide = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -88,20 +96,12 @@ export default function HomepageManager() {
     } catch (e) { toast.error("Lỗi lưu slide"); }
   };
 
-  const toggleSlideActive = async (id: string, current: boolean) => {
-    await supabase.from('slides').update({ is_active: !current }).eq('id', id);
-    fetchData();
-  };
-
-  const addKeyword = async () => {
-    if (!newKeyword.trim()) return;
-    await supabase.from('trending_keywords').insert({ keyword: newKeyword.trim() });
-    setNewKeyword("");
-    fetchData();
-  };
-  const deleteKeyword = async (id: string) => {
-    await supabase.from('trending_keywords').delete().eq('id', id);
-    fetchData();
+  const toggleCategoryFlag = async (id: string, field: string, current: boolean) => {
+    try {
+      await supabase.from('categories').update({ [field]: !current }).eq('id', id);
+      setCategories(categories.map(c => c.id === id ? { ...c, [field]: !current } : c));
+      toast.success("Đã cập nhật");
+    } catch (e) { toast.error("Lỗi cập nhật"); }
   };
 
   const handleSaveLook = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -115,7 +115,6 @@ export default function HomepageManager() {
     };
 
     if (!lookPayload.image_url) { toast.error("Thiếu ảnh không gian"); return; }
-    if (!lookPayload.category_id) { toast.error("Vui lòng chọn danh mục phòng"); return; }
 
     try {
       let lookId = editingLook?.id;
@@ -149,7 +148,21 @@ export default function HomepageManager() {
     toast.success("Đã cập nhật trạng thái sản phẩm");
   };
 
+  const addKeyword = async () => {
+    if (!newKeyword.trim()) return;
+    await supabase.from('trending_keywords').insert({ keyword: newKeyword.trim() });
+    setNewKeyword("");
+    fetchData();
+  };
+  const deleteKeyword = async (id: string) => {
+    await supabase.from('trending_keywords').delete().eq('id', id);
+    fetchData();
+  };
+
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  // Lấy danh sách danh mục cha theo vị trí menu
+  const parentCategories = (location: string) => categories.filter(c => !c.parent_id && c.menu_location === location);
 
   return (
     <div className="max-w-6xl mx-auto pb-20 space-y-8">
@@ -157,15 +170,16 @@ export default function HomepageManager() {
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <MonitorPlay className="w-6 h-6 text-primary" /> Quản Lý Trang Chủ
         </h1>
-        <p className="text-muted-foreground text-sm">Tùy chỉnh toàn diện nội dung hiển thị trên trang chủ.</p>
+        <p className="text-muted-foreground text-sm">Tùy chỉnh toàn diện nội dung hiển thị trên trang chủ và thanh menu.</p>
       </div>
 
       <Tabs defaultValue="slides" className="w-full">
-        <TabsList className="bg-white border p-1 rounded-xl h-12 w-full justify-start overflow-x-auto">
+        <TabsList className="bg-white border p-1 rounded-xl h-12 w-full justify-start overflow-x-auto no-scrollbar">
           <TabsTrigger value="slides" className="rounded-lg h-10 px-4 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Slideshow</TabsTrigger>
-          <TabsTrigger value="flash_featured" className="rounded-lg h-10 px-4 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Sale & Nổi Bật</TabsTrigger>
+          <TabsTrigger value="categories_menu" className="rounded-lg h-10 px-4 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Danh mục & Menu</TabsTrigger>
+          <TabsTrigger value="flash_featured" className="rounded-lg h-10 px-4 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Sản phẩm Sale/Nổi bật</TabsTrigger>
           <TabsTrigger value="looks" className="rounded-lg h-10 px-4 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Shop The Look</TabsTrigger>
-          <TabsTrigger value="trending" className="rounded-lg h-10 px-4 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Xu Hướng Tìm Kiếm</TabsTrigger>
+          <TabsTrigger value="trending" className="rounded-lg h-10 px-4 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Xu hướng tìm kiếm</TabsTrigger>
         </TabsList>
 
         <TabsContent value="slides" className="space-y-6 mt-6">
@@ -194,6 +208,84 @@ export default function HomepageManager() {
               </div>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="categories_menu" className="mt-6 space-y-8">
+           <div className="grid lg:grid-cols-2 gap-8">
+              {/* PHẦN 1: DANH MỤC TRANG CHỦ */}
+              <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
+                <div className="flex items-center gap-3 border-b pb-4">
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary"><LayoutGrid className="w-5 h-5" /></div>
+                  <div>
+                    <h3 className="font-bold">Danh mục hiển thị Trang Chủ</h3>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Khu vực nằm trên Flash Sale</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {categories.filter(c => !c.parent_id).map(cat => (
+                    <div key={cat.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-secondary/30 transition-colors border border-transparent hover:border-border">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden border">
+                          {cat.image_url ? <img src={cat.image_url} className="w-full h-full object-cover" /> : <ImageIcon className="w-4 h-4 m-auto mt-3 text-gray-300" />}
+                        </div>
+                        <span className="text-sm font-bold">{cat.name}</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-[9px] font-bold uppercase text-muted-foreground">Hiện ở Home</span>
+                        <Switch checked={cat.show_on_home} onCheckedChange={() => toggleCategoryFlag(cat.id, 'show_on_home', cat.show_on_home)} />
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-[10px] text-primary italic font-medium p-2 bg-primary/5 rounded-lg">* Lưu ý: Chỉ danh mục cha (không có cha) mới được hiện ở mục này.</p>
+                </div>
+              </div>
+
+              {/* PHẦN 2: MENU HEADER */}
+              <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
+                <div className="flex items-center gap-3 border-b pb-4">
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary"><Layers className="w-5 h-5" /></div>
+                  <div>
+                    <h3 className="font-bold">Quản lý Menu Header (Hàng 3 & 4)</h3>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Ẩn/Hiện các mục trên thanh điều hướng</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                  {['secondary', 'main'].map(loc => (
+                    <div key={loc} className="space-y-4">
+                      <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary bg-primary/5 p-2 rounded-lg">
+                        {loc === 'main' ? 'Hàng 4: Menu Sản Phẩm' : 'Hàng 3: Menu Dịch Vụ & Tin Tức'}
+                      </h4>
+                      <div className="space-y-2">
+                        {parentCategories(loc).map(parent => (
+                          <div key={parent.id} className="space-y-2">
+                            <div className="flex items-center justify-between p-3 bg-secondary/20 rounded-xl border border-border/50">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm">{parent.name}</span>
+                                {parent.is_highlight && <Badge className="bg-red-500 text-[8px] h-4 uppercase">Sale</Badge>}
+                              </div>
+                              <Switch checked={parent.is_visible} onCheckedChange={() => toggleCategoryFlag(parent.id, 'is_visible', parent.is_visible)} />
+                            </div>
+                            
+                            {/* Danh mục con */}
+                            <div className="pl-8 space-y-1 border-l-2 border-dashed border-border ml-4">
+                              {categories.filter(c => c.parent_id === parent.id).map(child => (
+                                <div key={child.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-secondary/40">
+                                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+                                    <ChevronRight className="w-3 h-3" /> {child.name}
+                                  </span>
+                                  <Switch checked={child.is_visible} onCheckedChange={() => toggleCategoryFlag(child.id, 'is_visible', child.is_visible)} />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+           </div>
         </TabsContent>
 
         <TabsContent value="flash_featured" className="space-y-6 mt-6">
@@ -255,7 +347,7 @@ export default function HomepageManager() {
                 <div className="p-4">
                   <Badge variant="outline" className="mb-2 uppercase tracking-widest text-[9px]">{look.category_id}</Badge>
                   <h3 className="font-bold text-center">{look.title}</h3>
-                  <p className="text-xs text-muted-foreground text-center">{look.shop_look_items.length} sản phẩm gắn thẻ</p>
+                  <p className="text-xs text-muted-foreground text-center">{look.shop_look_items?.length || 0} sản phẩm gắn thẻ</p>
                 </div>
               </div>
             ))}
@@ -349,7 +441,7 @@ export default function HomepageManager() {
                   <Select value={editingLook?.category_id} onValueChange={(val) => setEditingLook({...editingLook, category_id: val})}>
                     <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Chọn phòng..." /></SelectTrigger>
                     <SelectContent className="rounded-xl">
-                      {mainCategories.filter(c => c.dropdownKey).map(c => (
+                      {hardcodedMain.filter(c => c.dropdownKey).map(c => (
                         <SelectItem key={c.dropdownKey} value={c.dropdownKey!}>{c.name}</SelectItem>
                       ))}
                     </SelectContent>
