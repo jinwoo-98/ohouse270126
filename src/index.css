@@ -78,6 +78,13 @@
     --sidebar-ring: 38 65% 50%;
   }
 
+  /* Styling for rich text content links on public site */
+  .prose a, 
+  [dangerouslySetInnerHTML] a,
+  .rich-text-content a {
+    @apply text-primary font-bold underline underline-offset-4 transition-all hover:text-charcoal;
+  }
+
   .dark {
     --background: 30 10% 8%;
     --foreground: 40 20% 95%;
