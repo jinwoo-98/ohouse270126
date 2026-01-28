@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Minus, Plus, X, ShoppingBag, ArrowRight, Truck, Shield, CreditCard, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Minus, Plus, X, ShoppingBag, ArrowRight, Truck, Shield, CreditCard, Loader2, MapPin, PlusCircle, CheckCircle2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AuthDialog } from "@/components/AuthDialog";
+import { Badge } from "@/components/ui/badge";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -24,11 +25,51 @@ export default function CartPage() {
   
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
+  
+  // Address States
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [isFetchingAddresses, setIsFetchingAddresses] = useState(false);
+  
+  // Manual Input Fallback
+  const [manualAddress, setManualAddress] = useState("");
+  const [manualPhone, setManualPhone] = useState("");
 
   const shipping = subtotal >= 5000000 || subtotal === 0 ? 0 : 500000;
   const total = subtotal + shipping;
+
+  // Fetch addresses when user logs in
+  useEffect(() => {
+    if (user) {
+      fetchSavedAddresses();
+    } else {
+      setSavedAddresses([]);
+      setSelectedAddressId(null);
+    }
+  }, [user]);
+
+  const fetchSavedAddresses = async () => {
+    setIsFetchingAddresses(true);
+    try {
+      const { data, error } = await supabase
+        .from('shipping_addresses')
+        .select('*')
+        .order('is_default', { ascending: false });
+      
+      if (error) throw error;
+      setSavedAddresses(data || []);
+      
+      // Auto select default or first address
+      if (data && data.length > 0) {
+        const defaultAddr = data.find(a => a.is_default) || data[0];
+        setSelectedAddressId(defaultAddr.id);
+      }
+    } catch (error) {
+      console.error("Lỗi lấy địa chỉ:", error);
+    } finally {
+      setIsFetchingAddresses(false);
+    }
+  };
 
   const handleCheckout = async () => {
     if (!user) {
@@ -36,8 +77,20 @@ export default function CartPage() {
       return;
     }
 
-    if (!address || !phone) {
-      toast.error("Vui lòng nhập đầy đủ địa chỉ và số điện thoại giao hàng.");
+    let finalAddress = "";
+    let finalPhone = "";
+
+    if (savedAddresses.length > 0 && selectedAddressId) {
+      const selected = savedAddresses.find(a => a.id === selectedAddressId);
+      finalAddress = `${selected.detail_address}, ${selected.ward}, ${selected.district}, ${selected.province} (Người nhận: ${selected.receiver_name})`;
+      finalPhone = selected.phone;
+    } else {
+      finalAddress = manualAddress;
+      finalPhone = manualPhone;
+    }
+
+    if (!finalAddress || !finalPhone) {
+      toast.error("Vui lòng chọn hoặc nhập địa chỉ và số điện thoại giao hàng.");
       return;
     }
 
@@ -48,9 +101,10 @@ export default function CartPage() {
         .insert({
           user_id: user.id,
           total_amount: total,
-          shipping_address: address,
-          contact_phone: phone,
+          shipping_address: finalAddress,
+          contact_phone: finalPhone,
           contact_email: user.email,
+          status: 'pending'
         })
         .select().single();
 
@@ -118,22 +172,70 @@ export default function CartPage() {
                 </div>
 
                 <div className="bg-card rounded-xl p-6 shadow-subtle border border-border/50">
-                  <h3 className="font-bold mb-6 flex items-center gap-2"><Truck className="w-5 h-5 text-primary" /> Thông tin giao hàng</h3>
-                  {!user && (
-                    <div className="p-4 bg-primary/5 rounded-lg text-xs font-medium text-primary border border-primary/10 mb-6">
-                      ⚠️ Đăng nhập để tự động điền thông tin và tích điểm thành viên.
+                  <h3 className="font-bold mb-6 flex items-center gap-2 text-charcoal">
+                    <MapPin className="w-5 h-5 text-primary" /> Địa chỉ giao hàng
+                  </h3>
+
+                  {!user ? (
+                    <div className="p-5 bg-secondary/30 rounded-2xl border border-dashed border-border text-center">
+                      <p className="text-sm text-muted-foreground mb-4">Đăng nhập để chọn địa chỉ đã lưu và nhận ưu đãi thành viên.</p>
+                      <Button variant="outline" size="sm" onClick={() => setShowAuthDialog(true)}>Đăng nhập ngay</Button>
+                      <div className="mt-8 grid md:grid-cols-2 gap-4 text-left">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Số điện thoại *</Label>
+                          <Input placeholder="Nhập SĐT nhận hàng" value={manualPhone} onChange={(e) => setManualPhone(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Địa chỉ nhận hàng *</Label>
+                          <Input placeholder="Số nhà, tên đường..." value={manualAddress} onChange={(e) => setManualAddress(e.target.value)} />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {isFetchingAddresses ? (
+                        <div className="flex items-center justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+                      ) : savedAddresses.length > 0 ? (
+                        <div className="grid gap-3">
+                          {savedAddresses.map((addr) => (
+                            <div 
+                              key={addr.id}
+                              onClick={() => setSelectedAddressId(addr.id)}
+                              className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-4 ${
+                                selectedAddressId === addr.id 
+                                  ? 'border-primary bg-primary/5 shadow-md' 
+                                  : 'border-border hover:border-primary/40 bg-card'
+                              }`}
+                            >
+                              <div className={`mt-1 rounded-full border-2 p-0.5 ${selectedAddressId === addr.id ? 'border-primary' : 'border-muted-foreground/30'}`}>
+                                <div className={`w-2.5 h-2.5 rounded-full ${selectedAddressId === addr.id ? 'bg-primary' : 'bg-transparent'}`} />
+                              </div>
+                              <div className="flex-1 overflow-hidden">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-bold text-sm text-charcoal">{addr.receiver_name}</span>
+                                  {addr.is_default && <Badge variant="secondary" className="text-[9px] bg-primary/10 text-primary border-none uppercase tracking-widest px-1.5 py-0">Mặc định</Badge>}
+                                </div>
+                                <p className="text-xs font-medium text-muted-foreground mb-1">{addr.phone}</p>
+                                <p className="text-xs text-charcoal leading-relaxed">{addr.detail_address}, {addr.ward}, {addr.district}, {addr.province}</p>
+                              </div>
+                              {selectedAddressId === addr.id && <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />}
+                            </div>
+                          ))}
+                          <Button variant="ghost" className="w-fit text-xs font-bold text-primary hover:bg-primary/5 p-0 h-auto mt-2" asChild>
+                            <Link to="/tai-khoan/dia-chi">
+                              <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
+                              Thêm địa chỉ mới
+                            </Link>
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border">
+                          <p className="text-sm text-muted-foreground mb-4">Bạn chưa có địa chỉ lưu sẵn.</p>
+                          <Button size="sm" asChild><Link to="/tai-khoan/dia-chi">Tạo địa chỉ ngay</Link></Button>
+                        </div>
+                      )}
                     </div>
                   )}
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-xs uppercase tracking-widest font-bold">Số điện thoại *</Label>
-                      <Input placeholder="Nhập số điện thoại nhận hàng" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs uppercase tracking-widest font-bold">Địa chỉ chi tiết *</Label>
-                      <Input placeholder="Số nhà, tên đường, phường/xã..." value={address} onChange={(e) => setAddress(e.target.value)} />
-                    </div>
-                  </div>
                 </div>
               </div>
 
