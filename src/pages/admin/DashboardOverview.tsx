@@ -12,7 +12,7 @@ import {
   ArrowDownRight,
   Loader2,
   Calendar as CalendarIcon,
-  Filter
+  User
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -35,8 +35,7 @@ import {
   eachDayOfInterval,
   eachMonthOfInterval,
   isSameDay,
-  isSameMonth,
-  subMonths
+  isSameMonth
 } from "date-fns";
 import { vi } from "date-fns/locale";
 import { 
@@ -72,7 +71,6 @@ export default function DashboardOverview() {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      // 1. Xác định khoảng thời gian
       let startDate: Date;
       let endDate = endOfDay(new Date());
 
@@ -88,23 +86,20 @@ export default function DashboardOverview() {
         default: startDate = subDays(new Date(), 7);
       }
 
-      // 2. Lấy dữ liệu đơn hàng trong khoảng thời gian
       const { data: orders } = await supabase
         .from('orders')
         .select('total_amount, created_at')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
 
-      // 3. Lấy dữ liệu tổng quát (luôn lấy tổng kho và tổng user)
       const { count: prodCount } = await supabase.from('products').select('*', { count: 'exact', head: true });
       const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
 
-      // 4. Lấy đơn hàng mới nhất (Top 5)
       const { data: recent } = await supabase
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(6); // Lấy 6 đơn để lấp đầy khung
 
       const periodRevenue = orders?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
 
@@ -116,11 +111,8 @@ export default function DashboardOverview() {
       });
       setRecentOrders(recent || []);
 
-      // 5. Xử lý dữ liệu biểu đồ dựa trên TimeRange
       let processedChartData: any[] = [];
-
       if (timeRange === 'year') {
-        // Gom nhóm theo tháng
         const months = eachMonthOfInterval({ start: startDate, end: endDate });
         processedChartData = months.map(month => {
           const monthOrders = orders?.filter(o => isSameMonth(new Date(o.created_at), month)) || [];
@@ -130,7 +122,6 @@ export default function DashboardOverview() {
           };
         });
       } else {
-        // Gom nhóm theo ngày cho Today, Week, Month, Custom
         const days = eachDayOfInterval({ start: startDate, end: endDate });
         processedChartData = days.map(day => {
           const dayOrders = orders?.filter(o => isSameDay(new Date(o.created_at), day)) || [];
@@ -140,7 +131,6 @@ export default function DashboardOverview() {
           };
         });
       }
-
       setChartData(processedChartData);
 
     } catch (error) {
@@ -161,36 +151,36 @@ export default function DashboardOverview() {
     { title: "Tổng khách hàng", value: stats.totalUsers, icon: Users, color: "bg-purple-500", trend: "+3%", isPositive: true },
   ];
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending': return <span className="w-1.5 h-1.5 rounded-full bg-amber-500" title="Chờ xác nhận" />;
+      case 'processing': return <span className="w-1.5 h-1.5 rounded-full bg-blue-500" title="Đang xử lý" />;
+      case 'shipped': return <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" title="Đang giao" />;
+      case 'delivered': return <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Hoàn thành" />;
+      default: return <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />;
+    }
+  };
+
   return (
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tổng Quan Kinh Doanh</h1>
-          <p className="text-muted-foreground text-sm">Theo dõi hiệu quả hoạt động của OHOUSE theo thời gian.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Tổng Quan Kinh Doanh</h1>
+          <p className="text-muted-foreground text-sm">Phân tích hiệu quả kinh doanh của hệ thống OHOUSE.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {timeRange === 'custom' && (
             <div className="flex items-center gap-2 bg-white p-1 rounded-xl border shadow-sm">
-              <Input 
-                type="date" 
-                className="h-8 border-none text-[10px] w-32" 
-                value={customDates.start}
-                onChange={(e) => setCustomDates({...customDates, start: e.target.value})}
-              />
+              <Input type="date" className="h-8 border-none text-[10px] w-32" value={customDates.start} onChange={(e) => setCustomDates({...customDates, start: e.target.value})} />
               <span className="text-muted-foreground">-</span>
-              <Input 
-                type="date" 
-                className="h-8 border-none text-[10px] w-32" 
-                value={customDates.end}
-                onChange={(e) => setCustomDates({...customDates, end: e.target.value})}
-              />
+              <Input type="date" className="h-8 border-none text-[10px] w-32" value={customDates.end} onChange={(e) => setCustomDates({...customDates, end: e.target.value})} />
             </div>
           )}
           <Select value={timeRange} onValueChange={(val: TimeRange) => setTimeRange(val)}>
             <SelectTrigger className="w-44 h-11 bg-white rounded-xl shadow-sm border-border font-bold text-xs uppercase tracking-widest">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4 text-primary" />
-                <SelectValue placeholder="Chọn khoảng thời gian" />
+                <SelectValue />
               </div>
             </SelectTrigger>
             <SelectContent className="rounded-xl">
@@ -204,14 +194,11 @@ export default function DashboardOverview() {
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-border hover:border-primary/40 transition-all group">
+          <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-border hover:border-primary/40 transition-all">
             <div className="flex items-start justify-between">
-              <div className={`p-3 rounded-xl ${stat.color} text-white shadow-lg`}>
-                <stat.icon className="w-6 h-6" />
-              </div>
+              <div className={`p-3 rounded-xl ${stat.color} text-white shadow-lg`}><stat.icon className="w-6 h-6" /></div>
               <Badge variant="outline" className={`text-[10px] font-bold ${stat.isPositive ? 'border-emerald-100 text-emerald-600 bg-emerald-50' : 'border-rose-100 text-rose-600 bg-rose-50'}`}>
                 {stat.trend} {stat.isPositive ? <ArrowUpRight className="w-3 h-3 ml-1" /> : <ArrowDownRight className="w-3 h-3 ml-1" />}
               </Badge>
@@ -224,19 +211,14 @@ export default function DashboardOverview() {
         ))}
       </div>
 
-      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-border">
           <div className="flex items-center justify-between mb-8">
             <h2 className="font-bold text-lg flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              Biểu đồ doanh thu
+              <TrendingUp className="w-5 h-5 text-primary" /> Biểu đồ doanh thu
             </h2>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-3 py-1 bg-secondary/50 rounded-full">
-              {timeRange === 'year' ? 'Thống kê theo tháng' : 'Thống kê theo ngày'}
-            </div>
           </div>
-          <div className="h-[350px] w-full">
+          <div className="h-[380px] w-full">
             {loading ? (
               <div className="h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
             ) : (
@@ -251,10 +233,7 @@ export default function DashboardOverview() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#888'}} dy={10} />
                   <YAxis axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#888'}} tickFormatter={(v) => v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v} />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value: number) => [formatPrice(value), 'Doanh thu']}
-                  />
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} formatter={(value: number) => [formatPrice(value), 'Doanh thu']} />
                   <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                 </AreaChart>
               </ResponsiveContainer>
@@ -264,34 +243,44 @@ export default function DashboardOverview() {
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-border flex flex-col">
           <h2 className="font-bold text-lg mb-6">Đơn hàng mới nhất</h2>
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-3 overflow-y-auto pr-1 custom-scrollbar">
             {loading ? (
                <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
             ) : recentOrders.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-muted-foreground italic text-sm">
-                Chưa có đơn hàng nào.
-              </div>
-            ) : recentOrders.map((order) => (
-              <div key={order.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/30 transition-colors border border-transparent hover:border-border cursor-pointer" onClick={() => navigate('/admin/orders')}>
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                  <Package className="w-5 h-5" />
+              <div className="h-full flex items-center justify-center text-muted-foreground italic text-sm">Chưa có đơn hàng nào.</div>
+            ) : recentOrders.map((order) => {
+              const customerName = order.contact_email?.split('@')[0] || "Khách lẻ";
+              return (
+                <div key={order.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/30 transition-all border border-transparent hover:border-border/50 cursor-pointer group" onClick={() => navigate('/admin/orders')}>
+                  <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary shrink-0 relative">
+                    <User className="w-5 h-5" />
+                    <div className="absolute -bottom-1 -right-1 p-0.5 bg-white rounded-full">
+                      {getStatusBadge(order.status)}
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold truncate text-charcoal">{customerName}</p>
+                      <span className="text-[9px] font-mono text-muted-foreground">#{order.id.slice(0, 4).toUpperCase()}</span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> {format(new Date(order.created_at), 'HH:mm')}
+                      </p>
+                      <span className="text-border">|</span>
+                      <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), 'dd/MM/yyyy')}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-primary">{formatPrice(order.total_amount)}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-tighter text-muted-foreground group-hover:text-primary transition-colors">Chi tiết →</p>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold truncate">#{order.id.slice(0, 8).toUpperCase()}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{order.contact_email}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-primary">{formatPrice(order.total_amount)}</p>
-                  <p className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), 'dd/MM')}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-          <button 
-            onClick={() => navigate('/admin/orders')}
-            className="w-full mt-6 py-3 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary hover:text-white rounded-xl transition-all border border-dashed border-primary/40 hover:border-solid shadow-sm"
-          >
-            Xem tất cả đơn hàng
+          <button onClick={() => navigate('/admin/orders')} className="w-full mt-6 py-3 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary hover:text-white rounded-xl transition-all border border-dashed border-primary/40 hover:border-solid shadow-sm">
+            Tất cả đơn hàng
           </button>
         </div>
       </div>
