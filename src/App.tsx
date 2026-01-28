@@ -59,17 +59,6 @@ import MarketingTools from "./pages/admin/MarketingTools";
 
 const queryClient = new QueryClient();
 
-const categoryRoutes = [
-  "noi-that", "phong-khach", "phong-ngu", "phong-an", "phong-tam", "phong-lam-viec",
-  "sofa", "ban-tra", "ke-tivi", "den-san", "tu-trang-tri",
-  "giuong", "tu-quan-ao", "ban-trang-diem", "den-ngu",
-  "ban-an", "ghe-an", "tu-ruou", "den-chum",
-  "ban-ghe", "ghe-thu-gian", "ban-lam-viec", "ban-console",
-  "den-trang-tri", "den-ban", "den-tuong",
-  "decor", "tranh", "tham", "guong", "binh-hoa",
-  "sale", "ban-chay", "moi"
-];
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -84,10 +73,7 @@ const App = () => (
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />
                 
-                {categoryRoutes.map(slug => (
-                  <Route key={slug} path={`/${slug}`} element={<CategoryPage />} />
-                ))}
-
+                {/* Specific Pages first */}
                 <Route path="/tim-kiem" element={<SearchPage />} />
                 <Route path="/san-pham/:id" element={<ProductDetailPage />} />
                 <Route path="/gio-hang" element={<CartPage />} />
@@ -110,7 +96,6 @@ const App = () => (
                 <Route path="/showroom" element={<ShowroomPage />} />
                 <Route path="/cam-hung" element={<InspirationPage />} />
                 <Route path="/thiet-ke" element={<DesignServicePage />} />
-                <Route path="/y-tuong/:slug" element={<InspirationPage />} />
                 <Route path="/ve-chung-toi" element={<AboutPage />} />
                 <Route path="/tuyen-dung" element={<RecruitmentPage />} />
                 <Route path="/tin-tuc" element={<NewsPage />} />
@@ -120,16 +105,7 @@ const App = () => (
                 <Route path="/lien-he" element={<ContactPage />} />
                 <Route path="/hop-tac" element={<CooperationPage />} />
                 
-                {/* Support Routes */}
                 <Route path="/ho-tro/:slug" element={<SupportPage />} />
-                <Route path="/huong-dan" element={<Navigate to="/ho-tro/huong-dan" replace />} />
-                <Route path="/doi-tra" element={<Navigate to="/ho-tro/doi-tra" replace />} />
-                <Route path="/bao-hanh" element={<Navigate to="/ho-tro/bao-hanh" replace />} />
-                <Route path="/thanh-toan" element={<Navigate to="/ho-tro/thanh-toan" replace />} />
-                <Route path="/van-chuyen" element={<Navigate to="/ho-tro/van-chuyen" replace />} />
-                <Route path="/faq" element={<Navigate to="/ho-tro/faq" replace />} />
-
-                <Route path="*" element={<NotFound />} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminLayout />}>
@@ -158,6 +134,11 @@ const App = () => (
                   <Route path="theme" element={<ThemeSettings />} />
                   <Route path="settings" element={<GeneralSettings />} />
                 </Route>
+
+                {/* Catch-all for Categories (MUST BE LAST) */}
+                <Route path="/:slug" element={<CategoryPage />} />
+                
+                <Route path="*" element={<NotFound />} />
               </Routes>
               <FloatingActions />
             </WishlistProvider>
