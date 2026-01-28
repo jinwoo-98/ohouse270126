@@ -174,7 +174,7 @@ export default function ProductForm() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold">{isEdit ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}</h1>
-            <p className="text-muted-foreground text-sm">Cập nhật thông tin chi tiết cho website.</p>
+            <p className="text-muted-foreground text-sm">Quản lý nội dung sản phẩm nhanh chóng và thuận tiện.</p>
           </div>
         </div>
         <Button onClick={handleSubmit} disabled={loading} className="btn-hero shadow-gold px-10 rounded-xl">
@@ -185,75 +185,48 @@ export default function ProductForm() {
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
+          {/* 1. SECTION GIÁ VÀ PHÂN LOẠI (Ưu tiên lên trên cùng) */}
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6 border-l-4 border-l-primary">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Info className="w-4 h-4" /> Thông tin cơ bản
+              <Settings2 className="w-4 h-4" /> 1. Giá bán và Phân loại
             </h3>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tên sản phẩm *</Label>
-              <Input 
-                value={formData.name} 
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="Ví dụ: Sofa da Ý cao cấp"
-                required
-                className="h-12 rounded-xl text-lg font-bold"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Chất liệu</Label>
-                <Input value={formData.material} onChange={(e) => setFormData({...formData, material: e.target.value})} placeholder="Gỗ Óc Chó, Da thật..." className="h-12 rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Phong cách</Label>
-                <Input value={formData.style} onChange={(e) => setFormData({...formData, style: e.target.value})} placeholder="Luxury, Hiện đại..." className="h-12 rounded-xl" />
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả sản phẩm</Label>
-                <AIContentAssistant 
-                  contentType="product" 
-                  contextTitle={formData.name} 
-                  onInsert={(val) => setFormData({...formData, description: val})} 
-                />
-              </div>
-              <RichTextEditor 
-                value={formData.description} 
-                onChange={(val) => setFormData({...formData, description: val})} 
-                placeholder="Nhập mô tả chi tiết sản phẩm tại đây..."
-              />
-            </div>
-          </div>
-
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Settings2 className="w-4 h-4" /> Giá và Phân loại
-            </h3>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground">Giá bán lẻ (VND) *</Label>
-                <Input type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} required className="h-12 rounded-xl font-bold text-primary text-lg" />
+                <Input 
+                  type="number" 
+                  value={formData.price} 
+                  onChange={(e) => setFormData({...formData, price: e.target.value})} 
+                  required 
+                  placeholder="Nhập giá bán..."
+                  className="h-12 rounded-xl font-bold text-primary text-lg focus:ring-1" 
+                />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Giá gốc (Nếu có)</Label>
-                <Input type="number" value={formData.original_price} onChange={(e) => setFormData({...formData, original_price: e.target.value})} className="h-12 rounded-xl" />
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Giá gốc (Gạch bỏ)</Label>
+                <Input 
+                  type="number" 
+                  value={formData.original_price} 
+                  onChange={(e) => setFormData({...formData, original_price: e.target.value})} 
+                  placeholder="Để trống nếu không có giá cũ..."
+                  className="h-12 rounded-xl" 
+                />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Danh mục mục tiêu *</Label>
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Danh mục sản phẩm *</Label>
               <Select 
                 value={formData.category_id} 
                 onValueChange={(val) => setFormData({...formData, category_id: val})}
               >
-                <SelectTrigger className="h-12 rounded-xl">
-                  <SelectValue placeholder="Chọn danh mục sản phẩm" />
+                <SelectTrigger className="h-12 rounded-xl border-primary/20 bg-primary/5">
+                  <SelectValue placeholder="Bấm để chọn danh mục hiển thị..." />
                 </SelectTrigger>
                 <SelectContent className="max-h-80 rounded-xl">
                   {parentCategories.map(parent => (
                     <SelectGroup key={parent.id}>
                       <SelectLabel className="font-bold text-primary">{parent.name}</SelectLabel>
-                      <SelectItem value={parent.slug}>-- {parent.name} (Tất cả)</SelectItem>
+                      <SelectItem value={parent.slug}>-- Tất cả {parent.name}</SelectItem>
                       {categories.filter(c => c.parent_id === parent.id).map(child => (
                         <SelectItem key={child.id} value={child.slug}>
                           &nbsp;&nbsp;&nbsp;{child.name}
@@ -265,8 +238,51 @@ export default function ProductForm() {
               </Select>
             </div>
           </div>
+
+          {/* 2. SECTION THÔNG TIN CHI TIẾT */}
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+              <Info className="w-4 h-4" /> 2. Thông tin chi tiết
+            </h3>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tên sản phẩm đầy đủ *</Label>
+              <Input 
+                value={formData.name} 
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="Ví dụ: Sofa da Ý cao cấp 3 chỗ ngồi"
+                required
+                className="h-12 rounded-xl text-lg font-bold"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-2">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Chất liệu chính</Label>
+                <Input value={formData.material} onChange={(e) => setFormData({...formData, material: e.target.value})} placeholder="Gỗ Óc Chó, Da thật..." className="h-12 rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Phong cách thiết kế</Label>
+                <Input value={formData.style} onChange={(e) => setFormData({...formData, style: e.target.value})} placeholder="Luxury, Minimalist..." className="h-12 rounded-xl" />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả bài viết</Label>
+                <AIContentAssistant 
+                  contentType="product" 
+                  contextTitle={formData.name} 
+                  onInsert={(val) => setFormData({...formData, description: val})} 
+                />
+              </div>
+              <RichTextEditor 
+                value={formData.description} 
+                onChange={(val) => setFormData({...formData, description: val})} 
+                placeholder="Mô tả kỹ thuật, kích thước, ưu điểm của sản phẩm..."
+              />
+            </div>
+          </div>
         </div>
 
+        {/* CỘT PHỤ BÊN PHẢI */}
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
@@ -277,20 +293,20 @@ export default function ProductForm() {
 
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" /> Marketing (Ảo)
+              <TrendingUp className="w-4 h-4" /> Marketing (Số liệu ảo)
             </h3>
             <div className="grid gap-4">
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Thứ tự hiển thị</Label>
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Thứ tự hiển thị (Càng nhỏ càng ưu tiên)</Label>
                 <Input type="number" value={formData.display_order} onChange={(e) => setFormData({...formData, display_order: e.target.value})} className="h-10 rounded-lg" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Lượt mua</Label>
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Đã bán</Label>
                   <Input type="number" value={formData.fake_sold} onChange={(e) => setFormData({...formData, fake_sold: e.target.value})} className="h-10 rounded-lg" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Sao (Max 5)</Label>
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Điểm sao (Max 5)</Label>
                   <Input type="number" step="0.1" max="5" value={formData.fake_rating} onChange={(e) => setFormData({...formData, fake_rating: e.target.value})} className="h-10 rounded-lg" />
                 </div>
               </div>
@@ -311,7 +327,7 @@ export default function ProductForm() {
                 <Switch checked={formData.is_sale} onCheckedChange={(val) => setFormData({...formData, is_sale: val})} />
               </div>
               <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-                <span className="text-xs font-bold uppercase">Nổi Bật</span>
+                <span className="text-xs font-bold uppercase">Nổi Bật (Hot)</span>
                 <Switch checked={formData.is_featured} onCheckedChange={(val) => setFormData({...formData, is_featured: val})} />
               </div>
             </div>
