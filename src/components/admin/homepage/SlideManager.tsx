@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus, Edit, Trash2, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/admin/ImageUpload";
@@ -88,7 +89,7 @@ export function SlideManager() {
             </div>
             <div className="flex-1 space-y-1 text-center md:text-left">
               <p className="text-[10px] font-bold uppercase tracking-widest text-primary">{slide.subtitle}</p>
-              <h3 className="font-bold text-lg">{slide.title}</h3>
+              <h3 className="font-bold text-lg whitespace-pre-line">{slide.title}</h3>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={slide.is_active} onCheckedChange={() => toggleActive(slide.id, slide.is_active)} />
@@ -105,7 +106,10 @@ export function SlideManager() {
           <form onSubmit={handleSave} className="space-y-6 py-4">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <div className="space-y-2"><Label>Tiêu đề chính</Label><Input name="title" defaultValue={editingSlide?.title} required /></div>
+                <div className="space-y-2">
+                  <Label>Tiêu đề chính</Label>
+                  <Textarea name="title" defaultValue={editingSlide?.title} placeholder="Nhập tiêu đề, nhấn Enter để xuống dòng..." required className="min-h-[100px] resize-none" />
+                </div>
                 <div className="space-y-2"><Label>Tiêu đề phụ</Label><Input name="subtitle" defaultValue={editingSlide?.subtitle} /></div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2"><Label>Màu chữ</Label><Input type="color" name="text_color" defaultValue={editingSlide?.text_color || '#ffffff'} /></div>

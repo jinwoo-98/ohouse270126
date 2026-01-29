@@ -98,7 +98,10 @@ export function HeroSlider() {
                 </motion.span>
               )}
               
-              <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight" style={{ color: current.text_color || '#ffffff' }}>
+              <h1 
+                className="text-3xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight whitespace-pre-line" 
+                style={{ color: current.text_color || '#ffffff' }}
+              >
                 {current.title}
               </h1>
               
