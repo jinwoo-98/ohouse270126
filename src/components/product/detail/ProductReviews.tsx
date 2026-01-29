@@ -34,9 +34,9 @@ export function ProductReviews({
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Logic hiển thị danh sách thu gọn
+  // Logic hiển thị danh sách thu gọn: Chỉ hiện 2 cái ban đầu
   const [showAll, setShowAll] = useState(false);
-  const INITIAL_COUNT = 5;
+  const INITIAL_COUNT = 2; 
   const visibleReviews = showAll ? reviews : reviews.slice(0, INITIAL_COUNT);
   const hasMore = reviews.length > INITIAL_COUNT;
 

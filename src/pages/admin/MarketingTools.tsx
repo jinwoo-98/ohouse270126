@@ -25,7 +25,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { mainCategories, productCategories } from "@/constants/header-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 
 const VN_LAST_NAMES = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ", "Đặng", "Bùi", "Đỗ", "Hồ", "Ngô", "Dương", "Lý"];
 const VN_MID_NAMES = ["Văn", "Thị", "Hồng", "Minh", "Anh", "Quang", "Xuân", "Thanh", "Đức", "Trọng", "Kim", "Ngọc"];
@@ -73,10 +72,8 @@ export default function MarketingTools() {
   const getRandomItem = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
 
   const generateVnName = () => {
-    return `${getRandomItem(VN_LAST_NAMES)} ${getRandomItem(VN_MID_NAMES)} ${getRandomFirst()}`;
+    return `${getRandomItem(VN_LAST_NAMES)} ${getRandomItem(VN_MID_NAMES)} ${getRandomItem(VN_FIRST_NAMES)}`;
   };
-
-  const getRandomFirst = () => getRandomItem(VN_FIRST_NAMES);
 
   const handleBulkUpdate = async () => {
     if (!confirm("Hệ thống sẽ tính toán số liệu ngẫu nhiên cho từng sản phẩm. Tiếp tục?")) return;
@@ -107,7 +104,7 @@ export default function MarketingTools() {
   };
 
   const handleGenerateReviews = async () => {
-    if (!confirm("Xác nhận sinh nội dung đánh giá mới?")) return;
+    if (!confirm("Xác nhận sinh nội dung đánh giá mới kèm ngày giờ ngẫu nhiên?")) return;
 
     setReviewLoading(true);
     try {
@@ -122,13 +119,20 @@ export default function MarketingTools() {
         const count = p.fake_review_count || 0;
         if (count === 0) continue;
 
+        // Xóa đánh giá cũ trước khi sinh mới
         await supabase.from('reviews').delete().eq('product_id', p.id);
 
         const newReviews = [];
         for (let i = 0; i < count; i++) {
+          // Tạo ngày giờ ngẫu nhiên trong 100 ngày qua
           const randomDays = getRandomInt(1, 100);
+          const randomHours = getRandomInt(0, 23);
+          const randomMins = getRandomInt(0, 59);
+          
           const date = new Date();
           date.setDate(date.getDate() - randomDays);
+          date.setHours(randomHours);
+          date.setMinutes(randomMins);
 
           newReviews.push({
             product_id: p.id,
@@ -140,7 +144,7 @@ export default function MarketingTools() {
         }
         if (newReviews.length > 0) await supabase.from('reviews').insert(newReviews);
       }
-      toast.success("Đã sinh nội dung đánh giá thành công!");
+      toast.success("Đã sinh nội dung đánh giá với đầy đủ ngày giờ thành công!");
     } catch (e: any) { toast.error(e.message); } finally { setReviewLoading(false); }
   };
 
@@ -263,7 +267,7 @@ export default function MarketingTools() {
                   <SelectContent className="rounded-xl">
                     {mainCategories.filter(c => c.dropdownKey).map(parent => (
                       <SelectGroup key={parent.dropdownKey}>
-                        <SelectLabel className="font-bold text-primary">{parent.name}</SelectLabel>
+                        <SelectLabel className="text-primary font-bold">{parent.name}</SelectLabel>
                         <SelectItem value={parent.dropdownKey!}>— Tất cả {parent.name}</SelectItem>
                         {productCategories[parent.dropdownKey!]?.map(child => (
                           <SelectItem key={child.href} value={child.href.replace('/', '')}>&nbsp;&nbsp;&nbsp;{child.name}</SelectItem>

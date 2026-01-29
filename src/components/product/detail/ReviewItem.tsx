@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Star, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, CheckCircle2, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface ReviewItemProps {
   review: any;
@@ -11,14 +10,22 @@ interface ReviewItemProps {
 
 export function ReviewItem({ review }: ReviewItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const maxLength = 150; // Giảm xuống 150 để dễ thấy nút Xem thêm
+  const maxLength = 150;
   const isLongComment = review.comment && review.comment.length > maxLength;
+
+  // Định dạng ngày giờ: HH:mm dd/MM/yyyy
+  const formattedDate = new Date(review.created_at).toLocaleString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
 
   return (
     <div className="bg-white p-6 rounded-2xl border border-border/40 shadow-subtle animate-fade-in group">
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center gap-3">
-          {/* Avatar mặc định từ chữ cái đầu */}
           <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-bold text-sm border border-primary/10 shadow-sm group-hover:scale-105 transition-transform">
             {review.user_name?.charAt(0).toUpperCase() || "C"}
           </div>
@@ -34,14 +41,14 @@ export function ReviewItem({ review }: ReviewItemProps) {
             </div>
           </div>
         </div>
-        <span className="text-[10px] uppercase font-bold text-muted-foreground bg-secondary/50 px-2 py-1 rounded">
-          {new Date(review.created_at).toLocaleDateString('vi-VN')}
-        </span>
+        <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground bg-secondary/50 px-2.5 py-1 rounded-lg">
+          <Clock className="w-3 h-3" />
+          {formattedDate}
+        </div>
       </div>
 
       <div className="pl-0 md:pl-15">
         <div className="relative">
-          {/* Vùng nội dung với hiệu ứng mượt mà */}
           <div className={cn(
             "text-sm text-muted-foreground leading-relaxed italic transition-all duration-500",
             !isExpanded && isLongComment ? "line-clamp-3 overflow-hidden" : ""
