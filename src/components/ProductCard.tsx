@@ -28,10 +28,13 @@ export function ProductCard({ product, className }: ProductCardProps) {
   return (
     <motion.div 
       layout
-      className={cn("group flex flex-col bg-card rounded-[24px] overflow-hidden transition-all duration-500 hover:shadow-medium border border-border/40", className)}
+      className={cn(
+        "group flex flex-col bg-card rounded-[24px] overflow-hidden transition-all duration-500 hover:shadow-medium border border-border/40 h-full", 
+        className
+      )}
     >
       {/* 1. Image Section */}
-      <div className="relative aspect-square overflow-hidden bg-secondary/20">
+      <div className="relative aspect-square overflow-hidden bg-secondary/20 shrink-0">
         <Link to={`/san-pham/${product.slug || product.id}`} className="block h-full w-full">
           <AnimatePresence mode="wait">
             <motion.img 
@@ -90,7 +93,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
       {/* 2. Thumbnails Section - CHỈ ĐỔI KHI CLICK */}
       {gallery.length > 1 && (
-        <div className="flex justify-center gap-1.5 px-3 py-2 border-b border-border/10">
+        <div className="flex justify-center gap-1.5 px-3 py-2 border-b border-border/10 shrink-0">
           {gallery.map((img, idx) => (
             <button
               key={idx}
@@ -106,26 +109,26 @@ export function ProductCard({ product, className }: ProductCardProps) {
         </div>
       )}
 
-      {/* 3. Info Section - Tối ưu khoảng cách co giãn tự nhiên */}
-      <div className="p-4 flex flex-col items-center text-center gap-2">
-        {/* Tên sản phẩm - Không cố định chiều cao để thu gọn nếu text ngắn */}
-        <Link to={`/san-pham/${product.slug || product.id}`} className="block">
+      {/* 3. Info Section - Chiều cao co giãn linh hoạt (flex-1) */}
+      <div className="p-4 flex flex-col items-center text-center flex-1">
+        {/* Tên sản phẩm */}
+        <Link to={`/san-pham/${product.slug || product.id}`} className="block mb-2">
           <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug">
             {product.name}
           </h3>
         </Link>
 
-        {/* Giá sản phẩm - Ngay sát dưới tên */}
-        <div className="w-full">
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <span className="text-sm md:text-base font-bold text-primary">{formatPrice(product.price)}</span>
-            {product.original_price && (
-              <span className="text-[10px] md:text-xs text-muted-foreground line-through opacity-50">
-                {formatPrice(product.original_price)}
-              </span>
-            )}
-          </div>
+        {/* Giá sản phẩm */}
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <span className="text-sm md:text-base font-bold text-primary">{formatPrice(product.price)}</span>
+          {product.original_price && (
+            <span className="text-[10px] md:text-xs text-muted-foreground line-through opacity-50">
+              {formatPrice(product.original_price)}
+            </span>
+          )}
         </div>
+
+        {/* Khoảng trống thừa sẽ nằm ở đây, đẩy các thành phần trên lên đầu */}
       </div>
     </motion.div>
   );
