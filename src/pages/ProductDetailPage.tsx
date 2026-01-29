@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { ChevronRight, Loader2, Truck, RotateCcw, ShieldCheck, CreditCard } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RecentlyViewed, trackProductView } from "@/components/RecentlyViewed";
@@ -221,7 +222,7 @@ export default function ProductDetailPage() {
             {/* 7. Lịch sử xem */}
             <RecentlyViewed />
 
-            {/* 8. Chính sách Vận chuyển & Đổi trả (Tóm tắt từ 2 trang) */}
+            {/* 8. Chính sách Vận chuyển & Đổi trả */}
             <section className="py-16 border-t border-border/60">
               <div className="grid lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2">
