@@ -184,12 +184,14 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="container-luxury py-12">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 mb-24">
-            <ProductGallery mainImage={product.image_url} galleryImages={product.gallery_urls} productName={product.name} />
-            <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
-          </div>
-
+          {/* Sử dụng khung max-w-6xl đồng nhất cho toàn bộ trang */}
           <div className="max-w-6xl mx-auto space-y-24">
+            
+            {/* Top Section: Gallery & Info */}
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
+              <ProductGallery mainImage={product.image_url} galleryImages={product.gallery_urls} productName={product.name} />
+              <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
+            </div>
             
             <div id="description"><ProductDescription description={product.description} /></div>
             

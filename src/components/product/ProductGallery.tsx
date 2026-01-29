@@ -47,9 +47,9 @@ export function ProductGallery({ mainImage, galleryImages, productName }: Produc
   };
 
   return (
-    <div className="space-y-4 select-none">
+    <div className="space-y-4 select-none w-full overflow-hidden">
       {/* Main Image Container */}
-      <div className="relative group bg-white rounded-[32px] overflow-hidden border border-border/40 shadow-subtle aspect-square">
+      <div className="relative group bg-white rounded-2xl md:rounded-[32px] overflow-hidden border border-border/40 shadow-subtle aspect-square">
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.img
             key={currentIndex}
@@ -71,12 +71,12 @@ export function ProductGallery({ mainImage, galleryImages, productName }: Produc
         </AnimatePresence>
 
         {/* Overlay Tools */}
-        <div className="absolute top-6 right-6 z-20 flex flex-col gap-3">
+        <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20 flex flex-col gap-3">
           <button 
             onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
-            className="p-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-elevated hover:bg-primary hover:text-white transition-all text-charcoal group"
+            className="p-2.5 md:p-3 bg-white/90 backdrop-blur-md rounded-xl md:rounded-2xl shadow-elevated hover:bg-primary hover:text-white transition-all text-charcoal group"
           >
-            <ZoomIn className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            <ZoomIn className="w-4 h-4 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
           </button>
         </div>
 
@@ -85,28 +85,28 @@ export function ProductGallery({ mainImage, galleryImages, productName }: Produc
           <>
             <button 
               onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-white/80 backdrop-blur-md rounded-2xl shadow-medium hover:bg-primary hover:text-white transition-all text-charcoal z-10 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 md:p-4 bg-white/80 backdrop-blur-md rounded-xl md:rounded-2xl shadow-medium hover:bg-primary hover:text-white transition-all text-charcoal z-10 lg:opacity-0 lg:group-hover:opacity-100"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); paginate(1); }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-white/80 backdrop-blur-md rounded-2xl shadow-medium hover:bg-primary hover:text-white transition-all text-charcoal z-10 lg:opacity-0 lg:group-hover:opacity-100"
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 md:p-4 bg-white/80 backdrop-blur-md rounded-xl md:rounded-2xl shadow-medium hover:bg-primary hover:text-white transition-all text-charcoal z-10 lg:opacity-0 lg:group-hover:opacity-100"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
             </button>
           </>
         )}
         
         {/* Counter Badge */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-charcoal/80 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-[10px] font-bold uppercase tracking-widest border border-white/10 z-10">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-charcoal/80 backdrop-blur-md px-3 py-1.5 rounded-full text-white text-[9px] md:text-[10px] font-bold uppercase tracking-widest border border-white/10 z-10">
           {currentIndex + 1} / {allImages.length}
         </div>
       </div>
 
       {/* Thumbnails */}
       {allImages.length > 1 && (
-        <div className="flex gap-3 overflow-x-auto no-scrollbar py-2 px-1">
+        <div className="flex gap-2.5 md:gap-3 overflow-x-auto no-scrollbar py-2 px-0.5">
           {allImages.map((img, idx) => (
             <button
               key={idx}
@@ -115,7 +115,7 @@ export function ProductGallery({ mainImage, galleryImages, productName }: Produc
                 setCurrentIndex(idx);
               }}
               className={cn(
-                "relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden border-2 transition-all shrink-0",
+                "relative w-16 h-16 md:w-24 md:h-24 rounded-xl md:rounded-2xl overflow-hidden border-2 transition-all shrink-0",
                 currentIndex === idx 
                   ? "border-primary shadow-gold ring-4 ring-primary/10" 
                   : "border-transparent opacity-50 hover:opacity-100"
