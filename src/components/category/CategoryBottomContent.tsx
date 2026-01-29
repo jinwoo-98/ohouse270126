@@ -112,7 +112,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                   onClick={() => setSelectedLook(look)}
                 >
                   <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
+                  <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
                   
                   {/* Active Dots on Image */}
                   <TooltipProvider>
@@ -120,15 +120,15 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                       <Tooltip key={i} delayDuration={0}>
                         <TooltipTrigger asChild>
                           <button
-                            className="absolute w-7 h-7 -ml-3.5 -mt-3.5 bg-white/90 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in z-20"
+                            className="absolute w-8 h-8 -ml-4 -mt-4 bg-white/95 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in z-20 group/dot"
                             style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                             onClick={(e) => { 
                               e.stopPropagation(); 
                               if (item.products) setQuickViewProduct(item.products);
                             }}
                           >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+                            <Plus className="w-4 h-4" />
+                            <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-75 group-hover/dot:hidden" />
                           </button>
                         </TooltipTrigger>
                         {item.products && (
@@ -140,10 +140,6 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                       </Tooltip>
                     ))}
                   </TooltipProvider>
-
-                  <div className="absolute top-6 left-6 bg-charcoal/60 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Chạm để xem đồ nội thất
-                  </div>
                 </div>
 
                 <div className="flex items-center justify-between px-3">
