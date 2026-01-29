@@ -100,7 +100,7 @@ export default function ProjectForm() {
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
             <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Hình ảnh đại diện</Label>
-            <ImageUpload value={formData.image_url} onChange={url => setFormData({...formData, image_url: url})} />
+            <ImageUpload value={formData.image_url} onChange={url => setFormData({...formData, image_url: url as string})} />
           </div>
           <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Layout className="w-4 h-4" /> Thông số dự án</h3>

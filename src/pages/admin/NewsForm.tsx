@@ -96,7 +96,7 @@ export default function NewsForm() {
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
             <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Ảnh đại diện bài viết</Label>
-            <ImageUpload value={formData.image_url} onChange={url => setFormData({...formData, image_url: url})} />
+            <ImageUpload value={formData.image_url} onChange={url => setFormData({...formData, image_url: url as string})} />
           </div>
 
           <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">

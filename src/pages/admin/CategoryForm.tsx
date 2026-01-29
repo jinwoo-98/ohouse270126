@@ -303,7 +303,7 @@ export default function CategoryForm() {
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
             <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Ảnh đại diện danh mục</Label>
-            <ImageUpload value={formData.image_url} onChange={(url) => setFormData({...formData, image_url: url})} />
+            <ImageUpload value={formData.image_url} onChange={(url) => setFormData({...formData, image_url: url as string})} />
             <p className="text-[10px] text-muted-foreground italic">Cần thiết nếu bạn chọn hiển thị danh mục này ở trang chủ.</p>
           </div>
         </div>

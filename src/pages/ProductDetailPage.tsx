@@ -125,7 +125,7 @@ export default function ProductDetailPage() {
   const fetchAttributes = async () => {
     try {
       const { data } = await supabase.from('product_attributes').select('value, attributes(name)').eq('product_id', id);
-      if (data) setAttributes(data.map(item => ({ name: item.attributes?.name, value: item.value })));
+      if (data) setAttributes(data.map(item => ({ name: (item.attributes as any)?.name, value: item.value })));
     } catch (err) {}
   };
 
