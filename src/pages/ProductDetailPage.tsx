@@ -13,7 +13,6 @@ import { ProductHorizontalList } from "@/components/product/detail/ProductHorizo
 import { ProductQnA } from "@/components/product/detail/ProductQnA";
 import { ProductDescription } from "@/components/product/detail/ProductDescription";
 import { ProductReviews } from "@/components/product/detail/ProductReviews";
-import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
 import { StickyActionToolbar } from "@/components/product/detail/StickyActionToolbar";
 
 export default function ProductDetailPage() {
@@ -63,9 +62,9 @@ export default function ProductDetailPage() {
         fetchReviews(data.id), 
         fetchAttributes(data.id),
         fetchSimilarProducts(data.category_id, data.id),
-        // Hoàn thiện không gian (Perfect Match): Ưu tiên chọn tay -> Fallback: Sản phẩm cùng danh mục
+        // Gợi ý phối đồ (Perfect Match)
         fetchRelationProducts(data.perfect_match_ids || [], setPerfectMatch, true, data.category_id, data.id),
-        // Gợi ý mua kèm (Bought Together): Ưu tiên chọn tay -> Fallback: Lấy hàng hot
+        // Thường mua cùng
         fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether, true, 'all', data.id),
         fetchSettings()
       ]);
@@ -208,18 +207,18 @@ export default function ProductDetailPage() {
 
             <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
 
-            {/* 1. Hoàn thiện không gian (Perfect Match) - Dạng Ảnh phối cảnh lớn */}
+            {/* 4. Bộ sưu tập phối sẵn (Sử dụng danh sách ngang) */}
             {perfectMatch.length > 0 && (
-              <ProductInspiration product={product} comboProducts={perfectMatch} />
+              <ProductHorizontalList products={perfectMatch} title="Bộ sưu tập hoàn hảo" />
             )}
 
-            {/* 2. Gợi ý mua kèm ưu đãi (Bought Together) - Dạng Danh sách ngang */}
-            {boughtTogether.length > 0 && (
-              <ProductHorizontalList products={boughtTogether} title="Gợi ý mua kèm ưu đãi" />
-            )}
-
-            {/* 3. Sản phẩm tương tự */}
+            {/* 5. Sản phẩm tương tự */}
             <ProductHorizontalList products={similarProducts} title="Sản phẩm tương tự" />
+
+            {/* 6. Thường mua cùng nhau */}
+            {boughtTogether.length > 0 && (
+              <ProductHorizontalList products={boughtTogether} title="Thường được mua cùng nhau" />
+            )}
 
             <RecentlyViewed />
 
