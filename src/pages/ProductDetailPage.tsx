@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight, Loader2, Truck } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,22 +50,31 @@ export default function ProductDetailPage() {
       if (error) throw error;
       setProduct(data);
       
-      trackProductView({ id: data.id, name: data.name, price: data.price, image: data.image_url, slug: data.slug });
+      // Lưu vào lịch sử xem
+      trackProductView({ 
+        id: data.id, 
+        name: data.name, 
+        price: data.price, 
+        image: data.image_url, 
+        slug: data.slug 
+      });
       
+      // Lấy đường dẫn danh mục
       if (data.category_id) {
         fetchCategoryHierarchy(data.category_id);
       }
 
-      // Parallel Data Fetching
+      // Tải song song tất cả các khối nội dung
       await Promise.all([
         fetchReviews(data.id), 
         fetchAttributes(data.id),
         fetchSimilarProducts(data.category_id, data.id),
         fetchRelationProducts(data.perfect_match_ids || [], setPerfectMatch),
-        fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether),
+        fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether, true, data.category_id),
         fetchSettings()
       ]);
     } catch (error) {
+      console.error("Fetch error:", error);
       toast.error("Sản phẩm không tồn tại");
       navigate("/");
     } finally {
@@ -78,10 +87,23 @@ export default function ProductDetailPage() {
     if (data) setShippingPolicy(data.shipping_policy_summary);
   };
 
-  const fetchRelationProducts = async (ids: string[], setter: (val: any[]) => void) => {
-    if (!ids || ids.length === 0) return;
-    const { data } = await supabase.from('products').select('*').in('id', ids);
-    setter(data || []);
+  const fetchRelationProducts = async (ids: string[], setter: (val: any[]) => void, useFallback = false, catId = "") => {
+    if (ids && ids.length > 0) {
+      const { data } = await supabase.from('products').select('*').in('id', ids);
+      if (data && data.length > 0) {
+        setter(data);
+        return;
+      }
+    }
+    
+    // Fallback: Lấy các sản phẩm khác cùng loại nếu chưa setup
+    if (useFallback && catId) {
+      const { data } = await supabase.from('products')
+        .select('*')
+        .eq('category_id', catId)
+        .limit(4);
+      setter(data || []);
+    }
   };
 
   const fetchCategoryHierarchy = async (categorySlug: string) => {
@@ -100,12 +122,21 @@ export default function ProductDetailPage() {
   const fetchAttributes = async (productId: string) => {
     try {
       const { data } = await supabase.from('product_attributes').select('value, attributes(name)').eq('product_id', productId);
-      if (data) setAttributes(data.map(item => ({ name: (item.attributes as any)?.name, value: item.value })));
+      if (data) {
+        setAttributes(data.map(item => ({ 
+          name: (item.attributes as any)?.name, 
+          value: item.value 
+        })));
+      }
     } catch (err) {}
   };
 
   const fetchSimilarProducts = async (categoryId: string, currentId: string) => {
-    const { data } = await supabase.from('products').select('*').eq('category_id', categoryId).neq('id', currentId).limit(8);
+    const { data } = await supabase.from('products')
+      .select('*')
+      .eq('category_id', categoryId)
+      .neq('id', currentId)
+      .limit(8);
     setSimilarProducts(data || []);
   };
 
@@ -130,7 +161,13 @@ export default function ProductDetailPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -193,11 +230,13 @@ export default function ProductDetailPage() {
             {shippingPolicy && (
               <section className="py-16 border-t border-border/60">
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary"><Truck className="w-5 h-5" /></div>
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                    <Truck className="w-5 h-5" />
+                  </div>
                   <h2 className="text-xl font-bold uppercase tracking-widest text-charcoal">Chính sách Giao hàng & Đổi trả</h2>
                 </div>
                 <div 
-                  className="rich-text-content prose prose-stone max-w-none text-muted-foreground prose-li:mb-2 prose-a:text-primary"
+                  className="rich-text-content prose prose-stone max-w-none text-muted-foreground"
                   dangerouslySetInnerHTML={{ __html: shippingPolicy }}
                 />
               </section>
@@ -214,6 +253,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
-// Sub-component for Truck icon if needed (handled by lucide import)
-import { Truck } from "lucide-react";

@@ -68,7 +68,6 @@
     @apply hover:shadow-gold hover:scale-[1.02];
   }
 
-  /* Luxury Card: Bỏ nền trắng và shadow mặc định */
   .card-luxury {
     @apply bg-transparent rounded-lg overflow-hidden;
     @apply transition-all duration-500 ease-out;
@@ -80,4 +79,16 @@
   }
 
   .container-luxury { @apply max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8; }
+
+  /* Rich Text Style - Đảm bảo căn giữa mọi nội dung */
+  .rich-text-content {
+    @apply text-center mx-auto max-w-4xl;
+  }
+  .rich-text-content img {
+    @apply mx-auto rounded-2xl my-8 shadow-medium block;
+    max-width: 100%;
+  }
+  .rich-text-content p {
+    @apply mb-4 leading-relaxed;
+  }
 }
