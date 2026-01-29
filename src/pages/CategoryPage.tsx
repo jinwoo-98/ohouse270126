@@ -105,11 +105,11 @@ export default function CategoryPage() {
             {/* Title & Count */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
               <div>
-                <h1 className="text-3xl md:text-5xl font-display font-bold text-charcoal uppercase tracking-tighter leading-none">
+                <h1 className="text-xl md:text-3xl font-display font-bold text-charcoal uppercase tracking-tight leading-none">
                   {pageTitle}
                 </h1>
-                <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-[0.3em] mt-4">
-                  {isLoading ? "Đang cập nhật..." : `${products.length} sản phẩm tuyển chọn`}
+                <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-[0.3em] mt-3">
+                  {isLoading ? "Đang cập nhật..." : `${products.length} sản phẩm`}
                 </p>
               </div>
             </div>
