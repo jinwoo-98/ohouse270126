@@ -31,44 +31,76 @@ const VN_LAST_NAMES = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh
 const VN_MID_NAMES = ["Văn", "Thị", "Hồng", "Minh", "Anh", "Quang", "Xuân", "Thanh", "Đức", "Trọng", "Kim", "Ngọc"];
 const VN_FIRST_NAMES = ["An", "Bình", "Chi", "Dũng", "Giang", "Hương", "Khánh", "Linh", "Nam", "Oanh", "Phúc", "Quyên", "Sơn", "Thảo", "Uyên", "Vinh", "Yến", "Tùng", "Lâm", "Hải"];
 
-// Kho nội dung đánh giá theo ngữ cảnh sản phẩm
+// Kho nội dung đánh giá phong phú hơn để tránh trùng lặp
 const REVIEW_POOLS: Record<string, string[]> = {
   sofa: [
     "Sofa êm cực kỳ, hoàn thiện tỉ mỉ. Ohousr làm ăn uy tín thật sự 👍",
-    "Đệm ngồi rất thik, vải nhung sờ mướt tay lắm mng nhen. Màu sang hơn ảnh 😍",
+    "Đệm ngồi rất thik, vải nhung sờ mướt tay lắm nhen. Màu sang hơn ảnh 😍",
     "Form ghế đẹp, ngồi ko bị lún sâu quá, rất vừa vặn với pk nhà mình",
     "Vải bọc xịn xò, đường may chắc chắn. Giao hàng hơi chậm tí nhưng sp okela",
-    "Mua cái sofa này xong nhìn cái phòng khách đẳng cấp hẳn luôn ✨✨"
+    "Mua cái sofa này xong nhìn cái phòng khách đẳng cấp hẳn luôn ✨✨",
+    "Hàng đẹp, ngồi rất sướng. Da thật có khác, sờ vào mát tay cực kỳ nhen mng",
+    "Shop tư vấn nhiệt tình, chọn đc mẫu sofa ưng ý hết nấc ntn 😂",
+    "Đẹp hơn mong đợi nhiều luôn á. Lắp đặt nhanh gọn, thợ lễ phép",
+    "Vừa nhận đc hàng xong, sofa dày dặn chắc nịch. Đáng đồng tiền bát gạo",
+    "Màu sắc nhã nhặn, hợp nội thất nhà mình. Sẽ ủng hộ shop thêm nhen",
+    "Chất lượng 10/10 nhen shop ơi, sp quá tuyệt vời luôn 💯"
   ],
   table_stand: [
     "Kệ tivi gỗ chắc chắn, mặt đá vân rất đẹp nha. Đóng gói kỹ ko trầy xước",
     "Bàn ăn đẹp quáaaaa, nhìn xịn xò hẳn. Ai đến cũng khen mẫu này lạ",
     "Rất ưbg mẫu bàn trà này, kích thước chuẩn, hoàn thiện cực sắc nét 💯",
     "Gỗ thơm, sơn phủ mượt. Mấy cái ngăn kéo mở rất êm ko bị kẹt",
-    "Hàng chuẩn như showroom, mặt đá dày dặn chắc nịch luôn mng ạ"
+    "Hàng chuẩn như showroom, mặt đá dày dặn chắc nịch luôn mng ạ",
+    "Bàn ăn mặt đá sang trọng cực. Nhà mình ai cũng thik món này nhất",
+    "Đóng gói siêu kỹ luôn, tháo ra mệt nghỉ luôn á 😂 nhưng bù lại sp ko vết xước",
+    "Vân đá tự nhiên đẹp xuất sắc, chân inox mạ vàng nhìn rất luxury",
+    "Lắp đặt chuyên nghiệp, bàn ăn chắc chắn ko bị rung lắc tí nào",
+    "Đúng gu mình lun, tối giản mà đẳng cấp nhen. Cảm ơn shop nhìu",
+    "Kệ tivi thiết kế hiện đại, để đồ decor vào nhìn sang hẳn luôn á"
   ],
   bed: [
     "Giường chắc chắn, lắp xong nằm thử thấy êm ru ko bị kêu cọt kẹt",
     "Mẫu giường luxury thật sự, bọc da rất tỉ mỉ. Đáng tiền bát gạo 💯💯",
     "Giường to rộng, gỗ dày dặn. Mấy bạn thợ lắp đặt nhiệt tình lắm nhen",
     "Từ ngày đổi giường này ngủ ngon hẳn luôn 😂 sp quá xuất sắc!",
-    "Hàng đẹp, đóng thùng gỗ cẩn thận. Rất hài lòng với dịch vụ Ohouse"
+    "Hàng đẹp, đóng thùng gỗ cẩn thận. Rất hài lòng với dịch vụ Ohouse",
+    "Đệm đầu giường êm, đọc sách thoải mái ko bị mỏi lưng. Da xịn mịn",
+    "Kiểu dáng tân cổ điển đẹp mê mẩn nhen mng. Màu kem rất sang",
+    "Giường chắc, giát giường nan cong nằm thik cực kỳ luôn",
+    "Shop giao đúng hẹn, nhân viên lắp đặt tận tâm. Sp đẹp như mẫu",
+    "Nâng tầm phòng ngủ luôn á, nhìn như khách sạn 5 sao vậy 😍",
+    "Thích nhất cái mùi gỗ tự nhiên của giường này. Thơm nhẹ nhàng"
   ],
   lighting: [
     "Đèn chùm lấp lánh lung linh luôn mng ơi ✨ treo lên cái phòng khách sang chảnh hẳn",
     "Pha lê xịn, ánh sáng dịu ko bị chói mắt. Shop đóng gói cực kỳ cẩn thận",
     "Lắp đặt hơi lâu tí nhưng thành quả quá mỹ mãn. Đèn đẹp 10/10 😍",
     "Mẫu đèn hiện đại, tinh tế. Sẽ ủng hộ shop thêm mấy mẫu đèn ngủ nữa",
-    "Ánh sáng vàng ấm cúng, nhìn rất chill nha mng. Đáng mua ạ 👍"
+    "Ánh sáng vàng ấm cúng, nhìn rất chill nha mng. Đáng mua ạ 👍",
+    "Đèn đẹp dã man, lắp vào căn hộ nhìn lung linh hẳn lên nhen",
+    "Pha lê K9 bắt sáng cực tốt, đêm bật đèn nhìn mê ly luôn ạ",
+    "Giá hơi chát tí nhưng tiền nào của nấy, nhìn rất đẳng cấp nhen",
+    "Mng nên mua nhé, mẫu này treo sảnh hay phòng khách đều ok",
+    "Shop hướng dẫn lắp tận tình. Sp chất lượng, đóng gói 5 lớp luôn 😂",
+    "Đèn chùm này là điểm nhấn hoàn hảo cho nhà mình rồi ✨"
   ],
   generic: [
     "Hàng đẹp lắm mng ơi, nên mua nhaaa 😍 sp đóng gói kỹ lắm",
     "Sp tốt, đúng mô tả. Sẽ giới thiệu cho bạn bè ủng hộ shop",
     "Giao hàng nhanh vãi, nhân viên lắp đặt nhiệt tình tận tâm 👍👍",
     "Sp chuẩn auth, hoàn thiện tốt. Tiền nào của nấy thật sự",
-    "Mng nên mua nhé, shop này làm đồ nội thất đỉnh thật sự ❤️❤️"
+    "Mng nên mua nhé, shop này làm đồ nội thất đỉnh thật sự ❤️❤️",
+    "Chưa bao giờ thất vọng khi mua đồ ở Ohouse. Chất lượng luôn đi đầu",
+    "Sp đẹp sắc nét, màu sắc chuẩn như hình. Rất hài lòng nhen",
+    "Ưng cái bụng ghê, sp nhìn ngoài còn đẹp hơn trong ảnh cơ",
+    "Dịch vụ khách hàng tốt, sp chất lượng. 5 sao ko nói nhiều ⭐⭐⭐⭐⭐",
+    "Giao hàng tỉnh mà nhanh bất ngờ. Sp an toàn ko móp méo",
+    "Đồ nội thất ohouse thì khỏi bàn r, lúc nào cũng xịn xò hết"
   ]
 };
+
+const EXTRA_FLAIR = ["!", "!!", " ❤️", " 😍", " ✨", " 👍", " 💯", " nhen", " ạ", " nha mng", "...", " (y)"];
 
 export default function MarketingTools() {
   const [loading, setLoading] = useState(false);
@@ -88,19 +120,47 @@ export default function MarketingTools() {
   const getRandomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
   const getRandomFloat = (min: number, max: number) => (Math.random() * (max - min) + min).toFixed(1);
   const getRandomItem = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
+  
+  const shuffleArray = (array: any[]) => {
+    const newArr = [...array];
+    for (let i = newArr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+    }
+    return newArr;
+  };
 
   const generateVnName = () => {
     return `${getRandomItem(VN_LAST_NAMES)} ${getRandomItem(VN_MID_NAMES)} ${getRandomItem(VN_FIRST_NAMES)}`;
   };
 
-  // Hàm chọn comment liên quan đến tên sản phẩm
-  const getRelevantComment = (productName: string) => {
+  const getDiverseComments = (productName: string, count: number) => {
     const name = productName.toLowerCase();
-    if (name.includes('sofa') || name.includes('ghế')) return getRandomItem(REVIEW_POOLS.sofa);
-    if (name.includes('bàn') || name.includes('kệ') || name.includes('tủ')) return getRandomItem(REVIEW_POOLS.table_stand);
-    if (name.includes('giường') || name.includes('nệm')) return getRandomItem(REVIEW_POOLS.bed);
-    if (name.includes('đèn')) return getRandomItem(REVIEW_POOLS.lighting);
-    return getRandomItem(REVIEW_POOLS.generic);
+    let basePool: string[] = [];
+    
+    if (name.includes('sofa') || name.includes('ghế')) basePool = REVIEW_POOLS.sofa;
+    else if (name.includes('bàn') || name.includes('kệ') || name.includes('tủ')) basePool = REVIEW_POOLS.table_stand;
+    else if (name.includes('giường') || name.includes('nệm')) basePool = REVIEW_POOLS.bed;
+    else if (name.includes('đèn')) basePool = REVIEW_POOLS.lighting;
+    else basePool = REVIEW_POOLS.generic;
+
+    const shuffled = shuffleArray(basePool);
+    const results: string[] = [];
+
+    for (let i = 0; i < count; i++) {
+      // Lấy câu gốc theo vòng lặp pool
+      let comment = shuffled[i % shuffled.length];
+      
+      // Nếu là vòng lặp thứ 2 trở đi hoặc đơn giản là muốn tăng tính duy nhất
+      // Thêm hậu tố ngẫu nhiên để text ko bao giờ giống hệt nhau
+      if (i >= shuffled.length || Math.random() > 0.5) {
+        comment += getRandomItem(EXTRA_FLAIR);
+      }
+
+      results.push(comment);
+    }
+    
+    return results;
   };
 
   const handleBulkUpdate = async () => {
@@ -133,7 +193,7 @@ export default function MarketingTools() {
 
   const handleGenerateReviews = async () => {
     const daysBack = parseInt(stats.review_days_back) || 30;
-    if (!confirm(`Xác nhận sinh nội dung đánh giá ngẫu nhiên (có chọn lọc theo loại SP) trong khoảng ${daysBack} ngày qua?`)) return;
+    if (!confirm(`Xác nhận sinh nội dung đánh giá duy nhất trong khoảng ${daysBack} ngày qua?`)) return;
 
     setReviewLoading(true);
     try {
@@ -148,10 +208,12 @@ export default function MarketingTools() {
         const count = p.fake_review_count || 0;
         if (count === 0) continue;
 
-        // Xóa đánh giá cũ để làm mới
+        // Xóa đánh giá cũ để làm mới hoàn toàn
         await supabase.from('reviews').delete().eq('product_id', p.id);
 
+        const comments = getDiverseComments(p.name, count);
         const newReviews = [];
+        
         for (let i = 0; i < count; i++) {
           const randomDays = getRandomInt(1, daysBack);
           const randomHours = getRandomInt(0, 23);
@@ -166,13 +228,13 @@ export default function MarketingTools() {
             product_id: p.id,
             user_name: generateVnName(),
             rating: Math.round(p.fake_rating || 5),
-            comment: getRelevantComment(p.name), // Lấy comment phù hợp
+            comment: comments[i], // Sử dụng câu đã qua xử lý duy nhất
             created_at: date.toISOString()
           });
         }
         if (newReviews.length > 0) await supabase.from('reviews').insert(newReviews);
       }
-      toast.success(`Đã sinh đánh giá theo ngữ cảnh thành công!`);
+      toast.success(`Đã sinh đánh giá đa dạng và không trùng lặp thành công!`);
     } catch (e: any) { toast.error(e.message); } finally { setReviewLoading(false); }
   };
 
@@ -262,7 +324,7 @@ export default function MarketingTools() {
                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2"><MessageSquareQuote className="w-5 h-5" /> 3. Nội dung đánh giá thực tế</h3>
                 
                 <div className="space-y-4 mb-8">
-                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sẽ tự động đối chiếu tên sản phẩm để sinh các nhận xét phù hợp nhất (ví dụ: Sofa sẽ nhận xét về độ êm, Bàn/Kệ nhận xét về độ chắc chắn).</p>
+                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sẽ tự động xáo trộn và biến đổi các nhận xét theo loại sản phẩm để đảm bảo không có sự trùng lặp giống hệt nhau trên cùng một trang.</p>
                   
                   <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
@@ -279,7 +341,7 @@ export default function MarketingTools() {
                 </div>
 
                 <Button onClick={handleGenerateReviews} disabled={reviewLoading} variant="outline" className="w-full h-14 border-primary/40 hover:bg-primary text-primary hover:text-white rounded-2xl text-sm font-bold uppercase">
-                  {reviewLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} Sinh nội dung đánh giá theo ngữ cảnh
+                  {reviewLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} Sinh nội dung đánh giá theo ngữ cảnh
                 </Button>
               </div>
             </div>
