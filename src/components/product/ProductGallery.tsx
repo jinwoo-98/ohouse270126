@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2, X, ZoomIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -14,51 +14,20 @@ interface ProductGalleryProps {
 }
 
 export function ProductGallery({ mainImage, galleryImages, productName }: ProductGalleryProps) {
-  // Xử lý an toàn: Chuyển galleryImages thành mảng rỗng nếu là null/undefined
   const safeGallery = Array.isArray(galleryImages) ? galleryImages : [];
-  
-  // Gộp ảnh chính và ảnh phụ thành 1 mảng
   const allImages = [mainImage, ...safeGallery].filter(Boolean);
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  
-  // Logic Zoom
-  const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({ display: 'none' });
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    
-    const { left, top, width, height } = containerRef.current.getBoundingClientRect();
-    const x = ((e.pageX - left - window.scrollX) / width) * 100;
-    const y = ((e.pageY - top - window.scrollY) / height) * 100;
-    
-    setZoomStyle({
-      display: 'block',
-      backgroundPosition: `${x}% ${y}%`,
-      backgroundImage: `url(${allImages[currentIndex]})`,
-    });
-  };
-
-  const handleMouseLeave = () => {
-    setZoomStyle({ display: 'none' });
-  };
 
   const goToNext = () => setCurrentIndex((prev) => (prev + 1) % allImages.length);
   const goToPrev = () => setCurrentIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 select-none">
       {/* Main Image Container */}
-      <div className="relative group">
-        <div 
-          ref={containerRef}
-          className="relative aspect-square bg-white rounded-2xl overflow-hidden border border-border shadow-subtle cursor-crosshair"
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          onClick={() => setIsLightboxOpen(true)}
-        >
+      <div className="relative group bg-white rounded-2xl overflow-hidden border border-border shadow-subtle">
+        <div className="aspect-square relative">
           <AnimatePresence mode="wait">
             <motion.img
               key={currentIndex}
@@ -68,59 +37,59 @@ export function ProductGallery({ mainImage, galleryImages, productName }: Produc
               transition={{ duration: 0.3 }}
               src={allImages[currentIndex]}
               alt={productName}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover cursor-pointer"
+              onClick={() => setIsLightboxOpen(true)}
             />
           </AnimatePresence>
 
-          {/* Zoom Overlay */}
-          <div 
-            className="absolute inset-0 pointer-events-none z-10 bg-no-repeat bg-[length:250%]"
-            style={zoomStyle}
-          />
-
-          {/* Action Buttons */}
-          <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Action Buttons - Always visible on mobile, visible on group hover for desktop */}
+          <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
             <button 
               onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
-              className="p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-medium hover:bg-primary hover:text-white transition-all"
+              className="p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-medium hover:bg-primary hover:text-white transition-all text-charcoal"
+              title="Phóng to ảnh"
             >
-              <Maximize2 className="w-5 h-5" />
+              <ZoomIn className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Nav Arrows */}
+          {/* Nav Arrows - Always visible with better contrast */}
           {allImages.length > 1 && (
             <>
               <button 
                 onClick={(e) => { e.stopPropagation(); goToPrev(); }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-sm hover:bg-white opacity-0 group-hover:opacity-100 transition-all"
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/80 backdrop-blur-sm rounded-full shadow-medium hover:bg-white hover:text-primary transition-all text-charcoal border border-black/5"
               >
-                <ChevronLeft className="w-6 h-6" />
+                <ChevronLeft className="w-5 h-5" />
               </button>
               <button 
                 onClick={(e) => { e.stopPropagation(); goToNext(); }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-sm hover:bg-white opacity-0 group-hover:opacity-100 transition-all"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/80 backdrop-blur-sm rounded-full shadow-medium hover:bg-white hover:text-primary transition-all text-charcoal border border-black/5"
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-5 h-5" />
               </button>
             </>
           )}
+          
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-medium">
+            {currentIndex + 1} / {allImages.length}
+          </div>
         </div>
       </div>
 
       {/* Thumbnails */}
       {allImages.length > 1 && (
-        <div className="flex gap-3 overflow-x-auto no-scrollbar py-2">
+        <div className="flex gap-3 overflow-x-auto custom-scrollbar py-2 px-1">
           {allImages.map((img, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentIndex(idx)}
               className={cn(
                 "relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0",
-                currentIndex === idx ? "border-primary shadow-md scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                currentIndex === idx ? "border-primary shadow-md ring-1 ring-primary/20" : "border-transparent opacity-60 hover:opacity-100"
               )}
             >
-              <img src={img} alt={`${productName} thumbnail ${idx}`} className="w-full h-full object-cover" />
+              <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
@@ -128,30 +97,27 @@ export function ProductGallery({ mainImage, galleryImages, productName }: Produc
 
       {/* Lightbox Dialog */}
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-none bg-transparent shadow-none flex items-center justify-center">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-none bg-transparent shadow-none flex items-center justify-center z-[200]">
           <div className="relative w-full h-full flex items-center justify-center">
             <button 
               onClick={() => setIsLightboxOpen(false)}
-              className="fixed top-6 right-6 p-3 bg-charcoal/50 text-white rounded-full hover:bg-charcoal transition-colors z-[160]"
+              className="fixed top-6 right-6 p-3 bg-charcoal/50 text-white rounded-full hover:bg-charcoal transition-colors z-[210]"
             >
               <X className="w-6 h-6" />
             </button>
             
             <img 
               src={allImages[currentIndex]} 
-              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-elevated"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
               alt={productName}
             />
 
             {allImages.length > 1 && (
-              <div className="fixed bottom-10 left-0 right-0 flex justify-center gap-4 z-[160]">
-                <Button variant="outline" size="icon" onClick={goToPrev} className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+              <div className="fixed bottom-10 left-0 right-0 flex justify-center gap-6 z-[210]">
+                <Button variant="outline" size="icon" onClick={goToPrev} className="h-12 w-12 rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md">
                   <ChevronLeft className="w-6 h-6" />
                 </Button>
-                <div className="px-4 py-2 bg-charcoal/50 text-white rounded-full text-xs font-bold tracking-widest backdrop-blur-md">
-                  {currentIndex + 1} / {allImages.length}
-                </div>
-                <Button variant="outline" size="icon" onClick={goToNext} className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                <Button variant="outline" size="icon" onClick={goToNext} className="h-12 w-12 rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-md">
                   <ChevronRight className="w-6 h-6" />
                 </Button>
               </div>
