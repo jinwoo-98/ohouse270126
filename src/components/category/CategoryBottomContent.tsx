@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, Sparkles, Plus } from "lucide-react";
+import { TrendingUp, Sparkles, ShoppingBag, Plus, X, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useCart } from "@/contexts/CartContext";
 import { formatPrice } from "@/lib/utils";
 
@@ -68,7 +69,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
               <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-primary" />
               </div>
-              <h2 className="text-sm font-bold uppercase tracking-widest">Xu Hướng Tìm Kiếm</h2>
+              <h2 className="text-sm font-bold uppercase tracking-widest text-charcoal">Xu Hướng Tìm Kiếm</h2>
             </div>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 flex-1">
               {keywords.map((item) => (
@@ -85,15 +86,15 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
         </section>
       )}
 
-      {/* 2. Shop The Look */}
+      {/* 2. Shop The Look (Design Inspiration) */}
       {!isParentCategory && shopLooks.length > 0 && (
         <section>
-          <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center gap-3 mb-10">
             <Sparkles className="w-6 h-6 text-primary" />
             <h2 className="text-xl md:text-2xl font-bold uppercase tracking-widest text-charcoal">Cảm Hứng Thiết Kế</h2>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {shopLooks.map((look, idx) => (
               <motion.div 
                 key={look.id}
@@ -101,21 +102,56 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                className="group flex flex-col gap-4"
+                className="group flex flex-col gap-5"
               >
                 <div 
-                  className="relative aspect-video rounded-[24px] overflow-hidden cursor-pointer shadow-medium group-hover:shadow-elevated transition-all duration-500"
+                  className="relative aspect-video rounded-[32px] overflow-hidden cursor-pointer shadow-medium group-hover:shadow-elevated transition-all duration-500"
                   onClick={() => setSelectedLook(look)}
                 >
                   <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
-                  {look.shop_look_items?.map((item: any, i: number) => (
-                    <div key={i} className="absolute w-3 h-3 bg-white border border-primary rounded-full shadow-gold animate-pulse" style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }} />
-                  ))}
+                  
+                  {/* Active Dots on Image */}
+                  <TooltipProvider>
+                    {look.shop_look_items?.map((item: any, i: number) => (
+                      <Tooltip key={i} delayDuration={0}>
+                        <TooltipTrigger asChild>
+                          <button
+                            className="absolute w-7 h-7 -ml-3.5 -mt-3.5 bg-white/90 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in"
+                            style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
+                            onClick={(e) => { e.stopPropagation(); setSelectedLook(look); }}
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+                          </button>
+                        </TooltipTrigger>
+                        {item.products && (
+                          <TooltipContent className="bg-charcoal text-cream border-none p-3 rounded-xl shadow-elevated">
+                            <p className="font-bold text-[10px] uppercase tracking-wider">{item.products.name}</p>
+                            <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    ))}
+                  </TooltipProvider>
+
+                  <div className="absolute top-6 left-6 bg-charcoal/60 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Chạm để xem đồ nội thất
+                  </div>
                 </div>
-                <div className="flex items-center justify-between px-2">
-                  <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors">{look.title}</h3>
-                  <Button variant="outline" className="rounded-full px-6 h-10 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white" onClick={() => setSelectedLook(look)}>Xem ngay +</Button>
+
+                <div className="flex items-center justify-between px-3">
+                  <div>
+                    <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">{look.shop_look_items?.length || 0} sản phẩm phối hợp</p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="rounded-xl px-6 h-12 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm"
+                    onClick={() => setSelectedLook(look)}
+                  >
+                    XEM NGAY +
+                  </Button>
                 </div>
               </motion.div>
             ))}
@@ -123,9 +159,9 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
         </section>
       )}
 
-      {/* 3. SEO Content - Bỏ nền trắng */}
+      {/* 3. SEO Content */}
       {seoContent && (
-        <section className="py-12">
+        <section className="py-12 border-t border-border/40">
           <div 
             className="rich-text-content prose prose-stone max-w-none text-muted-foreground prose-headings:text-charcoal prose-a:text-primary leading-relaxed"
             dangerouslySetInnerHTML={{ __html: seoContent }} 
@@ -133,36 +169,65 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
         </section>
       )}
 
-      {/* Look Detail Sheet */}
+      {/* Look Detail Sheet - Listings */}
       <Sheet open={!!selectedLook} onOpenChange={(open) => !open && setSelectedLook(null)}>
         <SheetContent side="right" className="w-full sm:max-w-[500px] p-0 flex flex-col z-[150] border-none shadow-elevated">
           {selectedLook && (
             <>
-              <div className="flex-1 overflow-y-auto custom-scrollbar">
-                <div className="relative aspect-[4/5] bg-secondary/20">
+              <div className="flex-1 overflow-y-auto custom-scrollbar bg-background">
+                <div className="relative aspect-[4/3] bg-secondary/20">
                   <img src={selectedLook.image_url} className="w-full h-full object-cover" alt={selectedLook.title} />
-                  <div className="absolute inset-0 bg-black/10" />
-                  {selectedLook.shop_look_items?.map((item: any, i: number) => (
-                    <div key={i} className="absolute w-8 h-8 -ml-4 -mt-4 bg-white/90 backdrop-blur-sm rounded-full border-2 border-primary flex items-center justify-center text-primary font-bold text-sm shadow-gold" style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}>+</div>
-                  ))}
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 to-transparent" />
+                  <div className="absolute bottom-6 left-8 right-8">
+                     <SheetHeader>
+                        <Badge className="w-fit mb-3 bg-primary text-white border-none uppercase tracking-widest text-[9px]">OHOUSE Inspiration</Badge>
+                        <SheetTitle className="text-2xl font-bold text-white uppercase tracking-widest text-left leading-tight">
+                          {selectedLook.title}
+                        </SheetTitle>
+                        <SheetDescription className="text-cream/80 text-xs font-medium uppercase tracking-widest mt-2">
+                           {selectedLook.shop_look_items?.length || 0} Sản phẩm trong không gian này
+                        </SheetDescription>
+                     </SheetHeader>
+                  </div>
                 </div>
+
                 <div className="p-8">
-                  <h2 className="text-2xl font-bold text-charcoal uppercase tracking-widest mb-8">{selectedLook.title}</h2>
                   <div className="space-y-6">
                     {selectedLook.shop_look_items?.map((item: any) => (
-                      <div key={item.id} className="group flex items-center gap-4 p-4 rounded-2xl bg-secondary/20 border border-transparent hover:border-primary/20 hover:bg-white transition-all shadow-sm">
-                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-white shrink-0"><img src={item.products?.image_url} alt="" className="w-full h-full object-cover" /></div>
-                        <div className="flex-1 min-w-0">
-                          <h5 className="font-bold text-sm text-charcoal truncate">{item.products?.name}</h5>
-                          <p className="text-primary font-bold text-base mt-1">{formatPrice(item.products?.price)}</p>
+                      <div key={item.id} className="group flex items-center gap-5 p-4 rounded-[24px] bg-white border border-border/40 hover:border-primary/30 transition-all shadow-subtle">
+                        <div className="w-24 h-24 rounded-2xl overflow-hidden bg-secondary/30 shrink-0 border border-border/20">
+                           <img src={item.products?.image_url} alt={item.products?.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                         </div>
-                        <Button size="icon" className="w-10 h-10 rounded-full" onClick={() => addToCart({ ...item.products, quantity: 1, image: item.products.image_url })}><Plus className="w-4 h-4" /></Button>
+                        <div className="flex-1 min-w-0 flex flex-col">
+                          <h5 className="font-bold text-sm text-charcoal truncate mb-1">{item.products?.name}</h5>
+                          <p className="text-primary font-bold text-lg">{formatPrice(item.products?.price)}</p>
+                          
+                          <div className="mt-4 flex gap-2">
+                             <Button 
+                                size="sm" 
+                                className="flex-1 btn-hero h-10 text-[9px] font-bold shadow-none rounded-lg"
+                                onClick={() => addToCart({ ...item.products, quantity: 1, image: item.products.image_url })}
+                             >
+                               <ShoppingBag className="w-3.5 h-3.5 mr-2" /> MUA NGAY
+                             </Button>
+                             <Button 
+                                variant="outline" 
+                                size="icon" 
+                                className="h-10 w-10 rounded-lg border-border/60 hover:bg-secondary"
+                                asChild
+                             >
+                               <Link to={`/san-pham/${item.products?.slug}`}><ChevronRight className="w-4 h-4" /></Link>
+                             </Button>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
-              <div className="p-6 bg-card border-t border-border/40 sticky bottom-0"><Button className="w-full btn-hero h-14 rounded-2xl shadow-gold" onClick={() => setSelectedLook(null)}>TIẾP TỤC KHÁM PHÁ</Button></div>
+              <div className="p-6 bg-white border-t border-border/40 sticky bottom-0 shadow-[0_-10px_20px_rgba(0,0,0,0.03)]">
+                <Button className="w-full btn-hero h-14 rounded-2xl shadow-gold text-xs font-bold" onClick={() => setSelectedLook(null)}>TIẾP TỤC MUA SẮM</Button>
+              </div>
             </>
           )}
         </SheetContent>
