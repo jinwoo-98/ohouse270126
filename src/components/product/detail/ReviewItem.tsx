@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Star, CheckCircle2, ChevronDown, ChevronUp, Clock } from "lucide-react";
+import { Star, CheckCircle2, ChevronDown, ChevronUp, Clock, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StarRating } from "./ProductReviews";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 interface ReviewItemProps {
   review: any;
@@ -14,7 +15,6 @@ export function ReviewItem({ review }: ReviewItemProps) {
   const maxLength = 150;
   const isLongComment = review.comment && review.comment.length > maxLength;
 
-  // Định dạng ngày giờ: HH:mm dd/MM/yyyy
   const formattedDate = new Date(review.created_at).toLocaleString('vi-VN', {
     hour: '2-digit',
     minute: '2-digit',
@@ -33,7 +33,6 @@ export function ReviewItem({ review }: ReviewItemProps) {
           <div>
             <p className="text-sm font-bold text-charcoal">{review.user_name}</p>
             <div className="mt-0.5">
-              {/* Sử dụng StarRating để có hiển thị tô đặc đồng bộ */}
               <StarRating rating={review.rating} size="w-3.5 h-3.5" />
             </div>
           </div>
@@ -44,7 +43,7 @@ export function ReviewItem({ review }: ReviewItemProps) {
         </div>
       </div>
 
-      <div className="pl-0 md:pl-15">
+      <div className="pl-0 md:pl-15 space-y-4">
         <div className="relative">
           <div className={cn(
             "text-sm text-muted-foreground leading-relaxed italic transition-all duration-500",
@@ -67,7 +66,34 @@ export function ReviewItem({ review }: ReviewItemProps) {
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 mt-5 text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 w-fit px-2.5 py-1 rounded-lg border border-emerald-100">
+        {/* Hiển thị ảnh đánh giá nếu có */}
+        {review.image_url && (
+          <div className="pt-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-xl overflow-hidden border border-border/60 cursor-zoom-in group/img shadow-sm hover:shadow-md transition-all">
+                  <img 
+                    src={review.image_url} 
+                    className="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-500" 
+                    alt="Customer review photo" 
+                  />
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
+                    <Maximize2 className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+              </DialogTrigger>
+              <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 border-none bg-transparent shadow-none overflow-hidden flex items-center justify-center">
+                <img 
+                  src={review.image_url} 
+                  className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl" 
+                  alt="Review detailed photo" 
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
+
+        <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 w-fit px-2.5 py-1 rounded-lg border border-emerald-100">
           <CheckCircle2 className="w-3 h-3" /> Đã mua hàng tại OHOUSE
         </div>
       </div>

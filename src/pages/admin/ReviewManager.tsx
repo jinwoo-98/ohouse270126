@@ -9,7 +9,8 @@ import {
   AlertTriangle,
   Save,
   User,
-  MessageSquare
+  MessageSquare,
+  ImageIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { cn } from "@/lib/utils";
 
 export default function ReviewManager() {
@@ -27,7 +29,6 @@ export default function ReviewManager() {
   const [searchTerm, setSearchTerm] = useState("");
   const [ratingFilter, setRatingFilter] = useState("all");
 
-  // State cho việc chỉnh sửa
   const [editingReview, setEditingReview] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -91,7 +92,8 @@ export default function ReviewManager() {
         .update({
           user_name: editingReview.user_name,
           rating: editingReview.rating,
-          comment: editingReview.comment
+          comment: editingReview.comment,
+          image_url: editingReview.image_url
         })
         .eq('id', editingReview.id);
 
@@ -99,7 +101,7 @@ export default function ReviewManager() {
 
       toast.success("Đã cập nhật đánh giá thành công!");
       setIsEditDialogOpen(false);
-      fetchReviews(); // Tải lại danh sách để đồng bộ dữ liệu
+      fetchReviews();
     } catch (error: any) {
       toast.error("Lỗi cập nhật: " + error.message);
     } finally {
@@ -158,15 +160,16 @@ export default function ReviewManager() {
                 <th className="px-6 py-4">Sản phẩm</th>
                 <th className="px-6 py-4">Khách hàng</th>
                 <th className="px-6 py-4">Đánh giá</th>
+                <th className="px-6 py-4">Hình ảnh</th>
                 <th className="px-6 py-4">Nội dung</th>
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {loading ? (
-                <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
+                <tr><td colSpan={6} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground italic py-20">Không có đánh giá nào được tìm thấy.</td></tr>
+                <tr><td colSpan={6} className="p-12 text-center text-muted-foreground italic py-20">Không có đánh giá nào được tìm thấy.</td></tr>
               ) : filtered.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4 max-w-[220px]">
@@ -197,7 +200,16 @@ export default function ReviewManager() {
                       ))}
                     </div>
                   </td>
-                  <td className="px-6 py-4 max-w-[300px]">
+                  <td className="px-6 py-4">
+                    {item.image_url ? (
+                      <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden border">
+                        <img src={item.image_url} alt="Review" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground italic">Không có ảnh</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 max-w-[250px]">
                     <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 italic">"{item.comment}"</p>
                   </td>
                   <td className="px-6 py-4 text-right">
@@ -217,9 +229,8 @@ export default function ReviewManager() {
         </div>
       </div>
 
-      {/* Dialog Chỉnh sửa Đánh giá */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-3xl p-0 overflow-hidden border-none shadow-elevated">
+        <DialogContent className="sm:max-w-[600px] rounded-3xl p-0 overflow-hidden border-none shadow-elevated">
           <div className="bg-charcoal p-6 text-white">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3 text-lg font-bold">
@@ -229,39 +240,51 @@ export default function ReviewManager() {
             </DialogHeader>
           </div>
 
-          <div className="p-8 space-y-6">
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <User className="w-3 h-3" /> Tên khách hàng
-              </Label>
-              <Input 
-                value={editingReview?.user_name || ""} 
-                onChange={(e) => setEditingReview({ ...editingReview, user_name: e.target.value })}
-                className="h-12 rounded-xl"
-              />
+          <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <User className="w-3 h-3" /> Tên khách hàng
+                </Label>
+                <Input 
+                  value={editingReview?.user_name || ""} 
+                  onChange={(e) => setEditingReview({ ...editingReview, user_name: e.target.value })}
+                  className="h-12 rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <Star className="w-3 h-3" /> Số sao đánh giá
+                </Label>
+                <div className="flex gap-1.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setEditingReview({ ...editingReview, rating: s })}
+                      className={cn(
+                        "w-9 h-9 rounded-xl flex items-center justify-center transition-all border",
+                        editingReview?.rating === s 
+                          ? "bg-primary border-primary text-white shadow-gold" 
+                          : "bg-secondary/30 border-border text-muted-foreground hover:border-primary/40"
+                      )}
+                    >
+                      <span className="font-bold text-sm">{s}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Star className="w-3 h-3" /> Số sao đánh giá
+                <ImageIcon className="w-3 h-3" /> Hình ảnh thực tế (Tùy chọn)
               </Label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setEditingReview({ ...editingReview, rating: s })}
-                    className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center transition-all border",
-                      editingReview?.rating === s 
-                        ? "bg-primary border-primary text-white shadow-gold" 
-                        : "bg-secondary/30 border-border text-muted-foreground hover:border-primary/40"
-                    )}
-                  >
-                    <span className="font-bold text-sm">{s}</span>
-                  </button>
-                ))}
-              </div>
+              <ImageUpload 
+                value={editingReview?.image_url || ""} 
+                onChange={(url) => setEditingReview({ ...editingReview, image_url: url as string })} 
+              />
             </div>
 
             <div className="space-y-2">
