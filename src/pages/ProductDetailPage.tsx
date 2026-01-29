@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Loader2, Truck, Info, Star, MessageSquare, LayoutGrid } from "lucide-react";
+import { ChevronRight, Loader2, Truck, Info, Star, MessageSquare, LayoutGrid, PackageSearch, ShoppingCart } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,12 +35,14 @@ export default function ProductDetailPage() {
   const [showQuickNav, setShowQuickNav] = useState(false);
   const [activeSection, setActiveSection] = useState("info");
 
+  // Danh sách các mục điều hướng nhanh
   const quickNavItems = [
     { id: "info", label: "Thông tin", icon: Info },
     { id: "description", label: "Chi tiết", icon: LayoutGrid },
     { id: "reviews", label: "Đánh giá", icon: Star },
     { id: "qna", label: "Hỏi đáp", icon: MessageSquare },
-    { id: "related", label: "Gợi ý", icon: ChevronRight },
+    { id: "similar", label: "Tương tự", icon: PackageSearch },
+    { id: "bought-together", label: "Mua cùng nhau", icon: ShoppingCart },
   ];
 
   useEffect(() => {
@@ -52,17 +54,16 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Hiện Quick Nav sau khi cuộn qua phần thông tin đầu trang (~600px)
       setShowQuickNav(window.scrollY > 600);
 
-      // Xác định section đang hiển thị
+      // Theo dõi vị trí cuộn để đổi trạng thái active trên menu
       for (const item of quickNavItems) {
         const element = document.getElementById(item.id);
         if (element) {
           const rect = element.getBoundingClientRect();
-          if (rect.top >= 0 && rect.top <= 200) {
+          // Nếu phần tử đang ở gần đầu màn hình (trong khoảng 0-250px)
+          if (rect.top >= -50 && rect.top <= 250) {
             setActiveSection(item.id);
-            break;
           }
         }
       }
@@ -70,7 +71,7 @@ export default function ProductDetailPage() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [quickNavItems]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -170,7 +171,7 @@ export default function ProductDetailPage() {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const headerOffset = 140; // Trừ đi chiều cao header + quick nav
+      const headerOffset = 80; 
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
       window.scrollTo({ top: offsetPosition, behavior: "smooth" });
@@ -183,45 +184,33 @@ export default function ProductDetailPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
-      {/* Quick Navigation Bar - Sticky on top when scrolling */}
+      {/* Quick Navigation Bar - Tối ưu chỉ còn menu điều hướng */}
       <AnimatePresence>
         {showQuickNav && (
           <motion.div 
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-[60] bg-white/90 backdrop-blur-md shadow-medium border-b border-border/40"
+            className="fixed top-0 left-0 right-0 z-[60] bg-white/95 backdrop-blur-md shadow-medium border-b border-border/40 h-14 md:h-16"
           >
-            <div className="container-luxury flex items-center justify-between h-16">
-              <div className="flex items-center gap-4 shrink-0 mr-8">
-                <img src={product.image_url} className="w-10 h-10 rounded-lg object-cover border" alt="" />
-                <div className="hidden sm:block">
-                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest leading-none mb-1">Đang xem</p>
-                  <p className="text-sm font-bold text-charcoal truncate max-w-[200px]">{product.name}</p>
-                </div>
-              </div>
-
-              <nav className="flex-1 flex items-center justify-center gap-1 md:gap-8 overflow-x-auto no-scrollbar scroll-smooth">
+            <div className="container-luxury h-full flex items-center justify-center">
+              <nav className="flex items-center gap-1 md:gap-8 overflow-x-auto no-scrollbar scroll-smooth">
                 {quickNavItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => scrollToSection(item.id)}
                     className={cn(
-                      "px-3 py-2 text-[10px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all border-b-2",
+                      "px-4 py-2 text-[10px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all border-b-2 flex items-center gap-2",
                       activeSection === item.id 
                         ? "text-primary border-primary" 
                         : "text-muted-foreground border-transparent hover:text-charcoal"
                     )}
                   >
-                    <span className="hidden sm:inline">{item.label}</span>
-                    <item.icon className="w-4 h-4 sm:hidden" />
+                    <item.icon className="w-3.5 h-3.5" />
+                    <span>{item.label}</span>
                   </button>
                 ))}
               </nav>
-
-              <div className="shrink-0 ml-4 hidden md:block">
-                 <p className="text-primary font-bold">{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(product.price)}</p>
-              </div>
             </div>
           </motion.div>
         )}
@@ -248,9 +237,11 @@ export default function ProductDetailPage() {
             <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
           </div>
 
-          <ProductDescription description={product.description} />
+          <div id="description" className="scroll-mt-24">
+            <ProductDescription description={product.description} />
+          </div>
 
-          <div id="reviews">
+          <div id="reviews" className="scroll-mt-24">
             <ProductReviews 
               reviews={reviews} 
               product={product} 
@@ -260,14 +251,20 @@ export default function ProductDetailPage() {
             />
           </div>
 
-          <div id="qna">
+          <div id="qna" className="scroll-mt-24">
             <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
           </div>
 
-          <div id="related" className="scroll-mt-24">
-            <ProductHorizontalList products={perfectMatchProducts} title="Gợi Ý Phối Cảnh Đồng Bộ" />
-            <ProductHorizontalList products={similarProducts} title="Sản phẩm tương tự" />
-            <ProductHorizontalList products={boughtTogetherProducts} title="Thường được mua cùng nhau" />
+          <div className="space-y-16">
+            <div id="perfect-match" className="scroll-mt-24">
+              <ProductHorizontalList products={perfectMatchProducts} title="Gợi Ý Phối Cảnh Đồng Bộ" />
+            </div>
+            <div id="similar" className="scroll-mt-24">
+              <ProductHorizontalList products={similarProducts} title="Sản phẩm tương tự" />
+            </div>
+            <div id="bought-together" className="scroll-mt-24">
+              <ProductHorizontalList products={boughtTogetherProducts} title="Thường được mua cùng nhau" />
+            </div>
           </div>
 
           <RecentlyViewed />
