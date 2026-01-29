@@ -16,18 +16,6 @@ import { ProductReviews } from "@/components/product/detail/ProductReviews";
 import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
 import { StickyActionToolbar } from "@/components/product/detail/StickyActionToolbar";
 
-// Map từ khóa danh mục sang các danh mục gợi ý
-const CROSS_SELL_KEYWORDS: Record<string, string[]> = {
-  'sofa': ['ban-tra', 'ke-tivi', 'den-san', 'tham'],
-  'ban-tra': ['sofa', 'tham', 'ke-tivi'],
-  'ke-tivi': ['sofa', 'ban-tra', 'tu-trang-tri'],
-  'giuong': ['tu-quan-ao', 'ban-trang-diem', 'den-ngu', 'dem'],
-  'tu-quan-ao': ['giuong', 'guong', 'ban-trang-diem'],
-  'ban-an': ['ghe-an', 'den-chum', 'tu-ruou'],
-  'ghe-an': ['ban-an', 'den-chum'],
-  'mac-dinh': ['den-trang-tri', 'tranh', 'tham']
-};
-
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -42,7 +30,6 @@ export default function ProductDetailPage() {
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
   const [perfectMatch, setPerfectMatch] = useState<any[]>([]);
   const [boughtTogether, setBoughtTogether] = useState<any[]>([]);
-  const [crossSellProducts, setCrossSellProducts] = useState<any[]>([]);
   const [shippingPolicy, setShippingPolicy] = useState("");
   
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
@@ -70,16 +57,16 @@ export default function ProductDetailPage() {
       
       if (data.category_id) {
         fetchCategoryHierarchy(data.category_id);
-        fetchCrossSell(data.category_id, data.id);
       }
 
       await Promise.all([
         fetchReviews(data.id), 
         fetchAttributes(data.id),
         fetchSimilarProducts(data.category_id, data.id),
-        fetchRelationProducts(data.perfect_match_ids || [], setPerfectMatch),
-        // Bought Together: Ưu tiên thủ công -> Fallback: Lấy sản phẩm rẻ tiền hơn cùng danh mục (như phụ kiện)
-        fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether, true, data.category_id),
+        // Gợi ý phối đồ (Perfect Match): Ưu tiên chọn tay -> Fallback: Sản phẩm cùng danh mục
+        fetchRelationProducts(data.perfect_match_ids || [], setPerfectMatch, true, data.category_id, data.id),
+        // Thường mua cùng: Ưu tiên chọn tay -> Fallback: Lấy random sản phẩm khác danh mục hoặc bán chạy
+        fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether, true, 'all', data.id),
         fetchSettings()
       ]);
     } catch (error) {
@@ -95,41 +82,8 @@ export default function ProductDetailPage() {
     if (data) setShippingPolicy(data.shipping_policy_summary);
   };
 
-  const fetchCrossSell = async (categorySlug: string, currentId: string) => {
-    // 1. Tìm danh sách gợi ý dựa trên từ khóa trong slug
-    let targetCategories = CROSS_SELL_KEYWORDS['mac-dinh'];
-    
-    for (const key in CROSS_SELL_KEYWORDS) {
-      if (categorySlug.includes(key)) {
-        targetCategories = CROSS_SELL_KEYWORDS[key];
-        break;
-      }
-    }
-
-    // 2. Fetch sản phẩm
-    const { data } = await supabase
-      .from('products')
-      .select('*')
-      .in('category_id', targetCategories) // Tìm chính xác theo slug danh mục
-      .neq('id', currentId)
-      .limit(8); // Lấy nhiều hơn cho Carousel
-    
-    // Nếu không có kết quả chính xác, thử tìm rộng hơn (bỏ qua filter category chính xác, tìm theo tên)
-    if (!data || data.length === 0) {
-       // Fallback: Lấy random sản phẩm nổi bật
-       const { data: fallbackData } = await supabase
-         .from('products')
-         .select('*')
-         .eq('is_featured', true)
-         .neq('id', currentId)
-         .limit(8);
-       setCrossSellProducts(fallbackData || []);
-    } else {
-       setCrossSellProducts(data);
-    }
-  };
-
-  const fetchRelationProducts = async (ids: string[], setter: (val: any[]) => void, useFallback = false, catId = "") => {
+  const fetchRelationProducts = async (ids: string[], setter: (val: any[]) => void, useFallback = false, catId = "", currentId = "") => {
+    // 1. Ưu tiên lấy theo danh sách ID đã chọn thủ công
     if (ids && ids.length > 0) {
       const { data } = await supabase.from('products').select('*').in('id', ids);
       if (data && data.length > 0) {
@@ -138,13 +92,17 @@ export default function ProductDetailPage() {
       }
     }
     
-    if (useFallback && catId) {
-      // Fallback cho "Thường mua cùng": Lấy các sản phẩm giá thấp hơn trong cùng danh mục (giả lập phụ kiện)
-      const { data } = await supabase.from('products')
-        .select('*')
-        .eq('category_id', catId)
-        .order('price', { ascending: true }) // Lấy đồ rẻ
-        .limit(6);
+    // 2. Logic Tự Động (Fallback)
+    if (useFallback) {
+      let query = supabase.from('products').select('*').neq('id', currentId).limit(8);
+      
+      if (catId !== 'all') {
+        query = query.eq('category_id', catId);
+      } else {
+        query = query.eq('is_featured', true); // Nếu không chọn gì thì lấy hàng nổi bật
+      }
+
+      const { data } = await query;
       setter(data || []);
     }
   };
@@ -257,28 +215,23 @@ export default function ProductDetailPage() {
             {/* 3. Hỏi AI */}
             <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
 
-            {/* 4. Gợi ý mua cùng (Cross-sell tự động theo danh mục) */}
-            {crossSellProducts.length > 0 && (
-              <ProductHorizontalList products={crossSellProducts} title="Gợi ý phối đồ hoàn hảo" />
+            {/* 4. Bộ sưu tập phối sẵn (Gợi ý phối đồ) */}
+            {perfectMatch.length > 0 && (
+              <ProductInspiration product={product} comboProducts={perfectMatch} />
             )}
 
             {/* 5. Sản phẩm tương tự */}
             <ProductHorizontalList products={similarProducts} title="Sản phẩm tương tự" />
 
-            {/* 6. Bộ sưu tập (Perfect Match - Chọn tay) */}
-            {perfectMatch.length > 0 && (
-              <ProductInspiration product={product} comboProducts={perfectMatch} />
-            )}
-
-            {/* 7. Thường mua cùng nhau (Bought Together - Chọn tay hoặc Fallback giá rẻ) */}
+            {/* 6. Thường mua cùng nhau */}
             {boughtTogether.length > 0 && (
               <ProductHorizontalList products={boughtTogether} title="Thường được mua cùng nhau" />
             )}
 
-            {/* 8. Lịch sử xem */}
+            {/* 7. Lịch sử xem */}
             <RecentlyViewed />
 
-            {/* 9. Vận chuyển & Hoàn trả */}
+            {/* 8. Vận chuyển & Hoàn trả */}
             {shippingPolicy && (
               <section className="py-16 border-t border-border/60">
                 <div className="flex flex-col md:flex-row gap-12">
