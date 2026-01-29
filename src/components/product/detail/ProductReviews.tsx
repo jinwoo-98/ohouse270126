@@ -108,11 +108,11 @@ export function ProductReviews({
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Khung cuộn nội bộ */}
+              {/* Khung cuộn nội bộ - Đã tăng lên max-h-[1200px] */}
               <div 
                 className={cn(
                   "space-y-6 transition-all duration-500 pr-2 custom-scrollbar",
-                  showAll ? "max-h-[600px] overflow-y-auto" : "max-h-none overflow-visible"
+                  showAll ? "max-h-[1200px] overflow-y-auto" : "max-h-none overflow-visible"
                 )}
               >
                 <AnimatePresence mode="popLayout">
@@ -135,7 +135,6 @@ export function ProductReviews({
                     variant="outline"
                     onClick={() => {
                       setShowAll(!showAll);
-                      // Nếu thu gọn lại, cuộn lên đầu phần đánh giá để người dùng không bị lạc
                       if (showAll) {
                         const el = document.getElementById('reviews');
                         if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: 'smooth' });
