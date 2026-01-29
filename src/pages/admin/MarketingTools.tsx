@@ -134,32 +134,25 @@ export default function MarketingTools() {
     const usedCombinations = new Set();
 
     for (let i = 0; i < count; i++) {
-      let attempts = 0;
       let finalComment = "";
+      const rand = Math.random();
 
-      while (attempts < 10) {
-        const intro = getRandomItem(COMPONENT_POOLS.intro);
-        const body = getRandomItem(bodyPool);
-        const outro = getRandomItem(COMPONENT_POOLS.outro);
-        const flair = getRandomItem(COMPONENT_POOLS.flair);
-        
-        finalComment = `${intro} ${body} ${outro}${flair}`;
-        
-        if (finalComment.length < 250 && Math.random() > 0.5) {
-            const secondBody = getRandomItem(COMPONENT_POOLS.body_generic);
-            finalComment = `${intro} ${body} ${secondBody} ${outro}${flair}`;
-        }
-
-        if (finalComment.length > 500) {
-          finalComment = finalComment.substring(0, 497) + "...";
-        }
-
-        if (!usedCombinations.has(finalComment)) {
-          usedCombinations.add(finalComment);
-          break;
-        }
-        attempts++;
+      // Phân bổ độ dài thực tế: 30% ngắn, 50% trung bình, 20% dài
+      if (rand < 0.3) {
+        // Ngắn (Outro + Flair)
+        finalComment = `${getRandomItem(COMPONENT_POOLS.outro)}${getRandomItem(COMPONENT_POOLS.flair)}`;
+      } else if (rand < 0.8) {
+        // Trung bình (Intro + Body + Outro)
+        finalComment = `${getRandomItem(COMPONENT_POOLS.intro)} ${getRandomItem(bodyPool)} ${getRandomItem(COMPONENT_POOLS.outro)}`;
+      } else {
+        // Dài (Intro + Body + Body Generic + Outro + Flair)
+        finalComment = `${getRandomItem(COMPONENT_POOLS.intro)} ${getRandomItem(bodyPool)} ${getRandomItem(COMPONENT_POOLS.body_generic)} ${getRandomItem(COMPONENT_POOLS.outro)}${getRandomItem(COMPONENT_POOLS.flair)}`;
       }
+
+      if (finalComment.length > 500) {
+        finalComment = finalComment.substring(0, 497) + "...";
+      }
+      
       results.push(finalComment);
     }
     
@@ -196,7 +189,7 @@ export default function MarketingTools() {
 
   const handleGenerateReviews = async () => {
     const daysBack = parseInt(stats.review_days_back) || 30;
-    if (!confirm(`Xác nhận sinh nội dung đánh giá độc bản trong khoảng ${daysBack} ngày qua?`)) return;
+    if (!confirm(`Xác nhận sinh nội dung đánh giá thực tế trong khoảng ${daysBack} ngày qua? Hệ thống sẽ ghi đè số liệu hiển thị nếu chọn Xóa cũ.`)) return;
 
     setReviewLoading(true);
     try {
@@ -208,18 +201,18 @@ export default function MarketingTools() {
       if (!products || products.length === 0) { toast.info("Không có sản phẩm."); return; }
 
       for (const p of products) {
-        const count = p.fake_review_count || 0;
-        if (count === 0) continue;
+        // Số lượng đánh giá muốn sinh
+        const countToGenerate = getRandomInt(parseInt(stats.min_reviews), parseInt(stats.max_reviews));
 
-        // Xóa cũ nếu tùy chọn được bật
         if (deleteOldReviews) {
+          // Xóa triệt để đánh giá cũ của sản phẩm này
           await supabase.from('reviews').delete().eq('product_id', p.id);
         }
 
-        const comments = getDiverseComments(p.name, count);
+        const comments = getDiverseComments(p.name, countToGenerate);
         const newReviews = [];
         
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < countToGenerate; i++) {
           const randomDays = getRandomInt(1, daysBack);
           const randomHours = getRandomInt(0, 23);
           const randomMins = getRandomInt(0, 59);
@@ -232,7 +225,7 @@ export default function MarketingTools() {
           newReviews.push({
             product_id: p.id,
             user_name: generateVnName(),
-            rating: Math.round(p.fake_rating || 5),
+            rating: Math.round(parseFloat(stats.max_rating)) - (Math.random() > 0.8 ? 1 : 0), // Ưu tiên 5 sao, thi thoảng 4 sao
             comment: comments[i], 
             created_at: date.toISOString()
           });
@@ -241,16 +234,21 @@ export default function MarketingTools() {
         if (newReviews.length > 0) {
           await supabase.from('reviews').insert(newReviews);
           
-          // Sau khi chèn, đếm lại thực tế để cập nhật cột fake_review_count cho chuẩn
-          const { count: realCount } = await supabase
-            .from('reviews')
-            .select('*', { count: 'exact', head: true })
-            .eq('product_id', p.id);
+          // Cập nhật lại cột số lượng ảo trên bảng Product cho khớp tuyệt đối
+          // Nếu xóa cũ thì số lượng mới = countToGenerate, nếu không xóa thì = cũ + mới
+          let finalCount = countToGenerate;
+          if (!deleteOldReviews) {
+            const { count: currentCount } = await supabase.from('reviews').select('*', { count: 'exact', head: true }).eq('product_id', p.id);
+            finalCount = currentCount || countToGenerate;
+          }
           
-          await supabase.from('products').update({ fake_review_count: realCount || count }).eq('id', p.id);
+          await supabase.from('products').update({ 
+            fake_review_count: finalCount,
+            fake_rating: parseFloat(getRandomFloat(parseFloat(stats.min_rating), parseFloat(stats.max_rating)))
+          }).eq('id', p.id);
         }
       }
-      toast.success(`Đã sinh đánh giá và đồng bộ số liệu cho ${products.length} sản phẩm thành công!`);
+      toast.success(`Đã xử lý đánh giá cho ${products.length} sản phẩm thành công!`);
     } catch (e: any) { toast.error(e.message); } finally { setReviewLoading(false); }
   };
 
@@ -340,7 +338,7 @@ export default function MarketingTools() {
                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2"><MessageSquareQuote className="w-5 h-5" /> 3. Nội dung đánh giá thực tế (Engine v2)</h3>
                 
                 <div className="space-y-4 mb-8">
-                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sử dụng tổ hợp 4 khối nội dung để tạo ra các bài review độc bản dài đến 500 ký tự, đảm bảo không trùng lặp và đúng ngữ cảnh sản phẩm.</p>
+                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sinh nội dung dựa trên 3 cấp độ: Ngắn (30%), Trung bình (50%) và Dài (20%) để đảm bảo tính tự nhiên tối đa.</p>
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
@@ -359,15 +357,15 @@ export default function MarketingTools() {
                         <Label className="text-[10px] font-bold uppercase tracking-widest text-destructive flex items-center gap-2">
                           <Trash2 className="w-3.5 h-3.5" /> Xóa đánh giá cũ
                         </Label>
-                        <p className="text-[9px] text-taupe">Làm mới hoàn toàn dữ liệu</p>
+                        <p className="text-[9px] text-taupe">Làm mới và đồng bộ lại số lượng</p>
                       </div>
-                      <Switch checked={deleteOldReviews} onCheckedChange={setDeleteOldReviews} />
+                      <Switch checked={deleteOldReviews} onCheckedChange={deleteOldReviews => setDeleteOldReviews(deleteOldReviews)} />
                     </div>
                   </div>
                 </div>
 
                 <Button onClick={handleGenerateReviews} disabled={reviewLoading} variant="outline" className="w-full h-14 border-primary/40 hover:bg-primary text-primary hover:text-white rounded-2xl text-sm font-bold uppercase">
-                  {reviewLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} Sinh nội dung đánh giá độc bản hàng loạt
+                  {reviewLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} Sinh nội dung đánh giá thực tế hàng loạt
                 </Button>
               </div>
             </div>
