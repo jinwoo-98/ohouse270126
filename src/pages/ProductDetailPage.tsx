@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Heart, Minus, Plus, ShoppingBag, Truck, RefreshCw, Shield, Star, Loader2, Send, List } from "lucide-react";
+import { ChevronRight, Heart, Minus, Plus, ShoppingBag, Truck, RefreshCw, Shield, Star, Loader2, Send } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RecentlyViewed, trackProductView } from "@/components/RecentlyViewed";
+import { ProductGallery } from "@/components/product/ProductGallery";
 import { cn } from "@/lib/utils";
 
 function formatPrice(price: number) {
@@ -145,11 +146,12 @@ export default function ProductDetailPage() {
 
         <div className="container-luxury py-8">
           <div className="grid lg:grid-cols-2 gap-12 mb-16">
-            <div className="space-y-4">
-              <div className="aspect-square bg-white rounded-2xl overflow-hidden border border-border shadow-subtle">
-                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-              </div>
-            </div>
+            {/* Thay thế ảnh tĩnh bằng component ProductGallery mới */}
+            <ProductGallery 
+              mainImage={product.image_url} 
+              galleryImages={product.gallery_urls} 
+              productName={product.name} 
+            />
 
             <div className="space-y-6">
               <div>
@@ -187,7 +189,6 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              {/* Thông số kỹ thuật tóm tắt */}
               {attributes.length > 0 && (
                 <div className="grid grid-cols-2 gap-3 py-4 border-y border-border/50">
                   {attributes.slice(0, 4).map((attr, i) => (
