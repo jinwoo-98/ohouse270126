@@ -1,3 +1,4 @@
+Suggested Add-ons (Renamed) -> Similar Products.">
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ChevronRight, Loader2, Truck, RotateCcw } from "lucide-react";
@@ -207,18 +208,18 @@ export default function ProductDetailPage() {
 
             <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
 
-            {/* 4. Bộ sưu tập phối sẵn (Sử dụng danh sách ngang) */}
+            {/* 4. Bộ sưu tập phối sẵn (Sử dụng danh sách ngang - Vị trí ưu tiên 1) */}
             {perfectMatch.length > 0 && (
-              <ProductHorizontalList products={perfectMatch} title="Bộ sưu tập hoàn hảo" />
+              <ProductHorizontalList products={perfectMatch} title="Bộ Sưu Tập Hoàn Hảo" />
             )}
 
-            {/* 5. Sản phẩm tương tự */}
-            <ProductHorizontalList products={similarProducts} title="Sản phẩm tương tự" />
-
-            {/* 6. Thường mua cùng nhau */}
+            {/* 5. Gợi ý mua kèm (Setup từ admin - Vị trí ưu tiên 2) */}
             {boughtTogether.length > 0 && (
-              <ProductHorizontalList products={boughtTogether} title="Thường được mua cùng nhau" />
+              <ProductHorizontalList products={boughtTogether} title="Gợi Ý Mua Kèm" />
             )}
+
+            {/* 6. Sản phẩm tương tự (Fallback - Vị trí ưu tiên 3) */}
+            <ProductHorizontalList products={similarProducts} title="Sản Phẩm Tương Tự" />
 
             <RecentlyViewed />
 
