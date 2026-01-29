@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useCart } from "@/contexts/CartContext";
 import { formatPrice } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface CategoryBottomContentProps {
   categoryId?: string;
