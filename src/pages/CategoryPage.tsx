@@ -52,7 +52,7 @@ function FilterSection({ title, options, selected, onChange }: { title: string, 
   const displayOptions = showAll ? options : options.slice(0, 5);
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="py-4 border-b border-border/40 last:border-0">
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="py-4">
       <CollapsibleTrigger className="flex items-center justify-between w-full group">
         <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] text-muted-foreground group-hover:text-charcoal transition-colors">{title}</h4>
         {isOpen ? <Minus className="w-3 h-3 text-muted-foreground" /> : <Plus className="w-3 h-3 text-muted-foreground" />}
@@ -129,16 +129,16 @@ export default function CategoryPage() {
           </div>
         </div>
 
-        {/* Toolbar */}
+        {/* Toolbar (Bỏ border-y) */}
         <div className={cn(
-          "z-40 transition-all duration-300 border-y border-border/40 bg-background/95 backdrop-blur-md",
-          isScrolled ? "fixed top-0 left-0 right-0 shadow-subtle py-2" : "relative py-3 mb-8"
+          "z-40 transition-all duration-300 bg-background/95 backdrop-blur-md",
+          isScrolled ? "fixed top-0 left-0 right-0 shadow-medium py-2" : "relative py-3 mb-8"
         )}>
           <div className="container-luxury flex items-center justify-between">
             <div className="flex items-center gap-2 md:gap-6">
               <button 
                 onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-                className="hidden lg:flex items-center gap-3 px-5 py-2 border border-charcoal/20 hover:bg-secondary transition-all text-xs font-bold uppercase tracking-widest rounded-lg"
+                className="hidden lg:flex items-center gap-3 px-5 py-2 hover:bg-secondary transition-all text-xs font-bold uppercase tracking-widest rounded-lg"
               >
                 {isSidebarVisible ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
                 <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -146,12 +146,12 @@ export default function CategoryPage() {
 
               <Sheet open={showFiltersMobile} onOpenChange={setShowFiltersMobile}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" size="sm" className="lg:hidden h-10 px-4 md:px-6 border-charcoal/20 gap-2 font-bold text-xs uppercase tracking-widest">
+                  <Button variant="ghost" size="sm" className="lg:hidden h-10 px-4 md:px-6 gap-2 font-bold text-xs uppercase tracking-widest hover:bg-secondary">
                     Bộ lọc <SlidersHorizontal className="w-4 h-4" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-full sm:max-w-xs p-0 flex flex-col z-[100]">
-                  <SheetHeader className="p-6 border-b border-border bg-secondary/10">
+                <SheetContent side="left" className="w-full sm:max-w-xs p-0 flex flex-col z-[100] border-none shadow-elevated">
+                  <SheetHeader className="p-6 bg-secondary/10">
                     <SheetTitle className="text-left font-bold text-sm uppercase tracking-widest flex items-center gap-2">
                       <SlidersHorizontal className="w-4 h-4" /> Bộ lọc sản phẩm
                     </SheetTitle>
@@ -176,26 +176,26 @@ export default function CategoryPage() {
                       />
                     ))}
                   </div>
-                  <div className="p-4 border-t border-border bg-card">
+                  <div className="p-4 bg-card">
                     <Button className="w-full btn-hero h-12 text-xs font-bold shadow-gold" onClick={() => setShowFiltersMobile(false)}>Xem {products.length} kết quả</Button>
                   </div>
                 </SheetContent>
               </Sheet>
 
-              <div className="hidden lg:flex items-center gap-3 ml-2 pl-6 border-l border-border">
+              <div className="hidden lg:flex items-center gap-3 ml-2 pl-6">
                 <Switch checked={filters.saleOnly} onCheckedChange={(val) => updateFilters({ saleOnly: val })} id="sale-filter" />
                 <label htmlFor="sale-filter" className="text-xs font-bold uppercase tracking-widest text-charcoal cursor-pointer select-none">Chỉ hiện Sale</label>
               </div>
             </div>
 
             <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
-              <SelectTrigger className="w-40 md:w-52 border border-charcoal/20 lg:border-none bg-transparent text-[10px] md:text-xs font-bold uppercase tracking-widest h-10 shadow-none rounded-lg focus:ring-0">
+              <SelectTrigger className="w-40 md:w-52 border-none bg-transparent text-[10px] md:text-xs font-bold uppercase tracking-widest h-10 shadow-none rounded-lg focus:ring-0">
                 <div className="flex items-center gap-2">
                   <ArrowUpDown className="w-3.5 h-3.5 opacity-50" />
                   <SelectValue placeholder="Sắp xếp" />
                 </div>
               </SelectTrigger>
-              <SelectContent className="rounded-xl z-[110]">
+              <SelectContent className="rounded-xl z-[110] border-none shadow-elevated">
                 <SelectItem value="manual">Thứ tự ưu tiên</SelectItem>
                 <SelectItem value="newest">Mới nhất</SelectItem>
                 <SelectItem value="popular">Bán chạy nhất</SelectItem>
@@ -252,7 +252,7 @@ export default function CategoryPage() {
                 isSidebarVisible ? "xl:grid-cols-4" : "xl:grid-cols-5"
               )}>
                 {isLoading ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />) : products.length === 0 ? (
-                  <div className="col-span-full py-24 text-center bg-secondary/10 rounded-3xl border border-dashed border-border/50">
+                  <div className="col-span-full py-24 text-center bg-secondary/10 rounded-3xl">
                     <p className="text-muted-foreground font-medium">Chưa có sản phẩm nào phù hợp với bộ lọc.</p>
                     <Button variant="link" onClick={clearFilters} className="text-primary mt-2">Xóa bộ lọc để xem tất cả</Button>
                   </div>
@@ -263,7 +263,6 @@ export default function CategoryPage() {
                 )}
               </div>
 
-              {/* Bottom Content: Keywords, Looks, SEO */}
               {!isLoading && (
                 <CategoryBottomContent 
                   categoryId={currentCategory?.id}

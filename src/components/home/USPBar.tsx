@@ -3,14 +3,8 @@ import { Truck, RefreshCw, Shield, CreditCard, Gift, HelpCircle } from "lucide-r
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
-// Map tên icon từ DB sang Component
 const iconMap: Record<string, any> = {
-  Truck,
-  RefreshCw,
-  Shield,
-  CreditCard,
-  Gift,
-  HelpCircle
+  Truck, RefreshCw, Shield, CreditCard, Gift, HelpCircle
 };
 
 export function USPBar() {
@@ -27,7 +21,7 @@ export function USPBar() {
   if (usps.length === 0) return null;
 
   return (
-    <section className="bg-secondary py-8 border-y border-border">
+    <section className="bg-secondary/40 py-10">
       <div className="container-luxury">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {usps.map((usp, index) => {
@@ -46,8 +40,8 @@ export function USPBar() {
                   <Icon className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-foreground">{usp.title}</h3>
-                  <p className="text-sm text-muted-foreground">{usp.description}</p>
+                  <h3 className="font-bold text-sm text-charcoal">{usp.title}</h3>
+                  <p className="text-xs text-muted-foreground">{usp.description}</p>
                 </div>
               </motion.div>
             );

@@ -7,47 +7,26 @@
 @layer base {
   :root {
     /* OHOUSE.VN - Luxury Furniture Design System */
-    
-    /* Primary: Champagne Gold - Sang trọng, đẳng cấp */
     --primary: 38 65% 50%;
     --primary-foreground: 0 0% 100%;
-    
-    /* Background: Warm Off-White */
     --background: 40 20% 98%;
     --foreground: 30 10% 15%;
-
-    /* Card: Pure White */
     --card: 0 0% 100%;
     --card-foreground: 30 10% 15%;
-
-    /* Popover */
     --popover: 0 0% 100%;
     --popover-foreground: 30 10% 15%;
-
-    /* Secondary: Warm Beige */
     --secondary: 35 25% 93%;
     --secondary-foreground: 30 10% 20%;
-
-    /* Muted: Light Taupe */
     --muted: 30 15% 92%;
     --muted-foreground: 30 10% 45%;
-
-    /* Accent: Deep Walnut */
     --accent: 25 35% 25%;
     --accent-foreground: 40 20% 98%;
-
-    /* Destructive */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-
-    /* Border & Input */
     --border: 30 15% 88%;
     --input: 30 15% 88%;
     --ring: 38 65% 50%;
-
     --radius: 0.5rem;
-
-    /* Custom Colors */
     --gold: 38 65% 50%;
     --gold-light: 40 60% 70%;
     --gold-dark: 35 70% 35%;
@@ -55,19 +34,13 @@
     --walnut: 25 35% 25%;
     --cream: 40 30% 95%;
     --taupe: 30 15% 75%;
-
-    /* Gradients */
     --gradient-gold: linear-gradient(135deg, hsl(38 65% 55%) 0%, hsl(35 70% 40%) 100%);
     --gradient-luxury: linear-gradient(180deg, hsl(40 20% 98%) 0%, hsl(35 25% 93%) 100%);
     --gradient-dark: linear-gradient(180deg, hsl(30 10% 15%) 0%, hsl(25 15% 10%) 100%);
-
-    /* Shadows */
-    --shadow-subtle: 0 2px 8px -2px hsl(30 10% 15% / 0.08);
-    --shadow-medium: 0 8px 24px -4px hsl(30 10% 15% / 0.12);
-    --shadow-elevated: 0 16px 48px -8px hsl(30 10% 15% / 0.16);
-    --shadow-gold: 0 4px 16px -2px hsl(38 65% 50% / 0.25);
-
-    /* Sidebar (using luxury theme) */
+    --shadow-subtle: 0 2px 12px -2px hsl(30 10% 15% / 0.05);
+    --shadow-medium: 0 12px 32px -4px hsl(30 10% 15% / 0.08);
+    --shadow-elevated: 0 24px 64px -12px hsl(30 10% 15% / 0.12);
+    --shadow-gold: 0 4px 16px -2px hsl(38 65% 50% / 0.2);
     --sidebar-background: 30 10% 15%;
     --sidebar-foreground: 40 20% 95%;
     --sidebar-primary: 38 65% 50%;
@@ -78,42 +51,26 @@
     --sidebar-ring: 38 65% 50%;
   }
 
-  /* Styling for rich text content links on public site */
-  .prose a, 
-  [dangerouslySetInnerHTML] a,
-  .rich-text-content a {
-    @apply text-primary font-bold underline underline-offset-4 transition-all hover:text-charcoal;
-  }
-
   .dark {
     --background: 30 10% 8%;
     --foreground: 40 20% 95%;
-
     --card: 30 10% 12%;
     --card-foreground: 40 20% 95%;
-
     --popover: 30 10% 12%;
     --popover-foreground: 40 20% 95%;
-
     --primary: 38 65% 55%;
     --primary-foreground: 30 10% 8%;
-
     --secondary: 30 15% 18%;
     --secondary-foreground: 40 20% 90%;
-
     --muted: 30 15% 20%;
     --muted-foreground: 30 10% 60%;
-
     --accent: 38 50% 40%;
     --accent-foreground: 40 20% 95%;
-
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
-
     --border: 30 15% 20%;
     --input: 30 15% 20%;
     --ring: 38 65% 55%;
-
     --sidebar-background: 30 10% 6%;
     --sidebar-foreground: 40 20% 95%;
     --sidebar-primary: 38 65% 55%;
@@ -125,54 +82,26 @@
   }
 }
 
-/* QUILL EDITOR ALIGNMENT CLASSES - Cố định độ ưu tiên cao nhất */
-.ql-align-center {
-  text-align: center !important;
-}
-.ql-align-center img {
-  margin-left: auto !important;
-  margin-right: auto !important;
-  display: block !important;
-}
-.ql-align-right {
-  text-align: right !important;
-}
-.ql-align-right img {
-  margin-left: auto !important;
-  margin-right: 0 !important;
-  display: block !important;
-}
-.ql-align-justify {
-  text-align: justify !important;
-}
+.ql-align-center { text-align: center !important; }
+.ql-align-center img { margin-left: auto !important; margin-right: auto !important; display: block !important; }
+.ql-align-right { text-align: right !important; }
+.ql-align-right img { margin-left: auto !important; margin-right: 0 !important; display: block !important; }
+.ql-align-justify { text-align: justify !important; }
 
 @layer base {
+  /* Bỏ border-border mặc định cho toàn bộ (*) */
   * {
-    @apply border-border;
+    @apply border-transparent;
   }
 
   html {
     scroll-behavior: smooth;
   }
 
-  /* Custom Scrollbar Logic */
-  ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
-    border-radius: 10px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary));
-  }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.3); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary)); }
 
   body {
     @apply bg-background text-foreground antialiased;
@@ -186,14 +115,12 @@
 }
 
 @layer components {
-  /* Hero Button Variant */
   .btn-hero {
     @apply bg-primary text-primary-foreground px-8 py-4 text-sm font-medium uppercase tracking-widest;
     @apply transition-all duration-300 ease-out;
     @apply hover:shadow-gold hover:scale-[1.02];
   }
 
-  /* Gold Gradient Text */
   .text-gradient-gold {
     background: var(--gradient-gold);
     -webkit-background-clip: text;
@@ -201,7 +128,7 @@
     background-clip: text;
   }
 
-  /* Luxury Card Hover */
+  /* Luxury Card: Bỏ border, tăng shadow nhẹ */
   .card-luxury {
     @apply bg-card rounded-lg overflow-hidden;
     @apply transition-all duration-500 ease-out;
@@ -209,104 +136,41 @@
   }
 
   .card-luxury:hover {
-    box-shadow: var(--shadow-elevated);
+    box-shadow: var(--shadow-medium);
     @apply -translate-y-1;
   }
 
-  /* Image Zoom on Hover */
-  .img-zoom {
-    @apply overflow-hidden;
-  }
+  .img-zoom { @apply overflow-hidden; }
+  .img-zoom img { @apply transition-transform duration-700 ease-out; }
+  .img-zoom:hover img { @apply scale-110; }
 
-  .img-zoom img {
-    @apply transition-transform duration-700 ease-out;
-  }
-
-  .img-zoom:hover img {
-    @apply scale-110;
-  }
-
-  /* Sale Badge */
   .badge-sale {
     @apply bg-destructive text-destructive-foreground px-3 py-1 text-xs font-semibold uppercase tracking-wider;
   }
 
-  /* Navigation Link */
   .nav-link {
     @apply text-sm font-medium uppercase tracking-wider;
     @apply transition-colors duration-200;
     @apply hover:text-primary;
   }
 
-  /* Section Title */
   .section-title {
     @apply text-2xl md:text-3xl font-bold text-center uppercase tracking-wide;
     font-family: 'Montserrat', sans-serif;
   }
 
-  /* Container */
-  .container-luxury {
-    @apply max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8;
-  }
-  
-  /* Custom Scrollbar Classes for Specific Elements */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 3px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/20 rounded-full;
-  }
-  
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .container-luxury { @apply max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8; }
+  .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-muted-foreground/20 rounded-full; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
 @layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.6s ease-out forwards;
-  }
-
-  .animate-slide-up {
-    animation: slideUp 0.6s ease-out forwards;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.4s ease-out forwards;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
+  .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+  .animate-slide-up { animation: slideUp 0.6s ease-out forwards; }
+  .animate-scale-in { animation: scaleIn 0.4s ease-out forwards; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 }

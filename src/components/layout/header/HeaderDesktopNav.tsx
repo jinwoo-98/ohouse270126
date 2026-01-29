@@ -14,8 +14,8 @@ export function HeaderDesktopNav() {
 
   return (
     <div className="hidden lg:block">
-      {/* Hàng 3: Menu phụ/dịch vụ (Lấy từ Database - menu_location: secondary) */}
-      <div className="bg-card border-b border-border/50">
+      {/* Hàng 3: Menu phụ/dịch vụ (Bỏ border-b) */}
+      <div className="bg-card">
         <div className="container-luxury flex items-center justify-center gap-6 h-9">
           {isLoading ? (
             <div className="h-4 w-96 bg-secondary/50 animate-pulse rounded" />
@@ -27,14 +27,14 @@ export function HeaderDesktopNav() {
               >
                 {link.name}
               </Link>
-              {index < secondaryLinks.length - 1 && <span className="text-border">|</span>}
+              {index < secondaryLinks.length - 1 && <span className="w-1 h-1 bg-muted-foreground/30 rounded-full" />}
             </React.Fragment>
           ))}
         </div>
       </div>
 
-      {/* Hàng 4: Menu sản phẩm chính (Lấy từ Database - menu_location: main) */}
-      <div className="bg-card shadow-sm">
+      {/* Hàng 4: Menu sản phẩm chính (Bỏ shadow-sm để liền mạch) */}
+      <div className="bg-card">
         <div className="container-luxury">
           <nav className="flex items-center justify-center gap-1">
             {isLoading ? (
@@ -51,7 +51,7 @@ export function HeaderDesktopNav() {
                 <Link 
                   to={item.href} 
                   className={cn(
-                    "flex items-center gap-1 px-4 py-3.5 text-[11px] font-bold tracking-[0.1em] transition-colors hover:text-primary uppercase",
+                    "flex items-center gap-1 px-4 py-4 text-[11px] font-bold tracking-[0.1em] transition-colors hover:text-primary uppercase",
                     item.isHighlight ? "text-destructive" : "text-charcoal/80"
                   )}
                 >
@@ -66,7 +66,7 @@ export function HeaderDesktopNav() {
                       exit={{ opacity: 0, y: 10 }}
                       className="absolute left-0 top-full z-50"
                     >
-                      <div className="bg-card rounded-2xl shadow-elevated border border-border/40 p-3 min-w-[220px]">
+                      <div className="bg-card rounded-2xl shadow-elevated p-3 min-w-[220px]">
                         {productCategories[item.dropdownKey].map((subItem) => (
                           <Link 
                             key={subItem.name} 

@@ -18,7 +18,7 @@ export function TrendingSearch() {
   if (keywords.length === 0) return null;
 
   return (
-    <section className="py-12 md:py-16 bg-background border-t border-border/50">
+    <section className="py-12 md:py-16 bg-background">
       <div className="container-luxury">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3 shrink-0">
@@ -42,7 +42,7 @@ export function TrendingSearch() {
               >
                 <Link
                   to={`/tim-kiem?q=${encodeURIComponent(item.keyword)}`}
-                  className="px-4 py-2 bg-secondary/50 hover:bg-primary hover:text-primary-foreground border border-border/50 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap"
+                  className="px-4 py-2 bg-secondary/50 hover:bg-primary hover:text-primary-foreground rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap shadow-subtle"
                 >
                   {item.keyword}
                 </Link>

@@ -30,34 +30,32 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
   const displaySold = product.fake_sold || 0;
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-6 md:space-y-10">
       {/* Header Info */}
       <div>
-        <div className="flex items-center gap-3 mb-3">
-          <Badge variant="secondary" className="bg-secondary text-primary uppercase tracking-widest text-[10px] font-bold">
+        <div className="flex items-center gap-3 mb-4">
+          <Badge variant="secondary" className="bg-secondary text-primary uppercase tracking-widest text-[10px] font-bold border-none">
             {product.category_id}
           </Badge>
-          {product.is_new && <Badge className="bg-blue-600 text-[10px] h-5 font-bold uppercase">Hàng Mới</Badge>}
+          {product.is_new && <Badge className="bg-blue-600 text-[10px] h-5 font-bold uppercase border-none">Hàng Mới</Badge>}
           {displaySold > 0 && <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Đã bán {displaySold}</span>}
         </div>
         
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-charcoal leading-tight mb-4">{product.name}</h1>
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-charcoal leading-tight mb-6">{product.name}</h1>
         
-        <div className="flex flex-wrap items-end gap-4 md:gap-6">
+        <div className="flex flex-wrap items-end gap-6 md:gap-8">
           <div className="flex items-center gap-1">
             <div className="flex text-amber-400">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className={cn("w-4 h-4", i < Math.floor(displayRating) ? "fill-current" : "text-gray-200")} />
               ))}
             </div>
-            <a href="#reviews" className="text-xs font-bold underline ml-2 text-charcoal hover:text-primary">
+            <a href="#reviews" className="text-xs font-bold underline ml-2 text-charcoal hover:text-primary transition-colors">
               {displayReviewCount} đánh giá
             </a>
           </div>
           
-          <div className="h-4 w-px bg-border hidden md:block"></div>
-
-          <div className="flex items-baseline gap-3">
+          <div className="flex items-baseline gap-4">
             <span className="text-3xl font-bold text-primary">{formatPrice(product.price)}</span>
             {product.original_price && (
               <span className="text-sm text-muted-foreground line-through decoration-destructive/30">{formatPrice(product.original_price)}</span>
@@ -66,12 +64,12 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
         </div>
       </div>
 
-      {/* Attributes */}
+      {/* Attributes (Bỏ border-y) */}
       {attributes.length > 0 && (
-        <div className="grid grid-cols-2 gap-x-8 gap-y-4 py-6 border-y border-dashed border-border/60">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-6 py-4">
           {attributes.map((attr, i) => (
             <div key={i} className="flex flex-col">
-              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">{attr.name}</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1.5">{attr.name}</span>
               <span className="text-sm font-medium text-charcoal">{Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}</span>
             </div>
           ))}
@@ -79,9 +77,9 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
       )}
 
       {/* Actions */}
-      <div className="space-y-4 pt-2">
+      <div className="space-y-6 pt-4">
         <div className="flex items-center gap-4">
-          <div className="flex items-center border-2 border-border rounded-full h-14 w-32 bg-white">
+          <div className="flex items-center rounded-full h-14 w-32 bg-secondary/40">
             <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-full flex items-center justify-center text-muted-foreground hover:text-charcoal"><Minus className="w-4 h-4" /></button>
             <span className="flex-1 text-center font-bold text-lg">{quantity}</span>
             <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-full flex items-center justify-center text-muted-foreground hover:text-charcoal"><Plus className="w-4 h-4" /></button>
@@ -97,7 +95,7 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
             <ShoppingBag className="w-5 h-5 mr-2" /> THÊM VÀO GIỎ
           </Button>
           
-          <Button size="icon" variant="outline" className={`h-14 w-14 rounded-full border-2 ${isFavorite ? 'text-primary border-primary bg-primary/5' : 'border-border text-muted-foreground hover:text-primary hover:border-primary'}`} onClick={() => toggleWishlist({
+          <Button size="icon" variant="ghost" className={`h-14 w-14 rounded-full ${isFavorite ? 'text-primary bg-primary/5' : 'bg-secondary/40 text-muted-foreground hover:text-primary hover:bg-primary/5'}`} onClick={() => toggleWishlist({
              id: product.id,
              name: product.name,
              price: product.price,
