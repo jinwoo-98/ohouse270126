@@ -70,26 +70,26 @@ export function ProductCard({ product, className }: ProductCardProps) {
                   ? "bg-primary text-white" 
                   : "bg-white text-charcoal hover:bg-primary hover:text-white"
               )}
+              title="Yêu thích"
             >
               <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
             </button>
             <button 
               onClick={(e) => { e.preventDefault(); addToCart({ ...product, quantity: 1, image: product.image_url }); }}
               className="w-9 h-9 rounded-full bg-white text-charcoal hover:bg-primary hover:text-white flex items-center justify-center transition-all shadow-sm"
+              title="Thêm vào giỏ"
             >
               <ShoppingBag className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Quick View Button (Center/Bottom Overlay) */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            <button 
-              onClick={(e) => { e.preventDefault(); setIsQuickViewOpen(true); }}
-              className="pointer-events-auto bg-charcoal/80 backdrop-blur-md text-white px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border border-white/20 hover:bg-primary transition-colors shadow-lg translate-y-4 group-hover:translate-y-0 duration-300"
-            >
-              XEM NHANH
-            </button>
-          </div>
+          {/* Quick View Button (Bottom Left) */}
+          <button 
+            onClick={(e) => { e.preventDefault(); setIsQuickViewOpen(true); }}
+            className="absolute bottom-3 left-3 z-20 bg-charcoal/80 backdrop-blur-md text-white px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-white/20 hover:bg-primary transition-all shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 duration-300"
+          >
+            XEM NHANH
+          </button>
         </div>
 
         {/* Thumbnails */}
