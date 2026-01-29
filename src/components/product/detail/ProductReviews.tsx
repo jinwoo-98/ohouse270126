@@ -34,7 +34,7 @@ export function ProductReviews({
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Logic hiển thị danh sách thu gọn: Chỉ hiện 2 cái ban đầu
+  // Logic hiển thị danh sách
   const [showAll, setShowAll] = useState(false);
   const INITIAL_COUNT = 2; 
   const visibleReviews = showAll ? reviews : reviews.slice(0, INITIAL_COUNT);
@@ -101,14 +101,20 @@ export function ProductReviews({
       </div>
 
       <div className="grid lg:grid-cols-3 gap-12">
-        <div className="lg:col-span-2 flex flex-col gap-6">
+        <div className="lg:col-span-2 flex flex-col">
           {reviews.length === 0 ? (
             <div className="text-center py-16 bg-secondary/10 rounded-3xl border border-dashed border-border/50">
               <p className="text-muted-foreground italic">Hiện chưa có nhận xét nào cho sản phẩm này.</p>
             </div>
           ) : (
-            <>
-              <div className="space-y-6">
+            <div className="space-y-6">
+              {/* Khung cuộn nội bộ */}
+              <div 
+                className={cn(
+                  "space-y-6 transition-all duration-500 pr-2 custom-scrollbar",
+                  showAll ? "max-h-[600px] overflow-y-auto" : "max-h-none overflow-visible"
+                )}
+              >
                 <AnimatePresence mode="popLayout">
                   {visibleReviews.map((rev) => (
                     <motion.div
@@ -124,21 +130,28 @@ export function ProductReviews({
               </div>
 
               {hasMore && (
-                <div className="flex justify-center mt-4">
+                <div className="flex justify-center pt-4">
                   <Button
                     variant="outline"
-                    onClick={() => setShowAll(!showAll)}
+                    onClick={() => {
+                      setShowAll(!showAll);
+                      // Nếu thu gọn lại, cuộn lên đầu phần đánh giá để người dùng không bị lạc
+                      if (showAll) {
+                        const el = document.getElementById('reviews');
+                        if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: 'smooth' });
+                      }
+                    }}
                     className="h-12 px-8 rounded-full border-primary/30 text-primary font-bold text-[11px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-subtle group"
                   >
                     {showAll ? (
                       <>Thu gọn danh sách <ChevronUp className="w-4 h-4 ml-2" /></>
                     ) : (
-                      <>Xem thêm {reviews.length - INITIAL_COUNT} đánh giá <ChevronDown className="w-4 h-4 ml-2 group-hover:translate-y-1 transition-transform" /></>
+                      <>Xem toàn bộ {reviews.length} đánh giá <ChevronDown className="w-4 h-4 ml-2 group-hover:translate-y-1 transition-transform" /></>
                     )}
                   </Button>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
 
