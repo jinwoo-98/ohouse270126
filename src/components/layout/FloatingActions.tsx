@@ -5,7 +5,6 @@ import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronUp, Bot, X } from "lucide-react";
 import { AIChatWindow } from "@/components/contact/AIChatWindow";
-import { FloatingContact } from "./FloatingContact";
 import { cn } from "@/lib/utils";
 
 export function FloatingActions() {
@@ -40,9 +39,6 @@ export function FloatingActions() {
 
   return (
     <>
-      {/* Contact Buttons (Bottom Left) */}
-      <FloatingContact />
-
       {/* AI & Navigation Buttons (Bottom Right) */}
       <div className="fixed bottom-8 right-6 md:right-8 z-[100] flex flex-col gap-3">
         {/* AI Chat Trigger */}
