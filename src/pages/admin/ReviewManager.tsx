@@ -10,7 +10,8 @@ import {
   Save,
   User,
   MessageSquare,
-  ImageIcon
+  ImageIcon,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,16 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/admin/ImageUpload";
@@ -32,6 +43,9 @@ export default function ReviewManager() {
   const [editingReview, setEditingReview] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // State for Custom Confirmation
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchReviews();
@@ -55,22 +69,25 @@ export default function ReviewManager() {
       if (error) throw error;
       setReviews(data || []);
     } catch (error: any) {
-      console.error("Lỗi:", error);
       toast.error("Không thể tải danh sách đánh giá.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) return;
+  const handleDelete = async () => {
+    if (!deleteConfirmId) return;
+    
+    const toastId = toast.loading("Đang xóa đánh giá...");
     try {
-      const { error } = await supabase.from('reviews').delete().eq('id', id);
+      const { error } = await supabase.from('reviews').delete().eq('id', deleteConfirmId);
       if (error) throw error;
-      setReviews(reviews.filter(r => r.id !== id));
-      toast.success("Đã xóa đánh giá thành công.");
+      setReviews(reviews.filter(r => r.id !== deleteConfirmId));
+      toast.success("Đã xóa đánh giá thành công.", { id: toastId });
     } catch (error: any) {
-      toast.error("Lỗi xóa: " + error.message);
+      toast.error("Lỗi xóa: " + error.message, { id: toastId });
+    } finally {
+      setDeleteConfirmId(null);
     }
   };
 
@@ -217,7 +234,7 @@ export default function ReviewManager() {
                       <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="text-blue-600 hover:bg-blue-50">
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteConfirmId(item.id)} className="text-muted-foreground hover:text-destructive transition-colors">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -233,10 +250,16 @@ export default function ReviewManager() {
         <DialogContent className="sm:max-w-[600px] rounded-3xl p-0 overflow-hidden border-none shadow-elevated">
           <div className="bg-charcoal p-6 text-white">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-3 text-lg font-bold">
-                <Edit className="w-5 h-5 text-primary" />
-                Chỉnh Sửa Đánh Giá
-              </DialogTitle>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                  <Edit className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <DialogTitle className="flex items-center gap-3 text-lg font-bold">
+                    Chỉnh Sửa Đánh Giá
+                  </DialogTitle>
+                </div>
+              </div>
             </DialogHeader>
           </div>
 
@@ -311,6 +334,32 @@ export default function ReviewManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Professional Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <AlertDialogContent className="rounded-[32px] border-none p-0 overflow-hidden shadow-elevated">
+          <div className="bg-destructive/10 p-8 flex flex-col items-center text-center">
+             <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center text-destructive mb-4">
+                <AlertCircle className="w-8 h-8" />
+             </div>
+             <AlertDialogHeader>
+               <AlertDialogTitle className="text-xl font-bold text-charcoal uppercase tracking-widest">Xác nhận xóa đánh giá</AlertDialogTitle>
+               <AlertDialogDescription className="text-muted-foreground mt-2">
+                 Hành động này không thể hoàn tác. Đánh giá của khách hàng sẽ bị xóa vĩnh viễn khỏi hệ thống.
+               </AlertDialogDescription>
+             </AlertDialogHeader>
+          </div>
+          <AlertDialogFooter className="p-6 bg-gray-50 flex gap-3 sm:justify-center">
+            <AlertDialogCancel className="rounded-xl h-12 px-8 font-bold text-xs uppercase border-border/60">Quay lại</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              className="rounded-xl h-12 px-8 font-bold text-xs uppercase bg-destructive hover:bg-destructive/90 text-white shadow-lg"
+            >
+              Vẫn xóa đánh giá
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

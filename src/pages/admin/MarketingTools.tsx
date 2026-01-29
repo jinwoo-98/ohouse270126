@@ -9,7 +9,9 @@ import {
   MessageSquareQuote,
   Save,
   Clock,
-  Trash2
+  Trash2,
+  AlertCircle,
+  HelpCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,16 @@ import {
   SelectGroup,
   SelectLabel
 } from "@/components/ui/select";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -64,7 +76,7 @@ const COMPONENT_POOLS = {
     "Giường chắc chắn lắm nhen, lắp xong nằm thử thấy êm ru ko bị kêu cọt kẹt như giường cũ. Đầu giường bọc da cao cấp nhìn rất luxury, tựa lưng đọc sách phê pha.",
     "Mẫu giường này đẹp mê mẩn luôn mng ạ, phối màu kem nhìn nhã nhặn cực kỳ. Giát giường nan cong thông minh nằm thik lắm, lưng ko bị đau mỏi tí nào hết.",
     "Gỗ sồi Mỹ tự nhiên có khác, vân gỗ đẹp mà mùi thơm nhẹ nhàng lắm. Khung giường dày dặn, chịu lực tốt. Shop giao hàng đúng hẹn, lắp đặt nhanh gọn lẹ.",
-    "Nâng tầm phòng ngủ luôn á nhen, nhìn sang chảnh hẳn ra. Nệm nằm vừa vặn, ko bị hở góc. Rất hài lòng với độ hoàn thiện của sản phẩm bên Ohouse.",
+    "Nệm nằm vừa vặn, ko bị hở góc. Rất hài lòng với độ hoàn thiện của sản phẩm bên Ohouse.",
     "Thiết kế Ergonomic nằm rất thoải mái, độ cao giường vừa phải. Vải bọc đầu giường xịn mịn, ko bị xù lông hay bám bụi nhiều đâu nhen mng."
   ],
   body_lighting: [
@@ -104,6 +116,9 @@ export default function MarketingTools() {
   const [updateZeroOnly, setUpdateZeroOnly] = useState(false);
   const [deleteOldReviews, setDeleteOldReviews] = useState(true);
 
+  // AlertDialog states
+  const [confirmType, setConfirmType] = useState<'stats' | 'reviews' | null>(null);
+
   const [stats, setStats] = useState({
     min_sold: "50", max_sold: "200",
     min_reviews: "10", max_reviews: "30",
@@ -136,7 +151,6 @@ export default function MarketingTools() {
       let finalComment = "";
       const rand = Math.random();
 
-      // Phân bổ độ dài thực tế v3: 40% ngắn, 45% trung bình, 15% dài
       if (rand < 0.4) {
         finalComment = `${getRandomItem(COMPONENT_POOLS.outro)}${getRandomItem(COMPONENT_POOLS.flair)}`;
       } else if (rand < 0.85) {
@@ -156,8 +170,6 @@ export default function MarketingTools() {
   };
 
   const handleBulkUpdate = async () => {
-    if (!confirm("Hệ thống sẽ tính toán số liệu ngẫu nhiên cho từng sản phẩm. Tiếp tục?")) return;
-    
     const toastId = toast.loading("Đang tính toán và cập nhật chỉ số cho các sản phẩm...");
     setLoading(true);
     try {
@@ -188,13 +200,12 @@ export default function MarketingTools() {
       toast.error("Đã có lỗi xảy ra: " + e.message, { id: toastId }); 
     } finally { 
       setLoading(false); 
+      setConfirmType(null);
     }
   };
 
   const handleGenerateReviews = async () => {
     const daysBack = parseInt(stats.review_days_back) || 60;
-    if (!confirm(`Xác nhận thực hiện? Nếu chọn 'Xóa cũ', toàn bộ đánh giá trước đó sẽ biến mất.`)) return;
-
     const toastId = toast.loading("Khởi động Engine v2: Đang phân tích danh mục sản phẩm...");
     setReviewLoading(true);
     try {
@@ -208,20 +219,12 @@ export default function MarketingTools() {
         return; 
       }
 
-      toast.loading(`Đang xử lý ${products.length} sản phẩm...`, { id: toastId });
-
       for (const p of products) {
-        // 1. Thực hiện XÓA nếu yêu cầu
         if (deleteOldReviews) {
-          toast.loading(`Đang làm sạch dữ liệu cũ cho: ${p.name}...`, { id: toastId });
-          const { error: delError } = await supabase.from('reviews').delete().eq('product_id', p.id);
-          if (delError) {
-             console.error("Lỗi xóa đánh giá:", delError);
-             continue; 
-          }
+          toast.loading(`Đang dọn dẹp dữ liệu cũ cho: ${p.name}...`, { id: toastId });
+          await supabase.from('reviews').delete().eq('product_id', p.id);
         }
 
-        // 2. Sinh dữ liệu mới
         const countToGenerate = getRandomInt(parseInt(stats.min_reviews), parseInt(stats.max_reviews));
         const comments = getDiverseComments(p.name, countToGenerate);
         const newReviews = [];
@@ -243,13 +246,8 @@ export default function MarketingTools() {
 
         if (newReviews.length > 0) {
           toast.loading(`Đang chèn ${newReviews.length} đánh giá mới cho: ${p.name}...`, { id: toastId });
-          const { error: insError } = await supabase.from('reviews').insert(newReviews);
-          if (insError) {
-            console.error("Lỗi chèn đánh giá:", insError);
-            continue;
-          }
+          await supabase.from('reviews').insert(newReviews);
           
-          // 3. Đồng bộ lại cột hiển thị
           const { count: realTotal } = await supabase
             .from('reviews')
             .select('*', { count: 'exact', head: true })
@@ -261,11 +259,12 @@ export default function MarketingTools() {
           }).eq('id', p.id);
         }
       }
-      toast.success(`Hoàn tất! Đã sinh nội dung và đồng bộ số liệu cho ${products.length} sản phẩm.`, { id: toastId });
+      toast.success(`Hoàn tất! Đã xử lý ${products.length} sản phẩm.`, { id: toastId });
     } catch (e: any) { 
       toast.error("Lỗi Engine: " + e.message, { id: toastId }); 
     } finally { 
       setReviewLoading(false); 
+      setConfirmType(null);
     }
   };
 
@@ -346,7 +345,7 @@ export default function MarketingTools() {
                     </div>
                   </div>
                 </div>
-                <Button onClick={handleBulkUpdate} disabled={loading} className="w-full mt-10 btn-hero h-14 shadow-gold rounded-2xl text-sm font-bold uppercase">
+                <Button onClick={() => setConfirmType('stats')} disabled={loading} className="w-full mt-10 btn-hero h-14 shadow-gold rounded-2xl text-sm font-bold uppercase">
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5 mr-2" />} Cập nhật thông số hàng loạt
                 </Button>
               </div>
@@ -381,7 +380,7 @@ export default function MarketingTools() {
                   </div>
                 </div>
 
-                <Button onClick={handleGenerateReviews} disabled={reviewLoading} variant="outline" className="w-full h-14 border-primary/40 hover:bg-primary text-primary hover:text-white rounded-2xl text-sm font-bold uppercase">
+                <Button onClick={() => setConfirmType('reviews')} disabled={reviewLoading} variant="outline" className="w-full h-14 border-primary/40 hover:bg-primary text-primary hover:text-white rounded-2xl text-sm font-bold uppercase">
                   {reviewLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} Sinh nội dung đánh giá thực tế hàng loạt
                 </Button>
               </div>
@@ -389,6 +388,45 @@ export default function MarketingTools() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Professional Confirmation Dialogs */}
+      <AlertDialog open={!!confirmType} onOpenChange={(open) => !open && setConfirmType(null)}>
+        <AlertDialogContent className="rounded-[32px] border-none p-0 overflow-hidden shadow-elevated">
+          <div className={cn(
+            "p-8 flex flex-col items-center text-center",
+            confirmType === 'reviews' ? "bg-charcoal text-cream" : "bg-primary/10 text-charcoal"
+          )}>
+             <div className={cn(
+               "w-16 h-16 rounded-full flex items-center justify-center mb-4",
+               confirmType === 'reviews' ? "bg-primary/20 text-primary" : "bg-primary text-white"
+             )}>
+                {confirmType === 'reviews' ? <HelpCircle className="w-8 h-8" /> : <TrendingUp className="w-8 h-8" />}
+             </div>
+             <AlertDialogHeader>
+               <AlertDialogTitle className="text-xl font-bold uppercase tracking-widest">
+                 {confirmType === 'reviews' ? 'Xác nhận sinh đánh giá' : 'Cập nhật chỉ số ảo'}
+               </AlertDialogTitle>
+               <AlertDialogDescription className={cn(
+                 "mt-2",
+                 confirmType === 'reviews' ? "text-taupe" : "text-muted-foreground"
+               )}>
+                 {confirmType === 'reviews' 
+                   ? `Hệ thống sẽ tự động viết nội dung thực tế cho các sản phẩm mục tiêu. ${deleteOldReviews ? 'Dữ liệu cũ sẽ bị xóa sạch.' : ''}`
+                   : 'Các chỉ số lượt bán, đánh giá và sao sẽ được thay đổi ngẫu nhiên theo cấu hình của bạn.'}
+               </AlertDialogDescription>
+             </AlertDialogHeader>
+          </div>
+          <AlertDialogFooter className="p-6 bg-gray-50 flex gap-3 sm:justify-center">
+            <AlertDialogCancel className="rounded-xl h-12 px-8 font-bold text-xs uppercase border-border/60">Hủy bỏ</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmType === 'reviews' ? handleGenerateReviews : handleBulkUpdate}
+              className="rounded-xl h-12 px-8 font-bold text-xs uppercase bg-primary hover:bg-primary/90 text-white shadow-lg"
+            >
+              Xác nhận thực hiện
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
