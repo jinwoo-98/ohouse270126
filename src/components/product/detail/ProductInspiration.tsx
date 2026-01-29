@@ -16,7 +16,7 @@ export function ProductInspiration({ product, comboProducts }: ProductInspiratio
         <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary mb-3 flex items-center gap-2">
           <Sparkles className="w-3 h-3" /> Perfect Match
         </span>
-        <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-widest text-charcoal">Bộ Sưu Tập Hoàn Hảo</h2>
+        <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-widest text-charcoal">Hoàn thiện không gian sống</h2>
       </div>
 
       <div className="bg-charcoal text-cream rounded-[32px] overflow-hidden shadow-elevated">
@@ -31,18 +31,18 @@ export function ProductInspiration({ product, comboProducts }: ProductInspiratio
             <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 to-transparent md:bg-black/20 transition-colors" />
             <div className="absolute bottom-6 left-6 right-6">
               <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Style Inspiration</p>
-              <h3 className="text-2xl font-bold text-white leading-tight">Không gian sống đẳng cấp cùng {product.name}</h3>
+              <h3 className="text-2xl font-bold text-white leading-tight">Gợi ý bày trí đẳng cấp cho {product.name}</h3>
             </div>
           </div>
 
           {/* Collection Items */}
           <div className="p-8 md:p-12 flex flex-col justify-center">
             <p className="text-taupe mb-8 leading-relaxed text-sm">
-              Để tạo nên một tổng thể hài hòa và sang trọng, các nhà thiết kế của OHOUSE gợi ý bạn kết hợp sản phẩm này cùng các món đồ sau:
+              Để tạo nên một tổng thể hài hòa và sang trọng, các chuyên gia thiết kế của OHOUSE gợi ý bạn kết hợp sản phẩm này cùng bộ sưu tập sau:
             </p>
             
             <div className="space-y-4">
-              {comboProducts.map((p, idx) => (
+              {comboProducts.slice(0, 4).map((p, idx) => (
                 <Link 
                   key={p.id} 
                   to={`/san-pham/${p.slug || p.id}`}
