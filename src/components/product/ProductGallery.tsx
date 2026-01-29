@@ -45,8 +45,8 @@ export function ProductGallery({ mainImage, galleryImages, productName }: Produc
 
   return (
     <div className="space-y-4 select-none w-full max-w-full overflow-hidden">
-      {/* Main Image Container */}
-      <div className="relative group bg-white rounded-2xl md:rounded-[32px] overflow-hidden border border-border/40 shadow-subtle aspect-[4/5] md:aspect-square w-full">
+      {/* Main Image Container - Force 1:1 ratio and strict width constraints */}
+      <div className="relative group bg-white rounded-2xl md:rounded-[32px] overflow-hidden border border-border/40 shadow-subtle aspect-square w-full max-w-full">
         <AnimatePresence initial={false} custom={direction} mode="popLayout">
           <motion.img
             key={currentIndex}
@@ -61,8 +61,7 @@ export function ProductGallery({ mainImage, galleryImages, productName }: Produc
               opacity: { duration: 0.3 }
             }}
             alt={productName}
-            // Mobile dùng object-contain để không bị che, Desktop dùng object-cover để lấp đầy khung sang trọng
-            className="w-full h-full object-contain md:object-cover cursor-zoom-in"
+            className="w-full h-full object-cover cursor-zoom-in"
             onClick={() => setIsLightboxOpen(true)}
           />
         </AnimatePresence>
@@ -77,7 +76,7 @@ export function ProductGallery({ mainImage, galleryImages, productName }: Produc
           </button>
         </div>
 
-        {/* Navigation Arrows (Hidden on very small screens to avoid clutter) */}
+        {/* Navigation Arrows */}
         {allImages.length > 1 && (
           <div className="hidden sm:block">
             <button 
@@ -103,7 +102,7 @@ export function ProductGallery({ mainImage, galleryImages, productName }: Produc
 
       {/* Thumbnails */}
       {allImages.length > 1 && (
-        <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1 px-1">
+        <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1 px-1 w-full max-w-full">
           {allImages.map((img, idx) => (
             <button
               key={idx}
