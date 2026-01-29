@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Heart, Star, Minus, Plus, Loader2, Ruler, Info, FileText, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingBag, Heart, Star, Minus, Plus, Loader2, Ruler, Info, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn, formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ProductDescription } from "@/components/product/detail/ProductDescription";
 
 interface QuickViewSheetProps {
   product: any | null;
@@ -30,8 +31,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [activeImage, setActiveImage] = useState("");
 
-  // Collapsible states
-  const [isShortDescOpen, setIsShortDescOpen] = useState(false);
+  // Collapsible states for specs
   const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
 
@@ -46,7 +46,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       setQuantity(1);
       setSelectedValues({});
       setActiveImage(product.image_url);
-      setIsShortDescOpen(false);
       setIsDimensionsOpen(false);
       setIsSpecsOpen(false);
       fetchAdditionalData();
@@ -114,7 +113,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full sm:max-w-[550px] p-0 flex flex-col z-[150] border-none shadow-elevated">
+      <SheetContent className="w-full sm:max-w-[580px] p-0 flex flex-col z-[150] border-none shadow-elevated">
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-background">
           {/* 1. Main Image Container */}
           <div className="relative aspect-square bg-secondary/20 overflow-hidden">
@@ -128,23 +127,11 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 {product.category_id?.replace(/-/g, ' ')}
               </Badge>
             </div>
-            
-            <button 
-              onClick={() => toggleWishlist(product)}
-              className={cn(
-                "absolute top-4 right-4 p-3 rounded-full shadow-elevated transition-all z-10",
-                isInWishlist(product.id)
-                  ? 'bg-primary text-white'
-                  : 'bg-white/80 backdrop-blur-md hover:bg-primary hover:text-white'
-              )}
-            >
-              <Heart className={cn("w-5 h-5", isInWishlist(product.id) && "fill-current")} />
-            </button>
           </div>
 
-          {/* 2. Gallery Thumbnails (Below main image) */}
+          {/* 2. Gallery Thumbnails */}
           {gallery.length > 1 && (
-            <div className="flex gap-2 px-6 py-4 overflow-x-auto no-scrollbar bg-white border-b">
+            <div className="flex gap-2 px-6 py-4 overflow-x-auto no-scrollbar bg-white border-b border-border/40">
               {gallery.map((img, idx) => (
                 <button
                   key={idx}
@@ -160,7 +147,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
             </div>
           )}
 
-          <div className="p-6 md:p-8 space-y-10 pb-32">
+          <div className="p-6 md:p-8 space-y-10 pb-10">
             {/* 3. Header Info */}
             <div className="space-y-4">
               <SheetHeader>
@@ -193,7 +180,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               <div className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
             ) : (
               tierConfig.length > 0 && (
-                <div className="space-y-6">
+                <div className="space-y-6 pt-6 border-t border-border/40">
                   {tierConfig.map((tier: any, idx: number) => (
                     <div key={idx} className="space-y-3">
                       <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
@@ -231,27 +218,13 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               </div>
             </div>
 
-            {/* 6. Collapsible Content Groups */}
-            <div className="space-y-2">
-              {/* Description */}
-              {product.short_description && (
-                <Collapsible open={isShortDescOpen} onOpenChange={setIsShortDescOpen} className="border-b border-border/40 pb-4">
-                  <CollapsibleTrigger className="flex items-center justify-between w-full py-4 text-left group">
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-4 h-4 text-primary" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal">Mô tả sản phẩm</span>
-                    </div>
-                    {isShortDescOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pb-4 animate-accordion-down">
-                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                      {product.short_description}
-                    </p>
-                  </CollapsibleContent>
-                </Collapsible>
-              )}
+            {/* 6. Product Discovery (Long Description) */}
+            <div className="pt-6 border-t border-border/40">
+               <ProductDescription description={product.description} />
+            </div>
 
-              {/* Dimensions */}
+            {/* 7. Collapsible Dimensions & Specs */}
+            <div className="space-y-2">
               {product.dimension_image_url && (
                 <Collapsible open={isDimensionsOpen} onOpenChange={setIsDimensionsOpen} className="border-b border-border/40 pb-4">
                   <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
@@ -269,9 +242,8 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 </Collapsible>
               )}
 
-              {/* Technical Specs */}
               {attributes.length > 0 && (
-                <Collapsible open={isSpecsOpen} onOpenChange={setIsSpecsOpen} className="pb-4">
+                <Collapsible open={isSpecsOpen} onOpenChange={setIsSpecsOpen} className="border-b border-border/40 pb-4">
                   <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
                     <div className="flex items-center gap-3">
                       <Info className="w-4 h-4 text-primary" />
@@ -295,8 +267,8 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               )}
             </div>
 
-            {/* 7. Recent Reviews */}
-            <div className="space-y-4 pt-6 border-t border-border/40">
+            {/* 8. Recent Reviews */}
+            <div className="space-y-4 pt-6">
               <div className="flex items-center justify-between">
                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Đánh giá gần đây</span>
                  <Link to={`/san-pham/${product.slug}#reviews`} onClick={onClose} className="text-[10px] font-bold text-primary hover:underline flex items-center">
@@ -324,16 +296,37 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
           </div>
         </div>
 
-        {/* 8. Fixed Action Bar */}
+        {/* 9. Optimized Fixed Action Bar */}
         <div className="p-4 md:p-6 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-          <div className="flex gap-4">
-            <Button variant="outline" className="flex-1 h-14 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 rounded-2xl" asChild onClick={onClose}>
+          <div className="flex items-center gap-3">
+            {/* View Details */}
+            <Button 
+              variant="outline" 
+              className="flex-1 h-13 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 rounded-2xl px-2" 
+              asChild 
+              onClick={onClose}
+            >
               <Link to={`/san-pham/${product.slug || product.id}`}>
                 XEM CHI TIẾT
               </Link>
             </Button>
+
+            {/* Wishlist Icon Button */}
+            <button 
+              onClick={() => toggleWishlist(product)}
+              className={cn(
+                "h-13 w-13 shrink-0 flex items-center justify-center rounded-2xl border transition-all",
+                isInWishlist(product.id)
+                  ? "bg-primary/5 border-primary text-primary"
+                  : "bg-white border-border hover:border-primary/40"
+              )}
+            >
+              <Heart className={cn("w-5 h-5", isInWishlist(product.id) && "fill-current")} />
+            </button>
+
+            {/* Add to Cart */}
             <Button 
-              className="flex-[1.5] btn-hero h-14 text-[10px] font-bold shadow-gold rounded-2xl"
+              className="flex-[2] btn-hero h-13 text-[10px] font-bold shadow-gold rounded-2xl"
               onClick={handleAddToCart}
             >
               <ShoppingBag className="w-4 h-4 mr-2" />
