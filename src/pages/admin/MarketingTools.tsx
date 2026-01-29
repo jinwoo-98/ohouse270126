@@ -29,6 +29,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { mainCategories, productCategories } from "@/constants/header-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 export default function MarketingTools() {
   const [loading, setLoading] = useState(false);
