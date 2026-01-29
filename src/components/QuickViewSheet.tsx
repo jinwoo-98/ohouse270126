@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Heart, Star, Minus, Plus, Loader2, Ruler, Info, FileText, ChevronRight } from "lucide-react";
+import { ShoppingBag, Heart, Star, Minus, Plus, Loader2, Ruler, Info, FileText, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
@@ -10,6 +10,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn, formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface QuickViewSheetProps {
   product: any | null;
@@ -29,7 +30,12 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [activeImage, setActiveImage] = useState("");
 
-  // Gallery images including main image
+  // Collapsible states
+  const [isShortDescOpen, setIsShortDescOpen] = useState(false);
+  const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
+  const [isSpecsOpen, setIsSpecsOpen] = useState(false);
+
+  // Gallery images
   const gallery = useMemo(() => {
     if (!product) return [];
     return [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
@@ -40,6 +46,9 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       setQuantity(1);
       setSelectedValues({});
       setActiveImage(product.image_url);
+      setIsShortDescOpen(false);
+      setIsDimensionsOpen(false);
+      setIsSpecsOpen(false);
       fetchAdditionalData();
     }
   }, [isOpen, product?.id]);
@@ -87,7 +96,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   const handleAddToCart = () => {
     if (tierConfig.length > 0 && !activeVariant) {
       const missing = tierConfig.find((t: any) => !selectedValues[t.name]);
-      alert(`Vui lòng chọn ${missing?.name}`);
+      toast.error(`Vui lòng chọn ${missing?.name}`);
       return;
     }
     addToCart({
@@ -107,8 +116,8 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="w-full sm:max-w-[550px] p-0 flex flex-col z-[150] border-none shadow-elevated">
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-background">
-          {/* 1. Gallery Section */}
-          <div className="relative aspect-square bg-secondary/20">
+          {/* 1. Main Image Container */}
+          <div className="relative aspect-square bg-secondary/20 overflow-hidden">
             <img 
               src={activeImage} 
               alt={product.name}
@@ -131,28 +140,28 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
             >
               <Heart className={cn("w-5 h-5", isInWishlist(product.id) && "fill-current")} />
             </button>
-
-            {/* Thumbnails Overlay */}
-            {gallery.length > 1 && (
-              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4 overflow-x-auto no-scrollbar">
-                {gallery.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setActiveImage(img)}
-                    className={cn(
-                      "w-12 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 shadow-sm",
-                      activeImage === img ? "border-primary scale-110" : "border-white/50 opacity-70 hover:opacity-100"
-                    )}
-                  >
-                    <img src={img} className="w-full h-full object-cover" alt="" />
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
+          {/* 2. Gallery Thumbnails (Below main image) */}
+          {gallery.length > 1 && (
+            <div className="flex gap-2 px-6 py-4 overflow-x-auto no-scrollbar bg-white border-b">
+              {gallery.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImage(img)}
+                  className={cn(
+                    "relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0",
+                    activeImage === img ? "border-primary ring-2 ring-primary/10" : "border-transparent opacity-60 hover:opacity-100"
+                  )}
+                >
+                  <img src={img} className="w-full h-full object-cover" alt="" />
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="p-6 md:p-8 space-y-10 pb-32">
-            {/* 2. Header Info */}
+            {/* 3. Header Info */}
             <div className="space-y-4">
               <SheetHeader>
                 <SheetTitle className="text-2xl font-display font-bold leading-tight text-left text-charcoal">
@@ -179,23 +188,12 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               </div>
             </div>
 
-            {/* 3. Description Summary */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-primary">
-                <FileText className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Đặc điểm nổi bật</span>
-              </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {product.short_description || "Sản phẩm nội thất cao cấp mang phong cách hiện đại, được chế tác tỉ mỉ để nâng tầm không gian sống của gia đình bạn."}
-              </p>
-            </div>
-
             {/* 4. Variant Selection */}
             {isLoadingDetails ? (
               <div className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
             ) : (
               tierConfig.length > 0 && (
-                <div className="space-y-6 pt-6 border-t border-border/40">
+                <div className="space-y-6">
                   {tierConfig.map((tier: any, idx: number) => (
                     <div key={idx} className="space-y-3">
                       <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
@@ -224,7 +222,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
             )}
 
             {/* 5. Quantity */}
-            <div className="space-y-3">
+            <div className="space-y-3 pt-6 border-t border-border/40">
               <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Số lượng</span>
               <div className="flex items-center rounded-xl h-12 w-32 bg-secondary/50 border border-border">
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-full flex items-center justify-center text-muted-foreground hover:text-charcoal"><Minus className="w-4 h-4" /></button>
@@ -233,40 +231,71 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               </div>
             </div>
 
-            {/* 6. Dimensions Image */}
-            {product.dimension_image_url && (
-              <div className="space-y-3 pt-6 border-t border-border/40">
-                <div className="flex items-center gap-2 text-primary">
-                  <Ruler className="w-4 h-4" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Kích thước kỹ thuật</span>
-                </div>
-                <div className="rounded-2xl overflow-hidden border border-border/40 bg-white p-2">
-                  <img src={product.dimension_image_url} alt="Kích thước" className="w-full h-auto object-contain" />
-                </div>
-              </div>
-            )}
-
-            {/* 7. Technical Specs (Attributes) */}
-            {attributes.length > 0 && (
-              <div className="space-y-3 pt-6 border-t border-border/40">
-                <div className="flex items-center gap-2 text-primary">
-                  <Info className="w-4 h-4" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Thông số chi tiết</span>
-                </div>
-                <div className="grid gap-2">
-                  {attributes.map((attr, i) => (
-                    <div key={i} className="flex justify-between py-2.5 border-b border-dashed border-border/40 text-xs">
-                      <span className="text-muted-foreground font-medium">{attr.name}</span>
-                      <span className="text-charcoal font-bold">
-                        {Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}
-                      </span>
+            {/* 6. Collapsible Content Groups */}
+            <div className="space-y-2">
+              {/* Description */}
+              {product.short_description && (
+                <Collapsible open={isShortDescOpen} onOpenChange={setIsShortDescOpen} className="border-b border-border/40 pb-4">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-4 text-left group">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-4 h-4 text-primary" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal">Mô tả sản phẩm</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                    {isShortDescOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pb-4 animate-accordion-down">
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                      {product.short_description}
+                    </p>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
 
-            {/* 8. Recent Reviews */}
+              {/* Dimensions */}
+              {product.dimension_image_url && (
+                <Collapsible open={isDimensionsOpen} onOpenChange={setIsDimensionsOpen} className="border-b border-border/40 pb-4">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
+                    <div className="flex items-center gap-3">
+                      <Ruler className="w-4 h-4 text-primary" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal">Kích thước kỹ thuật</span>
+                    </div>
+                    {isDimensionsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pb-4 animate-accordion-down">
+                    <div className="rounded-2xl overflow-hidden border border-border/40 bg-white p-2">
+                      <img src={product.dimension_image_url} alt="Kích thước" className="w-full h-auto object-contain" />
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
+              {/* Technical Specs */}
+              {attributes.length > 0 && (
+                <Collapsible open={isSpecsOpen} onOpenChange={setIsSpecsOpen} className="pb-4">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
+                    <div className="flex items-center gap-3">
+                      <Info className="w-4 h-4 text-primary" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal">Thông số chi tiết</span>
+                    </div>
+                    {isSpecsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pb-4 animate-accordion-down">
+                    <div className="grid gap-2">
+                      {attributes.map((attr, i) => (
+                        <div key={i} className="flex justify-between py-2.5 border-b border-dashed border-border/40 text-xs">
+                          <span className="text-muted-foreground font-medium">{attr.name}</span>
+                          <span className="text-charcoal font-bold">
+                            {Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+            </div>
+
+            {/* 7. Recent Reviews */}
             <div className="space-y-4 pt-6 border-t border-border/40">
               <div className="flex items-center justify-between">
                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Đánh giá gần đây</span>
@@ -295,7 +324,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
           </div>
         </div>
 
-        {/* 9. Fixed Action Bar */}
+        {/* 8. Fixed Action Bar */}
         <div className="p-4 md:p-6 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
           <div className="flex gap-4">
             <Button variant="outline" className="flex-1 h-14 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 rounded-2xl" asChild onClick={onClose}>
