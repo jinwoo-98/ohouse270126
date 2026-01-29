@@ -60,6 +60,9 @@ export function ProductReviews({
   const visibleReviews = showAll ? reviews : reviews.slice(0, INITIAL_COUNT);
   const hasMore = reviews.length > INITIAL_COUNT;
 
+  // Sử dụng số lượng thực tế từ DB nếu danh sách reviews đã load xong
+  const finalReviewCount = reviews.length > 0 ? reviews.length : displayReviewCount;
+
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!verifyInfo) return;
@@ -109,7 +112,7 @@ export function ProductReviews({
         <div className="flex flex-col items-center gap-2">
           <StarRating rating={displayRating} size="w-7 h-7" />
           <p className="text-sm font-bold text-charcoal mt-2">
-            {displayRating}/5 <span className="text-muted-foreground font-normal ml-1">({displayReviewCount} nhận xét)</span>
+            {displayRating}/5 <span className="text-muted-foreground font-normal ml-1">({finalReviewCount} nhận xét)</span>
           </p>
         </div>
       </div>

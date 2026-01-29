@@ -131,7 +131,6 @@ export default function MarketingTools() {
     else bodyPool = COMPONENT_POOLS.body_generic;
 
     const results: string[] = [];
-    const usedCombinations = new Set();
 
     for (let i = 0; i < count; i++) {
       let finalComment = "";
@@ -188,8 +187,8 @@ export default function MarketingTools() {
   };
 
   const handleGenerateReviews = async () => {
-    const daysBack = parseInt(stats.review_days_back) || 30;
-    if (!confirm(`Xác nhận sinh nội dung đánh giá thực tế trong khoảng ${daysBack} ngày qua? Hệ thống sẽ ghi đè số liệu hiển thị nếu chọn Xóa cũ.`)) return;
+    const daysBack = parseInt(stats.review_days_back) || 60;
+    if (!confirm(`Xác nhận sinh nội dung đánh giá thực tế trong khoảng ${daysBack} ngày qua? Hệ thống sẽ ghi đè số liệu hiển thị để khớp tuyệt đối.`)) return;
 
     setReviewLoading(true);
     try {
@@ -198,14 +197,14 @@ export default function MarketingTools() {
       else if (selectionType === 'product' && targetId !== 'all') query = query.eq('id', targetId);
 
       const { data: products } = await query;
-      if (!products || products.length === 0) { toast.info("Không có sản phẩm."); return; }
+      if (!products || products.length === 0) { toast.info("Không tìm thấy sản phẩm mục tiêu."); return; }
 
       for (const p of products) {
-        // Số lượng đánh giá muốn sinh
+        // Luôn tính toán số lượng mới dựa trên config
         const countToGenerate = getRandomInt(parseInt(stats.min_reviews), parseInt(stats.max_reviews));
 
         if (deleteOldReviews) {
-          // Xóa triệt để đánh giá cũ của sản phẩm này
+          // XÓA TRIỆT ĐỂ dữ liệu cũ trước khi chèn mới
           await supabase.from('reviews').delete().eq('product_id', p.id);
         }
 
@@ -214,18 +213,14 @@ export default function MarketingTools() {
         
         for (let i = 0; i < countToGenerate; i++) {
           const randomDays = getRandomInt(1, daysBack);
-          const randomHours = getRandomInt(0, 23);
-          const randomMins = getRandomInt(0, 59);
-          
           const date = new Date();
           date.setDate(date.getDate() - randomDays);
-          date.setHours(randomHours);
-          date.setMinutes(randomMins);
+          date.setHours(getRandomInt(0, 23), getRandomInt(0, 59));
 
           newReviews.push({
             product_id: p.id,
             user_name: generateVnName(),
-            rating: Math.round(parseFloat(stats.max_rating)) - (Math.random() > 0.8 ? 1 : 0), // Ưu tiên 5 sao, thi thoảng 4 sao
+            rating: Math.random() > 0.8 ? 4 : 5, // Tỉ lệ 80% là 5 sao
             comment: comments[i], 
             created_at: date.toISOString()
           });
@@ -234,21 +229,19 @@ export default function MarketingTools() {
         if (newReviews.length > 0) {
           await supabase.from('reviews').insert(newReviews);
           
-          // Cập nhật lại cột số lượng ảo trên bảng Product cho khớp tuyệt đối
-          // Nếu xóa cũ thì số lượng mới = countToGenerate, nếu không xóa thì = cũ + mới
-          let finalCount = countToGenerate;
-          if (!deleteOldReviews) {
-            const { count: currentCount } = await supabase.from('reviews').select('*', { count: 'exact', head: true }).eq('product_id', p.id);
-            finalCount = currentCount || countToGenerate;
-          }
+          // ĐẾM LẠI THỰC TẾ TRONG DB ĐỂ CẬP NHẬT COL FAKE_REVIEW_COUNT
+          const { count: realTotal } = await supabase
+            .from('reviews')
+            .select('*', { count: 'exact', head: true })
+            .eq('product_id', p.id);
           
           await supabase.from('products').update({ 
-            fake_review_count: finalCount,
+            fake_review_count: realTotal || countToGenerate,
             fake_rating: parseFloat(getRandomFloat(parseFloat(stats.min_rating), parseFloat(stats.max_rating)))
           }).eq('id', p.id);
         }
       }
-      toast.success(`Đã xử lý đánh giá cho ${products.length} sản phẩm thành công!`);
+      toast.success(`Đã xử lý và đồng bộ số liệu cho ${products.length} sản phẩm thành công!`);
     } catch (e: any) { toast.error(e.message); } finally { setReviewLoading(false); }
   };
 
