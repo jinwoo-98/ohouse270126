@@ -8,7 +8,8 @@ import {
   RefreshCw,
   MessageSquareQuote,
   Save,
-  Clock
+  Clock,
+  Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ import {
   SelectLabel
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { mainCategories, productCategories } from "@/constants/header-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,7 +33,6 @@ const VN_LAST_NAMES = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh
 const VN_MID_NAMES = ["Văn", "Thị", "Hồng", "Minh", "Anh", "Quang", "Xuân", "Thanh", "Đức", "Trọng", "Kim", "Ngọc"];
 const VN_FIRST_NAMES = ["An", "Bình", "Chi", "Dũng", "Giang", "Hương", "Khánh", "Linh", "Nam", "Oanh", "Phúc", "Quyên", "Sơn", "Thảo", "Uyên", "Vinh", "Yến", "Tùng", "Lâm", "Hải"];
 
-// Engine tạo nội dung - Chia thành các khối để ghép nối (Tạo ra hàng nghìn tổ hợp)
 const COMPONENT_POOLS = {
   intro: [
     "Vừa nhận đc hàng xong, cảm nhận ban đầu là sp cực kỳ chất lượng.",
@@ -101,6 +102,7 @@ export default function MarketingTools() {
   const [selectionType, setSelectionType] = useState<"category" | "product">("category");
   const [targetId, setTargetId] = useState("all");
   const [updateZeroOnly, setUpdateZeroOnly] = useState(false);
+  const [deleteOldReviews, setDeleteOldReviews] = useState(true);
 
   const [stats, setStats] = useState({
     min_sold: "50", max_sold: "200",
@@ -114,25 +116,14 @@ export default function MarketingTools() {
   const getRandomFloat = (min: number, max: number) => (Math.random() * (max - min) + min).toFixed(1);
   const getRandomItem = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
   
-  const shuffleArray = (array: any[]) => {
-    const newArr = [...array];
-    for (let i = newArr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-    }
-    return newArr;
-  };
-
   const generateVnName = () => {
     return `${getRandomItem(VN_LAST_NAMES)} ${getRandomItem(VN_MID_NAMES)} ${getRandomItem(VN_FIRST_NAMES)}`;
   };
 
-  // Engine sinh nội dung đa dạng (Tạo ra hàng nghìn mẫu khác nhau)
   const getDiverseComments = (productName: string, count: number) => {
     const name = productName.toLowerCase();
     let bodyPool: string[] = [];
     
-    // Chọn Body phù hợp ngữ cảnh
     if (name.includes('sofa') || name.includes('ghế')) bodyPool = COMPONENT_POOLS.body_sofa;
     else if (name.includes('bàn') || name.includes('kệ') || name.includes('tủ')) bodyPool = COMPONENT_POOLS.body_table_stand;
     else if (name.includes('giường') || name.includes('nệm')) bodyPool = COMPONENT_POOLS.body_bed;
@@ -146,7 +137,6 @@ export default function MarketingTools() {
       let attempts = 0;
       let finalComment = "";
 
-      // Thử tạo câu cho đến khi duy nhất (hoặc tối đa 10 lần thử)
       while (attempts < 10) {
         const intro = getRandomItem(COMPONENT_POOLS.intro);
         const body = getRandomItem(bodyPool);
@@ -155,13 +145,11 @@ export default function MarketingTools() {
         
         finalComment = `${intro} ${body} ${outro}${flair}`;
         
-        // Đảm bảo độ dài tối thiểu và tối đa (nếu cần thiết có thể ghép thêm khối body nữa)
         if (finalComment.length < 250 && Math.random() > 0.5) {
             const secondBody = getRandomItem(COMPONENT_POOLS.body_generic);
             finalComment = `${intro} ${body} ${secondBody} ${outro}${flair}`;
         }
 
-        // Cắt bớt nếu vượt quá 500 ký tự (giới hạn an toàn DB)
         if (finalComment.length > 500) {
           finalComment = finalComment.substring(0, 497) + "...";
         }
@@ -208,7 +196,7 @@ export default function MarketingTools() {
 
   const handleGenerateReviews = async () => {
     const daysBack = parseInt(stats.review_days_back) || 30;
-    if (!confirm(`Xác nhận sinh nội dung đánh giá độc bản (tối đa 500 ký tự) trong khoảng ${daysBack} ngày qua?`)) return;
+    if (!confirm(`Xác nhận sinh nội dung đánh giá độc bản trong khoảng ${daysBack} ngày qua?`)) return;
 
     setReviewLoading(true);
     try {
@@ -223,8 +211,10 @@ export default function MarketingTools() {
         const count = p.fake_review_count || 0;
         if (count === 0) continue;
 
-        // Xóa cũ để làm mới hoàn toàn
-        await supabase.from('reviews').delete().eq('product_id', p.id);
+        // Xóa cũ nếu tùy chọn được bật
+        if (deleteOldReviews) {
+          await supabase.from('reviews').delete().eq('product_id', p.id);
+        }
 
         const comments = getDiverseComments(p.name, count);
         const newReviews = [];
@@ -247,9 +237,20 @@ export default function MarketingTools() {
             created_at: date.toISOString()
           });
         }
-        if (newReviews.length > 0) await supabase.from('reviews').insert(newReviews);
+
+        if (newReviews.length > 0) {
+          await supabase.from('reviews').insert(newReviews);
+          
+          // Sau khi chèn, đếm lại thực tế để cập nhật cột fake_review_count cho chuẩn
+          const { count: realCount } = await supabase
+            .from('reviews')
+            .select('*', { count: 'exact', head: true })
+            .eq('product_id', p.id);
+          
+          await supabase.from('products').update({ fake_review_count: realCount || count }).eq('id', p.id);
+        }
       }
-      toast.success(`Đã sinh ${products.length} bộ đánh giá độc bản thành công!`);
+      toast.success(`Đã sinh đánh giá và đồng bộ số liệu cho ${products.length} sản phẩm thành công!`);
     } catch (e: any) { toast.error(e.message); } finally { setReviewLoading(false); }
   };
 
@@ -339,19 +340,29 @@ export default function MarketingTools() {
                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2"><MessageSquareQuote className="w-5 h-5" /> 3. Nội dung đánh giá thực tế (Engine v2)</h3>
                 
                 <div className="space-y-4 mb-8">
-                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sử dụng tổ hợp 4 khối nội dung (Mở đầu + Thân bài + Kết bài + Flair) để tạo ra các bài review độc bản dài đến 500 ký tự, đảm bảo không trùng lặp và đúng ngữ cảnh sản phẩm.</p>
+                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sử dụng tổ hợp 4 khối nội dung để tạo ra các bài review độc bản dài đến 500 ký tự, đảm bảo không trùng lặp và đúng ngữ cảnh sản phẩm.</p>
                   
-                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
-                    <Label className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5" /> Khoảng thời gian phát tán (Số ngày về trước)
-                    </Label>
-                    <Input 
-                      type="number" 
-                      value={stats.review_days_back} 
-                      onChange={e => setStats({...stats, review_days_back: e.target.value})} 
-                      placeholder="Ví dụ: 60"
-                      className="h-12 bg-white/10 border-white/20 text-cream placeholder:text-taupe focus:border-primary"
-                    />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5" /> Khoảng thời gian phát tán
+                      </Label>
+                      <Input 
+                        type="number" 
+                        value={stats.review_days_back} 
+                        onChange={e => setStats({...stats, review_days_back: e.target.value})} 
+                        className="h-11 bg-white/10 border-white/20 text-cream"
+                      />
+                    </div>
+                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-between">
+                      <div className="space-y-1">
+                        <Label className="text-[10px] font-bold uppercase tracking-widest text-destructive flex items-center gap-2">
+                          <Trash2 className="w-3.5 h-3.5" /> Xóa đánh giá cũ
+                        </Label>
+                        <p className="text-[9px] text-taupe">Làm mới hoàn toàn dữ liệu</p>
+                      </div>
+                      <Switch checked={deleteOldReviews} onCheckedChange={setDeleteOldReviews} />
+                    </div>
                   </div>
                 </div>
 
