@@ -17,11 +17,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 export default function ProductManager() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // State for professional confirmation
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -45,15 +49,20 @@ export default function ProductManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    
+    const toastId = toast.loading("Đang xóa dữ liệu sản phẩm khỏi hệ thống...");
     try {
-      const { error } = await supabase.from('products').delete().eq('id', id);
+      const { error } = await supabase.from('products').delete().eq('id', deleteId);
       if (error) throw error;
-      setProducts(products.filter(p => p.id !== id));
-      toast.success("Đã xóa sản phẩm thành công");
+      
+      setProducts(products.filter(p => p.id !== deleteId));
+      toast.success("Đã xóa sản phẩm thành công.", { id: toastId });
     } catch (error: any) {
-      toast.error("Lỗi khi xóa: " + error.message);
+      toast.error("Lỗi khi xóa: " + error.message, { id: toastId });
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -158,7 +167,7 @@ export default function ProductManager() {
                       <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-blue-600 hover:bg-blue-50" asChild title="Sửa thông tin">
                         <Link to={`/admin/products/edit/${product.id}`}><Edit className="w-4 h-4" /></Link>
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-destructive hover:bg-destructive/10" title="Xóa" onClick={() => handleDelete(product.id)}>
+                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-destructive hover:bg-destructive/10" title="Xóa" onClick={() => setDeleteId(product.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -169,6 +178,15 @@ export default function ProductManager() {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa sản phẩm"
+        description="Hành động này sẽ xóa vĩnh viễn sản phẩm khỏi kho hàng và không thể hoàn tác. Bạn có chắc chắn muốn tiếp tục?"
+        confirmText="Vẫn xóa sản phẩm"
+      />
     </div>
   );
 }
