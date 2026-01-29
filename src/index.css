@@ -53,7 +53,12 @@
 }
 
 @layer base {
-  * { @apply border-transparent; }
+  * { 
+    @apply border-transparent;
+    /* Firefox scrollbar support */
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
   
   html, body { 
     @apply overflow-x-hidden; 
@@ -65,6 +70,26 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Montserrat', sans-serif;
+  }
+
+  /* Custom Webkit Scrollbar (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 5px; /* Chiều rộng thanh cuộn dọc */
+    height: 5px; /* Chiều cao thanh cuộn ngang */
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.5);
   }
 }
 
@@ -95,7 +120,16 @@
     box-sizing: border-box;
   }
 
-  /* Rich Text Style - Đảm bảo căn giữa mọi nội dung */
+  /* Custom Scrollbar for specific containers */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.3);
+    border-radius: 10px;
+  }
+
+  /* Rich Text Style */
   .rich-text-content {
     @apply text-center mx-auto max-w-4xl;
   }
