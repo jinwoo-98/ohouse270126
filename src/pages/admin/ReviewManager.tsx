@@ -5,7 +5,6 @@ import {
   Trash2, 
   Loader2, 
   Star, 
-  MessageSquare,
   ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,16 +26,24 @@ export default function ReviewManager() {
   const fetchReviews = async () => {
     setLoading(true);
     try {
-      // Join with products table to get product name and image
+      // Sau khi đã chạy SQL tạo FK, query này sẽ lấy được thông tin product
       const { data, error } = await supabase
         .from('reviews')
-        .select('*, products(name, image_url, slug)')
+        .select(`
+          *,
+          products (
+            name,
+            image_url,
+            slug
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setReviews(data || []);
     } catch (error: any) {
-      toast.error("Lỗi tải đánh giá: " + error.message);
+      console.error("Lỗi tải đánh giá:", error);
+      toast.error("Không thể tải danh sách đánh giá.");
     } finally {
       setLoading(false);
     }
@@ -55,10 +62,11 @@ export default function ReviewManager() {
   };
 
   const filtered = reviews.filter(r => {
+    const productName = r.products?.name || "";
     const matchesSearch = 
       r.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.comment?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.products?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      productName.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesRating = ratingFilter === "all" || r.rating.toString() === ratingFilter;
 
@@ -121,8 +129,8 @@ export default function ReviewManager() {
                       <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0 border">
                         {item.products?.image_url && <img src={item.products.image_url} className="w-full h-full object-cover" />}
                       </div>
-                      <Link to={`/san-pham/${item.product_id}`} target="_blank" className="text-xs font-bold hover:text-primary truncate block">
-                        {item.products?.name || "Sản phẩm đã xóa"}
+                      <Link to={`/san-pham/${item.products?.slug || item.product_id}`} target="_blank" className="text-xs font-bold hover:text-primary truncate block">
+                        {item.products?.name || "Sản phẩm không xác định"}
                         <ExternalLink className="w-3 h-3 inline ml-1 opacity-50" />
                       </Link>
                     </div>
