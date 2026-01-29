@@ -5,14 +5,20 @@ import {
   Trash2, 
   Loader2, 
   Star, 
-  ExternalLink,
-  AlertTriangle
+  Edit,
+  AlertTriangle,
+  Save,
+  User,
+  MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 export default function ReviewManager() {
@@ -21,6 +27,11 @@ export default function ReviewManager() {
   const [searchTerm, setSearchTerm] = useState("");
   const [ratingFilter, setRatingFilter] = useState("all");
 
+  // State cho việc chỉnh sửa
+  const [editingReview, setEditingReview] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     fetchReviews();
   }, []);
@@ -28,7 +39,6 @@ export default function ReviewManager() {
   const fetchReviews = async () => {
     setLoading(true);
     try {
-      // Truy vấn lấy dữ liệu đánh giá kèm thông tin sản phẩm qua liên kết Foreign Key
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -60,6 +70,40 @@ export default function ReviewManager() {
       toast.success("Đã xóa đánh giá thành công.");
     } catch (error: any) {
       toast.error("Lỗi xóa: " + error.message);
+    }
+  };
+
+  const handleEditClick = (review: any) => {
+    setEditingReview({ ...review });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editingReview.user_name || !editingReview.comment) {
+      toast.error("Vui lòng nhập đầy đủ tên và nội dung.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('reviews')
+        .update({
+          user_name: editingReview.user_name,
+          rating: editingReview.rating,
+          comment: editingReview.comment
+        })
+        .eq('id', editingReview.id);
+
+      if (error) throw error;
+
+      toast.success("Đã cập nhật đánh giá thành công!");
+      setIsEditDialogOpen(false);
+      fetchReviews(); // Tải lại danh sách để đồng bộ dữ liệu
+    } catch (error: any) {
+      toast.error("Lỗi cập nhật: " + error.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -157,9 +201,14 @@ export default function ReviewManager() {
                     <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 italic">"{item.comment}"</p>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-muted-foreground hover:text-destructive transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="text-blue-600 hover:bg-blue-50">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -167,6 +216,78 @@ export default function ReviewManager() {
           </table>
         </div>
       </div>
+
+      {/* Dialog Chỉnh sửa Đánh giá */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] rounded-3xl p-0 overflow-hidden border-none shadow-elevated">
+          <div className="bg-charcoal p-6 text-white">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-lg font-bold">
+                <Edit className="w-5 h-5 text-primary" />
+                Chỉnh Sửa Đánh Giá
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+
+          <div className="p-8 space-y-6">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <User className="w-3 h-3" /> Tên khách hàng
+              </Label>
+              <Input 
+                value={editingReview?.user_name || ""} 
+                onChange={(e) => setEditingReview({ ...editingReview, user_name: e.target.value })}
+                className="h-12 rounded-xl"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Star className="w-3 h-3" /> Số sao đánh giá
+              </Label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setEditingReview({ ...editingReview, rating: s })}
+                    className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center transition-all border",
+                      editingReview?.rating === s 
+                        ? "bg-primary border-primary text-white shadow-gold" 
+                        : "bg-secondary/30 border-border text-muted-foreground hover:border-primary/40"
+                    )}
+                  >
+                    <span className="font-bold text-sm">{s}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <MessageSquare className="w-3 h-3" /> Nội dung nhận xét
+              </Label>
+              <Textarea 
+                value={editingReview?.comment || ""} 
+                onChange={(e) => setEditingReview({ ...editingReview, comment: e.target.value })}
+                rows={5}
+                className="rounded-xl resize-none leading-relaxed"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="p-6 bg-gray-50 border-t flex gap-3">
+            <Button variant="ghost" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl h-12 flex-1 font-bold text-xs uppercase">
+              Hủy bỏ
+            </Button>
+            <Button onClick={handleUpdate} disabled={isSaving} className="btn-hero h-12 flex-[2] rounded-xl shadow-gold">
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+              LƯU THAY ĐỔI
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
