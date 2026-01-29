@@ -80,7 +80,7 @@ export default function ProductForm() {
     } else {
       setAvailableAttributes([]);
     }
-  }, [formData.category_id]);
+  }, [formData.category_id, categories]);
 
   const fetchCategories = async () => {
     const { data } = await supabase
@@ -425,7 +425,7 @@ export default function ProductForm() {
             <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
               <ImageIcon className="w-4 h-4" /> Hình ảnh đại diện (Ảnh chính)
             </h3>
-            <ImageUpload value={formData.image_url} onChange={(url) => setFormData({...formData, image_url: url})} />
+            <ImageUpload value={formData.image_url} onChange={(url) => setFormData({...formData, image_url: url as string})} />
           </div>
 
           <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
@@ -448,9 +448,11 @@ export default function ProductForm() {
             </div>
             <div className="p-4 border-2 border-dashed border-border rounded-2xl bg-secondary/5">
               <ImageUpload 
-                onChange={(url) => setFormData(prev => ({ ...prev, gallery_urls: [...prev.gallery_urls, url] }))} 
+                multiple
+                value={formData.gallery_urls}
+                onChange={(urls) => setFormData(prev => ({ ...prev, gallery_urls: urls as string[] }))} 
               />
-              <p className="text-[10px] text-muted-foreground mt-3 text-center italic">Nhấn để thêm ảnh mới vào bộ sưu tập.</p>
+              <p className="text-[10px] text-muted-foreground mt-3 text-center italic">Chọn nhiều ảnh cùng lúc để tải lên bộ sưu tập.</p>
             </div>
           </div>
 
