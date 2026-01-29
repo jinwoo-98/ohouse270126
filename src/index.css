@@ -63,7 +63,7 @@
 
 @layer components {
   .section-title {
-    @apply text-3xl md:text-5xl font-display font-extrabold uppercase tracking-tight leading-tight text-charcoal;
+    @apply text-2xl md:text-4xl font-display font-bold uppercase tracking-[0.1em] leading-tight text-charcoal;
   }
 
   .btn-hero {
