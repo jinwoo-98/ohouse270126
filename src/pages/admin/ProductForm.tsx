@@ -1,39 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  ArrowLeft, 
-  Save, 
-  Loader2, 
-  Info,
-  Layers,
-  Settings2,
-  Image as ImageIcon,
-  TrendingUp,
-  Box,
-  Sparkles,
-  List,
-  X,
-  Plus
-} from "lucide-react";
+import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { ImageUpload } from "@/components/admin/ImageUpload";
-import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
-import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue,
-  SelectGroup,
-  SelectLabel
-} from "@/components/ui/select";
 import { toast } from "sonner";
+
+// Import new modular components
+import { PricingCategorySection } from "@/components/admin/product-form/PricingCategorySection";
+import { CrossSellSection } from "@/components/admin/product-form/CrossSellSection";
+import { ProductDetailSection } from "@/components/admin/product-form/ProductDetailSection";
+import { ProductMediaSection } from "@/components/admin/product-form/ProductMediaSection";
+import { ProductStatusSection } from "@/components/admin/product-form/ProductStatusSection";
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -94,7 +71,7 @@ export default function ProductForm() {
   };
 
   const fetchAllProducts = async () => {
-    const { data } = await supabase.from('products').select('id, name').neq('id', id || 'new').limit(200); // Limit to check perf
+    const { data } = await supabase.from('products').select('id, name').neq('id', id || 'new').limit(200);
     setAllProducts(data || []);
   };
 
@@ -191,13 +168,6 @@ export default function ProductForm() {
     });
   };
 
-  const handleRemoveGalleryImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      gallery_urls: prev.gallery_urls.filter((_, i) => i !== index)
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.image_url) {
@@ -269,8 +239,6 @@ export default function ProductForm() {
     }
   };
 
-  const parentCategories = categories.filter(c => !c.parent_id);
-
   if (fetching) return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
@@ -293,257 +261,34 @@ export default function ProductForm() {
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6 border-l-4 border-l-primary">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Settings2 className="w-4 h-4" /> 1. Giá bán và Phân loại
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Giá bán lẻ (VND) *</Label>
-                <Input 
-                  type="number" 
-                  value={formData.price} 
-                  onChange={(e) => setFormData({...formData, price: e.target.value})} 
-                  required 
-                  placeholder="Nhập giá bán..."
-                  className="h-12 rounded-xl font-bold text-primary text-lg focus:ring-1" 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Giá gốc (Gạch bỏ)</Label>
-                <Input 
-                  type="number" 
-                  value={formData.original_price} 
-                  onChange={(e) => setFormData({...formData, original_price: e.target.value})} 
-                  placeholder="Để trống nếu không có giá cũ..."
-                  className="h-12 rounded-xl" 
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Danh mục sản phẩm *</Label>
-              <Select 
-                value={formData.category_id} 
-                onValueChange={(val) => setFormData({...formData, category_id: val})}
-              >
-                <SelectTrigger className="h-12 rounded-xl border-primary/20 bg-primary/5">
-                  <SelectValue placeholder="Bấm để chọn danh mục hiển thị..." />
-                </SelectTrigger>
-                <SelectContent className="max-h-80 rounded-xl">
-                  {parentCategories.map(parent => (
-                    <SelectGroup key={parent.id}>
-                      <SelectLabel className="font-bold text-primary">{parent.name}</SelectLabel>
-                      <SelectItem value={parent.slug}>-- Tất cả {parent.name}</SelectItem>
-                      {categories.filter(c => c.parent_id === parent.id).map(child => (
-                        <SelectItem key={child.id} value={child.slug}>
-                          &nbsp;&nbsp;&nbsp;{child.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Box className="w-4 h-4" /> 2. Cross-sell & Up-sell (Thủ công)
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Gợi ý phối cảnh (Perfect Match)</Label>
-                <Select 
-                  onValueChange={(val) => {
-                    if (!formData.perfect_match_ids.includes(val)) {
-                      setFormData({...formData, perfect_match_ids: [...formData.perfect_match_ids, val]})
-                    }
-                  }}
-                >
-                  <SelectTrigger className="h-11 rounded-xl">
-                    <SelectValue placeholder="Chọn sản phẩm để phối..." />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60">
-                    {allProducts.map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.perfect_match_ids.map(pid => {
-                    const p = allProducts.find(x => x.id === pid);
-                    return p ? (
-                      <Badge key={pid} variant="secondary" className="gap-2 pl-3">
-                        {p.name}
-                        <button type="button" onClick={() => setFormData({...formData, perfect_match_ids: formData.perfect_match_ids.filter(x => x !== pid)})} className="hover:text-destructive"><X className="w-3 h-3" /></button>
-                      </Badge>
-                    ) : null;
-                  })}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Thường được mua cùng (Bought Together)</Label>
-                <Select 
-                  onValueChange={(val) => {
-                    if (!formData.bought_together_ids.includes(val)) {
-                      setFormData({...formData, bought_together_ids: [...formData.bought_together_ids, val]})
-                    }
-                  }}
-                >
-                  <SelectTrigger className="h-11 rounded-xl">
-                    <SelectValue placeholder="Chọn sản phẩm mua cùng..." />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-60">
-                    {allProducts.map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.bought_together_ids.map(pid => {
-                    const p = allProducts.find(x => x.id === pid);
-                    return p ? (
-                      <Badge key={pid} variant="secondary" className="gap-2 pl-3">
-                        {p.name}
-                        <button type="button" onClick={() => setFormData({...formData, bought_together_ids: formData.bought_together_ids.filter(x => x !== pid)})} className="hover:text-destructive"><X className="w-3 h-3" /></button>
-                      </Badge>
-                    ) : null;
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Info className="w-4 h-4" /> 3. Thông tin chi tiết
-            </h3>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tên sản phẩm đầy đủ *</Label>
-              <Input 
-                value={formData.name} 
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="Ví dụ: Sofa da Ý cao cấp 3 chỗ ngồi"
-                required
-                className="h-12 rounded-xl text-lg font-bold"
-              />
-            </div>
-            
-            {/* Attributes Section */}
-            {availableAttributes.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-secondary/10 rounded-2xl">
-                {availableAttributes.map(attr => (
-                  <div key={attr.id} className="space-y-3">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">{attr.name}</Label>
-                    
-                    {attr.type === 'single' ? (
-                      <Select 
-                        value={productAttrs[attr.id]?.[0] || ""} 
-                        onValueChange={(val) => handleAttributeChange(attr.id, val, false)}
-                      >
-                        <SelectTrigger className="h-11 rounded-xl">
-                          <SelectValue placeholder={`Chọn ${attr.name}`} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {attr.options?.map((opt: string) => (
-                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <div className="flex flex-wrap gap-3 p-3 border rounded-xl bg-white">
-                        {attr.options?.map((opt: string) => (
-                          <div key={opt} className="flex items-center space-x-2">
-                            <Checkbox 
-                              id={`${attr.id}-${opt}`}
-                              checked={productAttrs[attr.id]?.includes(opt)}
-                              onCheckedChange={() => handleAttributeChange(attr.id, opt, true)}
-                            />
-                            <Label htmlFor={`${attr.id}-${opt}`} className="text-sm font-normal cursor-pointer">{opt}</Label>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả bài viết</Label>
-                <AIContentAssistant 
-                  contentType="product" 
-                  contextTitle={formData.name} 
-                  onInsert={(val) => setFormData({...formData, description: val})} 
-                />
-              </div>
-              <RichTextEditor 
-                value={formData.description} 
-                onChange={(val) => setFormData({...formData, description: val})} 
-                placeholder="Mô tả kỹ thuật, kích thước, ưu điểm của sản phẩm..."
-              />
-            </div>
-          </div>
+          <PricingCategorySection 
+            formData={formData} 
+            setFormData={setFormData} 
+            categories={categories} 
+          />
+          <CrossSellSection 
+            formData={formData} 
+            setFormData={setFormData} 
+            allProducts={allProducts} 
+          />
+          <ProductDetailSection 
+            formData={formData} 
+            setFormData={setFormData} 
+            availableAttributes={availableAttributes}
+            productAttrs={productAttrs}
+            handleAttributeChange={handleAttributeChange}
+          />
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <ImageIcon className="w-4 h-4" /> Hình ảnh đại diện (Ảnh chính)
-            </h3>
-            <ImageUpload value={formData.image_url} onChange={(url) => setFormData({...formData, image_url: url as string})} />
-          </div>
-
-          <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <ImageIcon className="w-4 h-4" /> Bộ sưu tập ảnh (Ảnh phụ)
-            </h3>
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              {formData.gallery_urls.map((url, idx) => (
-                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
-                  <img src={url} alt="Gallery" className="w-full h-full object-cover" />
-                  <button 
-                    type="button"
-                    onClick={() => handleRemoveGalleryImage(idx)}
-                    className="absolute top-1 right-1 p-1 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div className="p-4 border-2 border-dashed border-border rounded-2xl bg-secondary/5">
-              <ImageUpload 
-                multiple
-                value={formData.gallery_urls}
-                onChange={(urls) => setFormData(prev => ({ ...prev, gallery_urls: urls as string[] }))} 
-              />
-              <p className="text-[10px] text-muted-foreground mt-3 text-center italic">Chọn nhiều ảnh cùng lúc để tải lên bộ sưu tập.</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Layers className="w-4 h-4" /> Trạng thái & Badge
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-                <span className="text-xs font-bold uppercase">Sản phẩm Mới</span>
-                <Switch checked={formData.is_new} onCheckedChange={(val) => setFormData({...formData, is_new: val})} />
-              </div>
-              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-                <span className="text-xs font-bold uppercase">Flash Sale</span>
-                <Switch checked={formData.is_sale} onCheckedChange={(val) => setFormData({...formData, is_sale: val})} />
-              </div>
-              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-                <span className="text-xs font-bold uppercase">Nổi Bật</span>
-                <Switch checked={formData.is_featured} onCheckedChange={(val) => setFormData({...formData, is_featured: val})} />
-              </div>
-            </div>
-          </div>
+          <ProductMediaSection 
+            formData={formData} 
+            setFormData={setFormData} 
+          />
+          <ProductStatusSection 
+            formData={formData} 
+            setFormData={setFormData} 
+          />
         </div>
       </form>
     </div>
