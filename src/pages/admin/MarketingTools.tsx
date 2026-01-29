@@ -31,76 +31,69 @@ const VN_LAST_NAMES = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh
 const VN_MID_NAMES = ["Văn", "Thị", "Hồng", "Minh", "Anh", "Quang", "Xuân", "Thanh", "Đức", "Trọng", "Kim", "Ngọc"];
 const VN_FIRST_NAMES = ["An", "Bình", "Chi", "Dũng", "Giang", "Hương", "Khánh", "Linh", "Nam", "Oanh", "Phúc", "Quyên", "Sơn", "Thảo", "Uyên", "Vinh", "Yến", "Tùng", "Lâm", "Hải"];
 
-// Kho nội dung đánh giá phong phú hơn để tránh trùng lặp
-const REVIEW_POOLS: Record<string, string[]> = {
-  sofa: [
-    "Sofa êm cực kỳ, hoàn thiện tỉ mỉ. Ohousr làm ăn uy tín thật sự 👍",
-    "Đệm ngồi rất thik, vải nhung sờ mướt tay lắm nhen. Màu sang hơn ảnh 😍",
-    "Form ghế đẹp, ngồi ko bị lún sâu quá, rất vừa vặn với pk nhà mình",
-    "Vải bọc xịn xò, đường may chắc chắn. Giao hàng hơi chậm tí nhưng sp okela",
-    "Mua cái sofa này xong nhìn cái phòng khách đẳng cấp hẳn luôn ✨✨",
-    "Hàng đẹp, ngồi rất sướng. Da thật có khác, sờ vào mát tay cực kỳ nhen mng",
-    "Shop tư vấn nhiệt tình, chọn đc mẫu sofa ưng ý hết nấc ntn 😂",
-    "Đẹp hơn mong đợi nhiều luôn á. Lắp đặt nhanh gọn, thợ lễ phép",
-    "Vừa nhận đc hàng xong, sofa dày dặn chắc nịch. Đáng đồng tiền bát gạo",
-    "Màu sắc nhã nhặn, hợp nội thất nhà mình. Sẽ ủng hộ shop thêm nhen",
-    "Chất lượng 10/10 nhen shop ơi, sp quá tuyệt vời luôn 💯"
+// Engine tạo nội dung - Chia thành các khối để ghép nối (Tạo ra hàng nghìn tổ hợp)
+const COMPONENT_POOLS = {
+  intro: [
+    "Vừa nhận đc hàng xong, cảm nhận ban đầu là sp cực kỳ chất lượng.",
+    "Shop làm ăn uy tín thật sự, đóng gói siêu kỹ luôn mng ạ.",
+    "Lần đầu mua nội thất online mà ưng ntn, ko uổng công chờ đợi.",
+    "Hàng giao nhanh bất ngờ, mới đặt hôm trước mà hôm sau thợ đã alo lắp r.",
+    "Đã nhận hàng nhen shop, sp đẹp y hệt hình quảng cáo luôn.",
+    "Tìm hiểu mãi mới chốt mua ở Ohouse, công nhận tiền nào của nấy.",
+    "Quá ư là hài lòng với dịch vụ bên này, từ tư vấn đến lắp đặt.",
+    "Sp xịn xò lắm nha mng, đóng thùng gỗ cẩn thận ko một vết xước.",
+    "Ấn tượng đầu tiên là thái độ nhân viên rất chuyên nghiệp nhen.",
+    "Nhà mình ai cũng khen món này đẹp, nhìn căn phòng sang hẳn lên."
   ],
-  table_stand: [
-    "Kệ tivi gỗ chắc chắn, mặt đá vân rất đẹp nha. Đóng gói kỹ ko trầy xước",
-    "Bàn ăn đẹp quáaaaa, nhìn xịn xò hẳn. Ai đến cũng khen mẫu này lạ",
-    "Rất ưbg mẫu bàn trà này, kích thước chuẩn, hoàn thiện cực sắc nét 💯",
-    "Gỗ thơm, sơn phủ mượt. Mấy cái ngăn kéo mở rất êm ko bị kẹt",
-    "Hàng chuẩn như showroom, mặt đá dày dặn chắc nịch luôn mng ạ",
-    "Bàn ăn mặt đá sang trọng cực. Nhà mình ai cũng thik món này nhất",
-    "Đóng gói siêu kỹ luôn, tháo ra mệt nghỉ luôn á 😂 nhưng bù lại sp ko vết xước",
-    "Vân đá tự nhiên đẹp xuất sắc, chân inox mạ vàng nhìn rất luxury",
-    "Lắp đặt chuyên nghiệp, bàn ăn chắc chắn ko bị rung lắc tí nào",
-    "Đúng gu mình lun, tối giản mà đẳng cấp nhen. Cảm ơn shop nhìu",
-    "Kệ tivi thiết kế hiện đại, để đồ decor vào nhìn sang hẳn luôn á"
+  body_sofa: [
+    "Sofa êm cực kỳ, đệm mút k43 dày dặn nằm thử thấy sướng vãi luôn 😂. Vải bọc sờ mịn tay, ko bị nóng nực. Form dáng rất chuẩn, ko bị lún sâu quá đâu.",
+    "Chất liệu da thật sờ vào mát lạnh nhen mng, đường may cực kỳ sắc nét luôn á. Khung gỗ chắc chắn ngồi mấy người ko nghe tiếng kêu gì hết. Màu sắc rất sang.",
+    "Màu be này ở ngoài nhìn đẹp hơn trong ảnh nhìu, phối với pk nhà mình cực hợp. Gối tựa lưng cũng êm, ngồi xem tivi cả buổi ko thấy mỏi lưng tí nào nhen.",
+    "Thiết kế hiện đại, tinh tế. Mấy cái chân inox mạ vàng nhìn luxury thật sự ✨. Đệm ngồi có độ đàn hồi tốt, ko lo bị xẹp lún sau thời gian dài sử dụng đâu ạ.",
+    "Vải nhung kháng khuẩn sờ mướt tay lắm, màu xanh navy nhìn cực chảnh luôn 😍. Kích thước vừa vặn với căn hộ chung cư, tối ưu diện tích mà nhìn vẫn đẳng cấp."
   ],
-  bed: [
-    "Giường chắc chắn, lắp xong nằm thử thấy êm ru ko bị kêu cọt kẹt",
-    "Mẫu giường luxury thật sự, bọc da rất tỉ mỉ. Đáng tiền bát gạo 💯💯",
-    "Giường to rộng, gỗ dày dặn. Mấy bạn thợ lắp đặt nhiệt tình lắm nhen",
-    "Từ ngày đổi giường này ngủ ngon hẳn luôn 😂 sp quá xuất sắc!",
-    "Hàng đẹp, đóng thùng gỗ cẩn thận. Rất hài lòng với dịch vụ Ohouse",
-    "Đệm đầu giường êm, đọc sách thoải mái ko bị mỏi lưng. Da xịn mịn",
-    "Kiểu dáng tân cổ điển đẹp mê mẩn nhen mng. Màu kem rất sang",
-    "Giường chắc, giát giường nan cong nằm thik cực kỳ luôn",
-    "Shop giao đúng hẹn, nhân viên lắp đặt tận tâm. Sp đẹp như mẫu",
-    "Nâng tầm phòng ngủ luôn á, nhìn như khách sạn 5 sao vậy 😍",
-    "Thích nhất cái mùi gỗ tự nhiên của giường này. Thơm nhẹ nhàng"
+  body_table_stand: [
+    "Mặt đá thiêu kết vân đẹp xuất sắc, chống trầy xước tốt nhen mình thử cào nhẹ ko thấy dấu gì. Khung gỗ chắc nịch, ngăn kéo đóng mở êm ru ko kẹt tí nào.",
+    "Bàn ăn đẹp quáaaaa, chân inox 304 mạ PVD nhìn sáng loáng luôn á. Mặt đá dày dặn, chịu nhiệt tốt nhen mng. Lắp xong cái bếp nhìn như nhà hàng 5 sao vậy.",
+    "Kệ tivi thiết kế tối giản mà sang, gỗ MDF lõi xanh chống ẩm nên yên tâm dùng lâu dài. Các góc cạnh đc bo tròn tỉ mỉ, an toàn cho trẻ nhỏ trong nhà nhen.",
+    "Vân gỗ tự nhiên nhìn rất mộc mà vẫn đẳng cấp. Shop hoàn thiện kỹ, bề mặt sơn Inchem mịn màng ko mùi hắc. Đóng gói 5 lớp tháo ra mệt nghỉ luôn 😂.",
+    "Bàn trà đôi phối màu đen trắng nhìn cực hiện đại, hợp với cái sofa nhà mình. Khung thép sơn tĩnh điện chắc chắn, ko bị rung lắc khi để đồ nặng lên đâu."
   ],
-  lighting: [
-    "Đèn chùm lấp lánh lung linh luôn mng ơi ✨ treo lên cái phòng khách sang chảnh hẳn",
-    "Pha lê xịn, ánh sáng dịu ko bị chói mắt. Shop đóng gói cực kỳ cẩn thận",
-    "Lắp đặt hơi lâu tí nhưng thành quả quá mỹ mãn. Đèn đẹp 10/10 😍",
-    "Mẫu đèn hiện đại, tinh tế. Sẽ ủng hộ shop thêm mấy mẫu đèn ngủ nữa",
-    "Ánh sáng vàng ấm cúng, nhìn rất chill nha mng. Đáng mua ạ 👍",
-    "Đèn đẹp dã man, lắp vào căn hộ nhìn lung linh hẳn lên nhen",
-    "Pha lê K9 bắt sáng cực tốt, đêm bật đèn nhìn mê ly luôn ạ",
-    "Giá hơi chát tí nhưng tiền nào của nấy, nhìn rất đẳng cấp nhen",
-    "Mng nên mua nhé, mẫu này treo sảnh hay phòng khách đều ok",
-    "Shop hướng dẫn lắp tận tình. Sp chất lượng, đóng gói 5 lớp luôn 😂",
-    "Đèn chùm này là điểm nhấn hoàn hảo cho nhà mình rồi ✨"
+  body_bed: [
+    "Giường chắc chắn lắm nhen, lắp xong nằm thử thấy êm ru ko bị kêu cọt kẹt như giường cũ. Đầu giường bọc da cao cấp nhìn rất luxury, tựa lưng đọc sách phê pha.",
+    "Mẫu giường này đẹp mê mẩn luôn mng ạ, phối màu kem nhìn nhã nhặn cực kỳ. Giát giường nan cong thông minh nằm thik lắm, lưng ko bị đau mỏi tí nào hết.",
+    "Gỗ sồi Mỹ tự nhiên có khác, vân gỗ đẹp mà mùi thơm nhẹ nhàng lắm. Khung giường dày dặn, chịu lực tốt. Shop giao hàng đúng hẹn, lắp đặt nhanh gọn lẹ.",
+    "Nâng tầm phòng ngủ luôn á nhen, nhìn sang chảnh hẳn ra. Nệm nằm vừa vặn, ko bị hở góc. Rất hài lòng với độ hoàn thiện của sản phẩm bên Ohouse.",
+    "Thiết kế Ergonomic nằm rất thoải mái, độ cao giường vừa phải. Vải bọc đầu giường xịn mịn, ko bị xù lông hay bám bụi nhiều đâu nhen mng."
   ],
-  generic: [
-    "Hàng đẹp lắm mng ơi, nên mua nhaaa 😍 sp đóng gói kỹ lắm",
-    "Sp tốt, đúng mô tả. Sẽ giới thiệu cho bạn bè ủng hộ shop",
-    "Giao hàng nhanh vãi, nhân viên lắp đặt nhiệt tình tận tâm 👍👍",
-    "Sp chuẩn auth, hoàn thiện tốt. Tiền nào của nấy thật sự",
-    "Mng nên mua nhé, shop này làm đồ nội thất đỉnh thật sự ❤️❤️",
-    "Chưa bao giờ thất vọng khi mua đồ ở Ohouse. Chất lượng luôn đi đầu",
-    "Sp đẹp sắc nét, màu sắc chuẩn như hình. Rất hài lòng nhen",
-    "Ưng cái bụng ghê, sp nhìn ngoài còn đẹp hơn trong ảnh cơ",
-    "Dịch vụ khách hàng tốt, sp chất lượng. 5 sao ko nói nhiều ⭐⭐⭐⭐⭐",
-    "Giao hàng tỉnh mà nhanh bất ngờ. Sp an toàn ko móp méo",
-    "Đồ nội thất ohouse thì khỏi bàn r, lúc nào cũng xịn xò hết"
-  ]
+  body_lighting: [
+    "Đèn chùm pha lê K9 lấp lánh lung linh luôn mng ơi ✨. Bật đèn lên cái phòng khách nhìn ảo diệu hẳn. Pha lê xịn nên bắt sáng cực tốt, ko bị đục hay mờ đâu.",
+    "Ánh sáng vàng ấm cúng, nhìn rất chill nha mng. Mẫu đèn ngủ này tinh tế thật sự, để bàn trang điểm nhìn sang hẳn cái góc phòng. Sẽ mua thêm cái nữa 👍.",
+    "Đèn đẹp dã man, đóng gói cực kỳ cẩn thận luôn, mỗi viên pha lê đều đc bọc riêng. Lắp đặt hơi kỳ công tí nhưng kết quả thì quá mỹ mãn, 10 điểm ko có nhưng.",
+    "Chất liệu hợp kim mạ điện sáng bóng, ko lo bị gỉ sét theo thời gian. Chip LED tiết kiệm điện mà ánh sáng vẫn rất mạnh và đều màu nhen. Rất đáng tiền!",
+    "Thiết kế phong cách Châu Âu đẳng cấp, tạo điểm nhấn hoàn hảo cho sảnh lớn nhà mình. Ai đến chơi cũng trầm trồ khen cái đèn này đẹp và độc lạ."
+  ],
+  body_generic: [
+    "Sản phẩm đúng như mô tả, hoàn thiện sắc nét đến từng chi tiết nhỏ. Màu sắc chuẩn xác, ko bị lệch tone so với ảnh mẫu trên web. Rất tin tưởng Ohouse.",
+    "Chất lượng vượt mong đợi nhen mng, tiền nào của nấy thật sự. Hàng cao cấp có khác, nhìn đẳng cấp hơn hẳn mấy loại rẻ tiền ngoài thị trường nhen.",
+    "Dịch vụ hậu mãi tốt, shop gọi điện hỏi thăm tình hình sử dụng sp thường xuyên. Sẽ ủng hộ shop dài dài vì sự tận tâm và chất lượng tuyệt vời ntn.",
+    "Mng nên mua nhé, ko phí tiền tí nào đâu ạ. Nội thất Ohouse làm ăn uy tín, sp bền đẹp chắc chắn. Chúc shop ngày càng phát triển hơn nữa nhen.",
+    "Ưng cái bụng ghê luôn á, hàng đóng gói kỹ, ship tỉnh mà ko móp méo tí gì. Nhân viên tư vấn nhiệt tình, chọn đc món đồ ưng ý hết nấc 😂."
+  ],
+  outro: [
+    "Sẽ giới thiệu cho bạn bè và người thân ủng hộ shop nhen.",
+    "Chắc chắn sẽ quay lại mua thêm đồ decor bên này.",
+    "Chúc shop buôn may bán đắt, làm ăn phát đạt nhen!",
+    "Mng cứ yên tâm mà mua, ko thất vọng đâu ạ.",
+    "Đánh giá 5 sao cho chất lượng và thái độ phục vụ của shop.",
+    "Ohouse số 1 luôn nhé, quá tuyệt vời nhen mng.",
+    "Rất đáng đồng tiền bát gạo, ko có gì để chê luôn.",
+    "Cảm ơn shop rất nhiều vì sp đẹp ntn!",
+    "Mọi người nên trải nghiệm dịch vụ ở đây nhen, đỉnh lắm.",
+    "Love Ohouseeee, mãi đỉnh luôn nha shop ơi 😍✨."
+  ],
+  flair: ["!", "!!", " ❤️", " 😍", " ✨", " 👍", " 💯", " nhen", " ạ", " nha mng", "...", " (y)", " hihi", " nhé", " quá trời luôn"]
 };
-
-const EXTRA_FLAIR = ["!", "!!", " ❤️", " 😍", " ✨", " 👍", " 💯", " nhen", " ạ", " nha mng", "...", " (y)"];
 
 export default function MarketingTools() {
   const [loading, setLoading] = useState(false);
@@ -134,30 +127,52 @@ export default function MarketingTools() {
     return `${getRandomItem(VN_LAST_NAMES)} ${getRandomItem(VN_MID_NAMES)} ${getRandomItem(VN_FIRST_NAMES)}`;
   };
 
+  // Engine sinh nội dung đa dạng (Tạo ra hàng nghìn mẫu khác nhau)
   const getDiverseComments = (productName: string, count: number) => {
     const name = productName.toLowerCase();
-    let basePool: string[] = [];
+    let bodyPool: string[] = [];
     
-    if (name.includes('sofa') || name.includes('ghế')) basePool = REVIEW_POOLS.sofa;
-    else if (name.includes('bàn') || name.includes('kệ') || name.includes('tủ')) basePool = REVIEW_POOLS.table_stand;
-    else if (name.includes('giường') || name.includes('nệm')) basePool = REVIEW_POOLS.bed;
-    else if (name.includes('đèn')) basePool = REVIEW_POOLS.lighting;
-    else basePool = REVIEW_POOLS.generic;
+    // Chọn Body phù hợp ngữ cảnh
+    if (name.includes('sofa') || name.includes('ghế')) bodyPool = COMPONENT_POOLS.body_sofa;
+    else if (name.includes('bàn') || name.includes('kệ') || name.includes('tủ')) bodyPool = COMPONENT_POOLS.body_table_stand;
+    else if (name.includes('giường') || name.includes('nệm')) bodyPool = COMPONENT_POOLS.body_bed;
+    else if (name.includes('đèn')) bodyPool = COMPONENT_POOLS.body_lighting;
+    else bodyPool = COMPONENT_POOLS.body_generic;
 
-    const shuffled = shuffleArray(basePool);
     const results: string[] = [];
+    const usedCombinations = new Set();
 
     for (let i = 0; i < count; i++) {
-      // Lấy câu gốc theo vòng lặp pool
-      let comment = shuffled[i % shuffled.length];
-      
-      // Nếu là vòng lặp thứ 2 trở đi hoặc đơn giản là muốn tăng tính duy nhất
-      // Thêm hậu tố ngẫu nhiên để text ko bao giờ giống hệt nhau
-      if (i >= shuffled.length || Math.random() > 0.5) {
-        comment += getRandomItem(EXTRA_FLAIR);
-      }
+      let attempts = 0;
+      let finalComment = "";
 
-      results.push(comment);
+      // Thử tạo câu cho đến khi duy nhất (hoặc tối đa 10 lần thử)
+      while (attempts < 10) {
+        const intro = getRandomItem(COMPONENT_POOLS.intro);
+        const body = getRandomItem(bodyPool);
+        const outro = getRandomItem(COMPONENT_POOLS.outro);
+        const flair = getRandomItem(COMPONENT_POOLS.flair);
+        
+        finalComment = `${intro} ${body} ${outro}${flair}`;
+        
+        // Đảm bảo độ dài tối thiểu và tối đa (nếu cần thiết có thể ghép thêm khối body nữa)
+        if (finalComment.length < 250 && Math.random() > 0.5) {
+            const secondBody = getRandomItem(COMPONENT_POOLS.body_generic);
+            finalComment = `${intro} ${body} ${secondBody} ${outro}${flair}`;
+        }
+
+        // Cắt bớt nếu vượt quá 500 ký tự (giới hạn an toàn DB)
+        if (finalComment.length > 500) {
+          finalComment = finalComment.substring(0, 497) + "...";
+        }
+
+        if (!usedCombinations.has(finalComment)) {
+          usedCombinations.add(finalComment);
+          break;
+        }
+        attempts++;
+      }
+      results.push(finalComment);
     }
     
     return results;
@@ -193,7 +208,7 @@ export default function MarketingTools() {
 
   const handleGenerateReviews = async () => {
     const daysBack = parseInt(stats.review_days_back) || 30;
-    if (!confirm(`Xác nhận sinh nội dung đánh giá duy nhất trong khoảng ${daysBack} ngày qua?`)) return;
+    if (!confirm(`Xác nhận sinh nội dung đánh giá độc bản (tối đa 500 ký tự) trong khoảng ${daysBack} ngày qua?`)) return;
 
     setReviewLoading(true);
     try {
@@ -208,7 +223,7 @@ export default function MarketingTools() {
         const count = p.fake_review_count || 0;
         if (count === 0) continue;
 
-        // Xóa đánh giá cũ để làm mới hoàn toàn
+        // Xóa cũ để làm mới hoàn toàn
         await supabase.from('reviews').delete().eq('product_id', p.id);
 
         const comments = getDiverseComments(p.name, count);
@@ -228,13 +243,13 @@ export default function MarketingTools() {
             product_id: p.id,
             user_name: generateVnName(),
             rating: Math.round(p.fake_rating || 5),
-            comment: comments[i], // Sử dụng câu đã qua xử lý duy nhất
+            comment: comments[i], 
             created_at: date.toISOString()
           });
         }
         if (newReviews.length > 0) await supabase.from('reviews').insert(newReviews);
       }
-      toast.success(`Đã sinh đánh giá đa dạng và không trùng lặp thành công!`);
+      toast.success(`Đã sinh ${products.length} bộ đánh giá độc bản thành công!`);
     } catch (e: any) { toast.error(e.message); } finally { setReviewLoading(false); }
   };
 
@@ -321,10 +336,10 @@ export default function MarketingTools() {
               </div>
 
               <div className="bg-charcoal p-8 rounded-3xl border shadow-elevated text-cream">
-                 <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2"><MessageSquareQuote className="w-5 h-5" /> 3. Nội dung đánh giá thực tế</h3>
+                 <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2"><MessageSquareQuote className="w-5 h-5" /> 3. Nội dung đánh giá thực tế (Engine v2)</h3>
                 
                 <div className="space-y-4 mb-8">
-                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sẽ tự động xáo trộn và biến đổi các nhận xét theo loại sản phẩm để đảm bảo không có sự trùng lặp giống hệt nhau trên cùng một trang.</p>
+                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sử dụng tổ hợp 4 khối nội dung (Mở đầu + Thân bài + Kết bài + Flair) để tạo ra các bài review độc bản dài đến 500 ký tự, đảm bảo không trùng lặp và đúng ngữ cảnh sản phẩm.</p>
                   
                   <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
@@ -341,7 +356,7 @@ export default function MarketingTools() {
                 </div>
 
                 <Button onClick={handleGenerateReviews} disabled={reviewLoading} variant="outline" className="w-full h-14 border-primary/40 hover:bg-primary text-primary hover:text-white rounded-2xl text-sm font-bold uppercase">
-                  {reviewLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} Sinh nội dung đánh giá theo ngữ cảnh
+                  {reviewLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} Sinh nội dung đánh giá độc bản hàng loạt
                 </Button>
               </div>
             </div>
