@@ -57,10 +57,11 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
 
   return (
     <div className={cn(
-      "fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-b border-border/40 z-[100] transition-all duration-500 transform shadow-medium",
+      "fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-border/40 z-[100] transition-all duration-500 transform shadow-elevated",
       isVisible ? "translate-y-0" : "-translate-y-full"
     )}>
       <div className="container-luxury h-16 md:h-20 flex items-center justify-between gap-4">
+        {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-1 lg:gap-4">
           {navItems.map((item) => (
             <button
@@ -74,18 +75,24 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
           ))}
         </div>
 
-        <div className="md:hidden flex items-center gap-2">
-           <span className="text-[10px] font-bold uppercase tracking-widest text-primary">OHOUSE Luxury</span>
-           <ChevronDown className="w-3 h-3 text-primary animate-bounce" />
+        {/* Mobile Product Info Info */}
+        <div className="md:hidden flex flex-col min-w-0">
+           <span className="text-[10px] font-bold uppercase tracking-widest text-primary truncate leading-none mb-1">
+             {product.name}
+           </span>
+           <span className="text-sm font-bold text-charcoal leading-none">
+             {formatPrice(product.price)}
+           </span>
         </div>
 
-        <div className="flex items-center gap-3 md:gap-6">
+        <div className="flex items-center gap-2 md:gap-6">
+          {/* Desktop Price */}
           <div className="text-right hidden sm:block">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-1">Giá ưu đãi</p>
             <p className="text-primary font-bold text-lg md:text-xl leading-none">{formatPrice(product.price)}</p>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-2">
             <button 
               onClick={() => toggleWishlist(product)}
               className={cn(
@@ -99,11 +106,12 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
             </button>
             
             <Button 
-              className="btn-hero h-11 md:h-13 px-6 md:px-10 rounded-xl shadow-gold text-[10px] md:text-xs font-bold"
+              className="btn-hero h-11 md:h-13 px-4 md:px-10 rounded-xl shadow-gold text-[10px] md:text-xs font-bold"
               onClick={() => addToCart({ ...product, quantity: 1, image: product.image_url })}
             >
-              <ShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" /> 
-              <span>THÊM VÀO GIỎ</span>
+              <ShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 md:mr-2" /> 
+              <span className="hidden xs:inline">THÊM VÀO GIỎ</span>
+              <span className="xs:hidden">MUA NGAY</span>
             </Button>
           </div>
         </div>
