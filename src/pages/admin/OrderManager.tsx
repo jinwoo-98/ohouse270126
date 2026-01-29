@@ -35,6 +35,7 @@ export default function OrderManager() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [isUpdatingId, setIsUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -56,6 +57,10 @@ export default function OrderManager() {
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    // Nếu đang cập nhật chính đơn này thì bỏ qua
+    if (isUpdatingId === orderId) return;
+
+    setIsUpdatingId(orderId);
     try {
       const { error } = await supabase
         .from('orders')
@@ -64,10 +69,15 @@ export default function OrderManager() {
 
       if (error) throw error;
       
-      setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-      toast.success(`Đã chuyển đơn hàng sang trạng thái: ${newStatus}`);
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      toast.success(`Cập nhật đơn hàng thành công: ${newStatus}`);
     } catch (error: any) {
-      toast.error("Lỗi cập nhật: " + error.message);
+      console.error("Update error:", error);
+      toast.error("Không thể lưu trạng thái: " + error.message);
+      // Re-fetch để đồng bộ lại dữ liệu chuẩn từ server
+      fetchOrders();
+    } finally {
+      setIsUpdatingId(null);
     }
   };
 
@@ -156,16 +166,15 @@ export default function OrderManager() {
                 <th className="px-6 py-4">Mã đơn</th>
                 <th className="px-6 py-4">Khách hàng</th>
                 <th className="px-6 py-4">Tổng tiền</th>
-                <th className="px-6 py-4">Địa chỉ giao</th>
                 <th className="px-6 py-4 text-center">Trạng thái</th>
                 <th className="px-6 py-4 text-right">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {loading ? (
-                <tr><td colSpan={6} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
+                <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filteredOrders.length === 0 ? (
-                <tr><td colSpan={6} className="p-12 text-center text-muted-foreground italic">Không tìm thấy đơn hàng nào phù hợp với bộ lọc hiện tại.</td></tr>
+                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground italic">Không tìm thấy đơn hàng nào.</td></tr>
               ) : filteredOrders.map((order) => (
                 <React.Fragment key={order.id}>
                   <tr className={`hover:bg-gray-50/80 transition-colors group ${expandedOrderId === order.id ? 'bg-gray-50' : ''}`}>
@@ -178,35 +187,37 @@ export default function OrderManager() {
                       <p className="text-xs text-muted-foreground">{order.contact_phone}</p>
                     </td>
                     <td className="px-6 py-4 font-bold text-sm text-charcoal">{formatPrice(order.total_amount)}</td>
-                    <td className="px-6 py-4">
-                      <p className="text-xs text-muted-foreground line-clamp-1 max-w-[200px]" title={order.shipping_address}>
-                        {order.shipping_address}
-                      </p>
-                    </td>
                     <td className="px-6 py-4 text-center">
-                      {getStatusBadge(order.status)}
+                      {isUpdatingId === order.id ? (
+                        <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-primary animate-pulse">
+                          <Loader2 className="w-3 h-3 animate-spin" /> ĐANG LƯU...
+                        </div>
+                      ) : (
+                        getStatusBadge(order.status)
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Select 
-                          defaultValue={order.status} 
+                          value={order.status} 
                           onValueChange={(val) => updateOrderStatus(order.id, val)}
+                          disabled={isUpdatingId === order.id}
                         >
-                          <SelectTrigger className="w-32 h-8 text-[10px] font-bold uppercase tracking-widest rounded-lg bg-white shadow-sm border-border">
+                          <SelectTrigger className="w-36 h-9 text-[10px] font-bold uppercase tracking-widest rounded-lg bg-white shadow-sm border-border">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="rounded-xl">
                             <SelectItem value="pending">Chờ xác nhận</SelectItem>
                             <SelectItem value="processing">Đang xử lý</SelectItem>
                             <SelectItem value="shipped">Đang giao</SelectItem>
-                            <SelectItem value="delivered">Đã giao</SelectItem>
+                            <SelectItem value="delivered">Hoàn thành</SelectItem>
                             <SelectItem value="cancelled">Hủy đơn</SelectItem>
                           </SelectContent>
                         </Select>
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className={`h-8 w-8 rounded-lg transition-all ${expandedOrderId === order.id ? 'bg-primary text-primary-foreground shadow-md' : 'hover:bg-secondary'}`}
+                          className={`h-9 w-9 rounded-lg transition-all ${expandedOrderId === order.id ? 'bg-primary text-primary-foreground shadow-md' : 'hover:bg-secondary'}`}
                           onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
                         >
                           {expandedOrderId === order.id ? <ChevronUp className="w-4 h-4" /> : <Eye className="w-4 h-4 text-muted-foreground" />}
@@ -215,11 +226,10 @@ export default function OrderManager() {
                     </td>
                   </tr>
                   
-                  {/* Expanded Detail Row */}
                   <AnimatePresence>
                     {expandedOrderId === order.id && (
                       <tr>
-                        <td colSpan={6} className="p-0 border-none">
+                        <td colSpan={5} className="p-0 border-none">
                           <motion.div
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
@@ -232,18 +242,8 @@ export default function OrderManager() {
                                   <MapPin className="w-3 h-3 text-primary" /> Thông tin giao hàng
                                 </h4>
                                 <div className="bg-white p-5 rounded-2xl border border-border shadow-sm space-y-3">
-                                  <div className="flex items-start gap-3">
-                                    <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                                    <p className="text-sm text-charcoal leading-relaxed">{order.shipping_address}</p>
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                    <Phone className="w-4 h-4 text-primary shrink-0" />
-                                    <p className="text-sm font-bold">{order.contact_phone}</p>
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                    <Mail className="w-4 h-4 text-primary shrink-0" />
-                                    <p className="text-sm">{order.contact_email}</p>
-                                  </div>
+                                  <p className="text-sm text-charcoal leading-relaxed">{order.shipping_address}</p>
+                                  <p className="text-sm font-bold">SĐT: {order.contact_phone}</p>
                                 </div>
                               </div>
 
@@ -253,24 +253,17 @@ export default function OrderManager() {
                                 </h4>
                                 <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border">
                                   {order.order_items?.map((item: any) => (
-                                    <div key={item.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
-                                      <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
+                                    <div key={item.id} className="flex items-center gap-4 p-4">
+                                      <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0">
                                         <img src={item.product_image} alt="" className="w-full h-full object-cover" />
                                       </div>
                                       <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold text-charcoal truncate">{item.product_name}</p>
-                                        <p className="text-xs text-muted-foreground">Đơn giá: {formatPrice(item.price)}</p>
+                                        <p className="text-xs font-bold text-charcoal truncate">{item.product_name}</p>
+                                        <p className="text-[10px] text-muted-foreground">x{item.quantity} • {formatPrice(item.price)}</p>
                                       </div>
-                                      <div className="text-right">
-                                        <span className="text-[10px] font-bold bg-secondary px-2 py-0.5 rounded-md text-muted-foreground uppercase">x{item.quantity}</span>
-                                        <p className="text-sm font-bold text-primary mt-1">{formatPrice(item.price * item.quantity)}</p>
-                                      </div>
+                                      <p className="text-xs font-bold text-primary">{formatPrice(item.price * item.quantity)}</p>
                                     </div>
                                   ))}
-                                  <div className="p-4 bg-gray-50/50 flex justify-between items-center text-sm font-bold border-t">
-                                    <span className="text-muted-foreground uppercase text-xs tracking-wider">Tổng giá trị đơn hàng</span>
-                                    <span className="text-primary text-xl font-display">{formatPrice(order.total_amount)}</span>
-                                  </div>
                                 </div>
                               </div>
                             </div>
