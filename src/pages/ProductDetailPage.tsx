@@ -1,4 +1,3 @@
-Suggested Add-ons (Renamed) -> Similar Products.">
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ChevronRight, Loader2, Truck, RotateCcw } from "lucide-react";
