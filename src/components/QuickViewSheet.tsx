@@ -12,6 +12,7 @@ import { cn, formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { StarRating } from "@/components/product/detail/ProductReviews";
+import { toast } from "sonner";
 
 interface QuickViewSheetProps {
   product: any | null;
@@ -163,7 +164,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 )}
               </div>
               <div className="flex items-center gap-2">
-                {/* Sử dụng component StarRating để hiển thị sao lẻ */}
                 <StarRating rating={product.fake_rating || 5} size="w-4 h-4" />
                 <span className="text-xs text-muted-foreground ml-2">({product.fake_review_count || 0} nhận xét)</span>
               </div>

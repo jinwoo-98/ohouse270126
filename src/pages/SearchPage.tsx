@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useProducts } from "@/hooks/useProducts";
-import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 import { ProductCard } from "@/components/ProductCard";
 
@@ -24,7 +23,6 @@ export default function SearchPage() {
   
   const { products, filters, updateFilters, toggleFilter, clearFilters, isLoading } = useProducts("noi-that", query);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   useEffect(() => {
     updateFilters({ searchQuery: query });
@@ -92,7 +90,7 @@ export default function SearchPage() {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                   {products.map((product) => (
-                    <ProductCard key={product.id} product={product} onQuickView={setSelectedProduct} />
+                    <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
               )}
@@ -100,7 +98,6 @@ export default function SearchPage() {
           </div>
         </div>
       </main>
-      <QuickViewSheet product={selectedProduct} isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} />
       <Footer />
     </div>
   );

@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { useProducts } from "@/hooks/useProducts";
-import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 import { SubcategoryList } from "@/components/category/SubcategoryList";
 import { ProductCard } from "@/components/ProductCard";
@@ -55,7 +54,6 @@ export default function CategoryPage() {
 
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [parentCategory, setParentCategory] = useState<any>(null);
 
@@ -213,7 +211,7 @@ export default function CategoryPage() {
                     <p className="text-muted-foreground font-medium italic">Không tìm thấy sản phẩm nào phù hợp với yêu cầu của bạn.</p>
                     <Button variant="link" onClick={clearFilters} className="mt-4 text-primary font-bold uppercase tracking-widest text-[10px]">Quay lại danh mục</Button>
                   </div>
-                ) : products.map((product) => <ProductCard key={product.id} product={product} onQuickView={setSelectedProduct} />)}
+                ) : products.map((product) => <ProductCard key={product.id} product={product} />)}
               </div>
               
               {!isLoading && (
@@ -228,7 +226,6 @@ export default function CategoryPage() {
           </div>
         </div>
       </main>
-      <QuickViewSheet product={selectedProduct} isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} />
       <Footer />
     </div>
   );
