@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Heart, Star, Minus, Plus, Loader2, Ruler, Info, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingBag, Heart, Star, Minus, Plus, Loader2, Ruler, Info, FileText, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
@@ -11,7 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn, formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ProductDescription } from "@/components/product/detail/ProductDescription";
 
 interface QuickViewSheetProps {
   product: any | null;
@@ -31,7 +30,8 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [activeImage, setActiveImage] = useState("");
 
-  // Collapsible states for specs
+  // Collapsible states
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
 
@@ -46,6 +46,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       setQuantity(1);
       setSelectedValues({});
       setActiveImage(product.image_url);
+      setIsDescriptionOpen(false);
       setIsDimensionsOpen(false);
       setIsSpecsOpen(false);
       fetchAdditionalData();
@@ -218,13 +219,28 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               </div>
             </div>
 
-            {/* 6. Product Discovery (Long Description) */}
-            <div className="pt-6 border-t border-border/40">
-               <ProductDescription description={product.description} />
-            </div>
+            {/* 6. Collapsible Content Groups */}
+            <div className="space-y-2 pt-6 border-t border-border/40">
+              {/* Product Discovery */}
+              {product.description && (
+                <Collapsible open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen} className="border-b border-border/40 pb-4">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-4 text-left group">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-4 h-4 text-primary" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal">Khám phá sản phẩm</span>
+                    </div>
+                    {isDescriptionOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pb-4 animate-accordion-down">
+                    <div 
+                      className="prose prose-sm max-w-none text-muted-foreground rich-text-content-small"
+                      dangerouslySetInnerHTML={{ __html: product.description }} 
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
 
-            {/* 7. Collapsible Dimensions & Specs */}
-            <div className="space-y-2">
+              {/* Dimensions */}
               {product.dimension_image_url && (
                 <Collapsible open={isDimensionsOpen} onOpenChange={setIsDimensionsOpen} className="border-b border-border/40 pb-4">
                   <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
@@ -242,8 +258,9 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 </Collapsible>
               )}
 
+              {/* Technical Specs */}
               {attributes.length > 0 && (
-                <Collapsible open={isSpecsOpen} onOpenChange={setIsSpecsOpen} className="border-b border-border/40 pb-4">
+                <Collapsible open={isSpecsOpen} onOpenChange={setIsSpecsOpen} className="pb-4">
                   <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
                     <div className="flex items-center gap-3">
                       <Info className="w-4 h-4 text-primary" />
@@ -267,7 +284,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               )}
             </div>
 
-            {/* 8. Recent Reviews */}
+            {/* 7. Recent Reviews */}
             <div className="space-y-4 pt-6">
               <div className="flex items-center justify-between">
                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Đánh giá gần đây</span>
@@ -296,13 +313,13 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
           </div>
         </div>
 
-        {/* 9. Optimized Fixed Action Bar */}
+        {/* 8. Fixed Action Bar (Optimized) */}
         <div className="p-4 md:p-6 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-5">
             {/* View Details */}
             <Button 
               variant="outline" 
-              className="flex-1 h-13 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 rounded-2xl px-2" 
+              className="flex-1 h-14 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 rounded-2xl px-2" 
               asChild 
               onClick={onClose}
             >
@@ -311,25 +328,26 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               </Link>
             </Button>
 
-            {/* Wishlist Icon Button */}
+            {/* Wishlist Icon Button - Larger and more spaced */}
             <button 
               onClick={() => toggleWishlist(product)}
               className={cn(
-                "h-13 w-13 shrink-0 flex items-center justify-center rounded-2xl border transition-all",
+                "h-14 w-14 shrink-0 flex items-center justify-center rounded-2xl border transition-all",
                 isInWishlist(product.id)
-                  ? "bg-primary/5 border-primary text-primary"
+                  ? "bg-primary/5 border-primary text-primary shadow-sm"
                   : "bg-white border-border hover:border-primary/40"
               )}
+              aria-label="Thêm vào yêu thích"
             >
-              <Heart className={cn("w-5 h-5", isInWishlist(product.id) && "fill-current")} />
+              <Heart className={cn("w-6 h-6", isInWishlist(product.id) && "fill-current")} />
             </button>
 
-            {/* Add to Cart */}
+            {/* Add to Cart - Larger and more spaced */}
             <Button 
-              className="flex-[2] btn-hero h-13 text-[10px] font-bold shadow-gold rounded-2xl"
+              className="flex-[2] btn-hero h-14 text-[10px] font-bold shadow-gold rounded-2xl"
               onClick={handleAddToCart}
             >
-              <ShoppingBag className="w-4 h-4 mr-2" />
+              <ShoppingBag className="w-5 h-5 mr-2" />
               THÊM VÀO GIỎ
             </Button>
           </div>
