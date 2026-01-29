@@ -1,4 +1,3 @@
-Con > SKU) và căn giữa các tiêu đề thành phần">
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ChevronRight, Loader2, Truck } from "lucide-react";
@@ -25,6 +24,7 @@ export default function ProductDetailPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
   
+  // Lists
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
   const [perfectMatchProducts, setPerfectMatchProducts] = useState<any[]>([]);
   const [boughtTogetherProducts, setBoughtTogetherProducts] = useState<any[]>([]);
@@ -74,11 +74,14 @@ export default function ProductDetailPage() {
         fetchCategoryHierarchy(data.category_id);
       }
 
+      // Fetch data lists parallel
       await Promise.all([
         fetchReviews(), 
         fetchAttributes(),
         fetchSimilarProducts(data.category_id, data.id),
+        // Combo Perfect Match: Lấy theo ID setup hoặc tìm sản phẩm cùng Phong cách (Style)
         fetchSmartList(data.perfect_match_ids, 'style', data.style, 6).then(res => setPerfectMatchProducts(res)),
+        // Bought Together: Lấy theo ID setup hoặc tìm sản phẩm cùng Chất liệu (Material)
         fetchSmartList(data.bought_together_ids, 'material', data.material, 6).then(res => setBoughtTogetherProducts(res))
       ]);
     } catch (error) {
@@ -128,19 +131,29 @@ export default function ProductDetailPage() {
 
   const fetchSimilarProducts = async (categoryId: string, currentId: string) => {
     const { data } = await supabase.from('products').select('*').eq('category_id', categoryId).neq('id', currentId).limit(6);
-    setSimilarProducts(data || []);
+    if (data && data.length > 0) setSimilarProducts(data);
+    else {
+      const { data: fallback } = await supabase.from('products').select('*').neq('id', currentId).limit(6);
+      setSimilarProducts(fallback || []);
+    }
   };
 
+  // Logic lấy danh sách thông minh: Theo ID setup -> hoặc theo Filter (Style/Material) -> hoặc ngẫu nhiên
   const fetchSmartList = async (manualIds: string[] | null, filterField: string, filterValue: string, limit: number) => {
     try {
+      // 1. Nếu có setup tay, ưu tiên lấy theo ID
       if (manualIds && manualIds.length > 0) {
         const { data } = await supabase.from('products').select('*').in('id', manualIds);
         if (data && data.length > 0) return data;
       }
+
+      // 2. Nếu không có setup tay, tìm sản phẩm có cùng phong cách/chất liệu
       if (filterValue) {
         const { data } = await supabase.from('products').select('*').eq(filterField, filterValue).neq('id', id).limit(limit);
         if (data && data.length > 0) return data;
       }
+
+      // 3. Fallback cuối cùng: Lấy hàng mới/nổi bật
       const { data } = await supabase.from('products').select('*').neq('id', id).order('created_at', { ascending: false }).limit(limit);
       return data || [];
     } catch (e) { return []; }
