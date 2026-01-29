@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Loader2, MapPin, Truck } from "lucide-react";
+import { ChevronRight, Loader2, Truck } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,10 +39,18 @@ export default function ProductDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    // Fetch Shipping Summary
     const fetchSettings = async () => {
       const { data } = await supabase.from('site_settings').select('shipping_policy_summary').single();
-      if (data?.shipping_policy_summary) setShippingSummary(data.shipping_policy_summary);
+      if (data?.shipping_policy_summary) {
+        setShippingSummary(data.shipping_policy_summary);
+      } else {
+        // Nội dung mặc định nếu trong Admin chưa nhập
+        setShippingSummary(\`
+          <p><strong>Miễn phí vận chuyển:</strong> Áp dụng cho đơn hàng từ 5.000.000đ trở lên trong nội thành.</p>
+          <p><strong>Thời gian giao hàng:</strong> Từ 2 - 5 ngày làm việc đối với các tỉnh thành trên toàn quốc.</p>
+          <p><strong>Chính sách đổi trả:</strong> Hỗ trợ đổi trả trong vòng 30 ngày nếu phát hiện lỗi từ nhà sản xuất. Sản phẩm phải còn nguyên vẹn tem mác.</p>
+        \`);
+      }
     };
     fetchSettings();
   }, []);
@@ -70,8 +78,8 @@ export default function ProductDetailPage() {
         fetchReviews(), 
         fetchAttributes(),
         fetchSimilarProducts(data.category_id, data.id),
-        fetchProductList(data.perfect_match_ids, setPerfectMatchProducts, 4, 'random'),
-        fetchProductList(data.bought_together_ids, setBoughtTogetherProducts, 4, 'random')
+        fetchProductList(data.perfect_match_ids, setPerfectMatchProducts, 6, true),
+        fetchProductList(data.bought_together_ids, setBoughtTogetherProducts, 6, true)
       ]);
     } catch (error) {
       console.error(error);
@@ -100,25 +108,40 @@ export default function ProductDetailPage() {
 
   const fetchSimilarProducts = async (categoryId: string, currentId: string) => {
     try {
+      // Tìm sản phẩm cùng danh mục
       const { data } = await supabase
         .from('products')
         .select('*')
         .eq('category_id', categoryId)
         .neq('id', currentId)
         .limit(6);
-      setSimilarProducts(data || []);
+      
+      if (data && data.length > 0) {
+        setSimilarProducts(data);
+      } else {
+        // Fallback: Nếu danh mục này không có sp khác, lấy sản phẩm ngẫu nhiên để demo giao diện
+        const { data: fallback } = await supabase
+          .from('products')
+          .select('*')
+          .neq('id', currentId)
+          .limit(6);
+        setSimilarProducts(fallback || []);
+      }
     } catch (err) {}
   };
 
-  // Helper fetch list by IDs OR random fallback
-  const fetchProductList = async (ids: string[] | null, setter: (val: any[]) => void, limit: number, fallback: 'random' | 'none') => {
+  const fetchProductList = async (ids: string[] | null, setter: (val: any[]) => void, limit: number, fallback: boolean) => {
     try {
       if (ids && ids.length > 0) {
         const { data } = await supabase.from('products').select('*').in('id', ids);
         setter(data || []);
-      } else if (fallback === 'random') {
-        // Random fallback logic
-        const { data } = await supabase.from('products').select('*').limit(limit).neq('id', id); // Simplified random
+      } else if (fallback) {
+        // Lấy sản phẩm ngẫu nhiên/nổi bật để demo
+        const { data } = await supabase
+          .from('products')
+          .select('*')
+          .neq('id', id)
+          .limit(limit);
         setter(data || []);
       }
     } catch (err) {}
@@ -137,8 +160,6 @@ export default function ProductDetailPage() {
 
   const handleReviewSubmit = async (rating: number, comment: string, name: string) => {
     try {
-      // In real app, user_id is optional for guest orders or we link via email
-      // Here we assume basic review structure
       await supabase.from('reviews').insert({
         product_id: String(id),
         rating: rating,
@@ -161,16 +182,16 @@ export default function ProductDetailPage() {
         {/* Breadcrumb */}
         <div className="bg-secondary/50 py-3">
           <div className="container-luxury flex items-center gap-2 text-sm text-muted-foreground">
-            <Link to="/" className="hover:text-primary">Trang chủ</Link>
+            <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
             <ChevronRight className="w-4 h-4" />
-            <Link to="/noi-that" className="hover:text-primary">Sản phẩm</Link>
+            <Link to="/noi-that" className="hover:text-primary transition-colors">Sản phẩm</Link>
             <ChevronRight className="w-4 h-4" />
             <span className="text-foreground font-medium line-clamp-1">{product.name}</span>
           </div>
         </div>
 
         <div className="container-luxury py-8">
-          {/* 1. Main Info Section */}
+          {/* 1. Phần đầu: Ảnh và Thông tin chính */}
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 mb-20">
             <ProductGallery 
               mainImage={product.image_url} 
@@ -184,10 +205,10 @@ export default function ProductDetailPage() {
             />
           </div>
 
-          {/* 2. Product Description */}
+          {/* 2. Chi tiết sản phẩm (Đã mở rộng và xóa viền) */}
           <ProductDescription description={product.description} />
 
-          {/* 3. Reviews */}
+          {/* 3. Đánh giá khách hàng (Kèm xác thực đơn hàng) */}
           <ProductReviews 
             reviews={reviews}
             product={product}
@@ -196,41 +217,39 @@ export default function ProductDetailPage() {
             onSubmitReview={handleReviewSubmit}
           />
 
-          {/* 4. AI Q&A Section (Separate Row) */}
+          {/* 4. Hỏi đáp về sản phẩm (Hàng riêng) */}
           <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
 
-          {/* 5. Perfect Match (Horizontal) */}
-          <ProductHorizontalList products={perfectMatchProducts} title="Gợi Ý Phối Cảnh Hoàn Hảo (Perfect Match)" />
+          {/* 5. Gợi ý phối cảnh (Hàng ngang) */}
+          <ProductHorizontalList products={perfectMatchProducts} title="Gợi Ý Phối Cảnh Hoàn Hảo" />
 
-          {/* 6. Similar Products (Horizontal) */}
+          {/* 6. Sản phẩm tương tự (Cùng danh mục con - Hàng ngang) */}
           <ProductHorizontalList products={similarProducts} title="Sản phẩm tương tự" />
 
-          {/* 7. Bought Together (Horizontal) */}
-          <ProductHorizontalList products={boughtTogetherProducts} title="Thường được mua cùng" />
+          {/* 7. Thường được mua cùng nhau (Hàng ngang) */}
+          <ProductHorizontalList products={boughtTogetherProducts} title="Thường được mua cùng nhau" />
 
-          {/* 8. Recently Viewed */}
+          {/* 8. Lịch sử xem */}
           <RecentlyViewed />
 
-          {/* 9. Shipping Policy Summary */}
-          {shippingSummary && (
-            <section className="mt-16 pt-10 border-t border-border">
-              <div className="bg-white p-8 rounded-3xl border border-border/60 shadow-sm flex flex-col md:flex-row gap-8 items-start">
-                <div className="shrink-0 flex items-center gap-3 text-primary">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                    <Truck className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-lg font-bold uppercase tracking-widest hidden md:block">Chính sách<br/>Vận chuyển & Đổi trả</h3>
+          {/* 9. Nội dung vận chuyển và đổi trả (Dưới cùng) */}
+          <section className="mt-16 pt-12 border-t border-border">
+            <div className="bg-white p-8 md:p-12 rounded-3xl border border-border/60 shadow-sm flex flex-col md:flex-row gap-10 items-start">
+              <div className="shrink-0 flex items-center gap-3 text-primary">
+                <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center">
+                  <Truck className="w-7 h-7" />
                 </div>
-                <div className="flex-1 prose prose-sm max-w-none text-muted-foreground">
-                  <div dangerouslySetInnerHTML={{ __html: shippingSummary }} />
-                </div>
+                <h3 className="text-xl font-bold uppercase tracking-widest leading-tight">Chính sách<br/>Vận chuyển & Đổi trả</h3>
               </div>
-            </section>
-          )}
+              <div className="flex-1 prose prose-stone max-w-none text-muted-foreground leading-relaxed">
+                <div dangerouslySetInnerHTML={{ __html: shippingSummary }} />
+                <p className="mt-6 text-xs italic">* Nội dung chi tiết vui lòng xem tại trang <Link to="/ho-tro/van-chuyen" className="text-primary font-bold underline">Chính sách vận chuyển</Link>.</p>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
       
-      {/* Pass Product context to AI if possible, simple implementation for now */}
       <AIChatWindow isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} />
       <Footer />
     </div>
