@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ReviewItem } from "./ReviewItem";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ReviewImageGallery } from "./ReviewImageGallery";
 
 interface ProductReviewsProps {
   reviews: any[];
@@ -65,7 +66,6 @@ export function ProductReviews({
     
     setIsVerifying(true);
     try {
-      // Chỉ tìm các đơn hàng có trạng thái 'delivered' (Đã giao hàng)
       const { data: orders, error } = await supabase
         .from('orders')
         .select('id, contact_phone, contact_email, status, order_items(product_id)')
@@ -116,6 +116,9 @@ export function ProductReviews({
 
       <div className="grid lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 flex flex-col">
+          {/* Nút mở gallery ảnh thực tế */}
+          <ReviewImageGallery reviews={reviews} />
+
           {reviews.length === 0 ? (
             <div className="text-center py-16 bg-secondary/10 rounded-3xl border border-dashed border-border/50">
               <p className="text-muted-foreground italic">Hiện chưa có nhận xét nào cho sản phẩm này.</p>
