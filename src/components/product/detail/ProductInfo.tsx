@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { 
   Star, Minus, Plus, ShoppingBag, Heart, 
-  Truck, Shield, ChevronDown, ChevronUp, Ruler, Info
+  Truck, Shield, ChevronDown, ChevronUp, Ruler, Info, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,8 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
   const [variants, setVariants] = useState<any[]>([]);
   const [selectedValues, setSelectedValues] = useState<Record<string, string>>({});
   
-  // State for specs collapsible
+  // State for collapsibles
+  const [isShortDescOpen, setIsShortDescOpen] = useState(false);
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
 
   const tierConfig = product.tier_variants_config || [];
@@ -143,7 +144,25 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
         </Button>
       </div>
 
-      {/* 3. DIMENSIONS SECTION */}
+      {/* 3. SHORT DESCRIPTION SECTION (NEW) */}
+      {product.short_description && (
+        <Collapsible open={isShortDescOpen} onOpenChange={setIsShortDescOpen} className="border-b border-border/50 pb-4">
+          <CollapsibleTrigger className="flex items-center justify-between w-full group py-2 text-left">
+            <div className="flex items-center gap-3">
+              <FileText className="w-4 h-4 text-primary" />
+              <span className="text-[11px] font-bold uppercase tracking-widest text-charcoal">Mô tả sản phẩm</span>
+            </div>
+            {isShortDescOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-4 animate-accordion-down">
+            <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+              {product.short_description}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+
+      {/* 4. DIMENSIONS SECTION */}
       {product.dimension_image_url && (
         <div className="space-y-4 border-b border-border/50 pb-6">
           <div className="flex items-center gap-3">
@@ -156,7 +175,7 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
         </div>
       )}
 
-      {/* 4. COLLAPSIBLE SPECS (ATTRIBUTES) */}
+      {/* 5. COLLAPSIBLE SPECS (ATTRIBUTES) */}
       <Collapsible open={isSpecsOpen} onOpenChange={setIsSpecsOpen} className="pb-4">
         <CollapsibleTrigger className="flex items-center justify-between w-full group py-2">
           <div className="flex items-center gap-3">

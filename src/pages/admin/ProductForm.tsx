@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
@@ -42,6 +43,7 @@ export default function ProductForm() {
     price: "",
     original_price: "",
     description: "",
+    short_description: "",
     category_id: "",
     image_url: "",
     gallery_urls: [] as string[],
@@ -94,7 +96,8 @@ export default function ProductForm() {
           fake_rating: data.fake_rating?.toString() || "5",
           perfect_match_ids: data.perfect_match_ids || [],
           bought_together_ids: data.bought_together_ids || [],
-          dimension_image_url: data.dimension_image_url || ""
+          dimension_image_url: data.dimension_image_url || "",
+          short_description: data.short_description || ""
         });
 
         if (data.tier_variants_config) setTierConfig(data.tier_variants_config);
@@ -183,6 +186,16 @@ export default function ProductForm() {
                 <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Ví dụ: Sofa da Ý cao cấp" className="h-12 rounded-xl text-lg font-bold" required />
               </div>
               <div className="space-y-2">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả sản phẩm (Hiển thị bên phải trang chi tiết)</Label>
+                <Textarea 
+                  value={formData.short_description} 
+                  onChange={e => setFormData({...formData, short_description: e.target.value})} 
+                  placeholder="Nhập đoạn mô tả ngắn về đặc điểm sản phẩm..."
+                  className="rounded-xl resize-none"
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground">Danh mục hiển thị *</Label>
                 <Select value={formData.category_id} onValueChange={val => setFormData({...formData, category_id: val})}>
                   <SelectTrigger className="h-12 rounded-xl bg-secondary/20 border-none"><SelectValue placeholder="Chọn danh mục..." /></SelectTrigger>
@@ -204,11 +217,11 @@ export default function ProductForm() {
 
           <div className="bg-white p-8 rounded-3xl border border-border space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <FileText className="w-4 h-4" /> 3. Mô tả sản phẩm
+              <FileText className="w-4 h-4" /> 3. Bài viết khám phá sản phẩm
             </h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Bài viết mô tả</Label>
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nội dung chi tiết (Có ảnh)</Label>
                 <AIContentAssistant contentType="product" contextTitle={formData.name} onInsert={val => setFormData({...formData, description: val})} />
               </div>
               <RichTextEditor value={formData.description} onChange={val => setFormData({...formData, description: val})} />
