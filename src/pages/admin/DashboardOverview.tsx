@@ -12,7 +12,6 @@ import {
   ArrowDownRight,
   Loader2,
   Calendar as CalendarIcon,
-  User,
   ChevronRight
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -75,9 +74,10 @@ export default function DashboardOverview() {
       let startDate: Date;
       let endDate = endOfDay(new Date());
 
+      // Xác định khoảng thời gian
       switch (timeRange) {
         case 'today': startDate = startOfDay(new Date()); break;
-        case 'week': startDate = startOfWeek(new Date(), { weekStartsOn: 1 }); break;
+        case 'week': startDate = subDays(new Date(), 7); break; // 7 ngày gần nhất
         case 'month': startDate = startOfMonth(new Date()); break;
         case 'year': startDate = startOfYear(new Date()); break;
         case 'custom': 
@@ -87,21 +87,26 @@ export default function DashboardOverview() {
         default: startDate = subDays(new Date(), 7);
       }
 
+      // 1. Fetch Orders trong khoảng thời gian
       const { data: orders } = await supabase
         .from('orders')
-        .select('total_amount, created_at')
+        .select('total_amount, created_at, status')
         .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString());
+        .lte('created_at', endDate.toISOString())
+        .neq('status', 'cancelled'); // Không tính đơn hủy
 
+      // 2. Fetch Tổng sản phẩm & Users
       const { count: prodCount } = await supabase.from('products').select('*', { count: 'exact', head: true });
       const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
 
+      // 3. Fetch Đơn hàng gần đây
       const { data: recent } = await supabase
         .from('orders')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(6);
 
+      // Tính toán Stats
       const periodRevenue = orders?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
 
       setStats({
@@ -112,23 +117,29 @@ export default function DashboardOverview() {
       });
       setRecentOrders(recent || []);
 
+      // Xử lý dữ liệu biểu đồ
       let processedChartData: any[] = [];
+      
       if (timeRange === 'year') {
+        // Group by Month
         const months = eachMonthOfInterval({ start: startDate, end: endDate });
         processedChartData = months.map(month => {
           const monthOrders = orders?.filter(o => isSameMonth(new Date(o.created_at), month)) || [];
           return {
             name: format(month, 'MMM', { locale: vi }),
-            revenue: monthOrders.reduce((sum, o) => sum + Number(o.total_amount), 0)
+            revenue: monthOrders.reduce((sum, o) => sum + Number(o.total_amount), 0),
+            orders: monthOrders.length
           };
         });
       } else {
+        // Group by Day (default for week, month, custom)
         const days = eachDayOfInterval({ start: startDate, end: endDate });
         processedChartData = days.map(day => {
           const dayOrders = orders?.filter(o => isSameDay(new Date(o.created_at), day)) || [];
           return {
             name: format(day, 'dd/MM', { locale: vi }),
-            revenue: dayOrders.reduce((sum, o) => sum + Number(o.total_amount), 0)
+            revenue: dayOrders.reduce((sum, o) => sum + Number(o.total_amount), 0),
+            orders: dayOrders.length
           };
         });
       }
@@ -146,10 +157,10 @@ export default function DashboardOverview() {
   }
 
   const statCards = [
-    { title: "Doanh thu kỳ này", value: formatPrice(stats.totalRevenue), icon: DollarSign, color: "bg-emerald-500", trend: "+12%", isPositive: true },
-    { title: "Đơn hàng mới", value: stats.totalOrders, icon: Package, color: "bg-blue-500", trend: "+5%", isPositive: true },
-    { title: "Tổng sản phẩm", value: stats.totalProducts, icon: ShoppingBag, color: "bg-amber-500", trend: "Ổn định", isPositive: true },
-    { title: "Tổng khách hàng", value: stats.totalUsers, icon: Users, color: "bg-purple-500", trend: "+3%", isPositive: true },
+    { title: "Doanh thu (Kỳ này)", value: formatPrice(stats.totalRevenue), icon: DollarSign, color: "bg-emerald-500", trend: "Thực tế", isPositive: true },
+    { title: "Đơn hàng (Kỳ này)", value: stats.totalOrders, icon: Package, color: "bg-blue-500", trend: "Đã chốt", isPositive: true },
+    { title: "Tổng sản phẩm", value: stats.totalProducts, icon: ShoppingBag, color: "bg-amber-500", trend: "Kho hàng", isPositive: true },
+    { title: "Khách hàng", value: stats.totalUsers, icon: Users, color: "bg-purple-500", trend: "Đăng ký", isPositive: true },
   ];
 
   const getStatusColor = (status: string) => {
@@ -158,6 +169,7 @@ export default function DashboardOverview() {
       case 'processing': return 'bg-blue-500';
       case 'shipped': return 'bg-indigo-500';
       case 'delivered': return 'bg-emerald-500';
+      case 'cancelled': return 'bg-red-500';
       default: return 'bg-gray-300';
     }
   };
@@ -167,7 +179,7 @@ export default function DashboardOverview() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Tổng Quan Kinh Doanh</h1>
-          <p className="text-muted-foreground text-sm">Phân tích hiệu quả kinh doanh của hệ thống OHOUSE.</p>
+          <p className="text-muted-foreground text-sm">Phân tích hiệu quả kinh doanh từ dữ liệu thực tế.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {timeRange === 'custom' && (
@@ -186,7 +198,7 @@ export default function DashboardOverview() {
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="today">Hôm nay</SelectItem>
-              <SelectItem value="week">Tuần này</SelectItem>
+              <SelectItem value="week">7 ngày qua</SelectItem>
               <SelectItem value="month">Tháng này</SelectItem>
               <SelectItem value="year">Năm nay</SelectItem>
               <SelectItem value="custom">Tùy chỉnh...</SelectItem>
@@ -222,6 +234,8 @@ export default function DashboardOverview() {
           <div className="h-[380px] w-full">
             {loading ? (
               <div className="h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+            ) : chartData.length === 0 || chartData.every(d => d.revenue === 0) ? (
+              <div className="h-full flex items-center justify-center text-muted-foreground italic">Chưa có dữ liệu doanh thu trong khoảng này.</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
@@ -234,7 +248,11 @@ export default function DashboardOverview() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#888'}} dy={10} />
                   <YAxis axisLine={false} tickLine={false} tick={{fontSize: 11, fill: '#888'}} tickFormatter={(v) => v >= 1000000 ? `${(v/1000000).toFixed(1)}M` : v} />
-                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} formatter={(value: number) => [formatPrice(value), 'Doanh thu']} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} 
+                    formatter={(value: number) => [formatPrice(value), 'Doanh thu']}
+                    labelStyle={{ fontWeight: 'bold', color: '#333' }}
+                  />
                   <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                 </AreaChart>
               </ResponsiveContainer>
@@ -254,6 +272,7 @@ export default function DashboardOverview() {
             ) : recentOrders.length === 0 ? (
               <div className="h-full flex items-center justify-center text-muted-foreground italic text-sm">Chưa có đơn hàng nào.</div>
             ) : recentOrders.map((order) => {
+              // Tên khách hàng (lấy phần trước @ của email nếu không có tên)
               const customerName = order.contact_email?.split('@')[0] || "Khách vãng lai";
               return (
                 <div 
