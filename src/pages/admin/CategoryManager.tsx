@@ -21,12 +21,16 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 export default function CategoryManager() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("main");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  
+  // State cho việc xóa chuyên nghiệp
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -42,8 +46,6 @@ export default function CategoryManager() {
 
       if (error) throw error;
       setCategories(data || []);
-      
-      // Mặc định THU GỌN toàn bộ (không thêm ID nào vào Set)
       setExpandedRows(new Set());
     } catch (error: any) {
       toast.error("Lỗi: " + error.message);
@@ -67,34 +69,29 @@ export default function CategoryManager() {
     if (!destination) return;
     if (destination.index === source.index && destination.droppableId === source.droppableId) return;
 
-    // 1. Lấy danh sách các item cùng cấp độ đang được kéo
     const itemsAtThisLevel = categories.filter(c => {
       if (type === 'PARENT') {
         return !c.parent_id && c.menu_location === activeTab;
       } else {
-        return c.parent_id === type; // type chứa ID của parent
+        return c.parent_id === type; 
       }
     });
 
-    // 2. Tạo mảng mới đã sắp xếp lại
     const newItems = Array.from(itemsAtThisLevel);
     const [reorderedItem] = newItems.splice(source.index, 1);
     newItems.splice(destination.index, 0, reorderedItem);
 
-    // 3. Cập nhật display_order cho mảng global và SẮP XẾP LẠI state ngay lập tức
     const updatedCategories = categories.map(c => {
       const foundInNew = newItems.find(n => n.id === c.id);
       if (foundInNew) {
         return { ...c, display_order: newItems.indexOf(foundInNew) + 1 };
       }
       return c;
-    }).sort((a, b) => a.display_order - b.display_order); // Quan trọng: Sắp xếp lại để UI nhảy vị trí
+    }).sort((a, b) => a.display_order - b.display_order);
 
     setCategories(updatedCategories);
 
-    // 4. Lưu vào Database
     try {
-      // Chúng ta thực hiện cập nhật tuần tự hoặc batch
       const promises = newItems.map((item, index) => 
         supabase
           .from('categories')
@@ -106,7 +103,7 @@ export default function CategoryManager() {
       toast.success("Đã cập nhật vị trí");
     } catch (error) {
       toast.error("Lỗi khi lưu vị trí");
-      fetchCategories(); // Rollback nếu lỗi
+      fetchCategories();
     }
   };
 
@@ -119,11 +116,21 @@ export default function CategoryManager() {
     } catch (error: any) { toast.error(error.message); }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Xóa danh mục này? Các danh mục con cũng sẽ bị xóa.")) return;
-    await supabase.from('categories').delete().eq('id', id);
-    setCategories(categories.filter(c => c.id !== id && c.parent_id !== id));
-    toast.success("Đã xóa");
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    
+    const toastId = toast.loading("Đang xóa danh mục và các dữ liệu liên quan...");
+    try {
+      const { error } = await supabase.from('categories').delete().eq('id', deleteId);
+      if (error) throw error;
+      
+      setCategories(categories.filter(c => c.id !== deleteId && c.parent_id !== deleteId));
+      toast.success("Đã xóa danh mục thành công.", { id: toastId });
+    } catch (error: any) {
+      toast.error("Lỗi khi xóa: " + error.message, { id: toastId });
+    } finally {
+      setDeleteId(null);
+    }
   };
 
   const renderList = (parentId: string | null, location: string) => {
@@ -179,7 +186,6 @@ export default function CategoryManager() {
                               {item.name}
                             </span>
                             {item.is_highlight && <Badge className="bg-red-500 text-[8px] h-4 px-1.5 uppercase tracking-wider">Sale</Badge>}
-                            <span className="text-[10px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">#{item.display_order}</span>
                           </div>
                           <code className="text-[10px] text-muted-foreground block mt-0.5">/{item.slug}</code>
                         </div>
@@ -200,7 +206,7 @@ export default function CategoryManager() {
                             <Button variant="ghost" size="icon" className="h-9 w-9 text-blue-600 hover:bg-blue-50" asChild>
                               <Link to={`/admin/categories/edit/${item.id}`}><Edit className="w-4 h-4" /></Link>
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:bg-destructive/10" onClick={() => handleDelete(item.id)}>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(item.id)}>
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -215,12 +221,6 @@ export default function CategoryManager() {
                             </span>
                           </div>
                           {renderList(item.id, location)}
-                          
-                          {!hasChildren && (
-                            <div className="py-8 text-center border-2 border-dashed border-border/40 rounded-xl">
-                              <p className="text-xs text-muted-foreground italic">Chưa có danh mục con. Nhấn "Thêm menu mới" và chọn "{item.name}" làm cha.</p>
-                            </div>
-                          )}
                         </div>
                       )}
                     </div>
@@ -243,7 +243,7 @@ export default function CategoryManager() {
             <Layers className="w-7 h-7 text-primary" />
             Cấu Hình Hệ Thống Danh Mục
           </h1>
-          <p className="text-muted-foreground text-sm">Sắp xếp vị trí menu bằng cách kéo thả <GripVertical className="inline w-3 h-3 text-muted-foreground/40"/>.</p>
+          <p className="text-muted-foreground text-sm">Sắp xếp vị trí menu bằng cách kéo thả.</p>
         </div>
         <Button asChild className="btn-hero shadow-gold px-8 h-12">
           <Link to="/admin/categories/new"><Plus className="w-4 h-4 mr-2" /> Thêm menu mới</Link>
@@ -280,6 +280,15 @@ export default function CategoryManager() {
           </div>
         </Tabs>
       </DragDropContext>
+
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa danh mục"
+        description="Lưu ý: Xóa danh mục cha sẽ xóa toàn bộ các danh mục con liên quan. Hành động này không thể hoàn tác."
+        confirmText="Vẫn xóa danh mục"
+      />
     </div>
   );
 }

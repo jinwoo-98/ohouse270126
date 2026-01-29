@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 export default function SubscriberManager() {
   const [newsletters, setNewsletters] = useState<any[]>([]);
   const [accountUsers, setAccountUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -19,7 +21,6 @@ export default function SubscriberManager() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Lấy danh sách đăng ký nhận tin (Subscribers)
       const { data: news, error: newsError } = await supabase
         .from('subscribers')
         .select('*')
@@ -27,7 +28,6 @@ export default function SubscriberManager() {
 
       if (newsError) throw newsError;
 
-      // 2. Lấy danh sách tài khoản (Profiles) - Loại trừ staff
       const { data: users, error: usersError } = await supabase
         .from('profiles')
         .select('*')
@@ -39,22 +39,24 @@ export default function SubscriberManager() {
       setNewsletters(news || []);
       setAccountUsers(users || []);
     } catch (error: any) {
-      console.error("Error fetching data:", error);
       toast.error("Lỗi tải dữ liệu: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteSub = async (id: string) => {
-    if (!confirm("Xóa email này khỏi danh sách nhận tin?")) return;
+  const handleDeleteSub = async () => {
+    if (!deleteId) return;
+    const toastId = toast.loading("Đang xóa email khỏi danh sách...");
     try {
-      const { error } = await supabase.from('subscribers').delete().eq('id', id);
+      const { error } = await supabase.from('subscribers').delete().eq('id', deleteId);
       if (error) throw error;
-      setNewsletters(newsletters.filter(s => s.id !== id));
-      toast.success("Đã xóa thành công.");
+      setNewsletters(newsletters.filter(s => s.id !== deleteId));
+      toast.success("Đã xóa thành công.", { id: toastId });
     } catch (e: any) {
-      toast.error("Không thể xóa: " + e.message);
+      toast.error("Không thể xóa: " + e.message, { id: toastId });
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -109,7 +111,7 @@ export default function SubscriberManager() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 gap-4">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
-            <p className="text-sm font-medium text-muted-foreground">Đang tải dữ liệu khách hàng...</p>
+            <p className="text-sm font-medium text-muted-foreground">Đang tải dữ liệu...</p>
           </div>
         ) : (
           <>
@@ -136,7 +138,7 @@ export default function SubscriberManager() {
                         <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary border shadow-sm">
                                 <Mail className="w-4 h-4" />
                               </div>
                               <span className="font-bold text-sm text-charcoal">{item.email}</span>
@@ -144,12 +146,12 @@ export default function SubscriberManager() {
                           </td>
                           <td className="px-6 py-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
-                              <Calendar className="w-3.5 h-3.5" />
+                              <Calendar className="w-3.5 h-3.5 text-primary" />
                               {new Date(item.created_at).toLocaleDateString('vi-VN')}
                             </div>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteSub(item.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteId(item.id)} className="text-muted-foreground hover:text-destructive transition-colors">
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </td>
@@ -184,7 +186,7 @@ export default function SubscriberManager() {
                         <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground border">
+                              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground border shadow-sm">
                                 <User className="w-5 h-5" />
                               </div>
                               <div className="flex flex-col">
@@ -199,7 +201,7 @@ export default function SubscriberManager() {
                                 {item.first_name || item.last_name ? `${item.first_name || ''} ${item.last_name || ''}` : "Chưa cập nhật tên"}
                               </span>
                               <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Phone className="w-3 h-3" /> {item.phone || "---"}
+                                <Phone className="w-3 h-3 text-primary" /> {item.phone || "---"}
                               </span>
                             </div>
                           </td>
@@ -216,6 +218,15 @@ export default function SubscriberManager() {
           </>
         )}
       </Tabs>
+
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDeleteSub}
+        title="Xác nhận hủy đăng ký"
+        description="Khách hàng này sẽ không còn nhận được các tin tức và ưu đãi mới nhất qua email. Bạn có chắc chắn muốn xóa?"
+        confirmText="Xác nhận xóa"
+      />
     </div>
   );
 }

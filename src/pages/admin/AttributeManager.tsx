@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 export default function AttributeManager() {
   const [attributes, setAttributes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAttributes();
@@ -24,13 +26,18 @@ export default function AttributeManager() {
     setLoading(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Xóa thuộc tính này? Dữ liệu liên quan đến sản phẩm cũng sẽ bị mất.")) return;
-    const { error } = await supabase.from('attributes').delete().eq('id', id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Đã xóa thuộc tính");
-      setAttributes(attributes.filter(a => a.id !== id));
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const toastId = toast.loading("Đang xóa thuộc tính...");
+    try {
+      const { error } = await supabase.from('attributes').delete().eq('id', deleteId);
+      if (error) throw error;
+      toast.success("Đã xóa thuộc tính thành công.", { id: toastId });
+      setAttributes(attributes.filter(a => a.id !== deleteId));
+    } catch (error: any) {
+      toast.error("Lỗi: " + error.message, { id: toastId });
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -46,7 +53,7 @@ export default function AttributeManager() {
         <Button asChild className="btn-hero h-11"><Link to="/admin/attributes/new"><Plus className="w-4 h-4 mr-2" /> Tạo thuộc tính</Link></Button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="p-4 border-b bg-gray-50/50">
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -65,13 +72,13 @@ export default function AttributeManager() {
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-border">
               {loading ? (
                 <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={5} className="p-12 text-center text-muted-foreground">Chưa có thuộc tính nào.</td></tr>
               ) : filtered.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50/50">
+                <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4 font-bold text-sm text-charcoal">{item.name}</td>
                   <td className="px-6 py-4">
                     <Badge variant="secondary" className="gap-1">
@@ -91,7 +98,7 @@ export default function AttributeManager() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon" asChild className="text-blue-600"><Link to={`/admin/attributes/edit/${item.id}`}><Edit className="w-4 h-4" /></Link></Button>
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(item.id)}><Trash2 className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setDeleteId(item.id)}><Trash2 className="w-4 h-4" /></Button>
                     </div>
                   </td>
                 </tr>
@@ -100,6 +107,15 @@ export default function AttributeManager() {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa thuộc tính"
+        description="Xóa thuộc tính này sẽ làm mất dữ liệu thuộc tính của các sản phẩm đang liên kết. Bạn có chắc chắn muốn thực hiện?"
+        confirmText="Vẫn xóa"
+      />
     </div>
   );
 }

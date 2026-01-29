@@ -15,11 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 export default function NewsManager() {
   const [news, setNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchNews();
@@ -32,11 +34,18 @@ export default function NewsManager() {
     setLoading(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Xóa bài viết này?")) return;
-    await supabase.from('news').delete().eq('id', id);
-    setNews(news.filter(n => n.id !== id));
-    toast.success("Đã xóa tin tức.");
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const toastId = toast.loading("Đang xóa bài viết...");
+    try {
+      await supabase.from('news').delete().eq('id', deleteId);
+      setNews(news.filter(n => n.id !== deleteId));
+      toast.success("Đã xóa tin tức thành công.", { id: toastId });
+    } catch (e) {
+      toast.error("Lỗi khi xóa bài viết.", { id: toastId });
+    } finally {
+      setDeleteId(null);
+    }
   };
 
   const filtered = news.filter(n => n.title.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -53,7 +62,7 @@ export default function NewsManager() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="p-4 border-b bg-gray-50/50">
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -72,16 +81,16 @@ export default function NewsManager() {
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-border">
               {loading ? (
                 <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={5} className="p-12 text-center text-muted-foreground">Chưa có bài viết nào.</td></tr>
               ) : filtered.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50/50">
+                <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                      <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0 border">
                         {item.image_url ? <img src={item.image_url} className="w-full h-full object-cover" /> : <ImageIcon className="w-5 h-5 m-auto text-gray-300 mt-3.5" />}
                       </div>
                       <span className="text-sm font-bold truncate max-w-xs">{item.title}</span>
@@ -93,7 +102,7 @@ export default function NewsManager() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon" asChild className="text-blue-600"><Link to={`/admin/news/edit/${item.id}`}><Edit className="w-4 h-4" /></Link></Button>
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(item.id)}><Trash2 className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setDeleteId(item.id)}><Trash2 className="w-4 h-4" /></Button>
                     </div>
                   </td>
                 </tr>
@@ -102,6 +111,15 @@ export default function NewsManager() {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa tin tức"
+        description="Bạn có chắc chắn muốn xóa bài viết này không? Nội dung sẽ bị xóa vĩnh viễn khỏi website."
+        confirmText="Vẫn xóa bài viết"
+      />
     </div>
   );
 }

@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 export default function ProjectManager() {
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProjects();
@@ -33,15 +35,18 @@ export default function ProjectManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa dự án này?")) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const toastId = toast.loading("Đang xóa dự án...");
     try {
-      const { error } = await supabase.from('projects').delete().eq('id', id);
+      const { error } = await supabase.from('projects').delete().eq('id', deleteId);
       if (error) throw error;
-      setProjects(projects.filter(p => p.id !== id));
-      toast.success("Đã xóa dự án thành công");
+      setProjects(projects.filter(p => p.id !== deleteId));
+      toast.success("Đã xóa dự án thành công.", { id: toastId });
     } catch (error: any) {
-      toast.error("Lỗi khi xóa: " + error.message);
+      toast.error("Lỗi khi xóa: " + error.message, { id: toastId });
+    } finally {
+      setDeleteId(null);
     }
   };
 
@@ -59,11 +64,11 @@ export default function ProjectManager() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="p-4 border-b bg-gray-50/50">
-          <div className="relative max-w-sm">
+          <div className="relative max-sm w-full sm:max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Tìm kiếm dự án..." className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            <Input placeholder="Tìm kiếm dự án..." className="pl-10 h-11 bg-white rounded-xl" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
         </div>
 
@@ -77,27 +82,27 @@ export default function ProjectManager() {
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-border">
               {loading ? (
                 <tr><td colSpan={4} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={4} className="p-12 text-center text-muted-foreground">Chưa có dự án nào.</td></tr>
               ) : filtered.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50/50">
+                <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                      <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0 border shadow-sm">
                         {p.image_url ? <img src={p.image_url} className="w-full h-full object-cover" /> : <ImageIcon className="w-5 h-5 m-auto text-gray-300 mt-3.5" />}
                       </div>
                       <span className="text-sm font-bold truncate max-w-xs">{p.title}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4"><Badge variant="secondary" className="text-[10px] font-bold uppercase">{p.category}</Badge></td>
-                  <td className="px-6 py-4 text-xs text-muted-foreground"><MapPin className="w-3 h-3 inline mr-1" /> {p.location}</td>
+                  <td className="px-6 py-4 text-xs text-muted-foreground font-medium"><MapPin className="w-3 h-3 inline mr-1 text-primary" /> {p.location}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon" asChild className="text-blue-600"><Link to={`/admin/projects/edit/${p.id}`}><Edit className="w-4 h-4" /></Link></Button>
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(p.id)}><Trash2 className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setDeleteId(p.id)}><Trash2 className="w-4 h-4" /></Button>
                     </div>
                   </td>
                 </tr>
@@ -106,6 +111,15 @@ export default function ProjectManager() {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa dự án"
+        description="Bạn có chắc chắn muốn xóa hồ sơ dự án này? Hình ảnh và nội dung liên quan sẽ không thể khôi phục."
+        confirmText="Vẫn xóa dự án"
+      />
     </div>
   );
 }
