@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, Loader2, CheckCircle2, AlertCircle, Send } from "lucide-react";
+import { Star, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { ReviewItem } from "./ReviewItem";
 
 interface ProductReviewsProps {
   reviews: any[];
@@ -78,7 +80,12 @@ export function ProductReviews({
         <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-widest text-charcoal mb-4">Đánh Giá Từ Khách Hàng</h2>
         <div className="flex flex-col items-center gap-2">
           <div className="flex text-amber-400 gap-1">
-            {[...Array(5)].map((_, i) => <Star key={i} className={cn("w-6 h-6", i < Math.floor(displayRating) ? "fill-current" : "text-gray-200")} />)}
+            {[...Array(5)].map((_, i) => (
+              <Star 
+                key={i} 
+                className={cn("w-6 h-6", i < Math.floor(displayRating) ? "fill-current" : "text-gray-200")} 
+              />
+            ))}
           </div>
           <p className="text-sm font-bold text-charcoal">
             {displayRating}/5 <span className="text-muted-foreground font-normal ml-1">({displayReviewCount} nhận xét)</span>
@@ -94,30 +101,7 @@ export function ProductReviews({
             </div>
           ) : (
             reviews.map((rev) => (
-              <div key={rev.id} className="bg-white p-6 rounded-2xl border border-border/40 shadow-subtle animate-fade-in">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-bold text-sm border border-primary/10 shadow-sm">
-                      {rev.user_name?.charAt(0).toUpperCase() || "C"}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-charcoal">{rev.user_name}</p>
-                      <div className="flex text-amber-400 text-[10px] mt-0.5">
-                        {[...Array(5)].map((_, i) => <Star key={i} className={`w-3.5 h-3.5 ${i < rev.rating ? 'fill-current' : 'text-gray-200'}`} />)}
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground bg-secondary/50 px-2 py-1 rounded">
-                    {new Date(rev.created_at).toLocaleDateString('vi-VN')}
-                  </span>
-                </div>
-                <div className="pl-15">
-                  <p className="text-sm text-muted-foreground leading-relaxed italic">"{rev.comment}"</p>
-                  <div className="flex items-center gap-1.5 mt-3 text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
-                    <CheckCircle2 className="w-3 h-3" /> Đã mua hàng tại OHOUSE
-                  </div>
-                </div>
-              </div>
+              <ReviewItem key={rev.id} review={rev} />
             ))
           )}
         </div>
