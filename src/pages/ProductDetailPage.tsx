@@ -15,7 +15,7 @@ import { ProductHorizontalList } from "@/components/product/detail/ProductHorizo
 import { ProductQnA } from "@/components/product/detail/ProductQnA";
 
 export default function ProductDetailPage() {
-  const { id } = useParams();
+  const { slug } = useParams(); // Lấy slug thay vì id
   const navigate = useNavigate();
   
   const [product, setProduct] = useState<any>(null);
@@ -33,11 +33,11 @@ export default function ProductDetailPage() {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   useEffect(() => {
-    if (id) {
+    if (slug) {
       fetchProduct();
       window.scrollTo(0, 0);
     }
-  }, [id]);
+  }, [slug]);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -61,28 +61,27 @@ export default function ProductDetailPage() {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('id', id)
+        .eq('slug', slug) // Tìm theo slug
         .single();
       
       if (error) throw error;
       setProduct(data);
       
-      trackProductView({ id: data.id, name: data.name, price: data.price, image: data.image_url });
+      // Track view với slug
+      trackProductView({ id: data.id, name: data.name, price: data.price, image: data.image_url, slug: data.slug });
       
       // Fetch category hierarchy for Breadcrumb
       if (data.category_id) {
         fetchCategoryHierarchy(data.category_id);
       }
 
-      // Fetch data lists parallel
+      // Fetch data lists parallel (Using data.id derived from slug query)
       await Promise.all([
-        fetchReviews(), 
-        fetchAttributes(),
+        fetchReviews(data.id), 
+        fetchAttributes(data.id),
         fetchSimilarProducts(data.category_id, data.id),
-        // Combo Perfect Match: Lấy theo ID setup hoặc tìm sản phẩm cùng Phong cách (Style)
-        fetchSmartList(data.perfect_match_ids, 'style', data.style, 6).then(res => setPerfectMatchProducts(res)),
-        // Bought Together: Lấy theo ID setup hoặc tìm sản phẩm cùng Chất liệu (Material)
-        fetchSmartList(data.bought_together_ids, 'material', data.material, 6).then(res => setBoughtTogetherProducts(res))
+        fetchSmartList(data.perfect_match_ids, 'style', data.style, 6, data.id).then(res => setPerfectMatchProducts(res)),
+        fetchSmartList(data.bought_together_ids, 'material', data.material, 6, data.id).then(res => setBoughtTogetherProducts(res))
       ]);
     } catch (error) {
       toast.error("Sản phẩm không tồn tại");
@@ -122,9 +121,9 @@ export default function ProductDetailPage() {
     }
   };
 
-  const fetchAttributes = async () => {
+  const fetchAttributes = async (productId: string) => {
     try {
-      const { data } = await supabase.from('product_attributes').select('value, attributes(name)').eq('product_id', id);
+      const { data } = await supabase.from('product_attributes').select('value, attributes(name)').eq('product_id', productId);
       if (data) setAttributes(data.map(item => ({ name: (item.attributes as any)?.name, value: item.value })));
     } catch (err) {}
   };
@@ -138,36 +137,31 @@ export default function ProductDetailPage() {
     }
   };
 
-  // Logic lấy danh sách thông minh: Theo ID setup -> hoặc theo Filter (Style/Material) -> hoặc ngẫu nhiên
-  const fetchSmartList = async (manualIds: string[] | null, filterField: string, filterValue: string, limit: number) => {
+  const fetchSmartList = async (manualIds: string[] | null, filterField: string, filterValue: string, limit: number, currentId: string) => {
     try {
-      // 1. Nếu có setup tay, ưu tiên lấy theo ID
       if (manualIds && manualIds.length > 0) {
         const { data } = await supabase.from('products').select('*').in('id', manualIds);
         if (data && data.length > 0) return data;
       }
-
-      // 2. Nếu không có setup tay, tìm sản phẩm có cùng phong cách/chất liệu
       if (filterValue) {
-        const { data } = await supabase.from('products').select('*').eq(filterField, filterValue).neq('id', id).limit(limit);
+        const { data } = await supabase.from('products').select('*').eq(filterField, filterValue).neq('id', currentId).limit(limit);
         if (data && data.length > 0) return data;
       }
-
-      // 3. Fallback cuối cùng: Lấy hàng mới/nổi bật
-      const { data } = await supabase.from('products').select('*').neq('id', id).order('created_at', { ascending: false }).limit(limit);
+      const { data } = await supabase.from('products').select('*').neq('id', currentId).order('created_at', { ascending: false }).limit(limit);
       return data || [];
     } catch (e) { return []; }
   };
 
-  const fetchReviews = async () => {
-    const { data } = await supabase.from('reviews').select('*').eq('product_id', String(id)).order('created_at', { ascending: false });
+  const fetchReviews = async (productId: string) => {
+    const { data } = await supabase.from('reviews').select('*').eq('product_id', productId).order('created_at', { ascending: false });
     setReviews(data || []);
   };
 
   const handleReviewSubmit = async (rating: number, comment: string, name: string) => {
-    await supabase.from('reviews').insert({ product_id: String(id), rating, comment, user_name: name });
+    if (!product) return;
+    await supabase.from('reviews').insert({ product_id: product.id, rating, comment, user_name: name });
     toast.success("Cảm ơn đánh giá của bạn!");
-    fetchReviews();
+    fetchReviews(product.id);
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
@@ -176,7 +170,6 @@ export default function ProductDetailPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1">
-        {/* Full Breadcrumb */}
         <div className="bg-secondary/50 py-3 border-b border-border/40">
           <div className="container-luxury flex items-center gap-2 text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
             <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>

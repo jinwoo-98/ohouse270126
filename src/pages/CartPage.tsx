@@ -150,12 +150,12 @@ export default function CartPage() {
                 <div className="space-y-4">
                   {cartItems.map((item) => (
                     <div key={item.id} className="bg-card rounded-xl p-4 shadow-subtle flex gap-4 border border-border/50">
-                      <Link to={`/san-pham/${item.id}`} className="shrink-0">
+                      <Link to={`/san-pham/${item.slug || item.id}`} className="shrink-0">
                         <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
                       </Link>
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <div className="flex justify-between items-start gap-2">
-                          <Link to={`/san-pham/${item.id}`}><h3 className="text-sm font-semibold hover:text-primary line-clamp-2">{item.name}</h3></Link>
+                          <Link to={`/san-pham/${item.slug || item.id}`}><h3 className="text-sm font-semibold hover:text-primary line-clamp-2">{item.name}</h3></Link>
                           <button onClick={() => removeFromCart(item.id)} className="text-muted-foreground hover:text-destructive"><X className="w-4 h-4" /></button>
                         </div>
                         <div className="flex items-center justify-between mt-4">

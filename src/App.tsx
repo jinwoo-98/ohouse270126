@@ -79,7 +79,10 @@ const App = () => (
                 <Route path="/trangchu" element={<Index />} />
                 
                 <Route path="/tim-kiem" element={<SearchPage />} />
-                <Route path="/san-pham/:id" element={<ProductDetailPage />} />
+                
+                {/* Đổi route từ :id sang :slug */}
+                <Route path="/san-pham/:slug" element={<ProductDetailPage />} />
+                
                 <Route path="/gio-hang" element={<CartPage />} />
                 <Route path="/yeu-thich" element={<ProfileDashboard />} />
                 <Route path="/lich-su-xem" element={<RecentlyViewedPage />} />

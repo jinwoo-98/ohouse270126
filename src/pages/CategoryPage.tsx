@@ -242,7 +242,7 @@ export default function CategoryPage() {
                     <motion.div key={product.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: index * 0.05 }}>
                       <div className="group relative h-full flex flex-col">
                         <div className="relative aspect-[3/4] overflow-hidden bg-secondary/30">
-                          <Link to={`/san-pham/${product.id}`} className="block h-full">
+                          <Link to={`/san-pham/${product.slug || product.id}`} className="block h-full">
                             <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                             <div className="absolute top-4 left-4 flex flex-col gap-1">
                               {product.is_sale && <span className="bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-charcoal shadow-sm">Sale</span>}
@@ -250,7 +250,7 @@ export default function CategoryPage() {
                             </div>
                           </Link>
                           <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                            <button onClick={() => toggleWishlist(product)} className={cn("p-3 bg-white rounded-full shadow-sm hover:bg-charcoal hover:text-white transition-colors", isInWishlist(product.id) && "bg-charcoal text-white")}>
+                            <button onClick={() => toggleWishlist({ ...product, slug: product.slug })} className={cn("p-3 bg-white rounded-full shadow-sm hover:bg-charcoal hover:text-white transition-colors", isInWishlist(product.id) && "bg-charcoal text-white")}>
                               <Heart className={cn("w-4 h-4", isInWishlist(product.id) && "fill-current")} />
                             </button>
                           </div>
@@ -263,7 +263,7 @@ export default function CategoryPage() {
                             </div>
                             <span className="text-[10px] text-muted-foreground">({product.fake_review_count || 0})</span>
                           </div>
-                          <Link to={`/san-pham/${product.id}`}><h3 className="text-sm font-medium text-charcoal hover:text-primary transition-colors line-clamp-2 mb-2">{product.name}</h3></Link>
+                          <Link to={`/san-pham/${product.slug || product.id}`}><h3 className="text-sm font-medium text-charcoal hover:text-primary transition-colors line-clamp-2 mb-2">{product.name}</h3></Link>
                           <div className="mt-auto">
                             <div className="flex items-center gap-3">
                               <span className="text-base font-bold text-charcoal">{formatPrice(product.price)}</span>

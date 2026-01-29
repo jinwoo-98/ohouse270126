@@ -97,7 +97,7 @@ export function FeaturedProducts() {
                 <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.05 }} viewport={{ once: true }}>
                   <div className="group card-luxury relative h-full flex flex-col">
                     <div className="relative aspect-square img-zoom">
-                      <Link to={`/san-pham/${product.id}`} className="block h-full">
+                      <Link to={`/san-pham/${product.slug || product.id}`} className="block h-full">
                         <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                         <div className="absolute top-2 left-2 flex flex-col gap-1">
                           {product.is_new && (
@@ -110,7 +110,7 @@ export function FeaturedProducts() {
                       </Link>
 
                       <div className="absolute top-2 right-2 md:top-3 md:right-3 flex flex-col gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity z-10 pointer-events-auto">
-                        <button onClick={() => toggleWishlist(product)} className={`p-2 md:p-2.5 rounded-full shadow-medium transition-colors ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'}`}>
+                        <button onClick={() => toggleWishlist({ ...product, slug: product.slug })} className={`p-2 md:p-2.5 rounded-full shadow-medium transition-colors ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'}`}>
                           <Heart className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isFavorite ? 'fill-current' : ''}`} />
                         </button>
                       </div>
@@ -131,7 +131,7 @@ export function FeaturedProducts() {
                         <span className="text-[9px] text-muted-foreground">({reviews})</span>
                       </div>
                       
-                      <Link to={`/san-pham/${product.id}`}>
+                      <Link to={`/san-pham/${product.slug || product.id}`}>
                         <h3 className="font-medium text-xs md:text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors">{product.name}</h3>
                       </Link>
                       

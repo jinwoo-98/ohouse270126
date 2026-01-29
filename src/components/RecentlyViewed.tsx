@@ -8,6 +8,7 @@ interface Product {
   name: string;
   price: number;
   image: string;
+  slug?: string;
 }
 
 export function RecentlyViewed() {
@@ -33,7 +34,7 @@ export function RecentlyViewed() {
         <h2 className="text-xl font-bold mb-8">Sản phẩm bạn vừa xem</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {products.map((product) => (
-            <Link key={product.id} to={`/san-pham/${product.id}`} className="group">
+            <Link key={product.id} to={`/san-pham/${product.slug || product.id}`} className="group">
               <div className="bg-card rounded-lg overflow-hidden border border-border/50 transition-shadow hover:shadow-subtle">
                 <div className="aspect-square overflow-hidden">
                   <img 

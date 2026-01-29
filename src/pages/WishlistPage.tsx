@@ -40,9 +40,9 @@ export default function WishlistPage() {
               {wishlist.map((item, index) => (
                 <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className="group card-luxury relative">
                   <button onClick={() => removeFromWishlist(item.id)} className="absolute top-3 right-3 z-10 p-2 bg-card/90 backdrop-blur-sm rounded-full shadow-medium hover:bg-destructive hover:text-destructive-foreground transition-colors"><X className="w-4 h-4" /></button>
-                  <Link to={`/san-pham/${item.id}`}><div className="relative aspect-square img-zoom"><img src={item.image} alt={item.name} className="w-full h-full object-cover" /></div></Link>
+                  <Link to={`/san-pham/${item.slug || item.id}`}><div className="relative aspect-square img-zoom"><img src={item.image} alt={item.name} className="w-full h-full object-cover" /></div></Link>
                   <div className="p-4">
-                    <Link to={`/san-pham/${item.id}`}><h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors mb-2">{item.name}</h3></Link>
+                    <Link to={`/san-pham/${item.slug || item.id}`}><h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors mb-2">{item.name}</h3></Link>
                     <div className="flex items-center gap-2 mb-4"><span className="text-base font-bold text-primary">{formatPrice(item.price)}</span></div>
                     <Button className="w-full" size="sm" onClick={() => addToCart({ ...item, quantity: 1 })}>
                       <ShoppingBag className="w-4 h-4 mr-2" /> Thêm vào giỏ

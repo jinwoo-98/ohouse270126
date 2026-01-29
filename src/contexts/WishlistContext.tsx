@@ -8,6 +8,7 @@ interface WishlistItem {
   image: string;
   originalPrice?: number;
   inStock?: boolean;
+  slug?: string; // Thêm slug
 }
 
 interface WishlistContextType {

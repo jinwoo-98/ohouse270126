@@ -8,6 +8,7 @@ interface CartItem {
   image: string;
   quantity: number;
   variant?: string;
+  slug?: string; // Thêm slug vào đây
 }
 
 interface CartContextType {
