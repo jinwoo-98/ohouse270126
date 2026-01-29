@@ -20,26 +20,29 @@ interface ProductReviewsProps {
 }
 
 /**
- * Component hiển thị số sao với khả năng tô màu một phần (sao lẻ)
- * và luôn tô màu đặc (fill) bên trong để dễ quan sát.
+ * Component hiển thị số sao chuyên nghiệp.
+ * Sử dụng clip-path để cắt chính xác phần màu vàng mà không làm méo icon.
  */
 export function StarRating({ rating, size = "w-4 h-4" }: { rating: number, size?: string }) {
   return (
     <div className="flex gap-1">
       {[...Array(5)].map((_, i) => {
+        // Tính toán phần trăm cần tô màu cho ngôi sao này (0 đến 1)
         const fillAmount = Math.max(0, Math.min(1, rating - i));
+        
         return (
-          <div key={i} className={cn("relative", size)}>
-            {/* Ngôi sao nền màu xám nhạt (đã tô đặc bên trong) */}
-            <Star className={cn("absolute inset-0 text-gray-200 fill-gray-200", size)} />
+          <div key={i} className={cn("relative shrink-0", size)}>
+            {/* Ngôi sao nền (Màu xám đậm hơn một chút để giữ rõ hình dạng) */}
+            <Star className={cn("text-gray-300 fill-gray-300", size)} />
             
-            {/* Ngôi sao tô màu vàng (tô đặc bên trong, cắt theo chiều ngang dựa trên điểm số) */}
-            <div 
-              className="absolute inset-0 overflow-hidden"
-              style={{ width: `${fillAmount * 100}%` }}
-            >
-              <Star className={cn("text-amber-400 fill-amber-400", size)} />
-            </div>
+            {/* Ngôi sao tô màu vàng đè lên trên */}
+            <Star 
+              className={cn("absolute inset-0 text-amber-400 fill-amber-400 transition-all duration-300", size)} 
+              style={{ 
+                // Sử dụng clip-path inset để cắt từ bên phải vào, giữ nguyên hình dạng bên trái
+                clipPath: `inset(0 ${100 - fillAmount * 100}% 0 0)` 
+              }}
+            />
           </div>
         );
       })}
@@ -113,7 +116,6 @@ export function ProductReviews({
         <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary mb-3">Customer Feedback</span>
         <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-widest text-charcoal mb-4">Đánh Giá Từ Khách Hàng</h2>
         <div className="flex flex-col items-center gap-2">
-          {/* Sử dụng StarRating với logic tô đặc màu vàng */}
           <StarRating rating={displayRating} size="w-7 h-7" />
           <p className="text-sm font-bold text-charcoal mt-2">
             {displayRating}/5 <span className="text-muted-foreground font-normal ml-1">({displayReviewCount} nhận xét)</span>
@@ -129,7 +131,6 @@ export function ProductReviews({
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Khung cuộn với chiều cao tối đa 900px */}
               <div 
                 className={cn(
                   "space-y-6 transition-all duration-500 pr-2 custom-scrollbar",
