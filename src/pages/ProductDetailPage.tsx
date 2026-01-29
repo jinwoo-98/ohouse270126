@@ -13,7 +13,6 @@ import { ProductHorizontalList } from "@/components/product/detail/ProductHorizo
 import { ProductQnA } from "@/components/product/detail/ProductQnA";
 import { ProductDescription } from "@/components/product/detail/ProductDescription";
 import { ProductReviews } from "@/components/product/detail/ProductReviews";
-import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
 import { StickyActionToolbar } from "@/components/product/detail/StickyActionToolbar";
 
 export default function ProductDetailPage() {
@@ -63,9 +62,9 @@ export default function ProductDetailPage() {
         fetchReviews(data.id), 
         fetchAttributes(data.id),
         fetchSimilarProducts(data.category_id, data.id),
-        // Gợi ý phối đồ (Perfect Match): Ưu tiên chọn tay -> Fallback: Sản phẩm cùng danh mục
+        // Gợi ý phối đồ (Perfect Match)
         fetchRelationProducts(data.perfect_match_ids || [], setPerfectMatch, true, data.category_id, data.id),
-        // Thường mua cùng: Ưu tiên chọn tay -> Fallback: Lấy random sản phẩm khác danh mục hoặc bán chạy
+        // Thường mua cùng
         fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether, true, 'all', data.id),
         fetchSettings()
       ]);
@@ -83,7 +82,6 @@ export default function ProductDetailPage() {
   };
 
   const fetchRelationProducts = async (ids: string[], setter: (val: any[]) => void, useFallback = false, catId = "", currentId = "") => {
-    // 1. Ưu tiên lấy theo danh sách ID đã chọn thủ công
     if (ids && ids.length > 0) {
       const { data } = await supabase.from('products').select('*').in('id', ids);
       if (data && data.length > 0) {
@@ -92,16 +90,13 @@ export default function ProductDetailPage() {
       }
     }
     
-    // 2. Logic Tự Động (Fallback)
     if (useFallback) {
       let query = supabase.from('products').select('*').neq('id', currentId).limit(8);
-      
       if (catId !== 'all') {
         query = query.eq('category_id', catId);
       } else {
-        query = query.eq('is_featured', true); // Nếu không chọn gì thì lấy hàng nổi bật
+        query = query.eq('is_featured', true);
       }
-
       const { data } = await query;
       setter(data || []);
     }
@@ -200,10 +195,8 @@ export default function ProductDetailPage() {
           {/* Main Content Area */}
           <div className="max-w-6xl mx-auto space-y-24">
             
-            {/* 1. Khám phá sản phẩm */}
             <ProductDescription description={product.description} />
             
-            {/* 2. Đánh giá */}
             <ProductReviews 
               reviews={reviews} 
               product={product} 
@@ -212,12 +205,11 @@ export default function ProductDetailPage() {
               onSubmitReview={handleSubmitReview}
             />
 
-            {/* 3. Hỏi AI */}
             <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
 
-            {/* 4. Bộ sưu tập phối sẵn (Gợi ý phối đồ) */}
+            {/* 4. Bộ sưu tập phối sẵn (Sử dụng danh sách ngang) */}
             {perfectMatch.length > 0 && (
-              <ProductInspiration product={product} comboProducts={perfectMatch} />
+              <ProductHorizontalList products={perfectMatch} title="Bộ sưu tập hoàn hảo" />
             )}
 
             {/* 5. Sản phẩm tương tự */}
@@ -228,10 +220,8 @@ export default function ProductDetailPage() {
               <ProductHorizontalList products={boughtTogether} title="Thường được mua cùng nhau" />
             )}
 
-            {/* 7. Lịch sử xem */}
             <RecentlyViewed />
 
-            {/* 8. Vận chuyển & Hoàn trả */}
             {shippingPolicy && (
               <section className="py-16 border-t border-border/60">
                 <div className="flex flex-col md:flex-row gap-12">
