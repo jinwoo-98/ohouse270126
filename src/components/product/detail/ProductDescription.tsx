@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ export function ProductDescription({ description }: ProductDescriptionProps) {
           "prose prose-lg prose-stone max-w-none text-muted-foreground leading-relaxed transition-all duration-1000 ease-in-out",
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
+          {/* Container rich-text-content sẽ tự động áp dụng các class căn lề đã định nghĩa trong index.css */}
           <div 
             className="rich-text-content"
             dangerouslySetInnerHTML={{ __html: description || "<p className='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
@@ -47,7 +50,8 @@ export function ProductDescription({ description }: ProductDescriptionProps) {
             onClick={() => {
               setIsDescExpanded(!isDescExpanded);
               if (isDescExpanded) {
-                document.getElementById('description')?.scrollIntoView({ behavior: 'smooth' });
+                const el = document.getElementById('description');
+                if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: 'smooth' });
               }
             }}
             className={cn(

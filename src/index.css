@@ -85,6 +85,17 @@
     @apply text-primary font-bold underline underline-offset-4 transition-all hover:text-charcoal;
   }
 
+  /* QUILL EDITOR ALIGNMENT CLASSES */
+  .ql-align-center {
+    text-align: center;
+  }
+  .ql-align-right {
+    text-align: right;
+  }
+  .ql-align-justify {
+    text-align: justify;
+  }
+
   .dark {
     --background: 30 10% 8%;
     --foreground: 40 20% 95%;
