@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Save, Loader2, Info, Box, Settings2, ImageIcon, Layers, X, FileText } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Info, Box, Settings2, ImageIcon, Layers, X, FileText, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,7 +33,6 @@ export default function ProductForm() {
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [allAttributes, setAllAttributes] = useState<any[]>([]);
   
-  // State quản lý biến thể (3 cấp)
   const [tierConfig, setTierConfig] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
   
@@ -46,6 +45,7 @@ export default function ProductForm() {
     category_id: "",
     image_url: "",
     gallery_urls: [] as string[],
+    dimension_image_url: "",
     is_featured: false,
     is_new: false,
     is_sale: false,
@@ -93,7 +93,8 @@ export default function ProductForm() {
           fake_review_count: data.fake_review_count?.toString() || "0",
           fake_rating: data.fake_rating?.toString() || "5",
           perfect_match_ids: data.perfect_match_ids || [],
-          bought_together_ids: data.bought_together_ids || []
+          bought_together_ids: data.bought_together_ids || [],
+          dimension_image_url: data.dimension_image_url || ""
         });
 
         if (data.tier_variants_config) setTierConfig(data.tier_variants_config);
@@ -134,7 +135,6 @@ export default function ProductForm() {
         productId = data.id;
       }
 
-      // Sync Variants
       await supabase.from('product_variants').delete().eq('product_id', productId);
       if (variants.length > 0) {
         const variantPayloads = variants.map(v => ({
@@ -173,7 +173,6 @@ export default function ProductForm() {
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6 border-l-4 border-l-primary">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
               <Info className="w-4 h-4" /> 1. Thông tin cơ bản
@@ -181,20 +180,12 @@ export default function ProductForm() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tên sản phẩm *</Label>
-                <Input 
-                  value={formData.name} 
-                  onChange={e => setFormData({...formData, name: e.target.value})}
-                  placeholder="Ví dụ: Sofa da Ý cao cấp"
-                  className="h-12 rounded-xl text-lg font-bold"
-                  required
-                />
+                <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Ví dụ: Sofa da Ý cao cấp" className="h-12 rounded-xl text-lg font-bold" required />
               </div>
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground">Danh mục hiển thị *</Label>
                 <Select value={formData.category_id} onValueChange={val => setFormData({...formData, category_id: val})}>
-                  <SelectTrigger className="h-12 rounded-xl bg-secondary/20 border-none">
-                    <SelectValue placeholder="Chọn danh mục..." />
-                  </SelectTrigger>
+                  <SelectTrigger className="h-12 rounded-xl bg-secondary/20 border-none"><SelectValue placeholder="Chọn danh mục..." /></SelectTrigger>
                   <SelectContent className="max-h-80 rounded-xl">
                     {categories.filter(c => !c.parent_id).map(p => (
                       <SelectGroup key={p.id}>
@@ -209,14 +200,7 @@ export default function ProductForm() {
             </div>
           </div>
 
-          <ProductVariantsSection 
-            attributes={allAttributes}
-            tierConfig={tierConfig}
-            setTierConfig={setTierConfig}
-            variants={variants}
-            setVariants={setVariants}
-            basePrice={formData.price}
-          />
+          <ProductVariantsSection attributes={allAttributes} tierConfig={tierConfig} setTierConfig={setTierConfig} variants={variants} setVariants={setVariants} basePrice={formData.price} />
 
           <div className="bg-white p-8 rounded-3xl border border-border space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
@@ -230,24 +214,6 @@ export default function ProductForm() {
               <RichTextEditor value={formData.description} onChange={val => setFormData({...formData, description: val})} />
             </div>
           </div>
-
-          <div className="bg-white p-8 rounded-3xl border border-border space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Box className="w-4 h-4" /> Gợi ý kèm theo (Perfect Match)</h3>
-            <div className="space-y-2">
-              <Select onValueChange={val => !formData.perfect_match_ids.includes(val) && setFormData({...formData, perfect_match_ids: [...formData.perfect_match_ids, val]})}>
-                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Thêm sản phẩm phối cảnh..." /></SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {allProducts.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.perfect_match_ids.map(pid => {
-                  const p = allProducts.find(x => x.id === pid);
-                  return p ? <Badge key={pid} variant="secondary" className="gap-2 pl-3">{p.name}<button type="button" onClick={() => setFormData({...formData, perfect_match_ids: formData.perfect_match_ids.filter(x => x !== pid)})}><X className="w-3 h-3" /></button></Badge> : null;
-                })}
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="space-y-8">
@@ -255,9 +221,14 @@ export default function ProductForm() {
              <Label className="text-xs font-bold uppercase text-primary">Ảnh đại diện chính</Label>
              <ImageUpload value={formData.image_url} onChange={url => setFormData({...formData, image_url: url as string})} />
           </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Ruler className="w-4 h-4" /> Ảnh kích thước</h3>
+            <ImageUpload value={formData.dimension_image_url} onChange={url => setFormData({...formData, dimension_image_url: url as string})} />
+          </div>
           
           <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Bộ sưu tập ảnh (Gallery)</h3>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Bộ sưu tập ảnh</h3>
             <div className="grid grid-cols-3 gap-2 mb-3">
               {formData.gallery_urls.map((url, i) => (
                 <div key={i} className="relative aspect-square rounded-lg overflow-hidden group">
@@ -270,31 +241,20 @@ export default function ProductForm() {
           </div>
 
           <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Layers className="w-4 h-4" /> Thiết lập Marketing</h3>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Layers className="w-4 h-4" /> Marketing</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-                <div className="flex flex-col"><span className="text-xs font-bold uppercase">Sản phẩm Mới</span></div>
+                <span className="text-xs font-bold uppercase">Hàng Mới</span>
                 <Switch checked={formData.is_new} onCheckedChange={val => setFormData({...formData, is_new: val})} />
               </div>
               <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-                <div className="flex flex-col"><span className="text-xs font-bold uppercase">Flash Sale</span></div>
+                <span className="text-xs font-bold uppercase">Flash Sale</span>
                 <Switch checked={formData.is_sale} onCheckedChange={val => setFormData({...formData, is_sale: val})} />
               </div>
               <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
-                <div className="flex flex-col"><span className="text-xs font-bold uppercase">Nổi Bật (HOT)</span></div>
+                <span className="text-xs font-bold uppercase">Nổi Bật</span>
                 <Switch checked={formData.is_featured} onCheckedChange={val => setFormData({...formData, is_featured: val})} />
               </div>
-            </div>
-            
-            <div className="pt-4 border-t border-dashed space-y-4">
-               <div className="space-y-1">
-                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Lượt bán ảo</Label>
-                 <Input type="number" value={formData.fake_sold} onChange={e => setFormData({...formData, fake_sold: e.target.value})} className="h-10 rounded-lg" />
-               </div>
-               <div className="space-y-1">
-                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Đánh giá ảo</Label>
-                 <Input type="number" value={formData.fake_review_count} onChange={e => setFormData({...formData, fake_review_count: e.target.value})} className="h-10 rounded-lg" />
-               </div>
             </div>
           </div>
         </div>
