@@ -33,26 +33,51 @@ import { supabase } from "@/integrations/supabase/client";
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { motion } from "framer-motion";
-import { toast } from "sonner";
 
-const allMenuItems = [
-  { id: 'dashboard', title: "Tổng quan", icon: LayoutDashboard, href: "/admin" },
-  { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
-  { id: 'orders', title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
-  { id: 'products', title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
-  { id: 'attributes', title: "Thuộc tính SP", icon: ListFilter, href: "/admin/attributes" },
-  { id: 'categories', title: "Danh mục & Menu", icon: FolderTree, href: "/admin/categories" },
-  { id: 'marketing', title: "Marketing", icon: TrendingUp, href: "/admin/marketing" },
-  { id: 'reviews', title: "Đánh giá", icon: Star, href: "/admin/reviews" },
-  { id: 'pages', title: "Quản lý trang", icon: Files, href: "/admin/pages" },
-  { id: 'news', title: "Tin tức", icon: Newspaper, href: "/admin/news" },
-  { id: 'projects', title: "Dự án", icon: Briefcase, href: "/admin/projects" },
-  { id: 'design-requests', title: "Yêu cầu thiết kế", icon: LayoutGrid, href: "/admin/design-requests" },
-  { id: 'messages', title: "Tin nhắn", icon: MessageSquareText, href: "/admin/messages" },
-  { id: 'subscribers', title: "Người đăng ký", icon: Users, href: "/admin/subscribers" },
-  { id: 'theme', title: "Giao diện", icon: Palette, href: "/admin/theme" },
-  { id: 'settings', title: "Cấu hình", icon: Settings, href: "/admin/settings" },
-  { id: 'team', title: "Quản lý đội ngũ", icon: ShieldCheck, href: "/admin/team" },
+// Định nghĩa cấu trúc nhóm menu
+const menuGroups = [
+  {
+    label: "Tổng Quan",
+    items: [
+      { id: 'dashboard', title: "Dashboard", icon: LayoutDashboard, href: "/admin" },
+    ]
+  },
+  {
+    label: "Quản Lý Bán Hàng",
+    items: [
+      { id: 'orders', title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
+      { id: 'products', title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
+      { id: 'categories', title: "Danh mục", icon: FolderTree, href: "/admin/categories" },
+      { id: 'attributes', title: "Thuộc tính SP", icon: ListFilter, href: "/admin/attributes" },
+      { id: 'reviews', title: "Đánh giá", icon: Star, href: "/admin/reviews" },
+    ]
+  },
+  {
+    label: "Quản Trị Nội Dung (CMS)",
+    items: [
+      { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
+      { id: 'news', title: "Tin tức & Blog", icon: Newspaper, href: "/admin/news" },
+      { id: 'projects', title: "Dự án", icon: Briefcase, href: "/admin/projects" },
+      { id: 'pages', title: "Trang tĩnh", icon: Files, href: "/admin/pages" },
+    ]
+  },
+  {
+    label: "Khách Hàng & Marketing",
+    items: [
+      { id: 'marketing', title: "Marketing & SEO", icon: TrendingUp, href: "/admin/marketing" },
+      { id: 'subscribers', title: "Khách hàng", icon: Users, href: "/admin/subscribers" },
+      { id: 'design-requests', title: "Yêu cầu thiết kế", icon: LayoutGrid, href: "/admin/design-requests" },
+      { id: 'messages', title: "Tin nhắn hỗ trợ", icon: MessageSquareText, href: "/admin/messages" },
+    ]
+  },
+  {
+    label: "Hệ Thống",
+    items: [
+      { id: 'theme', title: "Giao diện", icon: Palette, href: "/admin/theme" },
+      { id: 'settings', title: "Cấu hình chung", icon: Settings, href: "/admin/settings" },
+      { id: 'team', title: "Phân quyền", icon: ShieldCheck, href: "/admin/team" },
+    ]
+  }
 ];
 
 export default function AdminLayout() {
@@ -79,7 +104,6 @@ export default function AdminLayout() {
       
       if (error) {
         console.error("Profile fetch error:", error);
-        // Nếu không có profile, thử tạo mới (cho trường hợp trigger thất bại)
         if (error.code === 'PGRST116') {
            await supabase.from('profiles').insert({ id: user.id, email: user.email, role: 'user' });
         }
@@ -158,39 +182,76 @@ export default function AdminLayout() {
     );
   }
 
-  // Lọc menu dựa trên quyền
-  const allowedMenuItems = allMenuItems.filter(item => {
-    if (role === 'admin') return true;
-    if (item.id === 'dashboard') return true;
-    if (item.id === 'team') return false; 
-    return permissions[item.id] === true;
-  });
+  // Lọc menu dựa trên quyền và nhóm lại
+  const filteredGroups = menuGroups.map(group => {
+    const allowedItems = group.items.filter(item => {
+      if (role === 'admin') return true;
+      if (item.id === 'dashboard') return true;
+      if (item.id === 'team') return false; 
+      return permissions[item.id] === true;
+    });
+    return { ...group, items: allowedItems };
+  }).filter(group => group.items.length > 0);
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-charcoal text-white transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:relative lg:translate-x-0`}>
-        <div className="h-20 flex items-center justify-between px-6 border-b border-gray-700/50">
-          <div className="flex flex-col"><span className="text-xl font-bold text-primary">OHOUSE</span><span className="text-[10px] text-gray-500 uppercase tracking-widest">{role} Portal</span></div>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-charcoal text-white transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:relative lg:translate-x-0 flex flex-col`}>
+        {/* Header Sidebar */}
+        <div className="h-20 flex items-center justify-between px-6 border-b border-gray-700/50 shrink-0">
+          <div className="flex flex-col">
+            <span className="text-xl font-bold text-primary">OHOUSE</span>
+            <span className="text-[10px] text-gray-500 uppercase tracking-widest">{role} Portal</span>
+          </div>
           <button className="lg:hidden" onClick={() => setIsSidebarOpen(false)}><X className="w-5 h-5" /></button>
         </div>
-        <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-160px)] custom-scrollbar">
-          {allowedMenuItems.map((item) => (
-            <Link key={item.href} to={item.href} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${location.pathname === item.href || (item.href !== "/admin" && location.pathname.startsWith(item.href)) ? "bg-primary text-white font-bold shadow-md" : "text-gray-400 hover:bg-gray-800"}`}>
-              <item.icon className="w-5 h-5" /><span className="text-sm">{item.title}</span>
-            </Link>
+
+        {/* Scrollable Menu */}
+        <nav className="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-6">
+          {filteredGroups.map((group, groupIdx) => (
+            <div key={groupIdx}>
+              {group.label && (
+                <h4 className="px-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">
+                  {group.label}
+                </h4>
+              )}
+              <div className="space-y-1">
+                {group.items.map((item) => (
+                  <Link 
+                    key={item.href} 
+                    to={item.href} 
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all ${
+                      location.pathname === item.href || (item.href !== "/admin" && location.pathname.startsWith(item.href)) 
+                        ? "bg-primary text-white font-bold shadow-md" 
+                        : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span className="text-sm">{item.title}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
-          {allowedMenuItems.length <= 1 && role === 'editor' && (
+
+          {filteredGroups.length === 0 && role === 'editor' && (
              <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 mt-4">
                 <p className="text-[10px] text-primary font-bold uppercase mb-2">Thông báo</p>
                 <p className="text-[11px] text-gray-400 leading-relaxed">Bạn chưa được cấp quyền truy cập mục nào. Vui lòng liên hệ Admin.</p>
              </div>
           )}
         </nav>
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700/50"><button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl w-full transition-colors font-bold text-xs uppercase"><LogOut className="w-5 h-5" /> Đăng xuất</button></div>
+
+        {/* Footer Sidebar */}
+        <div className="p-4 border-t border-gray-700/50 shrink-0">
+          <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl w-full transition-colors font-bold text-xs uppercase">
+            <LogOut className="w-5 h-5" /> Đăng xuất
+          </button>
+        </div>
       </aside>
       
+      {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        <header className="h-20 bg-white border-b flex items-center justify-between px-6 lg:px-8">
+        <header className="h-20 bg-white border-b flex items-center justify-between px-6 lg:px-8 shrink-0">
           <button className="lg:hidden p-2 -ml-2" onClick={() => setIsSidebarOpen(true)}><Menu className="w-6 h-6" /></button>
           <div className="hidden lg:block"></div>
           <div className="flex items-center gap-4">
@@ -203,7 +264,9 @@ export default function AdminLayout() {
             </div>
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-6 lg:p-8 bg-gray-50/50"><Outlet /></main>
+        <main className="flex-1 overflow-auto p-6 lg:p-8 bg-gray-50/50">
+          <Outlet />
+        </main>
       </div>
     </div>
   );
