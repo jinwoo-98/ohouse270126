@@ -85,17 +85,6 @@
     @apply text-primary font-bold underline underline-offset-4 transition-all hover:text-charcoal;
   }
 
-  /* QUILL EDITOR ALIGNMENT CLASSES */
-  .ql-align-center {
-    text-align: center;
-  }
-  .ql-align-right {
-    text-align: right;
-  }
-  .ql-align-justify {
-    text-align: justify;
-  }
-
   .dark {
     --background: 30 10% 8%;
     --foreground: 40 20% 95%;
@@ -134,6 +123,27 @@
     --sidebar-border: 30 15% 15%;
     --sidebar-ring: 38 65% 55%;
   }
+}
+
+/* QUILL EDITOR ALIGNMENT CLASSES - Cố định độ ưu tiên cao nhất */
+.ql-align-center {
+  text-align: center !important;
+}
+.ql-align-center img {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  display: block !important;
+}
+.ql-align-right {
+  text-align: right !important;
+}
+.ql-align-right img {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  display: block !important;
+}
+.ql-align-justify {
+  text-align: justify !important;
 }
 
 @layer base {
