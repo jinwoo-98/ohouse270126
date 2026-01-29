@@ -84,16 +84,20 @@ export function ReviewImageGallery({ reviews }: ReviewImageGalleryProps) {
       <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-none bg-transparent shadow-none flex items-center justify-center z-[200]">
           {selectedImage && (
-            <div className="relative group">
+            <div className="relative w-full h-full flex items-center justify-center p-4">
+              {/* Nút đóng cố định ở góc màn hình, tránh đè lên header */}
               <button 
                 onClick={() => setSelectedImage(null)}
-                className="absolute -top-12 right-0 p-2 text-white hover:text-primary transition-colors flex items-center gap-2 font-bold text-xs uppercase tracking-widest"
+                className="fixed top-6 right-6 md:top-10 md:right-10 p-3 bg-charcoal/60 backdrop-blur-md text-white rounded-full hover:bg-charcoal transition-all z-[210] shadow-elevated border border-white/20 group"
               >
-                Đóng <X className="w-5 h-5" />
+                <X className="w-6 h-6 group-hover:scale-110 transition-transform" />
               </button>
-              <img 
+              
+              <motion.img 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 src={selectedImage} 
-                className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl" 
+                className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10" 
                 alt="Enlarged review" 
               />
             </div>
