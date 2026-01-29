@@ -24,7 +24,6 @@ export default function ProductDetailPage() {
   const [categoryPath, setCategoryPath] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Data Sections
   const [reviews, setReviews] = useState<any[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
@@ -140,16 +139,17 @@ export default function ProductDetailPage() {
     setReviews(data || []);
   };
 
-  const handleSubmitReview = async (rating: number, comment: string, name: string) => {
+  const handleSubmitReview = async (rating: number, comment: string, name: string, imageUrl?: string) => {
     try {
       const { error } = await supabase.from('reviews').insert({
         product_id: product.id,
         rating,
         comment,
-        user_name: name
+        user_name: name,
+        image_url: imageUrl
       });
       if (error) throw error;
-      toast.success("Cảm ơn bạn đã đánh giá!");
+      toast.success("Cảm ơn bạn đã gửi đánh giá thực tế!");
       fetchReviews(product.id);
     } catch (e) {
       toast.error("Không thể gửi đánh giá.");
@@ -169,7 +169,6 @@ export default function ProductDetailPage() {
       <Header />
       
       <main className="flex-1">
-        {/* Breadcrumb */}
         <div className="bg-secondary/50 py-3 border-b border-border/40">
           <div className="container-luxury flex items-center gap-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
             <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
@@ -185,13 +184,11 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="container-luxury py-12">
-          {/* Top Section: Gallery & Summary Info */}
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 mb-24">
             <ProductGallery mainImage={product.image_url} galleryImages={product.gallery_urls} productName={product.name} />
             <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
           </div>
 
-          {/* Main Content Area */}
           <div className="max-w-6xl mx-auto space-y-24">
             
             <div id="description"><ProductDescription description={product.description} /></div>
@@ -208,27 +205,22 @@ export default function ProductDetailPage() {
 
             <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
 
-            {/* 4. Bộ sưu tập phối sẵn */}
             {perfectMatch.length > 0 && (
               <div id="inspiration">
                 <ProductHorizontalList products={perfectMatch} title="Bộ Sưu Tập Hoàn Hảo" />
               </div>
             )}
 
-            {/* 5. Gợi ý mua kèm */}
             {boughtTogether.length > 0 && (
               <ProductHorizontalList products={boughtTogether} title="Gợi Ý Mua Kèm" />
             )}
 
-            {/* 6. Sản phẩm tương tự */}
             <div id="related">
               <ProductHorizontalList products={similarProducts} title="Sản Phẩm Tương Tự" />
             </div>
 
-            {/* 7. Lịch sử xem */}
             <RecentlyViewed />
 
-            {/* 8. Chính sách Vận chuyển & Đổi trả */}
             <section id="shipping-info" className="py-16 border-t border-border/60">
               <div className="grid lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, Loader2, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, Loader2, AlertCircle, ChevronDown, ChevronUp, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -10,38 +10,27 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { ReviewItem } from "./ReviewItem";
 import { motion, AnimatePresence } from "framer-motion";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 interface ProductReviewsProps {
   reviews: any[];
   product: any;
   displayRating: number;
   displayReviewCount: number;
-  onSubmitReview: (rating: number, comment: string, name: string) => Promise<void>;
+  onSubmitReview: (rating: number, comment: string, name: string, imageUrl?: string) => Promise<void>;
 }
 
-/**
- * Component hiển thị số sao chuyên nghiệp.
- * Sử dụng clip-path để cắt chính xác phần màu vàng mà không làm méo icon.
- */
 export function StarRating({ rating, size = "w-4 h-4" }: { rating: number, size?: string }) {
   return (
     <div className="flex gap-1">
       {[...Array(5)].map((_, i) => {
-        // Tính toán phần trăm cần tô màu cho ngôi sao này (0 đến 1)
         const fillAmount = Math.max(0, Math.min(1, rating - i));
-        
         return (
           <div key={i} className={cn("relative shrink-0", size)}>
-            {/* Ngôi sao nền (Màu xám đậm hơn một chút để giữ rõ hình dạng) */}
             <Star className={cn("text-gray-300 fill-gray-300", size)} />
-            
-            {/* Ngôi sao tô màu vàng đè lên trên */}
             <Star 
               className={cn("absolute inset-0 text-amber-400 fill-amber-400 transition-all duration-300", size)} 
-              style={{ 
-                // Sử dụng clip-path inset để cắt từ bên phải vào, giữ nguyên hình dạng bên trái
-                clipPath: `inset(0 ${100 - fillAmount * 100}% 0 0)` 
-              }}
+              style={{ clipPath: `inset(0 ${100 - fillAmount * 100}% 0 0)` }}
             />
           </div>
         );
@@ -62,7 +51,7 @@ export function ProductReviews({
   const [isVerifying, setIsVerifying] = useState(false);
   const [customerName, setCustomerName] = useState("");
   
-  const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
+  const [newReview, setNewReview] = useState({ rating: 5, comment: "", image_url: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [showAll, setShowAll] = useState(false);
@@ -76,9 +65,11 @@ export function ProductReviews({
     
     setIsVerifying(true);
     try {
+      // Chỉ tìm các đơn hàng có trạng thái 'delivered' (Đã giao hàng)
       const { data: orders, error } = await supabase
         .from('orders')
-        .select('id, contact_phone, contact_email, order_items(product_id)')
+        .select('id, contact_phone, contact_email, status, order_items(product_id)')
+        .eq('status', 'delivered')
         .or(`contact_phone.eq.${verifyInfo},contact_email.eq.${verifyInfo}`);
 
       if (error) throw error;
@@ -88,14 +79,14 @@ export function ProductReviews({
       );
 
       if (hasBought) {
-        setCustomerName(verifyInfo.includes('@') ? verifyInfo.split('@')[0] : verifyInfo);
+        setCustomerName(verifyInfo.includes('@') ? verifyInfo.split('@')[0] : "Khách hàng");
         setStep('write');
-        toast.success("Xác thực thành công!");
+        toast.success("Xác thực thành công! Bạn có thể viết đánh giá.");
       } else {
-        toast.error("Không tìm thấy đơn hàng chứa sản phẩm này.");
+        toast.error("Bạn cần có đơn hàng 'Đã giao' chứa sản phẩm này để đánh giá.");
       }
     } catch (error) {
-      toast.error("Lỗi xác thực.");
+      toast.error("Lỗi xác thực hệ thống.");
     } finally {
       setIsVerifying(false);
     }
@@ -104,8 +95,8 @@ export function ProductReviews({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await onSubmitReview(newReview.rating, newReview.comment, customerName);
-    setNewReview({ rating: 5, comment: "" });
+    await onSubmitReview(newReview.rating, newReview.comment, customerName, newReview.image_url);
+    setNewReview({ rating: 5, comment: "", image_url: "" });
     setStep('verify');
     setIsSubmitting(false);
   };
@@ -184,7 +175,7 @@ export function ProductReviews({
               <form onSubmit={handleVerify} className="space-y-5">
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10 text-[11px] text-taupe mb-4 flex gap-3">
                   <AlertCircle className="w-4 h-4 shrink-0 text-primary" />
-                  <p>Nhập SĐT hoặc Email đã đặt hàng để đánh giá của bạn được hiển thị ưu tiên.</p>
+                  <p>Nhập SĐT hoặc Email đã mua hàng thành công để bắt đầu đánh giá.</p>
                 </div>
                 <Input 
                   value={verifyInfo} 
@@ -194,13 +185,13 @@ export function ProductReviews({
                   required
                 />
                 <Button type="submit" className="w-full btn-hero h-12 shadow-gold" disabled={isVerifying}>
-                  {isVerifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "XÁC THỰC NGAY"}
+                  {isVerifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "XÁC THỰC ĐƠN HÀNG"}
                 </Button>
               </form>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="text-center">
-                  <Badge className="bg-primary/20 text-primary border-none mb-4">Chào {customerName}</Badge>
+                  <Badge className="bg-primary/20 text-primary border-none mb-4">Người mua: {customerName}</Badge>
                   <div className="flex justify-center gap-2 mb-4">
                     {[1, 2, 3, 4, 5].map((i) => (
                       <button key={i} type="button" onClick={() => setNewReview({ ...newReview, rating: i })}>
@@ -209,16 +200,27 @@ export function ProductReviews({
                     ))}
                   </div>
                 </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-taupe tracking-widest flex items-center gap-2">
+                    <ImageIcon className="w-3 h-3" /> Ảnh thực tế (Tùy chọn)
+                  </Label>
+                  <ImageUpload 
+                    value={newReview.image_url} 
+                    onChange={(url) => setNewReview({ ...newReview, image_url: url as string })} 
+                  />
+                </div>
+
                 <Textarea 
-                  placeholder="Cảm nhận của bạn về sản phẩm..." 
+                  placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..." 
                   rows={4} 
                   className="bg-white/5 text-cream border-white/10" 
                   value={newReview.comment} 
                   onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })} 
                   required
                 />
-                <Button type="submit" className="w-full btn-hero h-12" disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "GỬI ĐÁNH GIÁ"}
+                <Button type="submit" className="w-full btn-hero h-12 shadow-gold" disabled={isSubmitting}>
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "GỬI ĐÁNH GIÁ THỰC TẾ"}
                 </Button>
               </form>
             )}
