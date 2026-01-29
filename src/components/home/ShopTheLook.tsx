@@ -124,7 +124,7 @@ export function ShopTheLook() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
-                className="relative aspect-[4/3] md:aspect-[21/9] w-full group" 
+                className="relative aspect-square md:aspect-[16/8] w-full group" 
               >
                 <img
                   src={activeLook.image_url}
@@ -189,7 +189,7 @@ export function ShopTheLook() {
                 </div>
               </motion.div>
             ) : (
-              <div className="aspect-[21/9] flex items-center justify-center text-muted-foreground italic">
+              <div className="aspect-[16/8] flex items-center justify-center text-muted-foreground italic">
                 Đang cập nhật hình ảnh không gian cho danh mục này...
               </div>
             )}
