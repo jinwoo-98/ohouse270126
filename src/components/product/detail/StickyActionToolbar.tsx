@@ -17,7 +17,7 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   const navItems = [
-    { label: "Chi tiết", target: "description" },
+    { label: "Chi tiết", target: "top" },
     { label: "Đánh giá", target: "reviews" },
     { label: "Phối đồ", target: "inspiration" },
     { label: "Gợi ý", target: "related" },
@@ -32,8 +32,13 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
+  const scrollToSection = (target: string) => {
+    if (target === "top") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    
+    const element = document.getElementById(target);
     if (element) {
       const offset = 100;
       const bodyRect = document.body.getBoundingClientRect().top;
@@ -56,7 +61,6 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
       isVisible ? "translate-y-0" : "-translate-y-full"
     )}>
       <div className="container-luxury h-16 md:h-20 flex items-center justify-between gap-4">
-        {/* Left Side: Navigation Tabs */}
         <div className="hidden md:flex items-center gap-1 lg:gap-4">
           {navItems.map((item) => (
             <button
@@ -70,13 +74,11 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
           ))}
         </div>
 
-        {/* Mobile View */}
         <div className="md:hidden flex items-center gap-2">
            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">OHOUSE Luxury</span>
            <ChevronDown className="w-3 h-3 text-primary animate-bounce" />
         </div>
 
-        {/* Right Side: Price + Wishlist + Cart */}
         <div className="flex items-center gap-3 md:gap-6">
           <div className="text-right hidden sm:block">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-1">Giá ưu đãi</p>
@@ -92,7 +94,6 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
                   ? "bg-primary/5 border-primary text-primary shadow-sm" 
                   : "border-border hover:border-primary/40 bg-white"
               )}
-              title="Thêm vào yêu thích"
             >
               <Heart className={cn("w-4 h-4 md:w-5 md:h-5", isInWishlist(product.id) && "fill-current")} />
             </button>
