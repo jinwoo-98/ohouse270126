@@ -138,13 +138,10 @@ export default function MarketingTools() {
 
       // Phân bổ độ dài thực tế v3: 40% ngắn, 45% trung bình, 15% dài
       if (rand < 0.4) {
-        // Ngắn (Outro + Flair)
         finalComment = `${getRandomItem(COMPONENT_POOLS.outro)}${getRandomItem(COMPONENT_POOLS.flair)}`;
       } else if (rand < 0.85) {
-        // Trung bình (Intro + Body + Outro)
         finalComment = `${getRandomItem(COMPONENT_POOLS.intro)} ${getRandomItem(bodyPool)} ${getRandomItem(COMPONENT_POOLS.outro)}`;
       } else {
-        // Dài (Intro + Body + Body Generic + Outro + Flair)
         finalComment = `${getRandomItem(COMPONENT_POOLS.intro)} ${getRandomItem(bodyPool)} ${getRandomItem(COMPONENT_POOLS.body_generic)} ${getRandomItem(COMPONENT_POOLS.outro)}${getRandomItem(COMPONENT_POOLS.flair)}`;
       }
 
@@ -161,6 +158,7 @@ export default function MarketingTools() {
   const handleBulkUpdate = async () => {
     if (!confirm("Hệ thống sẽ tính toán số liệu ngẫu nhiên cho từng sản phẩm. Tiếp tục?")) return;
     
+    const toastId = toast.loading("Đang tính toán và cập nhật chỉ số cho các sản phẩm...");
     setLoading(true);
     try {
       let query = supabase.from('products').select('id, fake_sold');
@@ -168,7 +166,10 @@ export default function MarketingTools() {
       else if (selectionType === 'product' && targetId !== 'all') query = query.eq('id', targetId);
 
       const { data: products } = await query;
-      if (!products || products.length === 0) { toast.info("Không tìm thấy sản phẩm."); return; }
+      if (!products || products.length === 0) { 
+        toast.error("Không tìm thấy sản phẩm phù hợp.", { id: toastId }); 
+        return; 
+      }
 
       const filtered = updateZeroOnly ? products.filter(p => !p.fake_sold || p.fake_sold === 0) : products;
 
@@ -182,14 +183,19 @@ export default function MarketingTools() {
       });
 
       await Promise.all(promises);
-      toast.success(`Đã cập nhật ${filtered.length} sản phẩm.`);
-    } catch (e: any) { toast.error(e.message); } finally { setLoading(false); }
+      toast.success(`Thành công! Đã cập nhật chỉ số ảo cho ${filtered.length} sản phẩm.`, { id: toastId });
+    } catch (e: any) { 
+      toast.error("Đã có lỗi xảy ra: " + e.message, { id: toastId }); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleGenerateReviews = async () => {
     const daysBack = parseInt(stats.review_days_back) || 60;
     if (!confirm(`Xác nhận thực hiện? Nếu chọn 'Xóa cũ', toàn bộ đánh giá trước đó sẽ biến mất.`)) return;
 
+    const toastId = toast.loading("Khởi động Engine v2: Đang phân tích danh mục sản phẩm...");
     setReviewLoading(true);
     try {
       let query = supabase.from('products').select('id, name, fake_review_count, fake_rating');
@@ -197,16 +203,21 @@ export default function MarketingTools() {
       else if (selectionType === 'product' && targetId !== 'all') query = query.eq('id', targetId);
 
       const { data: products } = await query;
-      if (!products || products.length === 0) { toast.info("Không có sản phẩm mục tiêu."); return; }
+      if (!products || products.length === 0) { 
+        toast.error("Không tìm thấy sản phẩm mục tiêu để sinh nội dung.", { id: toastId }); 
+        return; 
+      }
+
+      toast.loading(`Đang xử lý ${products.length} sản phẩm...`, { id: toastId });
 
       for (const p of products) {
-        // 1. Thực hiện XÓA nếu yêu cầu (Cần đảm bảo SQL Policy đã được chạy)
+        // 1. Thực hiện XÓA nếu yêu cầu
         if (deleteOldReviews) {
+          toast.loading(`Đang làm sạch dữ liệu cũ cho: ${p.name}...`, { id: toastId });
           const { error: delError } = await supabase.from('reviews').delete().eq('product_id', p.id);
           if (delError) {
              console.error("Lỗi xóa đánh giá:", delError);
-             toast.error(`Không thể xóa đánh giá của SP: ${p.name}. Kiểm tra SQL Policy.`);
-             continue; // Bỏ qua sản phẩm này nếu không thể xóa để tránh cộng dồn
+             continue; 
           }
         }
 
@@ -231,13 +242,14 @@ export default function MarketingTools() {
         }
 
         if (newReviews.length > 0) {
+          toast.loading(`Đang chèn ${newReviews.length} đánh giá mới cho: ${p.name}...`, { id: toastId });
           const { error: insError } = await supabase.from('reviews').insert(newReviews);
           if (insError) {
             console.error("Lỗi chèn đánh giá:", insError);
             continue;
           }
           
-          // 3. ĐẾM LẠI THỰC TẾ TRONG DB ĐỂ CẬP NHẬT COL FAKE_REVIEW_COUNT CHO CHUẨN
+          // 3. Đồng bộ lại cột hiển thị
           const { count: realTotal } = await supabase
             .from('reviews')
             .select('*', { count: 'exact', head: true })
@@ -249,8 +261,12 @@ export default function MarketingTools() {
           }).eq('id', p.id);
         }
       }
-      toast.success(`Đã xử lý và đồng bộ số liệu cho ${products.length} sản phẩm thành công!`);
-    } catch (e: any) { toast.error(e.message); } finally { setReviewLoading(false); }
+      toast.success(`Hoàn tất! Đã sinh nội dung và đồng bộ số liệu cho ${products.length} sản phẩm.`, { id: toastId });
+    } catch (e: any) { 
+      toast.error("Lỗi Engine: " + e.message, { id: toastId }); 
+    } finally { 
+      setReviewLoading(false); 
+    }
   };
 
   return (
