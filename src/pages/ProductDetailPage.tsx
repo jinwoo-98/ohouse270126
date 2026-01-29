@@ -169,25 +169,23 @@ export default function ProductDetailPage() {
       <Header />
       
       <main className="flex-1">
-        <div className="bg-secondary/50 py-3 border-b border-border/40">
-          <div className="container-luxury flex items-center gap-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-            <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
+        <div className="bg-secondary/50 py-3 border-b border-border/40 w-full overflow-hidden">
+          <div className="container-luxury flex flex-wrap items-center gap-y-2 gap-x-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            <Link to="/" className="hover:text-primary transition-colors shrink-0">Trang chủ</Link>
             {categoryPath.map((cat, idx) => (
-              <div key={idx} className="flex items-center gap-2">
-                <ChevronRight className="w-3 h-3" />
+              <div key={idx} className="flex items-center gap-2 shrink-0">
+                <ChevronRight className="w-3 h-3 opacity-50" />
                 <Link to={`/${cat.slug}`} className="hover:text-primary transition-colors">{cat.name}</Link>
               </div>
             ))}
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-foreground font-bold line-clamp-1">{product.name}</span>
+            <ChevronRight className="w-3 h-3 opacity-50 shrink-0" />
+            <span className="text-foreground font-bold truncate max-w-[150px] sm:max-w-none">{product.name}</span>
           </div>
         </div>
 
         <div className="container-luxury py-12">
-          {/* Sử dụng khung max-w-6xl đồng nhất cho toàn bộ trang */}
           <div className="max-w-6xl mx-auto space-y-24">
             
-            {/* Top Section: Gallery & Info */}
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
               <ProductGallery mainImage={product.image_url} galleryImages={product.gallery_urls} productName={product.name} />
               <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />

@@ -26,10 +26,10 @@ export function Header() {
   }, []);
 
   return (
-    <header className="relative z-50 bg-card shadow-sm">
+    <header className="relative z-50 bg-card shadow-sm w-full overflow-x-clip">
       <HeaderTopBanner />
 
-      <div className="bg-card">
+      <div className="bg-card w-full">
         <div className="container-luxury">
           <div className="flex items-center justify-between h-12 md:h-14 gap-4">
             <HeaderSearch onOpenMobileMenu={() => setIsMobileMenuOpen(true)} />
