@@ -10,8 +10,7 @@ import {
   Save,
   User,
   MessageSquare,
-  ImageIcon,
-  AlertCircle
+  ImageIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,20 +18,11 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 export default function ReviewManager() {
   const [reviews, setReviews] = useState<any[]>([]);
@@ -44,7 +34,7 @@ export default function ReviewManager() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // State for Custom Confirmation
+  // State for ConfirmDialog
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -254,11 +244,7 @@ export default function ReviewManager() {
                 <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
                   <Edit className="w-5 h-5 text-primary" />
                 </div>
-                <div>
-                  <DialogTitle className="flex items-center gap-3 text-lg font-bold">
-                    Chỉnh Sửa Đánh Giá
-                  </DialogTitle>
-                </div>
+                <DialogTitle className="text-lg font-bold">Chỉnh Sửa Đánh Giá</DialogTitle>
               </div>
             </DialogHeader>
           </div>
@@ -335,31 +321,14 @@ export default function ReviewManager() {
         </DialogContent>
       </Dialog>
 
-      {/* Professional Confirmation Dialog */}
-      <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
-        <AlertDialogContent className="rounded-[32px] border-none p-0 overflow-hidden shadow-elevated">
-          <div className="bg-destructive/10 p-8 flex flex-col items-center text-center">
-             <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center text-destructive mb-4">
-                <AlertCircle className="w-8 h-8" />
-             </div>
-             <AlertDialogHeader>
-               <AlertDialogTitle className="text-xl font-bold text-charcoal uppercase tracking-widest">Xác nhận xóa đánh giá</AlertDialogTitle>
-               <AlertDialogDescription className="text-muted-foreground mt-2">
-                 Hành động này không thể hoàn tác. Đánh giá của khách hàng sẽ bị xóa vĩnh viễn khỏi hệ thống.
-               </AlertDialogDescription>
-             </AlertDialogHeader>
-          </div>
-          <AlertDialogFooter className="p-6 bg-gray-50 flex gap-3 sm:justify-center">
-            <AlertDialogCancel className="rounded-xl h-12 px-8 font-bold text-xs uppercase border-border/60">Quay lại</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete}
-              className="rounded-xl h-12 px-8 font-bold text-xs uppercase bg-destructive hover:bg-destructive/90 text-white shadow-lg"
-            >
-              Vẫn xóa đánh giá
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog 
+        isOpen={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa đánh giá"
+        description="Hành động này sẽ xóa vĩnh viễn đánh giá của khách hàng khỏi hệ thống và không thể hoàn tác."
+        confirmText="Vẫn xóa đánh giá"
+      />
     </div>
   );
 }

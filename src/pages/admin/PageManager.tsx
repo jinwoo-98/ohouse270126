@@ -7,17 +7,20 @@ import {
   Search, 
   Loader2, 
   ExternalLink,
-  Plus
+  Plus,
+  Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 export default function PageManager() {
   const [pages, setPages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPages();
@@ -28,6 +31,21 @@ export default function PageManager() {
     const { data } = await supabase.from('site_pages').select('*').order('category');
     setPages(data || []);
     setLoading(false);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const toastId = toast.loading("Đang xóa trang...");
+    try {
+      const { error } = await supabase.from('site_pages').delete().eq('id', deleteId);
+      if (error) throw error;
+      setPages(pages.filter(p => p.id !== deleteId));
+      toast.success("Đã xóa trang thành công.", { id: toastId });
+    } catch (e: any) {
+      toast.error("Lỗi xóa: " + e.message, { id: toastId });
+    } finally {
+      setDeleteId(null);
+    }
   };
 
   const filtered = pages.filter(p => p.title.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -78,12 +96,15 @@ export default function PageManager() {
                     <Badge variant="secondary" className="capitalize">{page.category}</Badge>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1">
                       <Button variant="ghost" size="icon" asChild title="Xem trang">
                         <Link to={`/ho-tro/${page.slug}`} target="_blank"><ExternalLink className="w-4 h-4" /></Link>
                       </Button>
                       <Button variant="ghost" size="icon" asChild className="text-blue-600">
                         <Link to={`/admin/pages/edit/${page.id}`}><Edit className="w-4 h-4" /></Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(page.id)}>
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </td>
@@ -93,6 +114,15 @@ export default function PageManager() {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa trang"
+        description="Toàn bộ nội dung của trang này sẽ bị xóa vĩnh viễn. Hành động này không thể hoàn tác."
+        confirmText="Vẫn xóa trang"
+      />
     </div>
   );
 }

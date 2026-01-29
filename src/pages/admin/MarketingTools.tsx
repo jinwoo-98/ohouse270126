@@ -25,22 +25,13 @@ import {
   SelectGroup,
   SelectLabel
 } from "@/components/ui/select";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { mainCategories, productCategories } from "@/constants/header-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
 const VN_LAST_NAMES = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ", "Đặng", "Bùi", "Đỗ", "Hồ", "Ngô", "Dương", "Lý"];
 const VN_MID_NAMES = ["Văn", "Thị", "Hồng", "Minh", "Anh", "Quang", "Xuân", "Thanh", "Đức", "Trọng", "Kim", "Ngọc"];
@@ -77,7 +68,7 @@ const COMPONENT_POOLS = {
     "Giường chắc chắn lắm nhen, lắp xong nằm thử thấy êm ru ko bị kêu cọt kẹt như giường cũ. Đầu giường bọc da cao cấp nhìn rất luxury, tựa lưng đọc sách phê pha.",
     "Mẫu giường này đẹp mê mẩn luôn mng ạ, phối màu kem nhìn nhã nhặn cực kỳ. Giát giường nan cong thông minh nằm thik lắm, lưng ko bị đau mỏi tí nào hết.",
     "Gỗ sồi Mỹ tự nhiên có khác, vân gỗ đẹp mà mùi thơm nhẹ nhàng lắm. Khung giường dày dặn, chịu lực tốt. Shop giao hàng đúng hẹn, lắp đặt nhanh gọn lẹ.",
-    "Nệm nằm vừa vặn, ko bị hở góc. Rất hài lòng với độ hoàn thiện của sản phẩm bên Ohouse.",
+    "Nệm nằm vừa vặn, ko bị hở đóng. Rất hài lòng với độ hoàn thiện của sản phẩm bên Ohouse.",
     "Thiết kế Ergonomic nằm rất thoải mái, độ cao giường vừa phải. Vải bọc đầu giường xịn mịn, ko bị xù lông hay bám bụi nhiều đâu nhen mng."
   ],
   body_lighting: [
@@ -117,7 +108,7 @@ export default function MarketingTools() {
   const [updateZeroOnly, setUpdateZeroOnly] = useState(false);
   const [deleteOldReviews, setDeleteOldReviews] = useState(true);
 
-  // AlertDialog states
+  // State for ConfirmDialog
   const [confirmType, setConfirmType] = useState<'stats' | 'reviews' | null>(null);
 
   const [stats, setStats] = useState({
@@ -390,44 +381,25 @@ export default function MarketingTools() {
         </TabsContent>
       </Tabs>
 
-      {/* Professional Confirmation Dialogs */}
-      <AlertDialog open={!!confirmType} onOpenChange={(open) => !open && setConfirmType(null)}>
-        <AlertDialogContent className="rounded-[32px] border-none p-0 overflow-hidden shadow-elevated">
-          <div className={cn(
-            "p-8 flex flex-col items-center text-center",
-            confirmType === 'reviews' ? "bg-charcoal text-cream" : "bg-primary/10 text-charcoal"
-          )}>
-             <div className={cn(
-               "w-16 h-16 rounded-full flex items-center justify-center mb-4",
-               confirmType === 'reviews' ? "bg-primary/20 text-primary" : "bg-primary text-white"
-             )}>
-                {confirmType === 'reviews' ? <HelpCircle className="w-8 h-8" /> : <TrendingUp className="w-8 h-8" />}
-             </div>
-             <AlertDialogHeader>
-               <AlertDialogTitle className="text-xl font-bold uppercase tracking-widest">
-                 {confirmType === 'reviews' ? 'Xác nhận sinh đánh giá' : 'Cập nhật chỉ số ảo'}
-               </AlertDialogTitle>
-               <AlertDialogDescription className={cn(
-                 "mt-2",
-                 confirmType === 'reviews' ? "text-taupe" : "text-muted-foreground"
-               )}>
-                 {confirmType === 'reviews' 
-                   ? `Hệ thống sẽ tự động viết nội dung thực tế cho các sản phẩm mục tiêu. ${deleteOldReviews ? 'Dữ liệu cũ sẽ bị xóa sạch.' : ''}`
-                   : 'Các chỉ số lượt bán, đánh giá và sao sẽ được thay đổi ngẫu nhiên theo cấu hình của bạn.'}
-               </AlertDialogDescription>
-             </AlertDialogHeader>
-          </div>
-          <AlertDialogFooter className="p-6 bg-gray-50 flex gap-3 sm:justify-center">
-            <AlertDialogCancel className="rounded-xl h-12 px-8 font-bold text-xs uppercase border-border/60">Hủy bỏ</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmType === 'reviews' ? handleGenerateReviews : handleBulkUpdate}
-              className="rounded-xl h-12 px-8 font-bold text-xs uppercase bg-primary hover:bg-primary/90 text-white shadow-lg"
-            >
-              Xác nhận thực hiện
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog 
+        isOpen={confirmType === 'stats'}
+        onClose={() => setConfirmType(null)}
+        onConfirm={handleBulkUpdate}
+        variant="warning"
+        title="Xác nhận cập nhật chỉ số"
+        description="Toàn bộ sản phẩm được chọn sẽ thay đổi các chỉ số lượt bán và đánh giá. Bạn có chắc chắn muốn thực hiện thay đổi hàng loạt này không?"
+        confirmText="Xác nhận cập nhật"
+      />
+
+      <ConfirmDialog 
+        isOpen={confirmType === 'reviews'}
+        onClose={() => setConfirmType(null)}
+        onConfirm={handleGenerateReviews}
+        variant="warning"
+        title="Xác nhận sinh nội dung AI"
+        description={`Hệ thống sẽ tự động tạo các bài đánh giá thực tế. ${deleteOldReviews ? 'Dữ liệu đánh giá cũ sẽ bị xóa hoàn toàn.' : ''} Quá trình này có thể mất vài phút.`}
+        confirmText="Bắt đầu Engine Engine v2"
+      />
     </div>
   );
 }
