@@ -15,7 +15,6 @@ import {
   SelectGroup,
   SelectLabel
 } from "@/components/ui/select";
-import { mainCategories } from "@/constants/header-data";
 
 export function TrendingKeywordsManager() {
   const [keywords, setKeywords] = useState<any[]>([]);
@@ -29,7 +28,6 @@ export function TrendingKeywordsManager() {
   }, []);
 
   const fetchKeywords = async () => {
-    // Fetch keywords with category info
     const { data } = await supabase
       .from('trending_keywords')
       .select('*, categories(name)')
@@ -60,7 +58,6 @@ export function TrendingKeywordsManager() {
     fetchKeywords();
   };
 
-  // Group categories for select
   const parentCats = dbCategories.filter(c => !c.parent_id);
 
   return (
