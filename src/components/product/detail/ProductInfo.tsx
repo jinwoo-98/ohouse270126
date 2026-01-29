@@ -1,4 +1,3 @@
-Actions Row -> Collapsible Description -> Dimensions -> Collapsible Specs.">
 import { useState, useEffect, useMemo } from "react";
 import { 
   Star, Minus, Plus, ShoppingBag, Heart, 
@@ -11,6 +10,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { cn, formatPrice } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { toast } from "sonner";
 
 interface ProductInfoProps {
   product: any;
