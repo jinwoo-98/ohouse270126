@@ -5,7 +5,8 @@ import {
   Trash2, 
   Loader2, 
   Star, 
-  ExternalLink
+  ExternalLink,
+  AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,36 +27,29 @@ export default function ReviewManager() {
   const fetchReviews = async () => {
     setLoading(true);
     try {
-      // Sau khi đã chạy SQL tạo FK, query này sẽ lấy được thông tin product
+      // Truy vấn lấy cả thông tin sản phẩm
       const { data, error } = await supabase
         .from('reviews')
-        .select(`
-          *,
-          products (
-            name,
-            image_url,
-            slug
-          )
-        `)
+        .select('*, products(name, image_url, slug)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setReviews(data || []);
     } catch (error: any) {
-      console.error("Lỗi tải đánh giá:", error);
-      toast.error("Không thể tải danh sách đánh giá.");
+      console.error("Lỗi:", error);
+      toast.error("Lỗi tải danh sách: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) return;
+    if (!confirm("Xóa đánh giá này?")) return;
     try {
       const { error } = await supabase.from('reviews').delete().eq('id', id);
       if (error) throw error;
       setReviews(reviews.filter(r => r.id !== id));
-      toast.success("Đã xóa đánh giá.");
+      toast.success("Đã xóa.");
     } catch (error: any) {
       toast.error("Lỗi xóa: " + error.message);
     }
@@ -69,7 +63,6 @@ export default function ReviewManager() {
       productName.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesRating = ratingFilter === "all" || r.rating.toString() === ratingFilter;
-
     return matchesSearch && matchesRating;
   });
 
@@ -77,15 +70,15 @@ export default function ReviewManager() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Quản Lý Đánh Giá</h1>
-        <p className="text-muted-foreground text-sm">Kiểm duyệt ý kiến khách hàng về sản phẩm.</p>
+        <p className="text-muted-foreground text-sm">Danh sách ý kiến phản hồi từ khách hàng.</p>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b border-border bg-gray-50/50 flex flex-col sm:flex-row gap-4">
+        <div className="p-4 border-b bg-gray-50/50 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
-              placeholder="Tìm theo nội dung, tên khách, sản phẩm..." 
+              placeholder="Tìm kiếm..." 
               className="pl-10 bg-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -97,11 +90,11 @@ export default function ReviewManager() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tất cả số sao</SelectItem>
-              <SelectItem value="5">5 Sao (Tuyệt vời)</SelectItem>
-              <SelectItem value="4">4 Sao (Tốt)</SelectItem>
-              <SelectItem value="3">3 Sao (Bình thường)</SelectItem>
-              <SelectItem value="2">2 Sao (Tệ)</SelectItem>
-              <SelectItem value="1">1 Sao (Rất tệ)</SelectItem>
+              <SelectItem value="5">5 Sao</SelectItem>
+              <SelectItem value="4">4 Sao</SelectItem>
+              <SelectItem value="3">3 Sao</SelectItem>
+              <SelectItem value="2">2 Sao</SelectItem>
+              <SelectItem value="1">1 Sao</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -109,7 +102,7 @@ export default function ReviewManager() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50 text-[10px] uppercase tracking-widest font-bold text-muted-foreground border-b">
+              <tr className="bg-gray-50 text-[10px] uppercase font-bold text-muted-foreground border-b">
                 <th className="px-6 py-4">Sản phẩm</th>
                 <th className="px-6 py-4">Khách hàng</th>
                 <th className="px-6 py-4">Đánh giá</th>
@@ -117,23 +110,29 @@ export default function ReviewManager() {
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y">
               {loading ? (
                 <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground">Không tìm thấy đánh giá nào.</td></tr>
+                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground italic">Không có đánh giá nào được tìm thấy.</td></tr>
               ) : filtered.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50/50">
-                  <td className="px-6 py-4 max-w-[200px]">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0 border">
-                        {item.products?.image_url && <img src={item.products.image_url} className="w-full h-full object-cover" />}
+                <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="px-6 py-4 max-w-[220px]">
+                    {item.products ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0 border">
+                          <img src={item.products.image_url} className="w-full h-full object-cover" />
+                        </div>
+                        <Link to={`/san-pham/${item.products.slug}`} target="_blank" className="text-xs font-bold hover:text-primary truncate block">
+                          {item.products.name}
+                        </Link>
                       </div>
-                      <Link to={`/san-pham/${item.products?.slug || item.product_id}`} target="_blank" className="text-xs font-bold hover:text-primary truncate block">
-                        {item.products?.name || "Sản phẩm không xác định"}
-                        <ExternalLink className="w-3 h-3 inline ml-1 opacity-50" />
-                      </Link>
-                    </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-destructive">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span className="text-[10px] font-bold">Lỗi liên kết SP</span>
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-sm font-bold text-charcoal">{item.user_name || "Ẩn danh"}</p>
@@ -147,12 +146,10 @@ export default function ReviewManager() {
                     </div>
                   </td>
                   <td className="px-6 py-4 max-w-[300px]">
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2" title={item.comment}>
-                      {item.comment}
-                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 italic">"{item.comment}"</p>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-muted-foreground hover:text-destructive">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </td>
