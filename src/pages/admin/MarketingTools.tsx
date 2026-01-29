@@ -136,11 +136,11 @@ export default function MarketingTools() {
       let finalComment = "";
       const rand = Math.random();
 
-      // Phân bổ độ dài thực tế: 30% ngắn, 50% trung bình, 20% dài
-      if (rand < 0.3) {
+      // Phân bổ độ dài thực tế v3: 40% ngắn, 45% trung bình, 15% dài
+      if (rand < 0.4) {
         // Ngắn (Outro + Flair)
         finalComment = `${getRandomItem(COMPONENT_POOLS.outro)}${getRandomItem(COMPONENT_POOLS.flair)}`;
-      } else if (rand < 0.8) {
+      } else if (rand < 0.85) {
         // Trung bình (Intro + Body + Outro)
         finalComment = `${getRandomItem(COMPONENT_POOLS.intro)} ${getRandomItem(bodyPool)} ${getRandomItem(COMPONENT_POOLS.outro)}`;
       } else {
@@ -188,7 +188,7 @@ export default function MarketingTools() {
 
   const handleGenerateReviews = async () => {
     const daysBack = parseInt(stats.review_days_back) || 60;
-    if (!confirm(`Xác nhận sinh nội dung đánh giá thực tế trong khoảng ${daysBack} ngày qua? Hệ thống sẽ ghi đè số liệu hiển thị để khớp tuyệt đối.`)) return;
+    if (!confirm(`Xác nhận thực hiện? Nếu chọn 'Xóa cũ', toàn bộ đánh giá trước đó sẽ biến mất.`)) return;
 
     setReviewLoading(true);
     try {
@@ -197,17 +197,21 @@ export default function MarketingTools() {
       else if (selectionType === 'product' && targetId !== 'all') query = query.eq('id', targetId);
 
       const { data: products } = await query;
-      if (!products || products.length === 0) { toast.info("Không tìm thấy sản phẩm mục tiêu."); return; }
+      if (!products || products.length === 0) { toast.info("Không có sản phẩm mục tiêu."); return; }
 
       for (const p of products) {
-        // Luôn tính toán số lượng mới dựa trên config
-        const countToGenerate = getRandomInt(parseInt(stats.min_reviews), parseInt(stats.max_reviews));
-
+        // 1. Thực hiện XÓA nếu yêu cầu (Cần đảm bảo SQL Policy đã được chạy)
         if (deleteOldReviews) {
-          // XÓA TRIỆT ĐỂ dữ liệu cũ trước khi chèn mới
-          await supabase.from('reviews').delete().eq('product_id', p.id);
+          const { error: delError } = await supabase.from('reviews').delete().eq('product_id', p.id);
+          if (delError) {
+             console.error("Lỗi xóa đánh giá:", delError);
+             toast.error(`Không thể xóa đánh giá của SP: ${p.name}. Kiểm tra SQL Policy.`);
+             continue; // Bỏ qua sản phẩm này nếu không thể xóa để tránh cộng dồn
+          }
         }
 
+        // 2. Sinh dữ liệu mới
+        const countToGenerate = getRandomInt(parseInt(stats.min_reviews), parseInt(stats.max_reviews));
         const comments = getDiverseComments(p.name, countToGenerate);
         const newReviews = [];
         
@@ -220,16 +224,20 @@ export default function MarketingTools() {
           newReviews.push({
             product_id: p.id,
             user_name: generateVnName(),
-            rating: Math.random() > 0.8 ? 4 : 5, // Tỉ lệ 80% là 5 sao
+            rating: Math.random() > 0.8 ? 4 : 5, 
             comment: comments[i], 
             created_at: date.toISOString()
           });
         }
 
         if (newReviews.length > 0) {
-          await supabase.from('reviews').insert(newReviews);
+          const { error: insError } = await supabase.from('reviews').insert(newReviews);
+          if (insError) {
+            console.error("Lỗi chèn đánh giá:", insError);
+            continue;
+          }
           
-          // ĐẾM LẠI THỰC TẾ TRONG DB ĐỂ CẬP NHẬT COL FAKE_REVIEW_COUNT
+          // 3. ĐẾM LẠI THỰC TẾ TRONG DB ĐỂ CẬP NHẬT COL FAKE_REVIEW_COUNT CHO CHUẨN
           const { count: realTotal } = await supabase
             .from('reviews')
             .select('*', { count: 'exact', head: true })
@@ -331,7 +339,7 @@ export default function MarketingTools() {
                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2"><MessageSquareQuote className="w-5 h-5" /> 3. Nội dung đánh giá thực tế (Engine v2)</h3>
                 
                 <div className="space-y-4 mb-8">
-                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sinh nội dung dựa trên 3 cấp độ: Ngắn (30%), Trung bình (50%) và Dài (20%) để đảm bảo tính tự nhiên tối đa.</p>
+                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sinh nội dung dựa trên 3 cấp độ: Ngắn (40%), Trung bình (45%) và Dài (15%) để đảm bảo tính tự nhiên tối đa.</p>
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
