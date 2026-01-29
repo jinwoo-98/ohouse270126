@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Star, CheckCircle2, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StarRating } from "./ProductReviews";
 
 interface ReviewItemProps {
   review: any;
@@ -31,13 +32,9 @@ export function ReviewItem({ review }: ReviewItemProps) {
           </div>
           <div>
             <p className="text-sm font-bold text-charcoal">{review.user_name}</p>
-            <div className="flex text-amber-400 text-[10px] mt-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i} 
-                  className={cn("w-3.5 h-3.5", i < review.rating ? 'fill-current' : 'text-gray-200')} 
-                />
-              ))}
+            <div className="mt-0.5">
+              {/* Sử dụng StarRating để có hiển thị tô đặc đồng bộ */}
+              <StarRating rating={review.rating} size="w-3.5 h-3.5" />
             </div>
           </div>
         </div>

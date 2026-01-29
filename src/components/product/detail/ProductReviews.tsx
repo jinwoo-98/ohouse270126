@@ -19,7 +19,10 @@ interface ProductReviewsProps {
   onSubmitReview: (rating: number, comment: string, name: string) => Promise<void>;
 }
 
-// Helper component để hiển thị sao lẻ chính xác với màu tô đặc bên trong
+/**
+ * Component hiển thị số sao với khả năng tô màu một phần (sao lẻ)
+ * và luôn tô màu đặc (fill) bên trong để dễ quan sát.
+ */
 export function StarRating({ rating, size = "w-4 h-4" }: { rating: number, size?: string }) {
   return (
     <div className="flex gap-1">
@@ -27,15 +30,15 @@ export function StarRating({ rating, size = "w-4 h-4" }: { rating: number, size?
         const fillAmount = Math.max(0, Math.min(1, rating - i));
         return (
           <div key={i} className={cn("relative", size)}>
-            {/* Sao nền (Màu xám nhạt, tô đặc bên trong) */}
+            {/* Ngôi sao nền màu xám nhạt (đã tô đặc bên trong) */}
             <Star className={cn("absolute inset-0 text-gray-200 fill-gray-200", size)} />
             
-            {/* Sao tô (Màu vàng, tô đặc bên trong, cắt theo chiều dọc) */}
+            {/* Ngôi sao tô màu vàng (tô đặc bên trong, cắt theo chiều ngang dựa trên điểm số) */}
             <div 
-              className="absolute inset-0 overflow-hidden text-amber-400 fill-amber-400"
+              className="absolute inset-0 overflow-hidden"
               style={{ width: `${fillAmount * 100}%` }}
             >
-              <Star className={cn(size)} />
+              <Star className={cn("text-amber-400 fill-amber-400", size)} />
             </div>
           </div>
         );
@@ -110,7 +113,8 @@ export function ProductReviews({
         <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary mb-3">Customer Feedback</span>
         <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-widest text-charcoal mb-4">Đánh Giá Từ Khách Hàng</h2>
         <div className="flex flex-col items-center gap-2">
-          <StarRating rating={displayRating} size="w-6 h-6" />
+          {/* Sử dụng StarRating với logic tô đặc màu vàng */}
+          <StarRating rating={displayRating} size="w-7 h-7" />
           <p className="text-sm font-bold text-charcoal mt-2">
             {displayRating}/5 <span className="text-muted-foreground font-normal ml-1">({displayReviewCount} nhận xét)</span>
           </p>
@@ -125,6 +129,7 @@ export function ProductReviews({
             </div>
           ) : (
             <div className="space-y-6">
+              {/* Khung cuộn với chiều cao tối đa 900px */}
               <div 
                 className={cn(
                   "space-y-6 transition-all duration-500 pr-2 custom-scrollbar",
@@ -198,7 +203,7 @@ export function ProductReviews({
                   <div className="flex justify-center gap-2 mb-4">
                     {[1, 2, 3, 4, 5].map((i) => (
                       <button key={i} type="button" onClick={() => setNewReview({ ...newReview, rating: i })}>
-                        <Star className={`w-8 h-8 transition-all ${i <= newReview.rating ? 'fill-amber-400 text-amber-400' : 'text-white/20'}`} />
+                        <Star className={`w-8 h-8 transition-all ${i <= newReview.rating ? 'fill-amber-400 text-amber-400' : 'text-white/20 fill-white/10'}`} />
                       </button>
                     ))}
                   </div>
