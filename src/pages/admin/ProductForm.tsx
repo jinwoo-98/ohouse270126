@@ -1,4 +1,3 @@
-Variants/Price -> Description -> Media">
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -162,7 +161,6 @@ export default function ProductForm() {
 
   return (
     <div className="max-w-6xl mx-auto pb-20">
-      {/* Top Actions */}
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" className="rounded-xl" asChild><Link to="/admin/products"><ArrowLeft className="w-4 h-4" /></Link></Button>
@@ -176,7 +174,6 @@ export default function ProductForm() {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           
-          {/* STEP 1: BASIC INFO (NAME & CATEGORY) */}
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6 border-l-4 border-l-primary">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
               <Info className="w-4 h-4" /> 1. Thông tin cơ bản
@@ -212,7 +209,6 @@ export default function ProductForm() {
             </div>
           </div>
 
-          {/* STEP 2: VARIANTS & PRICING */}
           <ProductVariantsSection 
             attributes={allAttributes}
             tierConfig={tierConfig}
@@ -222,7 +218,6 @@ export default function ProductForm() {
             basePrice={formData.price}
           />
 
-          {/* STEP 3: CONTENT DESCRIPTION */}
           <div className="bg-white p-8 rounded-3xl border border-border space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
               <FileText className="w-4 h-4" /> 3. Mô tả sản phẩm
@@ -236,7 +231,6 @@ export default function ProductForm() {
             </div>
           </div>
 
-          {/* CROSS-SELLS */}
           <div className="bg-white p-8 rounded-3xl border border-border space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Box className="w-4 h-4" /> Gợi ý kèm theo (Perfect Match)</h3>
             <div className="space-y-2">
@@ -256,7 +250,6 @@ export default function ProductForm() {
           </div>
         </div>
 
-        {/* SIDEBAR: MEDIA & STATUS */}
         <div className="space-y-8">
           <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
              <Label className="text-xs font-bold uppercase text-primary">Ảnh đại diện chính</Label>

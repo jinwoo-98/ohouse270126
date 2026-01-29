@@ -18,7 +18,7 @@ interface ProductVariantsSectionProps {
   tierConfig: any[];
   setTierConfig: (config: any[]) => void;
   variants: any[];
-  setVariants: (variants: any[]) => void;
+  setVariants: React.Dispatch<React.SetStateAction<any[]>>;
   basePrice: string;
 }
 
