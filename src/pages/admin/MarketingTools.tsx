@@ -7,7 +7,8 @@ import {
   Filter,
   RefreshCw,
   MessageSquareQuote,
-  Save
+  Save,
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,7 @@ export default function MarketingTools() {
     min_sold: "50", max_sold: "200",
     min_reviews: "10", max_reviews: "30",
     min_rating: "4.8", max_rating: "5.0",
+    review_days_back: "60", // Mặc định sinh đánh giá trong 60 ngày qua
     display_order: ""
   });
 
@@ -104,7 +106,8 @@ export default function MarketingTools() {
   };
 
   const handleGenerateReviews = async () => {
-    if (!confirm("Xác nhận sinh nội dung đánh giá mới kèm ngày giờ ngẫu nhiên?")) return;
+    const daysBack = parseInt(stats.review_days_back) || 30;
+    if (!confirm(`Xác nhận sinh nội dung đánh giá ngẫu nhiên trong khoảng ${daysBack} ngày qua?`)) return;
 
     setReviewLoading(true);
     try {
@@ -124,8 +127,8 @@ export default function MarketingTools() {
 
         const newReviews = [];
         for (let i = 0; i < count; i++) {
-          // Tạo ngày giờ ngẫu nhiên trong 100 ngày qua
-          const randomDays = getRandomInt(1, 100);
+          // Tạo ngày giờ ngẫu nhiên dựa trên tham số daysBack
+          const randomDays = getRandomInt(1, daysBack);
           const randomHours = getRandomInt(0, 23);
           const randomMins = getRandomInt(0, 59);
           
@@ -144,7 +147,7 @@ export default function MarketingTools() {
         }
         if (newReviews.length > 0) await supabase.from('reviews').insert(newReviews);
       }
-      toast.success("Đã sinh nội dung đánh giá với đầy đủ ngày giờ thành công!");
+      toast.success(`Đã sinh đánh giá tự nhiên trong khoảng ${daysBack} ngày thành công!`);
     } catch (e: any) { toast.error(e.message); } finally { setReviewLoading(false); }
   };
 
@@ -249,7 +252,25 @@ export default function MarketingTools() {
 
               <div className="bg-charcoal p-8 rounded-3xl border shadow-elevated text-cream">
                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2"><MessageSquareQuote className="w-5 h-5" /> 3. Nội dung đánh giá thực tế</h3>
-                <p className="text-sm text-taupe mb-8 leading-relaxed">Hệ thống sẽ tự động tạo các bản ghi đánh giá chi tiết (tên khách hàng, nội dung khen, ngày giờ) dựa trên số lượng "Lượt đánh giá ảo" ở bước 2.</p>
+                
+                <div className="space-y-4 mb-8">
+                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sẽ tự động tạo các bản ghi đánh giá chi tiết (tên khách hàng, nội dung khen, ngày giờ) dựa trên số lượng "Lượt đánh giá ảo" ở bước 2.</p>
+                  
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5" /> Khoảng thời gian phát tán (Số ngày về trước)
+                    </Label>
+                    <Input 
+                      type="number" 
+                      value={stats.review_days_back} 
+                      onChange={e => setStats({...stats, review_days_back: e.target.value})} 
+                      placeholder="Ví dụ: 60 (Sinh đánh giá rải rác trong 60 ngày qua)"
+                      className="h-12 bg-white/10 border-white/20 text-cream placeholder:text-taupe focus:border-primary"
+                    />
+                    <p className="text-[10px] italic text-taupe">Gợi ý: 30-90 ngày để trông tự nhiên nhất.</p>
+                  </div>
+                </div>
+
                 <Button onClick={handleGenerateReviews} disabled={reviewLoading} variant="outline" className="w-full h-14 border-primary/40 hover:bg-primary text-primary hover:text-white rounded-2xl text-sm font-bold uppercase">
                   {reviewLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} Sinh nội dung đánh giá hàng loạt
                 </Button>
