@@ -7,15 +7,17 @@ interface CartItem {
   price: number;
   image: string;
   quantity: number;
-  variant?: string;
-  slug?: string; // Thêm slug vào đây
+  variant?: string; // Tên phân loại tổng hợp (VD: Đỏ, L)
+  variant_id?: string; // ID của dòng variant trong database
+  slug?: string;
+  tier_values?: Record<string, string>; // Chi tiết: { Màu: Đỏ, Size: L }
 }
 
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (item: CartItem) => void;
-  removeFromCart: (id: number | string) => void;
-  updateQuantity: (id: number | string, quantity: number) => void;
+  removeFromCart: (id: number | string, variant_id?: string) => void;
+  updateQuantity: (id: number | string, quantity: number, variant_id?: string) => void;
   clearCart: () => void;
   cartCount: number;
   subtotal: number;
@@ -35,24 +37,35 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addToCart = (item: CartItem) => {
     setCartItems(prev => {
-      const existing = prev.find(i => i.id === item.id);
-      if (existing) {
-        toast.success(`Đã tăng số lượng ${item.name} trong giỏ hàng`);
-        return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i);
+      // Tìm sản phẩm trùng ID và trùng Variant ID (nếu có)
+      const existingIndex = prev.findIndex(i => 
+        i.id === item.id && i.variant_id === item.variant_id
+      );
+
+      if (existingIndex > -1) {
+        toast.success(`Đã cập nhật số lượng ${item.name}`);
+        const newItems = [...prev];
+        newItems[existingIndex].quantity += item.quantity;
+        return newItems;
       }
+      
       toast.success(`Đã thêm ${item.name} vào giỏ hàng`);
       return [...prev, item];
     });
   };
 
-  const removeFromCart = (id: number | string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+  const removeFromCart = (id: number | string, variant_id?: string) => {
+    setCartItems(prev => prev.filter(item => !(item.id === id && item.variant_id === variant_id)));
     toast.info("Đã xóa sản phẩm khỏi giỏ hàng");
   };
 
-  const updateQuantity = (id: number | string, quantity: number) => {
+  const updateQuantity = (id: number | string, quantity: number, variant_id?: string) => {
     if (quantity < 1) return;
-    setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity } : item));
+    setCartItems(prev => prev.map(item => 
+      (item.id === id && item.variant_id === variant_id) 
+        ? { ...item, quantity } 
+        : item
+    ));
   };
 
   const clearCart = () => {

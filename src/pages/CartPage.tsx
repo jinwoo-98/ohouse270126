@@ -113,7 +113,7 @@ export default function CartPage() {
       const orderItems = cartItems.map(item => ({
         order_id: order.id,
         product_id: String(item.id),
-        product_name: item.name,
+        product_name: item.name + (item.variant ? ` (${item.variant})` : ""),
         product_image: item.image,
         price: item.price,
         quantity: item.quantity
@@ -148,21 +148,24 @@ export default function CartPage() {
             <div className="grid lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <div key={item.id} className="bg-card rounded-xl p-4 shadow-subtle flex gap-4 border border-border/50">
+                  {cartItems.map((item, index) => (
+                    <div key={`${item.id}-${item.variant_id || index}`} className="bg-card rounded-xl p-4 shadow-subtle flex gap-4 border border-border/50">
                       <Link to={`/san-pham/${item.slug || item.id}`} className="shrink-0">
                         <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
                       </Link>
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <div className="flex justify-between items-start gap-2">
-                          <Link to={`/san-pham/${item.slug || item.id}`}><h3 className="text-sm font-semibold hover:text-primary line-clamp-2">{item.name}</h3></Link>
-                          <button onClick={() => removeFromCart(item.id)} className="text-muted-foreground hover:text-destructive"><X className="w-4 h-4" /></button>
+                          <div>
+                            <Link to={`/san-pham/${item.slug || item.id}`}><h3 className="text-sm font-semibold hover:text-primary line-clamp-2">{item.name}</h3></Link>
+                            {item.variant && <span className="text-[10px] text-muted-foreground font-medium bg-secondary px-2 py-0.5 rounded-md mt-1 inline-block">{item.variant}</span>}
+                          </div>
+                          <button onClick={() => removeFromCart(item.id, item.variant_id)} className="text-muted-foreground hover:text-destructive"><X className="w-4 h-4" /></button>
                         </div>
                         <div className="flex items-center justify-between mt-4">
                           <div className="flex items-center border border-border rounded-lg bg-secondary/30">
-                            <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-1.5 hover:text-primary"><Minus className="w-4 h-4" /></button>
+                            <button onClick={() => updateQuantity(item.id, item.quantity - 1, item.variant_id)} className="p-1.5 hover:text-primary"><Minus className="w-4 h-4" /></button>
                             <span className="px-3 text-sm font-bold">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-1.5 hover:text-primary"><Plus className="w-4 h-4" /></button>
+                            <button onClick={() => updateQuantity(item.id, item.quantity + 1, item.variant_id)} className="p-1.5 hover:text-primary"><Plus className="w-4 h-4" /></button>
                           </div>
                           <span className="font-bold text-primary">{formatPrice(item.price * item.quantity)}</span>
                         </div>

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { ProductVariantsSection } from "@/components/admin/product-form/ProductVariantsSection";
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -32,8 +33,14 @@ export default function ProductForm() {
   const [categories, setCategories] = useState<any[]>([]);
   const [allProducts, setAllProducts] = useState<any[]>([]);
   
+  // Attributes & Variants
+  const [allAttributes, setAllAttributes] = useState<any[]>([]);
   const [availableAttributes, setAvailableAttributes] = useState<any[]>([]);
   const [productAttrs, setProductAttrs] = useState<Record<string, any>>({});
+  
+  // New Variant State
+  const [tierConfig, setTierConfig] = useState<any[]>([]);
+  const [variants, setVariants] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -60,6 +67,7 @@ export default function ProductForm() {
   useEffect(() => {
     fetchCategories();
     fetchAllProducts();
+    fetchSystemAttributes();
     if (isEdit) fetchProduct();
   }, [id]);
 
@@ -72,6 +80,11 @@ export default function ProductForm() {
   const fetchCategories = async () => {
     const { data } = await supabase.from('categories').select('*').order('display_order');
     setCategories(data || []);
+  };
+
+  const fetchSystemAttributes = async () => {
+    const { data } = await supabase.from('attributes').select('*').order('name');
+    setAllAttributes(data || []);
   };
 
   const fetchAllProducts = async () => {
@@ -114,13 +127,21 @@ export default function ProductForm() {
           bought_together_ids: data.bought_together_ids || []
         });
 
-        // Load attributes
+        // Load legacy attributes
         const { data: pAttrs } = await supabase.from('product_attributes').select('*').eq('product_id', id);
         if (pAttrs) {
           const loadedAttrs: Record<string, any> = {};
           pAttrs.forEach(item => { loadedAttrs[item.attribute_id] = item.value; });
           setProductAttrs(loadedAttrs);
         }
+
+        // Load new Variants
+        if (data.tier_variants_config) {
+          setTierConfig(data.tier_variants_config);
+        }
+        
+        const { data: vData } = await supabase.from('product_variants').select('*').eq('product_id', id);
+        if (vData) setVariants(vData);
       }
     } finally {
       setFetching(false);
@@ -139,6 +160,7 @@ export default function ProductForm() {
       fake_sold: parseInt(formData.fake_sold),
       fake_review_count: parseInt(formData.fake_review_count),
       fake_rating: parseFloat(formData.fake_rating),
+      tier_variants_config: tierConfig, // Save tier config to main product
       updated_at: new Date()
     };
 
@@ -151,7 +173,7 @@ export default function ProductForm() {
         productId = data.id;
       }
 
-      // Sync attributes
+      // 1. Sync Legacy Attributes
       await supabase.from('product_attributes').delete().eq('product_id', productId);
       const attrPayloads = Object.entries(productAttrs).map(([attrId, val]) => ({
         product_id: productId,
@@ -159,6 +181,23 @@ export default function ProductForm() {
         value: val
       }));
       if (attrPayloads.length > 0) await supabase.from('product_attributes').insert(attrPayloads);
+
+      // 2. Sync Product Variants
+      // Simple strategy: delete all old variants and re-insert (for MVP simplicity)
+      // For production with order history, you'd want to update existing by ID if possible
+      await supabase.from('product_variants').delete().eq('product_id', productId);
+      
+      if (variants.length > 0) {
+        const variantPayloads = variants.map(v => ({
+          product_id: productId,
+          tier_values: v.tier_values,
+          price: parseFloat(v.price),
+          original_price: v.original_price ? parseFloat(v.original_price) : null,
+          stock: parseInt(v.stock),
+          sku: v.sku
+        }));
+        await supabase.from('product_variants').insert(variantPayloads);
+      }
 
       toast.success("Đã lưu sản phẩm!");
       navigate("/admin/products");
@@ -239,6 +278,16 @@ export default function ProductForm() {
               <RichTextEditor value={formData.description} onChange={val => setFormData({...formData, description: val})} />
             </div>
           </div>
+
+          {/* VARIANTS CONFIGURATION */}
+          <ProductVariantsSection 
+            attributes={allAttributes}
+            tierConfig={tierConfig}
+            setTierConfig={setTierConfig}
+            variants={variants}
+            setVariants={setVariants}
+            basePrice={formData.price}
+          />
         </div>
 
         <div className="space-y-8">
@@ -246,6 +295,20 @@ export default function ProductForm() {
              <Label className="text-xs font-bold uppercase text-primary">Ảnh đại diện</Label>
              <ImageUpload value={formData.image_url} onChange={url => setFormData({...formData, image_url: url as string})} />
           </div>
+          
+          <div className="bg-white p-6 rounded-3xl border space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Bộ sưu tập ảnh</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {formData.gallery_urls.map((url, i) => (
+                <div key={i} className="relative aspect-square rounded-lg overflow-hidden group">
+                  <img src={url} className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => setFormData({...formData, gallery_urls: formData.gallery_urls.filter((_, idx) => idx !== i)})} className="absolute top-1 right-1 p-1 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
+                </div>
+              ))}
+            </div>
+            <ImageUpload multiple onChange={urls => setFormData({...formData, gallery_urls: [...formData.gallery_urls, ...(Array.isArray(urls) ? urls : [urls])]})} />
+          </div>
+
           <div className="bg-white p-6 rounded-3xl border space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Layers className="w-4 h-4" /> Trạng thái</h3>
             <div className="space-y-3">
