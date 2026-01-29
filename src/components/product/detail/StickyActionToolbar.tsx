@@ -21,11 +21,11 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
     { label: "Đánh giá", target: "reviews" },
     { label: "Phối đồ", target: "inspiration" },
     { label: "Gợi ý", target: "related" },
+    { label: "Hỗ trợ", target: "shipping-info" },
   ];
 
   useEffect(() => {
     const handleScroll = () => {
-      // Hiện thanh khi cuộn qua 600px (thường là bắt đầu vào phần mô tả)
       setIsVisible(window.scrollY > 600);
     };
     window.addEventListener("scroll", handleScroll);
@@ -35,7 +35,7 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const offset = 100; // Khoảng cách trừ hao cho thanh sticky
+      const offset = 100;
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
       const elementPosition = elementRect - bodyRect;
@@ -52,7 +52,7 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
 
   return (
     <div className={cn(
-      "fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-border/40 z-[100] transition-all duration-500 transform shadow-medium",
+      "fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-b border-border/40 z-[100] transition-all duration-500 transform shadow-medium",
       isVisible ? "translate-y-0" : "-translate-y-full"
     )}>
       <div className="container-luxury h-16 md:h-20 flex items-center justify-between gap-4">
@@ -70,9 +70,9 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
           ))}
         </div>
 
-        {/* Mobile View: Simple Indicator */}
+        {/* Mobile View */}
         <div className="md:hidden flex items-center gap-2">
-           <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Đang xem sản phẩm</span>
+           <span className="text-[10px] font-bold uppercase tracking-widest text-primary">OHOUSE Luxury</span>
            <ChevronDown className="w-3 h-3 text-primary animate-bounce" />
         </div>
 
@@ -102,7 +102,7 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
               onClick={() => addToCart({ ...product, quantity: 1, image: product.image_url })}
             >
               <ShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" /> 
-              <span>MUA NGAY</span>
+              <span>THÊM VÀO GIỎ</span>
             </Button>
           </div>
         </div>

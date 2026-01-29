@@ -229,7 +229,7 @@ export default function ProductDetailPage() {
             <RecentlyViewed />
 
             {/* 8. Chính sách Vận chuyển & Đổi trả */}
-            <section className="py-16 border-t border-border/60">
+            <section id="shipping-info" className="py-16 border-t border-border/60">
               <div className="grid lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2">
                   <div className="flex items-center gap-3 mb-8">
