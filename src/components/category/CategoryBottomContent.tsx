@@ -62,7 +62,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
     <div className="space-y-16 mt-16 pb-12">
       {/* 1. Trending Keywords */}
       {keywords.length > 0 && (
-        <section className="py-8 border-t border-border/50">
+        <section className="py-8">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="flex items-center gap-3 shrink-0">
               <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -85,14 +85,12 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
         </section>
       )}
 
-      {/* 2. Shop The Look (Landscape Style) */}
+      {/* 2. Shop The Look */}
       {!isParentCategory && shopLooks.length > 0 && (
         <section>
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <Sparkles className="w-6 h-6 text-primary" />
-              <h2 className="text-xl md:text-2xl font-bold uppercase tracking-widest text-charcoal">Cảm Hứng Thiết Kế</h2>
-            </div>
+          <div className="flex items-center gap-3 mb-8">
+            <Sparkles className="w-6 h-6 text-primary" />
+            <h2 className="text-xl md:text-2xl font-bold uppercase tracking-widest text-charcoal">Cảm Hứng Thiết Kế</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -105,40 +103,19 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                 viewport={{ once: true }}
                 className="group flex flex-col gap-4"
               >
-                {/* Landscape Image */}
                 <div 
                   className="relative aspect-video rounded-[24px] overflow-hidden cursor-pointer shadow-medium group-hover:shadow-elevated transition-all duration-500"
                   onClick={() => setSelectedLook(look)}
                 >
-                  <img 
-                    src={look.image_url} 
-                    alt={look.title} 
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                  />
+                  <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
-
-                  {/* Quick Dots Preview */}
                   {look.shop_look_items?.map((item: any, i: number) => (
-                    <div 
-                      key={i}
-                      className="absolute w-3 h-3 bg-white border border-primary rounded-full shadow-gold animate-pulse"
-                      style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                    />
+                    <div key={i} className="absolute w-3 h-3 bg-white border border-primary rounded-full shadow-gold animate-pulse" style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }} />
                   ))}
                 </div>
-
-                {/* Footer Info & Action */}
                 <div className="flex items-center justify-between px-2">
-                  <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors">
-                    {look.title}
-                  </h3>
-                  <Button 
-                    variant="outline" 
-                    className="rounded-full px-6 h-10 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm"
-                    onClick={() => setSelectedLook(look)}
-                  >
-                    Xem ngay +
-                  </Button>
+                  <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors">{look.title}</h3>
+                  <Button variant="outline" className="rounded-full px-6 h-10 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white" onClick={() => setSelectedLook(look)}>Xem ngay +</Button>
                 </div>
               </motion.div>
             ))}
@@ -146,9 +123,9 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
         </section>
       )}
 
-      {/* 3. SEO Content */}
+      {/* 3. SEO Content - Bỏ nền trắng */}
       {seoContent && (
-        <section className="bg-white p-8 md:p-12 rounded-[40px] border border-border/60 shadow-subtle">
+        <section className="py-12">
           <div 
             className="rich-text-content prose prose-stone max-w-none text-muted-foreground prose-headings:text-charcoal prose-a:text-primary leading-relaxed"
             dangerouslySetInnerHTML={{ __html: seoContent }} 
@@ -162,73 +139,30 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
           {selectedLook && (
             <>
               <div className="flex-1 overflow-y-auto custom-scrollbar">
-                {/* Look Image with hotspots */}
                 <div className="relative aspect-[4/5] bg-secondary/20">
                   <img src={selectedLook.image_url} className="w-full h-full object-cover" alt={selectedLook.title} />
                   <div className="absolute inset-0 bg-black/10" />
-                  
                   {selectedLook.shop_look_items?.map((item: any, i: number) => (
-                    <div 
-                      key={i}
-                      className="absolute w-8 h-8 -ml-4 -mt-4 bg-white/90 backdrop-blur-sm rounded-full border-2 border-primary flex items-center justify-center text-primary font-bold text-sm shadow-gold group/dot cursor-pointer transition-transform hover:scale-110"
-                      style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                    >
-                      <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-                      +
-                    </div>
+                    <div key={i} className="absolute w-8 h-8 -ml-4 -mt-4 bg-white/90 backdrop-blur-sm rounded-full border-2 border-primary flex items-center justify-center text-primary font-bold text-sm shadow-gold" style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}>+</div>
                   ))}
                 </div>
-
                 <div className="p-8">
-                  <SheetHeader className="mb-8">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary mb-2">Shop The Look</span>
-                    <SheetTitle className="text-2xl font-bold text-charcoal uppercase tracking-widest text-left">
-                      {selectedLook.title}
-                    </SheetTitle>
-                  </SheetHeader>
-
+                  <h2 className="text-2xl font-bold text-charcoal uppercase tracking-widest mb-8">{selectedLook.title}</h2>
                   <div className="space-y-6">
-                    <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground border-b pb-3">Sản phẩm trong ảnh</h4>
-                    
-                    <div className="grid gap-4">
-                      {selectedLook.shop_look_items?.map((item: any) => (
-                        <div key={item.id} className="group flex items-center gap-4 p-4 rounded-2xl bg-secondary/20 border border-transparent hover:border-primary/20 hover:bg-white transition-all shadow-sm">
-                          <div className="w-20 h-20 rounded-xl overflow-hidden bg-white border border-border/40 shrink-0">
-                            <img src={item.products?.image_url} alt={item.products?.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h5 className="font-bold text-sm text-charcoal truncate group-hover:text-primary transition-colors">{item.products?.name}</h5>
-                            <p className="text-primary font-bold text-base mt-1">{formatPrice(item.products?.price)}</p>
-                            <Link to={`/san-pham/${item.products?.slug}`} className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary mt-2 inline-block">Xem chi tiết →</Link>
-                          </div>
-                          <Button 
-                            size="icon" 
-                            className="w-10 h-10 rounded-full shadow-gold"
-                            onClick={() => {
-                              addToCart({
-                                id: item.products.id,
-                                name: item.products.name,
-                                price: item.products.price,
-                                image: item.products.image_url,
-                                quantity: 1,
-                                slug: item.products.slug
-                              });
-                            }}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </Button>
+                    {selectedLook.shop_look_items?.map((item: any) => (
+                      <div key={item.id} className="group flex items-center gap-4 p-4 rounded-2xl bg-secondary/20 border border-transparent hover:border-primary/20 hover:bg-white transition-all shadow-sm">
+                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-white shrink-0"><img src={item.products?.image_url} alt="" className="w-full h-full object-cover" /></div>
+                        <div className="flex-1 min-w-0">
+                          <h5 className="font-bold text-sm text-charcoal truncate">{item.products?.name}</h5>
+                          <p className="text-primary font-bold text-base mt-1">{formatPrice(item.products?.price)}</p>
                         </div>
-                      ))}
-                    </div>
+                        <Button size="icon" className="w-10 h-10 rounded-full" onClick={() => addToCart({ ...item.products, quantity: 1, image: item.products.image_url })}><Plus className="w-4 h-4" /></Button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-
-              <div className="p-6 bg-card border-t border-border/40 sticky bottom-0">
-                <Button className="w-full btn-hero h-14 rounded-2xl shadow-gold" onClick={() => setSelectedLook(null)}>
-                  TIẾP TỤC KHÁM PHÁ
-                </Button>
-              </div>
+              <div className="p-6 bg-card border-t border-border/40 sticky bottom-0"><Button className="w-full btn-hero h-14 rounded-2xl shadow-gold" onClick={() => setSelectedLook(null)}>TIẾP TỤC KHÁM PHÁ</Button></div>
             </>
           )}
         </SheetContent>
