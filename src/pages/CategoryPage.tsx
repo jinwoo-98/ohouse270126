@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, SlidersHorizontal, ArrowUpDown } from "lucide-react";
+import { ChevronRight, SlidersHorizontal, ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,10 @@ import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 import { SubcategoryList } from "@/components/category/SubcategoryList";
 import { ProductCard } from "@/components/ProductCard";
+import { CategoryBottomContent } from "@/components/category/CategoryBottomContent";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const categoryInfo: Record<string, { title: string; parent?: string }> = {
   "phong-khach": { title: "Phòng Khách" },
@@ -41,14 +43,56 @@ const priceRanges = [
   { label: "Trên 50 triệu", value: "50+" },
 ];
 
-const materials = ["Gỗ Óc Chó", "Gỗ Sồi", "Đá Marble", "Da Thật", "Vải Nhung", "Kim Loại"];
-const styles = ["Luxury", "Minimalist", "Modern", "Classic"];
+function FilterSection({ title, options, selected, onChange }: { title: string, options: string[], selected: string[], onChange: (val: string) => void }) {
+  const [isOpen, setIsOpen] = useState(true);
+  
+  if (!options || options.length === 0) return null;
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="py-4 border-b border-border/40 last:border-0">
+      <CollapsibleTrigger className="flex items-center justify-between w-full group">
+        <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] text-muted-foreground group-hover:text-charcoal transition-colors">{title}</h4>
+        {isOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-4 space-y-2 animate-accordion-down">
+        {options.slice(0, 6).map((opt) => (
+          <label key={opt} className="flex items-center gap-3 cursor-pointer group/item">
+            <Checkbox checked={selected.includes(opt)} onCheckedChange={() => onChange(opt)} />
+            <span className="text-sm font-medium text-foreground/80 group-hover/item:text-charcoal">{opt}</span>
+          </label>
+        ))}
+        {options.length > 6 && (
+          <div className="pt-2">
+             {/* Can add 'Show more' logic here if list is very long */}
+             {options.slice(6).map((opt) => (
+              <label key={opt} className="flex items-center gap-3 cursor-pointer group/item mb-2">
+                <Checkbox checked={selected.includes(opt)} onCheckedChange={() => onChange(opt)} />
+                <span className="text-sm font-medium text-foreground/80 group-hover/item:text-charcoal">{opt}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
 
 export default function CategoryPage() {
   const location = useLocation();
   const categorySlug = location.pathname.split('/').pop() || 'noi-that';
   
-  const { products, filters, updateFilters, toggleFilter, clearFilters, isLoading } = useProducts(categorySlug);
+  const { 
+    products, 
+    filters, 
+    updateFilters, 
+    toggleFilter, 
+    toggleDynamicFilter,
+    clearFilters, 
+    isLoading,
+    categoryAttributes,
+    currentCategory
+  } = useProducts(categorySlug);
+
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -60,8 +104,9 @@ export default function CategoryPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
   
-  const category = categoryInfo[categorySlug] || { title: "Danh Mục" };
-  const parentCategory = category.parent ? categoryInfo[category.parent] : null;
+  // Use DB data if available, fallback to static map
+  const pageTitle = currentCategory?.name || categoryInfo[categorySlug]?.title || "Danh Mục";
+  const isParent = currentCategory ? !currentCategory.parent_id : !categoryInfo[categorySlug]?.parent;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -73,15 +118,9 @@ export default function CategoryPage() {
             <div className="flex items-center gap-2 text-[10px] md:text-xs font-medium text-muted-foreground mb-6">
               <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
               <ChevronRight className="w-3 h-3" />
-              {parentCategory && (
-                <>
-                  <Link to={`/${category.parent}`} className="hover:text-primary transition-colors">{parentCategory.title}</Link>
-                  <ChevronRight className="w-3 h-3" />
-                </>
-              )}
-              <span className="text-foreground capitalize">{category.title}</span>
+              <span className="text-foreground capitalize">{pageTitle}</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-charcoal mb-8 uppercase tracking-widest">{category.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-charcoal mb-8 uppercase tracking-widest">{pageTitle}</h1>
           </div>
         </div>
 
@@ -109,28 +148,26 @@ export default function CategoryPage() {
                   <SheetHeader className="p-6 border-b border-border">
                     <SheetTitle className="text-left font-bold text-sm uppercase tracking-widest">Bộ lọc sản phẩm</SheetTitle>
                   </SheetHeader>
-                  <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+                  <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
                     <SubcategoryList currentSlug={categorySlug} />
-                    <div className="space-y-8">
-                      <div>
-                        <h4 className="font-bold mb-4 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Khoảng giá</h4>
-                        {priceRanges.map((range) => (
-                          <label key={range.value} className="flex items-center gap-3 cursor-pointer py-1.5">
-                            <Checkbox checked={filters.priceRange.includes(range.value)} onCheckedChange={() => toggleFilter('priceRange', range.value)} />
-                            <span className="text-sm font-medium">{range.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                      <div>
-                        <h4 className="font-bold mb-4 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Chất liệu</h4>
-                        {materials.map((m) => (
-                          <label key={m} className="flex items-center gap-3 cursor-pointer py-1.5">
-                            <Checkbox checked={filters.materials.includes(m)} onCheckedChange={() => toggleFilter('materials', m)} />
-                            <span className="text-sm font-medium">{m}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
+                    
+                    <FilterSection 
+                      title="Khoảng Giá" 
+                      options={priceRanges.map(r => r.label)} 
+                      selected={filters.priceRange.map(v => priceRanges.find(r => r.value === v)?.label || "")}
+                      onChange={(label) => toggleFilter('priceRange', priceRanges.find(r => r.label === label)?.value || "")}
+                    />
+
+                    {/* Dynamic Attributes Mobile */}
+                    {categoryAttributes.map(attr => (
+                      <FilterSection 
+                        key={attr.id}
+                        title={attr.name}
+                        options={attr.options || []}
+                        selected={filters.dynamicAttributes[attr.name] || []}
+                        onChange={(val) => toggleDynamicFilter(attr.name, val)}
+                      />
+                    ))}
                   </div>
                   <div className="p-4 border-t border-border bg-card">
                     <Button className="w-full btn-hero h-12 text-xs font-bold" onClick={() => setShowFiltersMobile(false)}>Xem kết quả</Button>
@@ -169,20 +206,30 @@ export default function CategoryPage() {
                   exit={{ opacity: 0, x: -20, width: 0 }}
                   className="hidden lg:block shrink-0 sticky top-24 z-10"
                 >
-                  <div className="w-[280px] space-y-10 max-h-[calc(100vh-140px)] overflow-y-auto pr-4 custom-scrollbar">
+                  <div className="w-[280px] space-y-2 max-h-[calc(100vh-140px)] overflow-y-auto pr-4 custom-scrollbar pb-10">
                     <SubcategoryList currentSlug={categorySlug} />
-                    <div className="space-y-10 pt-4">
-                      <div className="border-t border-border/40 pt-8">
-                        <h4 className="font-bold mb-6 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Khoảng giá</h4>
-                        <div className="space-y-3">
-                          {priceRanges.map((range) => (
-                            <label key={range.value} className="flex items-center gap-3 cursor-pointer group">
-                              <Checkbox checked={filters.priceRange.includes(range.value)} onCheckedChange={() => toggleFilter('priceRange', range.value)} />
-                              <span className="text-sm font-medium text-foreground/80 group-hover:text-charcoal">{range.label}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
+                    
+                    <div className="pt-2">
+                      <FilterSection 
+                        title="Khoảng Giá" 
+                        options={priceRanges.map(r => r.label)} 
+                        selected={filters.priceRange.map(v => priceRanges.find(r => r.value === v)?.label || "")}
+                        onChange={(label) => toggleFilter('priceRange', priceRanges.find(r => r.label === label)?.value || "")}
+                      />
+
+                      {/* Dynamic Attributes Desktop */}
+                      {categoryAttributes.map(attr => (
+                        <FilterSection 
+                          key={attr.id}
+                          title={attr.name}
+                          options={attr.options || []}
+                          selected={filters.dynamicAttributes[attr.name] || []}
+                          onChange={(val) => toggleDynamicFilter(attr.name, val)}
+                        />
+                      ))}
+                    </div>
+
+                    <div className="pt-6">
                       <Button variant="ghost" className="w-full text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-destructive p-0 h-auto justify-start" onClick={clearFilters}>Xóa tất cả bộ lọc</Button>
                     </div>
                   </div>
@@ -191,7 +238,6 @@ export default function CategoryPage() {
             </AnimatePresence>
 
             <div className="flex-1 min-w-0">
-              {/* Cập nhật Grid để hiện nhiều sp hơn trên màn hình rộng */}
               <div className={cn(
                 "grid grid-cols-2 gap-4 md:gap-6 lg:gap-8", 
                 isSidebarVisible ? "xl:grid-cols-4" : "xl:grid-cols-5"
@@ -204,6 +250,16 @@ export default function CategoryPage() {
                   ))
                 )}
               </div>
+
+              {/* Bottom Content: Keywords, Looks, SEO */}
+              {!isLoading && (
+                <CategoryBottomContent 
+                  categoryId={currentCategory?.id}
+                  categorySlug={currentCategory?.slug || categorySlug}
+                  seoContent={currentCategory?.seo_content}
+                  isParentCategory={isParent}
+                />
+              )}
             </div>
           </div>
         </div>

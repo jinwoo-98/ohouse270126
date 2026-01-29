@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Save, Loader2, Info, Home, ListFilter } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Info, Home, ListFilter, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,8 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
 
 export default function CategoryForm() {
   const { id } = useParams();
@@ -35,7 +37,8 @@ export default function CategoryForm() {
     image_url: "",
     menu_location: "main",
     display_order: "1000",
-    default_sort: "manual"
+    default_sort: "manual",
+    seo_content: ""
   });
 
   useEffect(() => {
@@ -71,7 +74,8 @@ export default function CategoryForm() {
         image_url: data.image_url || "",
         menu_location: data.menu_location || "main",
         display_order: data.display_order?.toString() || "1000",
-        default_sort: data.default_sort || "manual"
+        default_sort: data.default_sort || "manual",
+        seo_content: data.seo_content || ""
       });
 
       // Fetch existing attributes
@@ -102,7 +106,8 @@ export default function CategoryForm() {
       image_url: formData.image_url,
       menu_location: formData.menu_location,
       display_order: parseInt(formData.display_order) || 1000,
-      default_sort: formData.default_sort
+      default_sort: formData.default_sort,
+      seo_content: formData.seo_content
     };
 
     try {
@@ -148,7 +153,7 @@ export default function CategoryForm() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto pb-20">
+    <div className="max-w-6xl mx-auto pb-20">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" className="rounded-xl" asChild><Link to="/admin/categories"><ArrowLeft className="w-4 h-4" /></Link></Button>
@@ -163,7 +168,6 @@ export default function CategoryForm() {
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <form onSubmit={handleSave} className="bg-white p-8 rounded-3xl border shadow-sm space-y-8">
-            {/* Existing Fields ... */}
             <div className="space-y-2">
               <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Vị trí menu trên Header</Label>
               <Select value={formData.menu_location} onValueChange={val => setFormData({...formData, menu_location: val})}>
@@ -265,7 +269,7 @@ export default function CategoryForm() {
               <div className="p-2 bg-secondary rounded-lg text-charcoal"><ListFilter className="w-5 h-5" /></div>
               <div>
                 <h3 className="font-bold text-sm uppercase tracking-widest">Cấu hình Thuộc tính</h3>
-                <p className="text-[10px] text-muted-foreground font-medium italic">Sản phẩm thuộc danh mục này sẽ có các thuộc tính nào?</p>
+                <p className="text-[10px] text-muted-foreground font-medium italic">Sản phẩm thuộc danh mục này sẽ có các thuộc tính nào để lọc?</p>
               </div>
             </div>
             
@@ -295,7 +299,7 @@ export default function CategoryForm() {
             </div>
             <p className="text-[11px] text-muted-foreground bg-blue-50 p-3 rounded-lg border border-blue-100">
               <Info className="w-3 h-3 inline mr-1" />
-              Lưu ý: Nếu danh mục này là danh mục con, nó cũng sẽ tự động kế thừa các thuộc tính của danh mục cha khi đăng sản phẩm.
+              Lưu ý: Nếu danh mục này là danh mục con, nó cũng sẽ tự động kế thừa các thuộc tính của danh mục cha.
             </p>
           </div>
         </div>
@@ -305,6 +309,35 @@ export default function CategoryForm() {
             <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Ảnh đại diện danh mục</Label>
             <ImageUpload value={formData.image_url} onChange={(url) => setFormData({...formData, image_url: url as string})} />
             <p className="text-[10px] text-muted-foreground italic">Cần thiết nếu bạn chọn hiển thị danh mục này ở trang chủ.</p>
+          </div>
+
+          {/* SEO Content Section */}
+          <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
+            <div className="flex items-center gap-3 border-b pb-4">
+              <div className="p-2 bg-purple-100 rounded-lg text-purple-600"><FileText className="w-5 h-5" /></div>
+              <div>
+                <h3 className="font-bold text-sm uppercase tracking-widest">Nội dung SEO</h3>
+                <p className="text-[10px] text-muted-foreground font-medium italic">Hiển thị ở cuối trang danh mục</p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Bài viết SEO</Label>
+                <AIContentAssistant 
+                  contentType="page" 
+                  contextTitle={`Danh mục: ${formData.name}`} 
+                  onInsert={(val) => setFormData({...formData, seo_content: val})} 
+                />
+              </div>
+              <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
+                <RichTextEditor 
+                  value={formData.seo_content} 
+                  onChange={(val) => setFormData({...formData, seo_content: val})} 
+                  placeholder="Viết nội dung tối ưu SEO cho danh mục này..."
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

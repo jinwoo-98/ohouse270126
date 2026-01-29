@@ -3,11 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface Filters {
   priceRange: string[];
-  materials: string[];
-  styles: string[];
+  materials: string[]; // Keep for backward compatibility or static usage
+  styles: string[];    // Keep for backward compatibility or static usage
   sortBy: 'manual' | 'newest' | 'price-asc' | 'price-desc' | 'popular';
   searchQuery?: string;
   saleOnly?: boolean;
+  dynamicAttributes: Record<string, string[]>; // New dynamic filters: { [Attribute Name]: [Selected Values] }
 }
 
 const priceRangeMap: Record<string, [number, number]> = {
@@ -20,36 +21,77 @@ const priceRangeMap: Record<string, [number, number]> = {
 export function useProducts(categorySlug: string, initialSearch?: string) {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentCategory, setCurrentCategory] = useState<any>(null);
+  const [categoryAttributes, setCategoryAttributes] = useState<any[]>([]);
+  
   const [filters, setFilters] = useState<Filters>({
     priceRange: [],
     materials: [],
     styles: [],
-    sortBy: 'manual', // Mặc định là sắp xếp thủ công (display_order)
+    sortBy: 'manual',
     searchQuery: initialSearch || '',
     saleOnly: categorySlug === 'sale',
+    dynamicAttributes: {}
   });
 
-  // Fetch category default sort setting
+  // 1. Fetch Category Details & Attributes
   useEffect(() => {
-    async function fetchDefaultSort() {
-      if (['noi-that', 'sale', 'moi', 'ban-chay'].includes(categorySlug)) return;
-      
-      const { data } = await supabase
+    async function fetchCategoryInfo() {
+      const specialPages = ['noi-that', 'sale', 'moi', 'ban-chay', 'tim-kiem'];
+      if (specialPages.includes(categorySlug)) {
+        setCurrentCategory(null);
+        setCategoryAttributes([]);
+        return;
+      }
+
+      // Get Category Info
+      const { data: catData } = await supabase
         .from('categories')
-        .select('default_sort')
+        .select('*')
         .eq('slug', categorySlug)
         .single();
+      
+      if (!catData) return;
+      setCurrentCategory(catData);
+
+      // Set default sort if configured
+      if (catData.default_sort) {
+        setFilters(prev => ({ ...prev, sortBy: catData.default_sort as any }));
+      }
+
+      // Logic to fetch attributes:
+      // If Parent: need attributes of children (aggregate) OR simple approach: get attributes linked to this category + its children
+      // To simplify: We find attributes linked to this category ID and any children IDs
+      const { data: children } = await supabase.from('categories').select('id').eq('parent_id', catData.id);
+      const categoryIds = [catData.id, ...(children?.map(c => c.id) || [])];
+
+      const { data: links } = await supabase
+        .from('category_attributes')
+        .select('attribute_id')
+        .in('category_id', categoryIds);
+      
+      if (links && links.length > 0) {
+        // Dedup attribute IDs
+        const uniqueAttrIds = Array.from(new Set(links.map(l => l.attribute_id)));
         
-      if (data?.default_sort) {
-        setFilters(prev => ({ ...prev, sortBy: data.default_sort as any }));
+        const { data: attrs } = await supabase
+          .from('attributes')
+          .select('*')
+          .in('id', uniqueAttrIds)
+          .order('name');
+        
+        setCategoryAttributes(attrs || []);
+      } else {
+        setCategoryAttributes([]);
       }
     }
-    fetchDefaultSort();
+    fetchCategoryInfo();
   }, [categorySlug]);
 
+  // 2. Fetch Products
   useEffect(() => {
     fetchProducts();
-  }, [categorySlug, filters.sortBy, filters.saleOnly, filters.searchQuery, filters.materials, filters.styles, filters.priceRange]);
+  }, [categorySlug, filters]);
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -57,83 +99,75 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
       let query = supabase.from('products').select('*');
       let targetSlugs = [categorySlug];
 
-      // 1. Xử lý danh mục cha - con
-      const specialPages = ['noi-that', 'sale', 'moi', 'ban-chay'];
+      // --- Category Filter Logic ---
+      const specialPages = ['noi-that', 'sale', 'moi', 'ban-chay', 'tim-kiem'];
       if (!specialPages.includes(categorySlug)) {
-        // Kiểm tra xem đây có phải danh mục cha không
-        const { data: categoryData } = await supabase
-          .from('categories')
-          .select('id, slug')
-          .eq('slug', categorySlug)
-          .single();
+        // If we already fetched category data, use it, otherwise fetch
+        let catId = currentCategory?.id;
+        
+        if (!catId) {
+           const { data } = await supabase.from('categories').select('id').eq('slug', categorySlug).single();
+           catId = data?.id;
+        }
 
-        if (categoryData) {
-          // Tìm các danh mục con của nó
-          const { data: children } = await supabase
-            .from('categories')
-            .select('slug')
-            .eq('parent_id', categoryData.id);
-          
+        if (catId) {
+          const { data: children } = await supabase.from('categories').select('slug').eq('parent_id', catId);
           if (children && children.length > 0) {
-            const childSlugs = children.map(c => c.slug);
-            targetSlugs = [...targetSlugs, ...childSlugs];
+            targetSlugs = [...targetSlugs, ...children.map(c => c.slug)];
           }
         }
         
-        // Lọc sản phẩm thuộc danh sách slugs (cha hoặc con đều lấy được)
         query = query.in('category_id', targetSlugs);
       }
 
-      // Các bộ lọc đặc biệt
-      if (categorySlug === 'sale' || filters.saleOnly) {
-        query = query.eq('is_sale', true);
-      }
-      if (categorySlug === 'moi') {
-        query = query.eq('is_new', true);
-      }
-      if (categorySlug === 'ban-chay') {
-        query = query.order('fake_sold', { ascending: false });
+      // --- Basic Filters ---
+      if (categorySlug === 'sale' || filters.saleOnly) query = query.eq('is_sale', true);
+      if (categorySlug === 'moi') query = query.eq('is_new', true);
+      if (categorySlug === 'ban-chay') query = query.order('fake_sold', { ascending: false });
+      if (filters.searchQuery) query = query.ilike('name', `%${filters.searchQuery}%`);
+
+      // --- Legacy Static Filters ---
+      if (filters.materials.length > 0) query = query.in('material', filters.materials);
+      if (filters.styles.length > 0) query = query.in('style', filters.styles);
+
+      // --- Dynamic Attributes Filter (Complex) ---
+      // We need to fetch product_attributes to filter IDs first if dynamic attributes are selected
+      const activeDynamicFilters = Object.entries(filters.dynamicAttributes).filter(([_, values]) => values.length > 0);
+      
+      if (activeDynamicFilters.length > 0) {
+        // Need to find product_ids that have specific attributes
+        // This is tricky in Supabase basic client. Better to do it in two steps or Edge Function.
+        // Client-side filtering approach for MVP (Fetch filtered by Cat first, then refine)
+        // OR: Two-step fetch
+        
+        // Let's perform a subquery approach via product_attributes
+        // Find all product IDs that match the criteria
+        
+        // This logic is simplified: get products that match ANY of the attributes? No, usually AND between attributes, OR between values.
+        // e.g. Color IN (Red, Blue) AND Material IN (Wood)
+        
+        // Since Supabase join filtering is limited, we might fetch potential products first then filter in memory if the dataset is small (< 1000 per cat)
+        // Or filter by finding IDs first.
+        
+        // Let's proceed with fetching products based on category/price/sort first, then filter in-memory for attributes.
       }
 
-      // 2. Tìm kiếm
-      if (filters.searchQuery) {
-        query = query.ilike('name', `%${filters.searchQuery}%`);
-      }
-
-      // 3. Lọc thuộc tính
-      if (filters.materials.length > 0) {
-        query = query.in('material', filters.materials);
-      }
-      if (filters.styles.length > 0) {
-        query = query.in('style', filters.styles);
-      }
-
-      // 4. Sắp xếp
+      // --- Sort ---
       switch (filters.sortBy) {
-        case 'price-asc':
-          query = query.order('price', { ascending: true });
-          break;
-        case 'price-desc':
-          query = query.order('price', { ascending: false });
-          break;
-        case 'popular':
-          query = query.order('fake_sold', { ascending: false });
-          break;
-        case 'newest':
-          query = query.order('created_at', { ascending: false });
-          break;
-        case 'manual':
-        default:
-          // Sắp xếp theo display_order nhỏ nhất lên đầu (ưu tiên)
-          query = query.order('display_order', { ascending: true }).order('created_at', { ascending: false });
-          break;
+        case 'price-asc': query = query.order('price', { ascending: true }); break;
+        case 'price-desc': query = query.order('price', { ascending: false }); break;
+        case 'popular': query = query.order('fake_sold', { ascending: false }); break;
+        case 'newest': query = query.order('created_at', { ascending: false }); break;
+        case 'manual': default: query = query.order('display_order', { ascending: true }).order('created_at', { ascending: false }); break;
       }
 
       const { data, error } = await query;
       if (error) throw error;
 
-      // 5. Lọc khoảng giá (Client-side)
+      // --- In-Memory Filtering (Price & Dynamic Attributes) ---
       let filteredData = data || [];
+
+      // 1. Price Range
       if (filters.priceRange.length > 0) {
         filteredData = filteredData.filter(p => {
           return filters.priceRange.some(rangeKey => {
@@ -141,6 +175,55 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
             return p.price >= min && p.price <= max;
           });
         });
+      }
+
+      // 2. Dynamic Attributes
+      if (activeDynamicFilters.length > 0) {
+        // Need to fetch attributes for these products to check
+        const productIds = filteredData.map(p => p.id);
+        if (productIds.length > 0) {
+          const { data: pAttrs } = await supabase
+            .from('product_attributes')
+            .select('product_id, attribute_id, value')
+            .in('product_id', productIds);
+          
+          const pAttrMap = new Map<string, Record<string, string[]>>(); // productId -> { attrId: [values] }
+          
+          pAttrs?.forEach(row => {
+            const pid = row.product_id;
+            if (!pAttrMap.has(pid)) pAttrMap.set(pid, {});
+            
+            // value can be string or array (jsonb)
+            let vals: string[] = [];
+            if (Array.isArray(row.value)) vals = row.value;
+            else if (typeof row.value === 'string') vals = [row.value];
+            
+            pAttrMap.get(pid)![row.attribute_id] = vals;
+          });
+
+          // Filter Logic: product must satisfy ALL active attributes
+          filteredData = filteredData.filter(p => {
+            const pAttributes = pAttrMap.get(p.id);
+            if (!pAttributes) return false;
+
+            return activeDynamicFilters.every(([attrName, selectedValues]) => {
+              // Find attrId from name (we stored name in keys? No, better use ID in keys)
+              // Actually, UI passes Attribute Name as key currently in filters.dynamicAttributes?
+              // Let's fix that. filters.dynamicAttributes should be keyed by Name for display simplicity or we map it.
+              // Use Name matching for simplicity with current structure
+              
+              // Find the attribute ID that corresponds to this filter name
+              const targetAttr = categoryAttributes.find(a => a.name === attrName);
+              if (!targetAttr) return true; // Should not happen
+
+              const productValues = pAttributes[targetAttr.id];
+              if (!productValues) return false;
+
+              // Check if product has ANY of the selected values for this attribute
+              return selectedValues.some(val => productValues.includes(val));
+            });
+          });
+        }
       }
 
       setProducts(filteredData);
@@ -166,6 +249,23 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
     });
   };
 
+  const toggleDynamicFilter = (attrName: string, value: string) => {
+    setFilters(prev => {
+      const currentAttrValues = prev.dynamicAttributes[attrName] || [];
+      const newValues = currentAttrValues.includes(value)
+        ? currentAttrValues.filter(v => v !== value)
+        : [...currentAttrValues, value];
+      
+      return {
+        ...prev,
+        dynamicAttributes: {
+          ...prev.dynamicAttributes,
+          [attrName]: newValues
+        }
+      };
+    });
+  };
+
   const clearFilters = () => {
     setFilters({
       priceRange: [],
@@ -174,14 +274,18 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
       sortBy: 'manual',
       searchQuery: '',
       saleOnly: false,
+      dynamicAttributes: {}
     });
   };
 
   return {
     products,
     filters,
+    categoryAttributes,
+    currentCategory,
     updateFilters,
     toggleFilter,
+    toggleDynamicFilter,
     clearFilters,
     isLoading,
   };
