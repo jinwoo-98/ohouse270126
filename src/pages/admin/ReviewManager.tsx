@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 export default function ReviewManager() {
   const [reviews, setReviews] = useState<any[]>([]);
