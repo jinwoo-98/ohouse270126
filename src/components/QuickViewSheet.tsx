@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingBag, Heart, Star, Minus, Plus, Loader2, Ruler, Info, FileText, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,8 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
+  
+  const descriptionRef = useRef<HTMLDivElement>(null);
 
   // Gallery images
   const gallery = useMemo(() => {
@@ -85,7 +87,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     if (tierConfig.length === 0) return null;
     const allSelected = tierConfig.every((tier: any) => selectedValues[tier.name]);
     if (!allSelected) return null;
-    return variants.find(v => Object.entries(v.tier_values).every(([key, val]) => selectedValues[key] === val));
+    return variants.find(v => Object.entries(v.tier_values).each(([key, val]) => selectedValues[key] === val));
   }, [variants, selectedValues, tierConfig]);
 
   const displayPrice = activeVariant ? activeVariant.price : product?.price;
@@ -110,6 +112,12 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       slug: product.slug
     });
     onClose();
+  };
+
+  const scrollToDescTop = () => {
+    if (descriptionRef.current) {
+      descriptionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (
@@ -221,9 +229,9 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
 
             {/* 6. Collapsible Content Groups */}
             <div className="space-y-2 pt-6 border-t border-border/40">
-              {/* Product Discovery */}
+              {/* Product Discovery (Long Content handled with Bottom Button) */}
               {product.description && (
-                <Collapsible open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen} className="border-b border-border/40 pb-4">
+                <Collapsible open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen} className="border-b border-border/40 pb-4" ref={descriptionRef}>
                   <CollapsibleTrigger className="flex items-center justify-between w-full py-4 text-left group">
                     <div className="flex items-center gap-3">
                       <FileText className="w-4 h-4 text-primary" />
@@ -231,11 +239,23 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                     </div>
                     {isDescriptionOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="pb-4 animate-accordion-down">
+                  <CollapsibleContent className="animate-accordion-down relative">
                     <div 
-                      className="prose prose-sm max-w-none text-muted-foreground rich-text-content-small"
+                      className="prose prose-sm max-w-none text-muted-foreground rich-text-content-small pb-8"
                       dangerouslySetInnerHTML={{ __html: product.description }} 
                     />
+                    {isDescriptionOpen && (
+                      <div className="flex justify-center pt-4 border-t border-dashed border-border/40">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => { setIsDescriptionOpen(false); scrollToDescTop(); }}
+                          className="text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 gap-2"
+                        >
+                          Thu gọn nội dung <ChevronUp className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    )}
                   </CollapsibleContent>
                 </Collapsible>
               )}
@@ -316,7 +336,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
         {/* 8. Fixed Action Bar (Optimized) */}
         <div className="p-4 md:p-6 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
           <div className="flex items-center gap-5">
-            {/* View Details */}
             <Button 
               variant="outline" 
               className="flex-1 h-14 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 rounded-2xl px-2" 
@@ -328,7 +347,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               </Link>
             </Button>
 
-            {/* Wishlist Icon Button - Larger and more spaced */}
             <button 
               onClick={() => toggleWishlist(product)}
               className={cn(
@@ -342,7 +360,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               <Heart className={cn("w-6 h-6", isInWishlist(product.id) && "fill-current")} />
             </button>
 
-            {/* Add to Cart - Larger and more spaced */}
             <Button 
               className="flex-[2] btn-hero h-14 text-[10px] font-bold shadow-gold rounded-2xl"
               onClick={handleAddToCart}
