@@ -44,11 +44,11 @@ export default function ProductDetailPage() {
       if (data?.shipping_policy_summary) {
         setShippingSummary(data.shipping_policy_summary);
       } else {
-        setShippingSummary(\`
+        setShippingSummary(`
           <p><strong>Miễn phí vận chuyển:</strong> Áp dụng cho đơn hàng từ 5.000.000đ trở lên.</p>
           <p><strong>Thời gian giao hàng:</strong> Từ 2 - 5 ngày làm việc trên toàn quốc.</p>
           <p><strong>Chính sách đổi trả:</strong> Hỗ trợ đổi trả trong vòng 30 ngày nếu có lỗi từ nhà sản xuất.</p>
-        \`);
+        `);
       }
     };
     fetchSettings();
