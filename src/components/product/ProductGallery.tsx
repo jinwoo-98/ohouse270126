@@ -8,13 +8,17 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface ProductGalleryProps {
   mainImage: string;
-  galleryImages?: string[];
+  galleryImages?: string[] | null;
   productName: string;
 }
 
-export function ProductGallery({ mainImage, galleryImages = [], productName }: ProductGalleryProps) {
+export function ProductGallery({ mainImage, galleryImages, productName }: ProductGalleryProps) {
+  // Xử lý an toàn: Chuyển galleryImages thành mảng rỗng nếu là null/undefined
+  const safeGallery = Array.isArray(galleryImages) ? galleryImages : [];
+  
   // Gộp ảnh chính và ảnh phụ thành 1 mảng
-  const allImages = [mainImage, ...galleryImages].filter(Boolean);
+  const allImages = [mainImage, ...safeGallery].filter(Boolean);
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   
