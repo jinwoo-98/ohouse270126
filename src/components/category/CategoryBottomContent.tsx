@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useCart } from "@/contexts/CartContext";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { QuickViewSheet } from "@/components/QuickViewSheet";
 
 interface CategoryBottomContentProps {
   categoryId?: string;
@@ -24,6 +25,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
   const [keywords, setKeywords] = useState<any[]>([]);
   const [shopLooks, setShopLooks] = useState<any[]>([]);
   const [selectedLook, setSelectedLook] = useState<any>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
 
   useEffect(() => {
     if (categoryId) {
@@ -118,9 +120,12 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                       <Tooltip key={i} delayDuration={0}>
                         <TooltipTrigger asChild>
                           <button
-                            className="absolute w-7 h-7 -ml-3.5 -mt-3.5 bg-white/90 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in"
+                            className="absolute w-7 h-7 -ml-3.5 -mt-3.5 bg-white/90 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in z-20"
                             style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                            onClick={(e) => { e.stopPropagation(); setSelectedLook(look); }}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              if (item.products) setQuickViewProduct(item.products);
+                            }}
                           >
                             <Plus className="w-3.5 h-3.5" />
                             <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
@@ -209,7 +214,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                                 className="flex-1 btn-hero h-10 text-[9px] font-bold shadow-none rounded-lg"
                                 onClick={() => addToCart({ ...item.products, quantity: 1, image: item.products.image_url })}
                              >
-                               <ShoppingBag className="w-3.5 h-3.5 mr-2" /> MUA NGAY
+                               <ShoppingBag className="w-3.5 h-3.5 mr-2" /> THÊM VÀO GIỎ
                              </Button>
                              <Button 
                                 variant="outline" 
@@ -233,6 +238,13 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Quick View Handler */}
+      <QuickViewSheet 
+        product={quickViewProduct} 
+        isOpen={!!quickViewProduct} 
+        onClose={() => setQuickViewProduct(null)} 
+      />
     </div>
   );
 }
