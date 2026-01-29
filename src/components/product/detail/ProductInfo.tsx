@@ -28,6 +28,7 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
   
   // State for collapsibles
   const [isShortDescOpen, setIsShortDescOpen] = useState(false);
+  const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
 
   const tierConfig = product.tier_variants_config || [];
@@ -144,7 +145,7 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
         </Button>
       </div>
 
-      {/* 3. SHORT DESCRIPTION SECTION (NEW) */}
+      {/* 3. COLLAPSIBLE SHORT DESCRIPTION */}
       {product.short_description && (
         <Collapsible open={isShortDescOpen} onOpenChange={setIsShortDescOpen} className="border-b border-border/50 pb-4">
           <CollapsibleTrigger className="flex items-center justify-between w-full group py-2 text-left">
@@ -162,20 +163,25 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
         </Collapsible>
       )}
 
-      {/* 4. DIMENSIONS SECTION */}
+      {/* 4. COLLAPSIBLE DIMENSIONS */}
       {product.dimension_image_url && (
-        <div className="space-y-4 border-b border-border/50 pb-6">
-          <div className="flex items-center gap-3">
-            <Ruler className="w-4 h-4 text-primary" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-charcoal">Kích thước sản phẩm</span>
-          </div>
-          <div className="rounded-2xl overflow-hidden border border-border/50 bg-white p-2">
-            <img src={product.dimension_image_url} alt="Dimensions" className="w-full h-auto object-contain" />
-          </div>
-        </div>
+        <Collapsible open={isDimensionsOpen} onOpenChange={setIsDimensionsOpen} className="border-b border-border/50 pb-4">
+          <CollapsibleTrigger className="flex items-center justify-between w-full group py-2">
+            <div className="flex items-center gap-3">
+              <Ruler className="w-4 h-4 text-primary" />
+              <span className="text-[11px] font-bold uppercase tracking-widest text-charcoal">Kích thước</span>
+            </div>
+            {isDimensionsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-4 animate-accordion-down">
+            <div className="rounded-2xl overflow-hidden border border-border/50 bg-white p-2">
+              <img src={product.dimension_image_url} alt="Dimensions" className="w-full h-auto object-contain" />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       )}
 
-      {/* 5. COLLAPSIBLE SPECS (ATTRIBUTES) */}
+      {/* 5. COLLAPSIBLE SPECS */}
       <Collapsible open={isSpecsOpen} onOpenChange={setIsSpecsOpen} className="pb-4">
         <CollapsibleTrigger className="flex items-center justify-between w-full group py-2">
           <div className="flex items-center gap-3">
@@ -196,7 +202,7 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Shipping/Warranty Badges */}
+      {/* Badges */}
       <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/40">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center"><Truck className="w-4 h-4 text-primary" /></div>

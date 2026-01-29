@@ -27,12 +27,15 @@ export function ProductDescription({ description }: ProductDescriptionProps) {
       
       <div className="relative">
         <div className={cn(
-          "prose prose-lg prose-stone max-w-none text-muted-foreground leading-relaxed transition-all duration-1000 ease-in-out",
+          "max-w-none transition-all duration-1000 ease-in-out",
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
-          {/* Container rich-text-content sẽ tự động áp dụng các class căn lề đã định nghĩa trong index.css */}
+          {/* 
+            Sử dụng rich-text-content và kết hợp flex center để đảm bảo 
+            toàn bộ nội dung từ Editor được căn giữa.
+          */}
           <div 
-            className="rich-text-content"
+            className="rich-text-content flex flex-col items-center text-center prose prose-lg prose-stone max-w-none text-muted-foreground"
             dangerouslySetInnerHTML={{ __html: description || "<p className='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>
