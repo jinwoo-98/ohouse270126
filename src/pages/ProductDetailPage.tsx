@@ -16,21 +16,16 @@ import { ProductReviews } from "@/components/product/detail/ProductReviews";
 import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
 import { StickyActionToolbar } from "@/components/product/detail/StickyActionToolbar";
 
-// Định nghĩa các cặp danh mục liên quan để Cross-sell
-const CROSS_SELL_MAP: Record<string, string[]> = {
-  // Phòng khách
+// Map từ khóa danh mục sang các danh mục gợi ý
+const CROSS_SELL_KEYWORDS: Record<string, string[]> = {
   'sofa': ['ban-tra', 'ke-tivi', 'den-san', 'tham'],
   'ban-tra': ['sofa', 'tham', 'ke-tivi'],
   'ke-tivi': ['sofa', 'ban-tra', 'tu-trang-tri'],
-  // Phòng ngủ
   'giuong': ['tu-quan-ao', 'ban-trang-diem', 'den-ngu', 'dem'],
   'tu-quan-ao': ['giuong', 'guong', 'ban-trang-diem'],
-  'ban-trang-diem': ['ghe-trang-diem', 'guong', 'giuong'],
-  // Phòng ăn
   'ban-an': ['ghe-an', 'den-chum', 'tu-ruou'],
   'ghe-an': ['ban-an', 'den-chum'],
-  // Mặc định
-  'default': ['den-trang-tri', 'tranh', 'tham']
+  'mac-dinh': ['den-trang-tri', 'tranh', 'tham']
 };
 
 export default function ProductDetailPage() {
@@ -47,7 +42,7 @@ export default function ProductDetailPage() {
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
   const [perfectMatch, setPerfectMatch] = useState<any[]>([]);
   const [boughtTogether, setBoughtTogether] = useState<any[]>([]);
-  const [crossSellProducts, setCrossSellProducts] = useState<any[]>([]); // Gợi ý phối đồ
+  const [crossSellProducts, setCrossSellProducts] = useState<any[]>([]);
   const [shippingPolicy, setShippingPolicy] = useState("");
   
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
@@ -75,7 +70,7 @@ export default function ProductDetailPage() {
       
       if (data.category_id) {
         fetchCategoryHierarchy(data.category_id);
-        fetchCrossSell(data.category_id, data.id); // Fetch gợi ý phối đồ
+        fetchCrossSell(data.category_id, data.id);
       }
 
       await Promise.all([
@@ -83,12 +78,11 @@ export default function ProductDetailPage() {
         fetchAttributes(data.id),
         fetchSimilarProducts(data.category_id, data.id),
         fetchRelationProducts(data.perfect_match_ids || [], setPerfectMatch),
-        // Bought Together ưu tiên chọn tay, nếu không có thì fallback sang logic category
-        fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether),
+        // Bought Together: Ưu tiên thủ công -> Fallback: Lấy sản phẩm rẻ tiền hơn cùng danh mục (như phụ kiện)
+        fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether, true, data.category_id),
         fetchSettings()
       ]);
     } catch (error) {
-      console.error("Fetch error:", error);
       toast.error("Sản phẩm không tồn tại");
       navigate("/");
     } finally {
@@ -101,28 +95,58 @@ export default function ProductDetailPage() {
     if (data) setShippingPolicy(data.shipping_policy_summary);
   };
 
-  // Logic lấy sản phẩm gợi ý phối đồ (Cross-sell)
   const fetchCrossSell = async (categorySlug: string, currentId: string) => {
-    // Tìm danh mục liên quan
-    let targetCategories = CROSS_SELL_MAP[categorySlug] || CROSS_SELL_MAP['default'];
+    // 1. Tìm danh sách gợi ý dựa trên từ khóa trong slug
+    let targetCategories = CROSS_SELL_KEYWORDS['mac-dinh'];
     
-    // Nếu không tìm thấy map chính xác, thử tìm map của danh mục cha (cần logic phức tạp hơn, ở đây ta fallback về default)
-    if (!targetCategories) targetCategories = CROSS_SELL_MAP['default'];
+    for (const key in CROSS_SELL_KEYWORDS) {
+      if (categorySlug.includes(key)) {
+        targetCategories = CROSS_SELL_KEYWORDS[key];
+        break;
+      }
+    }
 
+    // 2. Fetch sản phẩm
     const { data } = await supabase
       .from('products')
       .select('*')
-      .in('category_id', targetCategories)
+      .in('category_id', targetCategories) // Tìm chính xác theo slug danh mục
       .neq('id', currentId)
-      .limit(4);
+      .limit(8); // Lấy nhiều hơn cho Carousel
     
-    setCrossSellProducts(data || []);
+    // Nếu không có kết quả chính xác, thử tìm rộng hơn (bỏ qua filter category chính xác, tìm theo tên)
+    if (!data || data.length === 0) {
+       // Fallback: Lấy random sản phẩm nổi bật
+       const { data: fallbackData } = await supabase
+         .from('products')
+         .select('*')
+         .eq('is_featured', true)
+         .neq('id', currentId)
+         .limit(8);
+       setCrossSellProducts(fallbackData || []);
+    } else {
+       setCrossSellProducts(data);
+    }
   };
 
-  const fetchRelationProducts = async (ids: string[], setter: (val: any[]) => void) => {
-    if (!ids || ids.length === 0) return;
-    const { data } = await supabase.from('products').select('*').in('id', ids);
-    setter(data || []);
+  const fetchRelationProducts = async (ids: string[], setter: (val: any[]) => void, useFallback = false, catId = "") => {
+    if (ids && ids.length > 0) {
+      const { data } = await supabase.from('products').select('*').in('id', ids);
+      if (data && data.length > 0) {
+        setter(data);
+        return;
+      }
+    }
+    
+    if (useFallback && catId) {
+      // Fallback cho "Thường mua cùng": Lấy các sản phẩm giá thấp hơn trong cùng danh mục (giả lập phụ kiện)
+      const { data } = await supabase.from('products')
+        .select('*')
+        .eq('category_id', catId)
+        .order('price', { ascending: true }) // Lấy đồ rẻ
+        .limit(6);
+      setter(data || []);
+    }
   };
 
   const fetchCategoryHierarchy = async (categorySlug: string) => {
@@ -155,7 +179,7 @@ export default function ProductDetailPage() {
       .select('*')
       .eq('category_id', categoryId)
       .neq('id', currentId)
-      .limit(4); // Giới hạn 4 cho đẹp layout
+      .limit(8);
     setSimilarProducts(data || []);
   };
 
@@ -215,13 +239,13 @@ export default function ProductDetailPage() {
             <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
           </div>
 
-          {/* Main Content Area - Ordered as requested */}
+          {/* Main Content Area */}
           <div className="max-w-6xl mx-auto space-y-24">
             
-            {/* 1. Khám phá sản phẩm (Description) */}
+            {/* 1. Khám phá sản phẩm */}
             <ProductDescription description={product.description} />
             
-            {/* 2. Đánh giá (Reviews) */}
+            {/* 2. Đánh giá */}
             <ProductReviews 
               reviews={reviews} 
               product={product} 
@@ -230,23 +254,23 @@ export default function ProductDetailPage() {
               onSubmitReview={handleSubmitReview}
             />
 
-            {/* 3. Hỏi AI (QnA) */}
+            {/* 3. Hỏi AI */}
             <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
 
-            {/* 4. Gợi ý mua cùng (Cross-sell: Sofa -> Bàn trà) */}
+            {/* 4. Gợi ý mua cùng (Cross-sell tự động theo danh mục) */}
             {crossSellProducts.length > 0 && (
               <ProductHorizontalList products={crossSellProducts} title="Gợi ý phối đồ hoàn hảo" />
             )}
 
-            {/* 5. Sản phẩm tương tự (Cùng danh mục) */}
+            {/* 5. Sản phẩm tương tự */}
             <ProductHorizontalList products={similarProducts} title="Sản phẩm tương tự" />
 
-            {/* 6. Bộ sưu tập (Perfect Match - Manual Select) */}
+            {/* 6. Bộ sưu tập (Perfect Match - Chọn tay) */}
             {perfectMatch.length > 0 && (
               <ProductInspiration product={product} comboProducts={perfectMatch} />
             )}
 
-            {/* 7. Thường mua cùng nhau (Bought Together - Manual Select) */}
+            {/* 7. Thường mua cùng nhau (Bought Together - Chọn tay hoặc Fallback giá rẻ) */}
             {boughtTogether.length > 0 && (
               <ProductHorizontalList products={boughtTogether} title="Thường được mua cùng nhau" />
             )}
