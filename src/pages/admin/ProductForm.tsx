@@ -12,7 +12,9 @@ import {
   TrendingUp,
   Box,
   Sparkles,
-  List
+  List,
+  X,
+  Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +56,7 @@ export default function ProductForm() {
     description: "",
     category_id: "",
     image_url: "",
+    gallery_urls: [] as string[],
     material: "",
     style: "",
     is_featured: false,
@@ -88,14 +91,12 @@ export default function ProductForm() {
   };
 
   const fetchAttributesForCategory = async (categorySlug: string) => {
-    // 1. Get Category ID and Parent ID from Slug
     const category = categories.find(c => c.slug === categorySlug);
     if (!category) return;
 
     const targetCategoryIds = [category.id];
     if (category.parent_id) targetCategoryIds.push(category.parent_id);
 
-    // 2. Fetch linked attributes
     const { data: links } = await supabase
       .from('category_attributes')
       .select('attribute_id')
@@ -132,6 +133,7 @@ export default function ProductForm() {
           description: data.description || "",
           category_id: data.category_id || "",
           image_url: data.image_url || "",
+          gallery_urls: data.gallery_urls || [],
           material: data.material || "",
           style: data.style || "",
           is_featured: data.is_featured,
@@ -143,7 +145,6 @@ export default function ProductForm() {
           fake_rating: data.fake_rating?.toString() || "5",
         });
 
-        // Fetch existing product attributes
         const { data: pAttrs } = await supabase
           .from('product_attributes')
           .select('*')
@@ -168,7 +169,6 @@ export default function ProductForm() {
   const handleAttributeChange = (attrId: string, value: any, isMulti: boolean) => {
     setProductAttrs(prev => {
       if (isMulti) {
-        // Handle checkbox toggles
         const currentVals = (prev[attrId] || []) as string[];
         if (currentVals.includes(value)) {
           return { ...prev, [attrId]: currentVals.filter(v => v !== value) };
@@ -176,10 +176,16 @@ export default function ProductForm() {
           return { ...prev, [attrId]: [...currentVals, value] };
         }
       } else {
-        // Single select
         return { ...prev, [attrId]: [value] };
       }
     });
+  };
+
+  const handleRemoveGalleryImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      gallery_urls: prev.gallery_urls.filter((_, i) => i !== index)
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -204,6 +210,7 @@ export default function ProductForm() {
       description: formData.description,
       category_id: formData.category_id,
       image_url: formData.image_url,
+      gallery_urls: formData.gallery_urls,
       material: formData.material,
       style: formData.style,
       is_featured: formData.is_featured,
@@ -228,16 +235,12 @@ export default function ProductForm() {
         productId = data.id;
       }
 
-      // Save attributes
       if (productId) {
-        // 1. Delete old
         await supabase.from('product_attributes').delete().eq('product_id', productId);
-        
-        // 2. Insert new
         const attrPayloads = Object.entries(productAttrs).map(([attrId, val]) => ({
           product_id: productId,
           attribute_id: attrId,
-          value: val // Store array of values
+          value: val
         })).filter(item => item.value && item.value.length > 0);
 
         if (attrPayloads.length > 0) {
@@ -278,7 +281,6 @@ export default function ProductForm() {
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          {/* 1. SECTION GIÁ VÀ PHÂN LOẠI (Ưu tiên lên trên cùng) */}
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6 border-l-4 border-l-primary">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
               <Settings2 className="w-4 h-4" /> 1. Giá bán và Phân loại
@@ -332,7 +334,6 @@ export default function ProductForm() {
             </div>
           </div>
 
-          {/* DYNAMIC ATTRIBUTES SECTION */}
           {availableAttributes.length > 0 && (
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
@@ -377,7 +378,6 @@ export default function ProductForm() {
             </div>
           )}
 
-          {/* 3. SECTION THÔNG TIN CHI TIẾT */}
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
               <Info className="w-4 h-4" /> {availableAttributes.length > 0 ? "3." : "2."} Thông tin chi tiết
@@ -392,7 +392,6 @@ export default function ProductForm() {
                 className="h-12 rounded-xl text-lg font-bold"
               />
             </div>
-            {/* Giữ lại Material/Style cũ làm fallback nếu chưa dùng attributes */}
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground">Chất liệu (Tag tìm kiếm)</Label>
@@ -421,13 +420,38 @@ export default function ProductForm() {
           </div>
         </div>
 
-        {/* CỘT PHỤ BÊN PHẢI (Giữ nguyên) */}
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <ImageIcon className="w-4 h-4" /> Hình ảnh chính
+              <ImageIcon className="w-4 h-4" /> Hình ảnh đại diện (Ảnh chính)
             </h3>
             <ImageUpload value={formData.image_url} onChange={(url) => setFormData({...formData, image_url: url})} />
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+              <ImageIcon className="w-4 h-4" /> Bộ sưu tập ảnh (Ảnh phụ)
+            </h3>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {formData.gallery_urls.map((url, idx) => (
+                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
+                  <img src={url} alt="Gallery" className="w-full h-full object-cover" />
+                  <button 
+                    type="button"
+                    onClick={() => handleRemoveGalleryImage(idx)}
+                    className="absolute top-1 right-1 p-1 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="p-4 border-2 border-dashed border-border rounded-2xl bg-secondary/5">
+              <ImageUpload 
+                onChange={(url) => setFormData(prev => ({ ...prev, gallery_urls: [...prev.gallery_urls, url] }))} 
+              />
+              <p className="text-[10px] text-muted-foreground mt-3 text-center italic">Nhấn để thêm ảnh mới vào bộ sưu tập.</p>
+            </div>
           </div>
 
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-4">
