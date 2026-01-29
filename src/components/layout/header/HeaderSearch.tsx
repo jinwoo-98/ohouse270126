@@ -40,15 +40,22 @@ export function HeaderSearch({ onOpenMobileMenu }: HeaderSearchProps) {
   };
 
   return (
-    <div className="flex-1 flex items-center max-w-[250px] relative" ref={searchContainerRef}>
-      <div className="flex items-center lg:hidden mr-2">
-        <button className="p-2 -ml-2 hover:bg-secondary rounded-lg transition-colors" onClick={onOpenMobileMenu}>
+    <div className="flex-1 flex items-center lg:max-w-[250px] relative" ref={searchContainerRef}>
+      <div className="flex items-center lg:hidden gap-1">
+        <button 
+          className="p-2.5 -ml-2.5 hover:bg-secondary rounded-lg transition-colors" 
+          onClick={onOpenMobileMenu}
+        >
           <Menu className="w-5 h-5" />
         </button>
-        <button className="md:hidden p-2 hover:bg-secondary rounded-lg transition-colors" onClick={onOpenMobileMenu}>
+        <button 
+          className="md:hidden p-2.5 hover:bg-secondary rounded-lg transition-colors" 
+          onClick={onOpenMobileMenu}
+        >
           <Search className="w-5 h-5" />
         </button>
       </div>
+      
       <form onSubmit={handleSearch} className="hidden md:flex items-center flex-1 relative">
         <Search className="absolute left-3 w-4 h-4 text-muted-foreground" />
         <Input 
@@ -59,6 +66,7 @@ export function HeaderSearch({ onOpenMobileMenu }: HeaderSearchProps) {
           onFocus={() => setIsSearchFocused(true)}
         />
       </form>
+      
       <AnimatePresence>
         {isSearchFocused && (
           <SearchSuggestions 
