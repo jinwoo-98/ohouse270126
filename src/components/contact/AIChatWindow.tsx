@@ -24,7 +24,7 @@ interface Message {
 interface AIChatWindowProps {
   isOpen: boolean; 
   onClose: () => void;
-  productContext?: any; // Dữ liệu sản phẩm truyền từ trang chi tiết
+  productContext?: any; // Product data passed from detail page
 }
 
 export function AIChatWindow({ isOpen, onClose, productContext }: AIChatWindowProps) {
@@ -33,7 +33,6 @@ export function AIChatWindow({ isOpen, onClose, productContext }: AIChatWindowPr
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Khởi tạo lời chào dựa trên ngữ cảnh
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       const greeting = productContext 
@@ -58,26 +57,18 @@ export function AIChatWindow({ isOpen, onClose, productContext }: AIChatWindowPr
     setInput("");
     setIsTyping(true);
 
-    // Logic xử lý câu hỏi dựa trên dữ liệu thật của sản phẩm
+    // Simulated AI response logic
     setTimeout(() => {
       const query = input.toLowerCase();
       let responseText = "";
       
       if (productContext) {
-        const desc = (productContext.description || "").toLowerCase();
-        
         if (query.includes("chất liệu") || query.includes("làm bằng gì")) {
           responseText = productContext.material 
             ? `Sản phẩm này được làm từ ${productContext.material}. Ngoài ra, bạn có thể xem chi tiết ở phần mô tả phía dưới nhé.`
             : "Sản phẩm được làm từ các vật liệu cao cấp tuyển chọn. Bạn có thể xem chi tiết cấu tạo ở mục thông số kỹ thuật ngay bên dưới ảnh sản phẩm đấy ạ.";
         } else if (query.includes("giá") || query.includes("bao nhiêu tiền")) {
           responseText = `Sản phẩm "${productContext.name}" đang có giá là ${new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(productContext.price)}.`;
-          if (productContext.original_price) responseText += " Đây là mức giá ưu đãi cực tốt so với giá gốc đấy ạ!";
-        } else if (query.includes("kích thước") || query.includes("to không") || query.includes("dài bao nhiêu")) {
-          // Thử tìm trong description hoặc trả lời chung
-          responseText = "Thông tin kích thước chi tiết đã được chúng tôi cập nhật ở phần mô tả sản phẩm. Nếu bạn cần kích thước đặt riêng (Custom), hãy nhắn Zalo để chúng tôi tư vấn kỹ hơn nhé.";
-        } else if (query.includes("ship") || query.includes("giao hàng") || query.includes("vận chuyển")) {
-          responseText = "OHOUSE miễn phí vận chuyển toàn quốc cho đơn hàng từ 5 triệu đồng. Thời gian giao hàng từ 3-7 ngày tùy khu vực của bạn.";
         } else {
           responseText = `Cảm ơn bạn đã hỏi về "${productContext.name}". Câu hỏi của bạn về "${input}" khá chi tiết, tôi sẽ chuyển thông tin này cho chuyên viên tư vấn để gọi lại hỗ trợ bạn ngay nhé!`;
         }
@@ -90,9 +81,8 @@ export function AIChatWindow({ isOpen, onClose, productContext }: AIChatWindowPr
         text: responseText,
         sender: 'bot',
         timestamp: new Date(),
-        actions: (query.includes("tư vấn") || responseText.includes("chuyển thông tin")) ? [
-          { label: "Nhắn Zalo Ngay", icon: MessageCircle, href: "https://zalo.me/0909123456", color: "bg-blue-500" },
-          { label: "Facebook Messenger", icon: Facebook, href: "https://m.me/ohouse.vn", color: "bg-indigo-600" }
+        actions: responseText.includes("chuyển thông tin") ? [
+          { label: "Nhắn Zalo Ngay", icon: MessageCircle, href: "https://zalo.me/0909123456", color: "bg-blue-500" }
         ] : undefined
       };
 
@@ -110,7 +100,6 @@ export function AIChatWindow({ isOpen, onClose, productContext }: AIChatWindowPr
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           className="fixed inset-0 md:inset-auto md:bottom-24 md:right-8 w-full md:w-[400px] h-full md:h-[600px] bg-card md:rounded-3xl shadow-elevated z-[120] flex flex-col overflow-hidden border border-border/40"
         >
-          {/* Header */}
           <div className="bg-charcoal p-4 text-cream flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
@@ -124,12 +113,11 @@ export function AIChatWindow({ isOpen, onClose, productContext }: AIChatWindowPr
             <Button variant="ghost" size="icon" onClick={onClose} className="text-cream hover:bg-white/10 rounded-full h-8 w-8"><X className="w-4 h-4" /></Button>
           </div>
 
-          {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-secondary/10 custom-scrollbar">
             {messages.map((msg) => (
               <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
                 <div className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed ${msg.sender === 'user' ? 'bg-primary text-primary-foreground rounded-tr-none shadow-gold' : 'bg-white text-foreground rounded-tl-none shadow-sm border border-border/40'}`}>
-                  <div className="whitespace-pre-line">{msg.text}</div>
+                  {msg.text}
                 </div>
                 {msg.actions && (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -151,7 +139,6 @@ export function AIChatWindow({ isOpen, onClose, productContext }: AIChatWindowPr
             )}
           </div>
 
-          {/* Input */}
           <div className="p-3 bg-white border-t border-border">
             <div className="relative">
               <Input placeholder="Nhập câu hỏi của bạn..." value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSend()} className="pr-12 h-11 rounded-xl bg-secondary/20 border-none" />

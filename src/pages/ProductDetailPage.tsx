@@ -35,14 +35,13 @@ export default function ProductDetailPage() {
   const [showQuickNav, setShowQuickNav] = useState(false);
   const [activeSection, setActiveSection] = useState("info");
 
-  // Danh sách các mục điều hướng nhanh
+  // Sub-navigation items
   const quickNavItems = [
     { id: "info", label: "Thông tin", icon: Info },
     { id: "description", label: "Chi tiết", icon: LayoutGrid },
     { id: "reviews", label: "Đánh giá", icon: Star },
     { id: "qna", label: "Hỏi đáp", icon: MessageSquare },
     { id: "similar", label: "Tương tự", icon: PackageSearch },
-    { id: "bought-together", label: "Mua cùng nhau", icon: ShoppingCart },
   ];
 
   useEffect(() => {
@@ -56,12 +55,11 @@ export default function ProductDetailPage() {
     const handleScroll = () => {
       setShowQuickNav(window.scrollY > 600);
 
-      // Theo dõi vị trí cuộn để đổi trạng thái active trên menu
+      // Track scroll position to update active section in menu
       for (const item of quickNavItems) {
         const element = document.getElementById(item.id);
         if (element) {
           const rect = element.getBoundingClientRect();
-          // Nếu phần tử đang ở gần đầu màn hình (trong khoảng 0-250px)
           if (rect.top >= -50 && rect.top <= 250) {
             setActiveSection(item.id);
           }
@@ -71,7 +69,7 @@ export default function ProductDetailPage() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [quickNavItems]);
+  }, []);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -184,7 +182,6 @@ export default function ProductDetailPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
-      {/* Quick Navigation Bar - Tối ưu chỉ còn menu điều hướng */}
       <AnimatePresence>
         {showQuickNav && (
           <motion.div 
@@ -262,9 +259,6 @@ export default function ProductDetailPage() {
             <div id="similar" className="scroll-mt-24">
               <ProductHorizontalList products={similarProducts} title="Sản phẩm tương tự" />
             </div>
-            <div id="bought-together" className="scroll-mt-24">
-              <ProductHorizontalList products={boughtTogetherProducts} title="Thường được mua cùng nhau" />
-            </div>
           </div>
 
           <RecentlyViewed />
@@ -276,10 +270,7 @@ export default function ProductDetailPage() {
                 <h3 className="text-xl font-bold uppercase tracking-widest leading-tight">Chính sách<br/>Vận chuyển</h3>
               </div>
               <div className="flex-1 prose prose-stone max-w-none text-muted-foreground leading-relaxed">
-                <div dangerouslySetInnerHTML={{ __html: shippingSummary || "<p>OHOUSE miễn phí vận chuyển toàn quốc cho đơn hàng từ 5 triệu đồng. Thời gian giao hàng từ 3-7 ngày tùy khu vực của bạn.</p>" }} />
-                <p className="mt-8 text-xs font-bold uppercase tracking-widest text-primary italic">
-                  * Chi tiết tại trang <Link to="/ho-tro/van-chuyen" className="underline underline-offset-4">Chính sách vận chuyển</Link>.
-                </p>
+                <div dangerouslySetInnerHTML={{ __html: shippingSummary || "<p>OHOUSE miễn phí vận chuyển toàn quốc cho đơn hàng từ 5 triệu đồng.</p>" }} />
               </div>
             </div>
           </section>
