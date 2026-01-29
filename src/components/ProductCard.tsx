@@ -51,7 +51,7 @@ export function ProductCard({ product, onQuickView, className }: ProductCardProp
           )}
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - Compact */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
           <button 
             onClick={() => toggleWishlist({ ...product, image: product.image_url })}
@@ -73,7 +73,7 @@ export function ProductCard({ product, onQuickView, className }: ProductCardProp
           )}
         </div>
 
-        {/* Add to Cart Overlay */}
+        {/* Add to Cart Overlay - Compact */}
         <div className="absolute bottom-3 left-3 right-3 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
           <button 
             onClick={() => addToCart({
@@ -91,40 +91,40 @@ export function ProductCard({ product, onQuickView, className }: ProductCardProp
         </div>
       </div>
 
-      {/* Info Section - Centered content */}
-      <div className="p-4 md:p-5 flex-1 flex flex-col items-center text-center">
-        {/* Rating */}
-        <div className="flex items-center gap-1 mb-2">
+      {/* Info Section - Tối ưu khoảng cách */}
+      <div className="p-3 md:p-4 flex-1 flex flex-col items-center text-center">
+        {/* Rating - Nhỏ gọn */}
+        <div className="flex items-center gap-1 mb-1.5">
           <div className="flex text-amber-400">
             {[...Array(5)].map((_, i) => (
               <Star key={i} className={cn("w-3 h-3", i < Math.floor(rating) ? "fill-current" : "text-gray-200")} />
             ))}
           </div>
-          {reviews > 0 && <span className="text-[10px] text-muted-foreground ml-1">({reviews})</span>}
+          {reviews > 0 && <span className="text-[9px] text-muted-foreground ml-0.5">({reviews})</span>}
         </div>
 
-        {/* Name */}
+        {/* Name - Cố định 2 dòng để căn đều các ô */}
         <Link to={`/san-pham/${product.slug || product.id}`} className="block mb-2">
-          <h3 className="text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-tight h-10 overflow-hidden">
+          <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-8 md:h-10 overflow-hidden">
             {product.name}
           </h3>
         </Link>
 
-        {/* Price Group */}
-        <div className="mt-auto space-y-1">
+        {/* Price Group - Sát nhau hơn */}
+        <div className="mt-auto w-full space-y-1">
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <span className="text-base font-bold text-primary">{formatPrice(product.price)}</span>
+            <span className="text-sm md:text-base font-bold text-primary">{formatPrice(product.price)}</span>
             {product.original_price && (
-              <span className="text-xs text-muted-foreground line-through opacity-60">
+              <span className="text-[10px] md:text-xs text-muted-foreground line-through opacity-60">
                 {formatPrice(product.original_price)}
               </span>
             )}
           </div>
           
-          {/* Sold Stats */}
+          {/* Sold Stats - Text mảnh và tinh tế */}
           {sold > 0 && (
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
-              Đã bán {sold}
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50 border-t border-border/40 pt-1.5 mt-1.5">
+              Đã bán {sold} sản phẩm
             </p>
           )}
         </div>

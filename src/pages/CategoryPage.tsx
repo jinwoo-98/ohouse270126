@@ -191,8 +191,12 @@ export default function CategoryPage() {
             </AnimatePresence>
 
             <div className="flex-1 min-w-0">
-              <div className={cn("grid grid-cols-2 gap-4 md:gap-8 lg:gap-10", isSidebarVisible ? "xl:grid-cols-3" : "xl:grid-cols-4")}>
-                {isLoading ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />) : products.length === 0 ? (
+              {/* Cập nhật Grid để hiện nhiều sp hơn trên màn hình rộng */}
+              <div className={cn(
+                "grid grid-cols-2 gap-4 md:gap-6 lg:gap-8", 
+                isSidebarVisible ? "xl:grid-cols-4" : "xl:grid-cols-5"
+              )}>
+                {isLoading ? Array.from({ length: 12 }).map((_, i) => <ProductCardSkeleton key={i} />) : products.length === 0 ? (
                   <div className="col-span-full py-20 text-center text-muted-foreground">Chưa có sản phẩm nào trong danh mục này.</div>
                 ) : (
                   products.map((product, index) => (
