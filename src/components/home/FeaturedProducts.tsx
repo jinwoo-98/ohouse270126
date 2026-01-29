@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, ShoppingBag, ArrowRight, Eye, Star } from "lucide-react";
+import { Heart, ShoppingBag, ArrowRight, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
@@ -9,6 +9,7 @@ import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 import { cn } from "@/lib/utils";
+import { StarRating } from "@/components/product/detail/ProductReviews";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -123,12 +124,9 @@ export function FeaturedProducts() {
                     
                     <div className="p-3 md:p-4 flex-1 flex flex-col">
                       <div className="flex items-center gap-1 mb-1">
-                        <div className="flex text-primary">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={cn("w-2.5 h-2.5", i < Math.floor(rating) ? "fill-current" : "text-gray-300")} />
-                          ))}
-                        </div>
-                        <span className="text-[9px] text-muted-foreground">({reviews})</span>
+                        {/* Sử dụng component StarRating để hiển thị sao lẻ */}
+                        <StarRating rating={rating} size="w-3 h-3" />
+                        <span className="text-[9px] text-muted-foreground ml-1">({reviews})</span>
                       </div>
                       
                       <Link to={`/san-pham/${product.slug || product.id}`}>

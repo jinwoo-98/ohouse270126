@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Heart, Star, Minus, Plus, Loader2, Ruler, Info, FileText, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingBag, Heart, Minus, Plus, Loader2, Ruler, Info, FileText, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn, formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { StarRating } from "@/components/product/detail/ProductReviews";
 
 interface QuickViewSheetProps {
   product: any | null;
@@ -30,14 +31,12 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [activeImage, setActiveImage] = useState("");
 
-  // Collapsible states
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
   
   const descriptionRef = useRef<HTMLDivElement>(null);
 
-  // Gallery images
   const gallery = useMemo(() => {
     if (!product) return [];
     return [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
@@ -87,7 +86,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     if (tierConfig.length === 0) return null;
     const allSelected = tierConfig.every((tier: any) => selectedValues[tier.name]);
     if (!allSelected) return null;
-    return variants.find(v => Object.entries(v.tier_values).each(([key, val]) => selectedValues[key] === val));
+    return variants.find(v => Object.entries(v.tier_values).every(([key, val]) => selectedValues[key] === val));
   }, [variants, selectedValues, tierConfig]);
 
   const displayPrice = activeVariant ? activeVariant.price : product?.price;
@@ -124,13 +123,8 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="w-full sm:max-w-[580px] p-0 flex flex-col z-[150] border-none shadow-elevated">
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-background">
-          {/* 1. Main Image Container */}
           <div className="relative aspect-square bg-secondary/20 overflow-hidden">
-            <img 
-              src={activeImage} 
-              alt={product.name}
-              className="w-full h-full object-cover transition-all duration-500"
-            />
+            <img src={activeImage} alt={product.name} className="w-full h-full object-cover transition-all duration-500" />
             <div className="absolute top-4 left-4">
               <Badge variant="secondary" className="bg-primary text-white uppercase tracking-widest text-[9px] font-bold border-none px-3 py-1 shadow-sm">
                 {product.category_id?.replace(/-/g, ' ')}
@@ -138,7 +132,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
             </div>
           </div>
 
-          {/* 2. Gallery Thumbnails */}
           {gallery.length > 1 && (
             <div className="flex gap-2 px-6 py-4 overflow-x-auto no-scrollbar bg-white border-b border-border/40">
               {gallery.map((img, idx) => (
@@ -157,7 +150,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
           )}
 
           <div className="p-6 md:p-8 space-y-10 pb-10">
-            {/* 3. Header Info */}
             <div className="space-y-4">
               <SheetHeader>
                 <SheetTitle className="text-2xl font-display font-bold leading-tight text-left text-charcoal">
@@ -165,26 +157,18 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 </SheetTitle>
               </SheetHeader>
               <div className="flex items-center gap-4">
-                <span className="text-3xl font-bold text-primary">
-                  {formatPrice(displayPrice)}
-                </span>
+                <span className="text-3xl font-bold text-primary">{formatPrice(displayPrice)}</span>
                 {displayOriginalPrice && (
-                  <span className="text-sm text-muted-foreground line-through opacity-50">
-                    {formatPrice(displayOriginalPrice)}
-                  </span>
+                  <span className="text-sm text-muted-foreground line-through opacity-50">{formatPrice(displayOriginalPrice)}</span>
                 )}
               </div>
-              <div className="flex items-center gap-1">
-                <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={cn("w-3.5 h-3.5", i < Math.floor(product.fake_rating || 5) ? "fill-current" : "text-gray-200")} />
-                  ))}
-                </div>
+              <div className="flex items-center gap-2">
+                {/* Sử dụng component StarRating để hiển thị sao lẻ */}
+                <StarRating rating={product.fake_rating || 5} size="w-4 h-4" />
                 <span className="text-xs text-muted-foreground ml-2">({product.fake_review_count || 0} nhận xét)</span>
               </div>
             </div>
 
-            {/* 4. Variant Selection */}
             {isLoadingDetails ? (
               <div className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
             ) : (
@@ -217,7 +201,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               )
             )}
 
-            {/* 5. Quantity */}
             <div className="space-y-3 pt-6 border-t border-border/40">
               <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Số lượng</span>
               <div className="flex items-center rounded-xl h-12 w-32 bg-secondary/50 border border-border">
@@ -227,9 +210,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
               </div>
             </div>
 
-            {/* 6. Collapsible Content Groups */}
             <div className="space-y-2 pt-6 border-t border-border/40">
-              {/* Product Discovery (Long Content handled with Bottom Button) */}
               {product.description && (
                 <Collapsible open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen} className="border-b border-border/40 pb-4" ref={descriptionRef}>
                   <CollapsibleTrigger className="flex items-center justify-between w-full py-4 text-left group">
@@ -240,18 +221,10 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                     {isDescriptionOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </CollapsibleTrigger>
                   <CollapsibleContent className="animate-accordion-down relative">
-                    <div 
-                      className="prose prose-sm max-w-none text-muted-foreground rich-text-content-small pb-8"
-                      dangerouslySetInnerHTML={{ __html: product.description }} 
-                    />
+                    <div className="prose prose-sm max-w-none text-muted-foreground rich-text-content-small pb-8" dangerouslySetInnerHTML={{ __html: product.description }} />
                     {isDescriptionOpen && (
                       <div className="flex justify-center pt-4 border-t border-dashed border-border/40">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => { setIsDescriptionOpen(false); scrollToDescTop(); }}
-                          className="text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 gap-2"
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => { setIsDescriptionOpen(false); scrollToDescTop(); }} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 gap-2">
                           Thu gọn nội dung <ChevronUp className="w-3 h-3" />
                         </Button>
                       </div>
@@ -260,7 +233,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 </Collapsible>
               )}
 
-              {/* Dimensions */}
               {product.dimension_image_url && (
                 <Collapsible open={isDimensionsOpen} onOpenChange={setIsDimensionsOpen} className="border-b border-border/40 pb-4">
                   <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
@@ -278,7 +250,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 </Collapsible>
               )}
 
-              {/* Technical Specs */}
               {attributes.length > 0 && (
                 <Collapsible open={isSpecsOpen} onOpenChange={setIsSpecsOpen} className="pb-4">
                   <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
@@ -293,9 +264,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                       {attributes.map((attr, i) => (
                         <div key={i} className="flex justify-between py-2.5 border-b border-dashed border-border/40 text-xs">
                           <span className="text-muted-foreground font-medium">{attr.name}</span>
-                          <span className="text-charcoal font-bold">
-                            {Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}
-                          </span>
+                          <span className="text-charcoal font-bold">{Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}</span>
                         </div>
                       ))}
                     </div>
@@ -303,70 +272,16 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 </Collapsible>
               )}
             </div>
-
-            {/* 7. Recent Reviews */}
-            <div className="space-y-4 pt-6">
-              <div className="flex items-center justify-between">
-                 <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Đánh giá gần đây</span>
-                 <Link to={`/san-pham/${product.slug}#reviews`} onClick={onClose} className="text-[10px] font-bold text-primary hover:underline flex items-center">
-                    Tất cả <ChevronRight className="w-3 h-3 ml-1" />
-                 </Link>
-              </div>
-              <div className="space-y-3">
-                {reviews.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">Sản phẩm chưa có nhận xét nào.</p>
-                ) : (
-                  reviews.map((rev, i) => (
-                    <div key={i} className="bg-secondary/20 p-4 rounded-2xl border border-border/30">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-[11px] font-bold text-charcoal">{rev.user_name}</span>
-                        <div className="flex text-amber-400">
-                          {[...Array(5)].map((_, i) => <Star key={i} className={cn("w-2.5 h-2.5", i < rev.rating ? "fill-current" : "text-gray-200")} />)}
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 italic leading-relaxed">"{rev.comment}"</p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* 8. Fixed Action Bar (Optimized) */}
         <div className="p-4 md:p-6 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
           <div className="flex items-center gap-5">
-            <Button 
-              variant="outline" 
-              className="flex-1 h-14 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 rounded-2xl px-2" 
-              asChild 
-              onClick={onClose}
-            >
-              <Link to={`/san-pham/${product.slug || product.id}`}>
-                XEM CHI TIẾT
-              </Link>
+            <Button variant="outline" className="flex-1 h-14 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 rounded-2xl px-2" asChild onClick={onClose}>
+              <Link to={`/san-pham/${product.slug || product.id}`}>XEM CHI TIẾT</Link>
             </Button>
-
-            <button 
-              onClick={() => toggleWishlist(product)}
-              className={cn(
-                "h-14 w-14 shrink-0 flex items-center justify-center rounded-2xl border transition-all",
-                isInWishlist(product.id)
-                  ? "bg-primary/5 border-primary text-primary shadow-sm"
-                  : "bg-white border-border hover:border-primary/40"
-              )}
-              aria-label="Thêm vào yêu thích"
-            >
-              <Heart className={cn("w-6 h-6", isInWishlist(product.id) && "fill-current")} />
-            </button>
-
-            <Button 
-              className="flex-[2] btn-hero h-14 text-[10px] font-bold shadow-gold rounded-2xl"
-              onClick={handleAddToCart}
-            >
-              <ShoppingBag className="w-5 h-5 mr-2" />
-              THÊM VÀO GIỎ
-            </Button>
+            <button onClick={() => toggleWishlist(product)} className={cn("h-14 w-14 shrink-0 flex items-center justify-center rounded-2xl border transition-all", isInWishlist(product.id) ? "bg-primary/5 border-primary text-primary shadow-sm" : "bg-white border-border hover:border-primary/40")}><Heart className={cn("w-6 h-6", isInWishlist(product.id) && "fill-current")} /></button>
+            <Button className="flex-[2] btn-hero h-14 text-[10px] font-bold shadow-gold rounded-2xl" onClick={handleAddToCart}><ShoppingBag className="w-5 h-5 mr-2" />THÊM VÀO GIỎ</Button>
           </div>
         </div>
       </SheetContent>
