@@ -69,10 +69,10 @@ export function HeaderTopBanner() {
 
   return (
     <>
-      <div className="bg-primary text-primary-foreground overflow-hidden">
+      <div className="bg-primary text-primary-foreground overflow-hidden w-full">
         <div className="container-luxury flex items-center justify-between h-10 text-[10px] md:text-xs">
-          <div className="flex items-center gap-2 md:gap-4 flex-1">
-            <div className="relative h-6 flex-1 max-w-[450px] overflow-hidden">
+          <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
+            <div className="relative h-6 flex-1 max-w-full md:max-w-[450px] overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentMsgIndex}
@@ -80,32 +80,32 @@ export function HeaderTopBanner() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.5 }}
-                  className="absolute inset-0 flex items-center gap-3"
+                  className="absolute inset-0 flex items-center gap-2 md:gap-3"
                 >
-                  <Link to={currentMsg.link || "/sale"} className="font-bold underline underline-offset-2 hover:no-underline truncate">
+                  <Link to={currentMsg.link || "/sale"} className="font-bold underline underline-offset-2 hover:no-underline truncate block max-w-[180px] xs:max-w-none">
                     {currentMsg.text}
                   </Link>
 
                   {hasCountdown && (
-                    <div className="flex items-center gap-1 shrink-0 animate-fade-in">
+                    <div className="flex items-center gap-1 shrink-0 animate-fade-in scale-[0.85] origin-left">
                       <div className="flex items-center gap-0.5">
                         {countdown.days > 0 && (
                           <>
-                            <div className="bg-black text-white px-1.5 py-0.5 rounded-sm font-mono font-bold min-w-[20px] text-center border border-white/10">
+                            <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10">
                               {countdown.days}d
                             </div>
                             <span className="text-[8px] font-bold mx-0.5">:</span>
                           </>
                         )}
-                        <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10">
+                        <div className="bg-black text-white px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10">
                           {String(countdown.hours).padStart(2, '0')}
                         </div>
                         <span className="text-[8px] font-bold mx-0.5">:</span>
-                        <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10">
+                        <div className="bg-black text-white px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10">
                           {String(countdown.minutes).padStart(2, '0')}
                         </div>
                         <span className="text-[8px] font-bold mx-0.5">:</span>
-                        <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10 animate-pulse">
+                        <div className="bg-black text-white px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10 animate-pulse">
                           {String(countdown.seconds).padStart(2, '0')}
                         </div>
                       </div>
@@ -119,7 +119,7 @@ export function HeaderTopBanner() {
           {settings.top_banner_shipping && (
             <button 
               onClick={() => setIsShippingDialogOpen(true)}
-              className="hidden sm:flex items-center gap-2 font-bold uppercase tracking-wider opacity-90 hover:opacity-100 transition-opacity"
+              className="hidden sm:flex items-center gap-2 font-bold uppercase tracking-wider opacity-90 hover:opacity-100 transition-opacity shrink-0"
             >
               <Truck className="w-3.5 h-3.5" />
               <span>{settings.top_banner_shipping}</span>
