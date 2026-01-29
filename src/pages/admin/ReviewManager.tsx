@@ -27,29 +27,36 @@ export default function ReviewManager() {
   const fetchReviews = async () => {
     setLoading(true);
     try {
-      // Truy vấn lấy cả thông tin sản phẩm
+      // Truy vấn lấy dữ liệu đánh giá kèm thông tin sản phẩm qua liên kết Foreign Key
       const { data, error } = await supabase
         .from('reviews')
-        .select('*, products(name, image_url, slug)')
+        .select(`
+          *,
+          products (
+            name,
+            image_url,
+            slug
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setReviews(data || []);
     } catch (error: any) {
       console.error("Lỗi:", error);
-      toast.error("Lỗi tải danh sách: " + error.message);
+      toast.error("Không thể tải danh sách đánh giá.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Xóa đánh giá này?")) return;
+    if (!confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) return;
     try {
       const { error } = await supabase.from('reviews').delete().eq('id', id);
       if (error) throw error;
       setReviews(reviews.filter(r => r.id !== id));
-      toast.success("Đã xóa.");
+      toast.success("Đã xóa đánh giá thành công.");
     } catch (error: any) {
       toast.error("Lỗi xóa: " + error.message);
     }
@@ -70,7 +77,7 @@ export default function ReviewManager() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Quản Lý Đánh Giá</h1>
-        <p className="text-muted-foreground text-sm">Danh sách ý kiến phản hồi từ khách hàng.</p>
+        <p className="text-muted-foreground text-sm">Danh sách ý kiến và phản hồi thực tế từ khách hàng.</p>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
@@ -78,7 +85,7 @@ export default function ReviewManager() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
-              placeholder="Tìm kiếm..." 
+              placeholder="Tìm theo nội dung, tên khách, sản phẩm..." 
               className="pl-10 bg-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -110,18 +117,18 @@ export default function ReviewManager() {
                 <th className="px-6 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-border">
               {loading ? (
                 <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground italic">Không có đánh giá nào được tìm thấy.</td></tr>
+                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground italic py-20">Không có đánh giá nào được tìm thấy.</td></tr>
               ) : filtered.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4 max-w-[220px]">
                     {item.products ? (
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0 border">
-                          <img src={item.products.image_url} className="w-full h-full object-cover" />
+                          <img src={item.products.image_url} alt="" className="w-full h-full object-cover" />
                         </div>
                         <Link to={`/san-pham/${item.products.slug}`} target="_blank" className="text-xs font-bold hover:text-primary truncate block">
                           {item.products.name}
@@ -135,13 +142,13 @@ export default function ReviewManager() {
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-sm font-bold text-charcoal">{item.user_name || "Ẩn danh"}</p>
+                    <p className="text-sm font-bold text-charcoal">{item.user_name || "Khách hàng"}</p>
                     <p className="text-[10px] text-muted-foreground">{new Date(item.created_at).toLocaleDateString('vi-VN')}</p>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex text-amber-400">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-3.5 h-3.5 ${i < item.rating ? "fill-current" : "text-gray-200"}`} />
+                        <Star key={i} className={cn("w-3.5 h-3.5", i < item.rating ? "fill-current" : "text-gray-200")} />
                       ))}
                     </div>
                   </td>
@@ -149,7 +156,7 @@ export default function ReviewManager() {
                     <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 italic">"{item.comment}"</p>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-muted-foreground hover:text-destructive">
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="text-muted-foreground hover:text-destructive transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </td>
