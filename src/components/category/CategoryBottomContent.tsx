@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, ArrowRight, Sparkles, ShoppingBag, Plus, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { TrendingUp, Sparkles, Plus } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
@@ -116,13 +116,6 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
-                  
-                  {/* Badge Label */}
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-charcoal/80 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/10">
-                      Look #{idx + 1}
-                    </span>
-                  </div>
 
                   {/* Quick Dots Preview */}
                   {look.shop_look_items?.map((item: any, i: number) => (
@@ -136,10 +129,9 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
 
                 {/* Footer Info & Action */}
                 <div className="flex items-center justify-between px-2">
-                  <div>
-                    <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors">{look.title}</h3>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{look.shop_look_items?.length || 0} sản phẩm trong ảnh</p>
-                  </div>
+                  <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors">
+                    {look.title}
+                  </h3>
                   <Button 
                     variant="outline" 
                     className="rounded-full px-6 h-10 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm"
