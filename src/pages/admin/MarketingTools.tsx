@@ -31,29 +31,44 @@ const VN_LAST_NAMES = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh
 const VN_MID_NAMES = ["Văn", "Thị", "Hồng", "Minh", "Anh", "Quang", "Xuân", "Thanh", "Đức", "Trọng", "Kim", "Ngọc"];
 const VN_FIRST_NAMES = ["An", "Bình", "Chi", "Dũng", "Giang", "Hương", "Khánh", "Linh", "Nam", "Oanh", "Phúc", "Quyên", "Sơn", "Thảo", "Uyên", "Vinh", "Yến", "Tùng", "Lâm", "Hải"];
 
-// Danh sách comment được cải tiến chân thực hơn
-const REVIEW_COMMENTS = [
-  "Hàng đẹp lắm mng ơi, nên mua nhaaa 😍 sp đóng gói kỹ, ko trầy xước tí nào luôn",
-  "Rất ưbg mẫu này luôn ạ. Gỗ chắc chắn, màu sang hơn trên ảnh nhiều ✨✨",
-  "Giao hàng nhanh vãi, mới đặt hôm kia mà nay có r. Nhân viên lắp đặt nhiệt tình lắm 👍👍",
-  "Sp tốt, đúng mô tả. Đáng tiền bát gạo 💯💯💯",
-  "Màu này hợp phong thủy nhà mình cực, ai đến cũng khen. Cảm ơn shop nhen!",
-  "Đẹp quáaaaa, nhìn xịn xò hẳn cái phòng khách. Ưng cái bụng ghê",
-  "Sofa êm cực kỳ, hoàn thiện tỉ mỉ. Ohousr làm ăn uy tín thật sự",
-  "Ko uổng công chờ đợi, sp quá xuất sắc mng ạ. 5 saooooo ⭐⭐⭐⭐⭐",
-  "Hàng chuẩn auth, gỗ thơm tự nhiên. Sẽ ủng hộ shop dài dài",
-  "Xịn đét luôn, ko có điểm gì để chê. Đóng thùng gỗ cẩn thận lắm ạ ❤️❤️",
-  "Lắp xong cái mê luôn, mẫu mã hiện đại, chắc chắn. Shop tư vấn có tâm lắm",
-  "Đẹp hơn mong đợi, sp okela lắm nha. Giao hàng tỉnh mà nhanh bất ngờ",
-  "Chất liệu cao cấp sờ sướng tay cực. Ưng vãi chưởng 😂",
-  "Mng nên mua nhé, shop này làm đồ nội thất đỉnh thật sự. Giá hơi cao tí nhưng sắt ra miếng",
-  "Vừa nhận đc hàng xong, cảm nhận ban đầu là sp cực kỳ chất lượng. Sẽ giới thiệu cho bạn bè",
-  "Sp 10/10 nha mng, ko mua là phí lắm. Shop phục vụ quá tốt 🔥🔥🔥",
-  "Ship nhanh, đóng gói cẩn thận. Sp ko lỗi lầm gì, quá tuyệt vời!",
-  "Chất lượng gỗ quá ok, vân đẹp. Ohouse số 1 luôn nhé 👍",
-  "Lần đầu mua nội thất online mà ưng ntn. Đúng là tiền nào của nấy",
-  "Sản phẩm sang chảnh, nâng tầm căn hộ luôn. Love itttt 😍✨"
-];
+// Kho nội dung đánh giá theo ngữ cảnh sản phẩm
+const REVIEW_POOLS: Record<string, string[]> = {
+  sofa: [
+    "Sofa êm cực kỳ, hoàn thiện tỉ mỉ. Ohousr làm ăn uy tín thật sự 👍",
+    "Đệm ngồi rất thik, vải nhung sờ mướt tay lắm mng nhen. Màu sang hơn ảnh 😍",
+    "Form ghế đẹp, ngồi ko bị lún sâu quá, rất vừa vặn với pk nhà mình",
+    "Vải bọc xịn xò, đường may chắc chắn. Giao hàng hơi chậm tí nhưng sp okela",
+    "Mua cái sofa này xong nhìn cái phòng khách đẳng cấp hẳn luôn ✨✨"
+  ],
+  table_stand: [
+    "Kệ tivi gỗ chắc chắn, mặt đá vân rất đẹp nha. Đóng gói kỹ ko trầy xước",
+    "Bàn ăn đẹp quáaaaa, nhìn xịn xò hẳn. Ai đến cũng khen mẫu này lạ",
+    "Rất ưbg mẫu bàn trà này, kích thước chuẩn, hoàn thiện cực sắc nét 💯",
+    "Gỗ thơm, sơn phủ mượt. Mấy cái ngăn kéo mở rất êm ko bị kẹt",
+    "Hàng chuẩn như showroom, mặt đá dày dặn chắc nịch luôn mng ạ"
+  ],
+  bed: [
+    "Giường chắc chắn, lắp xong nằm thử thấy êm ru ko bị kêu cọt kẹt",
+    "Mẫu giường luxury thật sự, bọc da rất tỉ mỉ. Đáng tiền bát gạo 💯💯",
+    "Giường to rộng, gỗ dày dặn. Mấy bạn thợ lắp đặt nhiệt tình lắm nhen",
+    "Từ ngày đổi giường này ngủ ngon hẳn luôn 😂 sp quá xuất sắc!",
+    "Hàng đẹp, đóng thùng gỗ cẩn thận. Rất hài lòng với dịch vụ Ohouse"
+  ],
+  lighting: [
+    "Đèn chùm lấp lánh lung linh luôn mng ơi ✨ treo lên cái phòng khách sang chảnh hẳn",
+    "Pha lê xịn, ánh sáng dịu ko bị chói mắt. Shop đóng gói cực kỳ cẩn thận",
+    "Lắp đặt hơi lâu tí nhưng thành quả quá mỹ mãn. Đèn đẹp 10/10 😍",
+    "Mẫu đèn hiện đại, tinh tế. Sẽ ủng hộ shop thêm mấy mẫu đèn ngủ nữa",
+    "Ánh sáng vàng ấm cúng, nhìn rất chill nha mng. Đáng mua ạ 👍"
+  ],
+  generic: [
+    "Hàng đẹp lắm mng ơi, nên mua nhaaa 😍 sp đóng gói kỹ lắm",
+    "Sp tốt, đúng mô tả. Sẽ giới thiệu cho bạn bè ủng hộ shop",
+    "Giao hàng nhanh vãi, nhân viên lắp đặt nhiệt tình tận tâm 👍👍",
+    "Sp chuẩn auth, hoàn thiện tốt. Tiền nào của nấy thật sự",
+    "Mng nên mua nhé, shop này làm đồ nội thất đỉnh thật sự ❤️❤️"
+  ]
+};
 
 export default function MarketingTools() {
   const [loading, setLoading] = useState(false);
@@ -61,11 +76,6 @@ export default function MarketingTools() {
   const [selectionType, setSelectionType] = useState<"category" | "product">("category");
   const [targetId, setTargetId] = useState("all");
   const [updateZeroOnly, setUpdateZeroOnly] = useState(false);
-
-  const [sortCategory, setSortCategory] = useState("");
-  const [productsToSort, setProductsToSort] = useState<any[]>([]);
-  const [sortLoading, setSortLoading] = useState(false);
-  const [savingSort, setSavingSort] = useState(false);
 
   const [stats, setStats] = useState({
     min_sold: "50", max_sold: "200",
@@ -81,6 +91,16 @@ export default function MarketingTools() {
 
   const generateVnName = () => {
     return `${getRandomItem(VN_LAST_NAMES)} ${getRandomItem(VN_MID_NAMES)} ${getRandomItem(VN_FIRST_NAMES)}`;
+  };
+
+  // Hàm chọn comment liên quan đến tên sản phẩm
+  const getRelevantComment = (productName: string) => {
+    const name = productName.toLowerCase();
+    if (name.includes('sofa') || name.includes('ghế')) return getRandomItem(REVIEW_POOLS.sofa);
+    if (name.includes('bàn') || name.includes('kệ') || name.includes('tủ')) return getRandomItem(REVIEW_POOLS.table_stand);
+    if (name.includes('giường') || name.includes('nệm')) return getRandomItem(REVIEW_POOLS.bed);
+    if (name.includes('đèn')) return getRandomItem(REVIEW_POOLS.lighting);
+    return getRandomItem(REVIEW_POOLS.generic);
   };
 
   const handleBulkUpdate = async () => {
@@ -113,7 +133,7 @@ export default function MarketingTools() {
 
   const handleGenerateReviews = async () => {
     const daysBack = parseInt(stats.review_days_back) || 30;
-    if (!confirm(`Xác nhận sinh nội dung đánh giá ngẫu nhiên trong khoảng ${daysBack} ngày qua?`)) return;
+    if (!confirm(`Xác nhận sinh nội dung đánh giá ngẫu nhiên (có chọn lọc theo loại SP) trong khoảng ${daysBack} ngày qua?`)) return;
 
     setReviewLoading(true);
     try {
@@ -128,6 +148,7 @@ export default function MarketingTools() {
         const count = p.fake_review_count || 0;
         if (count === 0) continue;
 
+        // Xóa đánh giá cũ để làm mới
         await supabase.from('reviews').delete().eq('product_id', p.id);
 
         const newReviews = [];
@@ -145,30 +166,14 @@ export default function MarketingTools() {
             product_id: p.id,
             user_name: generateVnName(),
             rating: Math.round(p.fake_rating || 5),
-            comment: getRandomItem(REVIEW_COMMENTS),
+            comment: getRelevantComment(p.name), // Lấy comment phù hợp
             created_at: date.toISOString()
           });
         }
         if (newReviews.length > 0) await supabase.from('reviews').insert(newReviews);
       }
-      toast.success(`Đã sinh đánh giá tự nhiên trong khoảng ${daysBack} ngày thành công!`);
+      toast.success(`Đã sinh đánh giá theo ngữ cảnh thành công!`);
     } catch (e: any) { toast.error(e.message); } finally { setReviewLoading(false); }
-  };
-
-  const fetchProductsForSorting = async (categorySlug: string) => {
-    setSortLoading(true);
-    try {
-      const { data } = await supabase.from('products').select('id, name, display_order, image_url').eq('category_id', categorySlug).order('display_order', { ascending: true });
-      setProductsToSort(data || []);
-    } finally { setSortLoading(false); }
-  };
-
-  const saveSortingPositions = async () => {
-    setSavingSort(true);
-    try {
-      await Promise.all(productsToSort.map(p => supabase.from('products').update({ display_order: p.display_order }).eq('id', p.id)));
-      toast.success("Đã lưu vị trí!");
-    } finally { setSavingSort(false); }
   };
 
   return (
@@ -183,7 +188,6 @@ export default function MarketingTools() {
       <Tabs defaultValue="marketing" className="space-y-6">
         <TabsList className="bg-white border p-1 rounded-xl h-12 w-full justify-start shadow-sm">
           <TabsTrigger value="marketing" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white uppercase font-bold text-xs">Số liệu & Đánh giá</TabsTrigger>
-          <TabsTrigger value="sorting" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white uppercase font-bold text-xs">Sắp xếp vị trí</TabsTrigger>
         </TabsList>
 
         <TabsContent value="marketing" className="animate-fade-in">
@@ -258,7 +262,7 @@ export default function MarketingTools() {
                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2"><MessageSquareQuote className="w-5 h-5" /> 3. Nội dung đánh giá thực tế</h3>
                 
                 <div className="space-y-4 mb-8">
-                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sẽ tự động tạo các bản ghi đánh giá chi tiết (tên khách hàng, nội dung khen, ngày giờ) dựa trên số lượng "Lượt đánh giá ảo" ở bước 2.</p>
+                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sẽ tự động đối chiếu tên sản phẩm để sinh các nhận xét phù hợp nhất (ví dụ: Sofa sẽ nhận xét về độ êm, Bàn/Kệ nhận xét về độ chắc chắn).</p>
                   
                   <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
@@ -268,52 +272,16 @@ export default function MarketingTools() {
                       type="number" 
                       value={stats.review_days_back} 
                       onChange={e => setStats({...stats, review_days_back: e.target.value})} 
-                      placeholder="Ví dụ: 60 (Sinh đánh giá rải rác trong 60 ngày qua)"
+                      placeholder="Ví dụ: 60"
                       className="h-12 bg-white/10 border-white/20 text-cream placeholder:text-taupe focus:border-primary"
                     />
-                    <p className="text-[10px] italic text-taupe">Gợi ý: 30-90 ngày để trông tự nhiên nhất.</p>
                   </div>
                 </div>
 
                 <Button onClick={handleGenerateReviews} disabled={reviewLoading} variant="outline" className="w-full h-14 border-primary/40 hover:bg-primary text-primary hover:text-white rounded-2xl text-sm font-bold uppercase">
-                  {reviewLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} Sinh nội dung đánh giá hàng loạt
+                  {reviewLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} Sinh nội dung đánh giá theo ngữ cảnh
                 </Button>
               </div>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="sorting" className="animate-fade-in">
-          <div className="bg-white p-6 rounded-2xl border shadow-sm">
-            <div className="flex flex-col md:flex-row items-center gap-4 mb-8">
-              <div className="flex-1 w-full">
-                <Select value={sortCategory} onValueChange={(val) => { setSortCategory(val); fetchProductsForSorting(val); }}>
-                  <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Chọn danh mục..." /></SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    {mainCategories.filter(c => c.dropdownKey).map(parent => (
-                      <SelectGroup key={parent.dropdownKey}>
-                        <SelectLabel className="text-primary font-bold">{parent.name}</SelectLabel>
-                        <SelectItem value={parent.dropdownKey!}>— Tất cả {parent.name}</SelectItem>
-                        {productCategories[parent.dropdownKey!]?.map(child => (
-                          <SelectItem key={child.href} value={child.href.replace('/', '')}>&nbsp;&nbsp;&nbsp;{child.name}</SelectItem>
-                        ))}
-                      </SelectGroup>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button className="btn-hero h-12 px-8 rounded-xl shadow-gold" onClick={saveSortingPositions} disabled={productsToSort.length === 0 || savingSort}>
-                {savingSort ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} LƯU VỊ TRÍ
-              </Button>
-            </div>
-            <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-              {productsToSort.map((product) => (
-                <div key={product.id} className="grid grid-cols-12 gap-4 items-center p-3 border border-border rounded-xl bg-card hover:border-primary/40 transition-all">
-                  <div className="col-span-2"><Input type="number" value={product.display_order} onChange={(e) => setProductsToSort(prev => prev.map(p => p.id === product.id ? { ...p, display_order: parseInt(e.target.value) || 0 } : p))} className="h-10 text-center font-bold" /></div>
-                  <div className="col-span-1"><img src={product.image_url} className="w-10 h-10 rounded-lg object-cover border" /></div>
-                  <div className="col-span-9 font-medium text-sm text-charcoal">{product.name}</div>
-                </div>
-              ))}
             </div>
           </div>
         </TabsContent>
