@@ -11,7 +11,8 @@ import {
   AlertCircle,
   Filter,
   Save,
-  RefreshCw
+  RefreshCw,
+  MessageSquareQuote
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,8 +32,32 @@ import { mainCategories, productCategories } from "@/constants/header-data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
+// Dữ liệu mẫu để sinh fake reviews
+const VN_LAST_NAMES = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ", "Đặng", "Bùi", "Đỗ", "Hồ", "Ngô", "Dương", "Lý"];
+const VN_MID_NAMES = ["Văn", "Thị", "Hồng", "Minh", "Anh", "Quang", "Xuân", "Thanh", "Đức", "Trọng", "Kim", "Ngọc"];
+const VN_FIRST_NAMES = ["An", "Bình", "Chi", "Dũng", "Giang", "Hương", "Khánh", "Linh", "Nam", "Oanh", "Phúc", "Quyên", "Sơn", "Thảo", "Uyên", "Vinh", "Yến", "Tùng", "Lâm", "Hải"];
+
+const REVIEW_COMMENTS = [
+  "Sản phẩm rất đẹp, đúng như mô tả. Giao hàng nhanh.",
+  "Chất lượng tuyệt vời, gỗ rất chắc chắn. Rất hài lòng.",
+  "Đóng gói cẩn thận, nhân viên lắp đặt nhiệt tình. 5 sao!",
+  "Màu sắc sang trọng, phù hợp với phòng khách nhà mình.",
+  "Giá cả hợp lý so với chất lượng. Sẽ ủng hộ shop tiếp.",
+  "Hàng đẹp, giao đúng hẹn. Cảm ơn shop.",
+  "Rất ưng ý với bộ sản phẩm này. Đẳng cấp thực sự.",
+  "Sofa ngồi rất êm, hoàn thiện cực kỳ tỉ mỉ.",
+  "Thiết kế hiện đại, chắc chắn hơn mình nghĩ nhiều.",
+  "Dịch vụ chăm sóc khách hàng của OHOUSE rất chuyên nghiệp.",
+  "Mới nhận hàng sáng nay, lắp đặt xong nhìn mê luôn.",
+  "Chất liệu cao cấp, sờ vào thấy khác biệt hẳn.",
+  "Đáng đồng tiền bát gạo, mọi người nên mua nhé.",
+  "Tìm mãi mới được mẫu ưng ý thế này, cảm ơn đội ngũ tư vấn.",
+  "Giao hàng tỉnh mà cũng rất nhanh, đóng thùng gỗ cẩn thận."
+];
+
 export default function MarketingTools() {
   const [loading, setLoading] = useState(false);
+  const [reviewLoading, setReviewLoading] = useState(false);
   const [selectionType, setSelectionType] = useState<"category" | "product">("category");
   const [targetId, setTargetId] = useState("all");
   const [updateZeroOnly, setUpdateZeroOnly] = useState(false);
@@ -45,18 +70,18 @@ export default function MarketingTools() {
 
   // Stats Range State
   const [stats, setStats] = useState({
-    min_sold: "", max_sold: "",
-    min_reviews: "", max_reviews: "",
-    min_rating: "4.5", max_rating: "5.0",
+    min_sold: "50", max_sold: "200",
+    min_reviews: "10", max_reviews: "30",
+    min_rating: "4.8", max_rating: "5.0",
     display_order: ""
   });
 
-  const getRandomInt = (min: number, max: number) => {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  };
+  const getRandomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const getRandomFloat = (min: number, max: number) => (Math.random() * (max - min) + min).toFixed(1);
+  const getRandomItem = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
 
-  const getRandomFloat = (min: number, max: number) => {
-    return (Math.random() * (max - min) + min).toFixed(1);
+  const generateVnName = () => {
+    return `${getRandomItem(VN_LAST_NAMES)} ${getRandomItem(VN_MID_NAMES)} ${getRandomItem(VN_FIRST_NAMES)}`;
   };
 
   const handleBulkUpdate = async () => {
@@ -102,11 +127,64 @@ export default function MarketingTools() {
     }
   };
 
+  const handleGenerateReviews = async () => {
+    if (!confirm("Hệ thống sẽ xóa các đánh giá cũ và sinh nội dung mới dựa trên 'Số lượt đánh giá' hiện tại của mỗi sản phẩm. Tiếp tục?")) return;
+
+    setReviewLoading(true);
+    try {
+      // 1. Lấy sản phẩm
+      let query = supabase.from('products').select('id, name, fake_review_count, fake_rating');
+      if (selectionType === 'category' && targetId !== 'all') query = query.eq('category_id', targetId);
+      else if (selectionType === 'product' && targetId !== 'all') query = query.eq('id', targetId);
+
+      const { data: products } = await query;
+      if (!products || products.length === 0) {
+        toast.info("Không có sản phẩm nào.");
+        return;
+      }
+
+      // 2. Với mỗi sản phẩm, sinh nội dung đánh giá
+      for (const p of products) {
+        const count = p.fake_review_count || 0;
+        if (count === 0) continue;
+
+        // Xóa đánh giá cũ trước khi sinh mới (tùy chọn)
+        await supabase.from('reviews').delete().eq('product_id', p.id);
+
+        const newReviews = [];
+        for (let i = 0; i < count; i++) {
+          const randomDays = getRandomInt(1, 90);
+          const createdAt = new Date();
+          createdAt.setDate(createdAt.getDate() - randomDays);
+          createdAt.setHours(getRandomInt(8, 22), getRandomInt(0, 59));
+
+          newReviews.push({
+            product_id: p.id,
+            user_name: generateVnName(),
+            rating: Math.round(p.fake_rating || 5),
+            comment: getRandomItem(REVIEW_COMMENTS),
+            created_at: createdAt.toISOString()
+          });
+        }
+
+        // Insert theo batch để tối ưu
+        if (newReviews.length > 0) {
+          await supabase.from('reviews').insert(newReviews);
+        }
+      }
+
+      toast.success("Đã sinh nội dung đánh giá thành công cho các sản phẩm!");
+    } catch (error: any) {
+      toast.error("Lỗi: " + error.message);
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
   const fetchProductsForSorting = async (categorySlug: string) => {
     setSortLoading(true);
     try {
       let query = supabase.from('products').select('id, name, display_order, image_url');
-
       if (categorySlug) {
         const { data: cat } = await supabase.from('categories').select('id').eq('slug', categorySlug).single();
         if (cat) {
@@ -117,7 +195,6 @@ export default function MarketingTools() {
            query = query.eq('category_id', categorySlug);
         }
       }
-
       const { data } = await query.order('display_order', { ascending: true }).limit(100);
       setProductsToSort(data || []);
     } finally {
@@ -152,7 +229,7 @@ export default function MarketingTools() {
 
       <Tabs defaultValue="marketing" className="space-y-6">
         <TabsList className="bg-white border p-1 rounded-xl h-12 w-full justify-start shadow-sm">
-          <TabsTrigger value="marketing" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white uppercase font-bold text-xs">Tạo số liệu ảo</TabsTrigger>
+          <TabsTrigger value="marketing" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white uppercase font-bold text-xs">Số liệu & Đánh giá</TabsTrigger>
           <TabsTrigger value="sorting" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white uppercase font-bold text-xs">Sắp xếp vị trí</TabsTrigger>
         </TabsList>
 
@@ -200,10 +277,10 @@ export default function MarketingTools() {
               </div>
             </div>
 
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
               <div className="bg-white p-8 rounded-2xl border shadow-sm">
                 <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-8 flex items-center gap-2">
-                  <Zap className="w-4 h-4" /> 2. Thiết lập số liệu
+                  <Zap className="w-4 h-4" /> 2. Thiết lập thông số ảo
                 </h3>
                 <div className="grid gap-6">
                   <div className="grid grid-cols-5 items-center gap-4">
@@ -214,15 +291,35 @@ export default function MarketingTools() {
                     </div>
                   </div>
                   <div className="grid grid-cols-5 items-center gap-4">
-                    <Label className="col-span-1 text-xs font-bold uppercase">Đánh giá</Label>
+                    <Label className="col-span-1 text-xs font-bold uppercase">Lượt đánh giá</Label>
                     <div className="col-span-4 flex items-center gap-4">
                       <Input type="number" placeholder="Min" value={stats.min_reviews} onChange={e => setStats({...stats, min_reviews: e.target.value})} className="h-12 rounded-xl" />
                       <Input type="number" placeholder="Max" value={stats.max_reviews} onChange={e => setStats({...stats, max_reviews: e.target.value})} className="h-12 rounded-xl" />
                     </div>
                   </div>
+                  <div className="grid grid-cols-5 items-center gap-4">
+                    <Label className="col-span-1 text-xs font-bold uppercase">Điểm sao</Label>
+                    <div className="col-span-4 flex items-center gap-4">
+                      <Input type="number" step="0.1" placeholder="Min (4.5)" value={stats.min_rating} onChange={e => setStats({...stats, min_rating: e.target.value})} className="h-12 rounded-xl" />
+                      <Input type="number" step="0.1" placeholder="Max (5.0)" value={stats.max_rating} onChange={e => setStats({...stats, max_rating: e.target.value})} className="h-12 rounded-xl" />
+                    </div>
+                  </div>
                 </div>
-                <Button onClick={handleBulkUpdate} disabled={loading} className="w-full mt-10 btn-hero h-14 shadow-gold rounded-2xl text-sm font-bold">
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5 mr-2" />} XÁC NHẬN CHẠY
+                <Button onClick={handleBulkUpdate} disabled={loading} className="w-full mt-10 btn-hero h-14 shadow-gold rounded-2xl text-sm font-bold uppercase">
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5 mr-2" />} Cập nhật thông số hàng loạt
+                </Button>
+              </div>
+
+              <div className="bg-charcoal p-8 rounded-3xl border shadow-elevated text-cream">
+                 <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2">
+                  <MessageSquareQuote className="w-5 h-5" /> 3. Nội dung đánh giá thực tế
+                </h3>
+                <p className="text-sm text-taupe mb-8 leading-relaxed">
+                  Tính năng này sẽ tự động tạo các bản ghi đánh giá chi tiết (tên khách hàng, nội dung khen, ngày giờ) cho sản phẩm dựa trên số lượng "Lượt đánh giá ảo" đã thiết lập ở bước 2.
+                </p>
+                <Button onClick={handleGenerateReviews} disabled={reviewLoading} variant="outline" className="w-full h-14 border-primary/40 hover:bg-primary text-primary hover:text-white rounded-2xl text-sm font-bold uppercase">
+                  {reviewLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} 
+                  Sinh nội dung đánh giá hàng loạt
                 </Button>
               </div>
             </div>
