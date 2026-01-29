@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Loader2, Truck, Info, Star, MessageSquare, LayoutGrid, PackageSearch } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,8 @@ import { AIChatWindow } from "@/components/contact/AIChatWindow";
 import { ProductInfo } from "@/components/product/detail/ProductInfo";
 import { ProductHorizontalList } from "@/components/product/detail/ProductHorizontalList";
 import { ProductQnA } from "@/components/product/detail/ProductQnA";
-import { cn } from "@/lib/utils";
+import { ProductDescription } from "@/components/product/detail/ProductDescription";
+import { ProductReviews } from "@/components/product/detail/ProductReviews";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -93,6 +94,22 @@ export default function ProductDetailPage() {
     setReviews(data || []);
   };
 
+  const handleSubmitReview = async (rating: number, comment: string, name: string) => {
+    try {
+      const { error } = await supabase.from('reviews').insert({
+        product_id: product.id,
+        rating,
+        comment,
+        user_name: name
+      });
+      if (error) throw error;
+      toast.success("Cảm ơn bạn đã đánh giá!");
+      fetchReviews(product.id);
+    } catch (e) {
+      toast.error("Không thể gửi đánh giá.");
+    }
+  };
+
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
 
   return (
@@ -115,16 +132,26 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="container-luxury py-12">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 mb-20">
+          {/* Top Section: Gallery & Summary Info */}
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 mb-24">
             <ProductGallery mainImage={product.image_url} galleryImages={product.gallery_urls} productName={product.name} />
             <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
           </div>
 
-          <div id="qna" className="scroll-mt-24">
+          {/* Main Content Area */}
+          <div className="max-w-5xl mx-auto space-y-24">
+            <ProductDescription description={product.description} />
+            
             <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
-          </div>
+            
+            <ProductReviews 
+              reviews={reviews} 
+              product={product} 
+              displayRating={product.fake_rating || 5} 
+              displayReviewCount={product.fake_review_count || reviews.length}
+              onSubmitReview={handleSubmitReview}
+            />
 
-          <div id="similar" className="scroll-mt-24">
             <ProductHorizontalList products={similarProducts} title="Sản phẩm bạn có thể thích" />
           </div>
 

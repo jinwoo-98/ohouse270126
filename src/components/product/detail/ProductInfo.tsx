@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { 
   Star, Minus, Plus, ShoppingBag, Heart, 
-  Truck, Shield, ChevronDown, ChevronUp, Ruler, Info, FileText
+  Truck, Shield, ChevronDown, ChevronUp, Ruler, Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,8 +26,7 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
   const [variants, setVariants] = useState<any[]>([]);
   const [selectedValues, setSelectedValues] = useState<Record<string, string>>({});
   
-  // States for Collapsibles
-  const [isDescOpen, setIsDescOpen] = useState(false);
+  // State for specs collapsible
   const [isSpecsOpen, setIsSpecsOpen] = useState(false);
 
   const tierConfig = product.tier_variants_config || [];
@@ -40,7 +39,7 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
       }
     };
     fetchVariants();
-  }, [product.id]);
+  }, [product.id, tierConfig.length]);
 
   const activeVariant = useMemo(() => {
     if (tierConfig.length === 0) return null;
@@ -144,24 +143,7 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
         </Button>
       </div>
 
-      {/* 3. COLLAPSIBLE DESCRIPTION */}
-      <Collapsible open={isDescOpen} onOpenChange={setIsDescOpen} className="border-b border-border/50 pb-4">
-        <CollapsibleTrigger className="flex items-center justify-between w-full group py-2">
-          <div className="flex items-center gap-3">
-            <FileText className="w-4 h-4 text-primary" />
-            <span className="text-[11px] font-bold uppercase tracking-widest text-charcoal">Mô tả sản phẩm</span>
-          </div>
-          {isDescOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pt-4 animate-accordion-down">
-          <div 
-            className="rich-text-content text-sm text-muted-foreground leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: product.description || "Đang cập nhật..." }} 
-          />
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* 4. DIMENSIONS SECTION */}
+      {/* 3. DIMENSIONS SECTION */}
       {product.dimension_image_url && (
         <div className="space-y-4 border-b border-border/50 pb-6">
           <div className="flex items-center gap-3">
@@ -174,7 +156,7 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
         </div>
       )}
 
-      {/* 5. COLLAPSIBLE SPECS (ATTRIBUTES) */}
+      {/* 4. COLLAPSIBLE SPECS (ATTRIBUTES) */}
       <Collapsible open={isSpecsOpen} onOpenChange={setIsSpecsOpen} className="pb-4">
         <CollapsibleTrigger className="flex items-center justify-between w-full group py-2">
           <div className="flex items-center gap-3">
