@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, Eye, Star, ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
@@ -14,7 +14,7 @@ interface ProductCardProps {
   className?: string;
 }
 
-export function ProductCard({ product, onQuickView, className }: ProductCardProps) {
+export function ProductCard({ product, className }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   
@@ -22,13 +22,13 @@ export function ProductCard({ product, onQuickView, className }: ProductCardProp
   const [activeImage, setActiveImage] = useState(product.image_url);
   const isFavorite = isInWishlist(product.id);
   
-  // Lấy danh sách ảnh để hiển thị thumbnails (tối đa 4 ảnh để gọn gàng)
+  // Lấy danh sách ảnh để hiển thị thumbnails
   const gallery = [product.image_url, ...(product.gallery_urls || [])].slice(0, 4);
 
   return (
     <motion.div 
       layout
-      className={cn("group flex flex-col h-full bg-card rounded-[24px] overflow-hidden transition-all duration-500 hover:shadow-medium border border-border/40", className)}
+      className={cn("group flex flex-col bg-card rounded-[24px] overflow-hidden transition-all duration-500 hover:shadow-medium border border-border/40", className)}
     >
       {/* 1. Image Section */}
       <div className="relative aspect-square overflow-hidden bg-secondary/20">
@@ -88,16 +88,15 @@ export function ProductCard({ product, onQuickView, className }: ProductCardProp
         </div>
       </div>
 
-      {/* 2. Thumbnails Section - Cho phép xem nhanh các ảnh phụ */}
+      {/* 2. Thumbnails Section - CHỈ ĐỔI KHI CLICK */}
       {gallery.length > 1 && (
-        <div className="flex justify-center gap-1.5 px-3 py-2 border-b border-border/20">
+        <div className="flex justify-center gap-1.5 px-3 py-2 border-b border-border/10">
           {gallery.map((img, idx) => (
             <button
               key={idx}
-              onMouseEnter={() => setActiveImage(img)}
               onClick={() => setActiveImage(img)}
               className={cn(
-                "w-8 h-8 rounded-md overflow-hidden border transition-all",
+                "w-8 h-8 rounded-md overflow-hidden border-2 transition-all",
                 activeImage === img ? "border-primary ring-2 ring-primary/10" : "border-transparent opacity-60 hover:opacity-100"
               )}
             >
@@ -107,27 +106,17 @@ export function ProductCard({ product, onQuickView, className }: ProductCardProp
         </div>
       )}
 
-      {/* 3. Info Section - Name then Price */}
-      <div className="p-4 flex-1 flex flex-col items-center text-center">
-        {/* Rating & Sold Small Stats */}
-        <div className="flex items-center gap-3 mb-2 opacity-60">
-           <div className="flex text-amber-400">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className={cn("w-2.5 h-2.5", i < Math.floor(product.fake_rating || 5) ? "fill-current" : "text-gray-200")} />
-            ))}
-          </div>
-          {product.fake_sold > 0 && <span className="text-[8px] font-bold uppercase tracking-wider">Đã bán {product.fake_sold}</span>}
-        </div>
-
-        {/* Tên sản phẩm - Đặt lên hàng đầu */}
-        <Link to={`/san-pham/${product.slug || product.id}`} className="block mb-3">
-          <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-8 md:h-10">
+      {/* 3. Info Section - Tối ưu khoảng cách co giãn tự nhiên */}
+      <div className="p-4 flex flex-col items-center text-center gap-2">
+        {/* Tên sản phẩm - Không cố định chiều cao để thu gọn nếu text ngắn */}
+        <Link to={`/san-pham/${product.slug || product.id}`} className="block">
+          <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug">
             {product.name}
           </h3>
         </Link>
 
-        {/* Giá sản phẩm - Đặt ở cuối cùng */}
-        <div className="mt-auto w-full">
+        {/* Giá sản phẩm - Ngay sát dưới tên */}
+        <div className="w-full">
           <div className="flex flex-wrap items-center justify-center gap-2">
             <span className="text-sm md:text-base font-bold text-primary">{formatPrice(product.price)}</span>
             {product.original_price && (
