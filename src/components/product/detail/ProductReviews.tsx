@@ -19,7 +19,7 @@ interface ProductReviewsProps {
   onSubmitReview: (rating: number, comment: string, name: string) => Promise<void>;
 }
 
-// Helper component để hiển thị sao lẻ chính xác
+// Helper component để hiển thị sao lẻ chính xác với màu tô đặc bên trong
 export function StarRating({ rating, size = "w-4 h-4" }: { rating: number, size?: string }) {
   return (
     <div className="flex gap-1">
@@ -27,11 +27,12 @@ export function StarRating({ rating, size = "w-4 h-4" }: { rating: number, size?
         const fillAmount = Math.max(0, Math.min(1, rating - i));
         return (
           <div key={i} className={cn("relative", size)}>
-            {/* Sao nền (Xám) */}
-            <Star className={cn("absolute inset-0 text-gray-200", size)} />
-            {/* Sao tô (Vàng) */}
+            {/* Sao nền (Màu xám nhạt, tô đặc bên trong) */}
+            <Star className={cn("absolute inset-0 text-gray-200 fill-gray-200", size)} />
+            
+            {/* Sao tô (Màu vàng, tô đặc bên trong, cắt theo chiều dọc) */}
             <div 
-              className="absolute inset-0 overflow-hidden text-amber-400 fill-current"
+              className="absolute inset-0 overflow-hidden text-amber-400 fill-amber-400"
               style={{ width: `${fillAmount * 100}%` }}
             >
               <Star className={cn(size)} />
@@ -109,7 +110,6 @@ export function ProductReviews({
         <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary mb-3">Customer Feedback</span>
         <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-widest text-charcoal mb-4">Đánh Giá Từ Khách Hàng</h2>
         <div className="flex flex-col items-center gap-2">
-          {/* Sử dụng component StarRating mới */}
           <StarRating rating={displayRating} size="w-6 h-6" />
           <p className="text-sm font-bold text-charcoal mt-2">
             {displayRating}/5 <span className="text-muted-foreground font-normal ml-1">({displayReviewCount} nhận xét)</span>
@@ -128,7 +128,7 @@ export function ProductReviews({
               <div 
                 className={cn(
                   "space-y-6 transition-all duration-500 pr-2 custom-scrollbar",
-                  showAll ? "max-h-[1200px] overflow-y-auto" : "max-h-none overflow-visible"
+                  showAll ? "max-h-[900px] overflow-y-auto" : "max-h-none overflow-visible"
                 )}
               >
                 <AnimatePresence mode="popLayout">
