@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Save, Loader2, Info, Box, Settings2, ImageIcon, Layers, X, FileText, Ruler } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Info, FileText, Ruler, ImageIcon, Layers, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,9 +19,9 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ProductVariantsSection } from "@/components/admin/product-form/ProductVariantsSection";
+import { CrossSellSection } from "@/components/admin/product-form/CrossSellSection";
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -77,7 +77,8 @@ export default function ProductForm() {
   };
 
   const fetchAllProducts = async () => {
-    const { data } = await supabase.from('products').select('id, name').neq('id', id || 'new').limit(200);
+    // Fetch nhiều hơn để dùng cho select box
+    const { data } = await supabase.from('products').select('id, name').neq('id', id || 'new').limit(1000);
     setAllProducts(data || []);
   };
 
@@ -227,6 +228,8 @@ export default function ProductForm() {
               <RichTextEditor value={formData.description} onChange={val => setFormData({...formData, description: val})} />
             </div>
           </div>
+
+          <CrossSellSection formData={formData} setFormData={setFormData} allProducts={allProducts} />
         </div>
 
         <div className="space-y-8">
