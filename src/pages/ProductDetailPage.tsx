@@ -13,6 +13,8 @@ import { ProductHorizontalList } from "@/components/product/detail/ProductHorizo
 import { ProductQnA } from "@/components/product/detail/ProductQnA";
 import { ProductDescription } from "@/components/product/detail/ProductDescription";
 import { ProductReviews } from "@/components/product/detail/ProductReviews";
+import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
+import { StickyActionToolbar } from "@/components/product/detail/StickyActionToolbar";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -24,6 +26,9 @@ export default function ProductDetailPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
+  const [perfectMatch, setPerfectMatch] = useState<any[]>([]);
+  const [boughtTogether, setBoughtTogether] = useState<any[]>([]);
+  const [shippingPolicy, setShippingPolicy] = useState("");
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   useEffect(() => {
@@ -51,10 +56,14 @@ export default function ProductDetailPage() {
         fetchCategoryHierarchy(data.category_id);
       }
 
+      // Parallel Data Fetching
       await Promise.all([
         fetchReviews(data.id), 
         fetchAttributes(data.id),
-        fetchSimilarProducts(data.category_id, data.id)
+        fetchSimilarProducts(data.category_id, data.id),
+        fetchRelationProducts(data.perfect_match_ids || [], setPerfectMatch),
+        fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether),
+        fetchSettings()
       ]);
     } catch (error) {
       toast.error("Sản phẩm không tồn tại");
@@ -62,6 +71,17 @@ export default function ProductDetailPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchSettings = async () => {
+    const { data } = await supabase.from('site_settings').select('shipping_policy_summary').single();
+    if (data) setShippingPolicy(data.shipping_policy_summary);
+  };
+
+  const fetchRelationProducts = async (ids: string[], setter: (val: any[]) => void) => {
+    if (!ids || ids.length === 0) return;
+    const { data } = await supabase.from('products').select('*').in('id', ids);
+    setter(data || []);
   };
 
   const fetchCategoryHierarchy = async (categorySlug: string) => {
@@ -117,6 +137,7 @@ export default function ProductDetailPage() {
       <Header />
       
       <main className="flex-1">
+        {/* Breadcrumb */}
         <div className="bg-secondary/50 py-3 border-b border-border/40">
           <div className="container-luxury flex items-center gap-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
             <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
@@ -139,11 +160,24 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Main Content Area */}
-          <div className="max-w-5xl mx-auto space-y-24">
+          <div className="max-w-6xl mx-auto space-y-24">
+            {/* 1. Article Description (Khám phá sản phẩm) */}
             <ProductDescription description={product.description} />
             
+            {/* 2. Perfect Match (Gợi ý phối cảnh) */}
+            {perfectMatch.length > 0 && (
+              <ProductInspiration product={product} comboProducts={perfectMatch} />
+            )}
+
+            {/* 3. Bought Together (Thường mua cùng nhau) */}
+            {boughtTogether.length > 0 && (
+              <ProductHorizontalList products={boughtTogether} title="Thường được mua cùng nhau" />
+            )}
+            
+            {/* 4. AI QnA Section */}
             <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
             
+            {/* 5. Reviews Section */}
             <ProductReviews 
               reviews={reviews} 
               product={product} 
@@ -152,15 +186,34 @@ export default function ProductDetailPage() {
               onSubmitReview={handleSubmitReview}
             />
 
-            <ProductHorizontalList products={similarProducts} title="Sản phẩm bạn có thể thích" />
+            {/* 6. Similar Products */}
+            <ProductHorizontalList products={similarProducts} title="Sản phẩm tương tự" />
+
+            {/* 7. Shipping Policy (From Site Settings) */}
+            {shippingPolicy && (
+              <section className="py-16 border-t border-border/60">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary"><Truck className="w-5 h-5" /></div>
+                  <h2 className="text-xl font-bold uppercase tracking-widest text-charcoal">Chính sách Giao hàng & Đổi trả</h2>
+                </div>
+                <div 
+                  className="rich-text-content prose prose-stone max-w-none text-muted-foreground prose-li:mb-2 prose-a:text-primary"
+                  dangerouslySetInnerHTML={{ __html: shippingPolicy }}
+                />
+              </section>
+            )}
           </div>
 
           <RecentlyViewed />
         </div>
       </main>
-      
+
+      <StickyActionToolbar product={product} />
       <AIChatWindow isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} productContext={product} />
       <Footer />
     </div>
   );
 }
+
+// Sub-component for Truck icon if needed (handled by lucide import)
+import { Truck } from "lucide-react";
