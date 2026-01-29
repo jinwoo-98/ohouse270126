@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Loader2, Truck } from "lucide-react";
+import { ChevronRight, Loader2, Truck, RotateCcw } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,23 @@ import { ProductReviews } from "@/components/product/detail/ProductReviews";
 import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
 import { StickyActionToolbar } from "@/components/product/detail/StickyActionToolbar";
 
+// Định nghĩa các cặp danh mục liên quan để Cross-sell
+const CROSS_SELL_MAP: Record<string, string[]> = {
+  // Phòng khách
+  'sofa': ['ban-tra', 'ke-tivi', 'den-san', 'tham'],
+  'ban-tra': ['sofa', 'tham', 'ke-tivi'],
+  'ke-tivi': ['sofa', 'ban-tra', 'tu-trang-tri'],
+  // Phòng ngủ
+  'giuong': ['tu-quan-ao', 'ban-trang-diem', 'den-ngu', 'dem'],
+  'tu-quan-ao': ['giuong', 'guong', 'ban-trang-diem'],
+  'ban-trang-diem': ['ghe-trang-diem', 'guong', 'giuong'],
+  // Phòng ăn
+  'ban-an': ['ghe-an', 'den-chum', 'tu-ruou'],
+  'ghe-an': ['ban-an', 'den-chum'],
+  // Mặc định
+  'default': ['den-trang-tri', 'tranh', 'tham']
+};
+
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -23,12 +40,16 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<any>(null);
   const [categoryPath, setCategoryPath] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Data Sections
   const [reviews, setReviews] = useState<any[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
   const [perfectMatch, setPerfectMatch] = useState<any[]>([]);
   const [boughtTogether, setBoughtTogether] = useState<any[]>([]);
+  const [crossSellProducts, setCrossSellProducts] = useState<any[]>([]); // Gợi ý phối đồ
   const [shippingPolicy, setShippingPolicy] = useState("");
+  
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   useEffect(() => {
@@ -50,27 +71,20 @@ export default function ProductDetailPage() {
       if (error) throw error;
       setProduct(data);
       
-      // Lưu vào lịch sử xem
-      trackProductView({ 
-        id: data.id, 
-        name: data.name, 
-        price: data.price, 
-        image: data.image_url, 
-        slug: data.slug 
-      });
+      trackProductView({ id: data.id, name: data.name, price: data.price, image: data.image_url, slug: data.slug });
       
-      // Lấy đường dẫn danh mục
       if (data.category_id) {
         fetchCategoryHierarchy(data.category_id);
+        fetchCrossSell(data.category_id, data.id); // Fetch gợi ý phối đồ
       }
 
-      // Tải song song tất cả các khối nội dung
       await Promise.all([
         fetchReviews(data.id), 
         fetchAttributes(data.id),
         fetchSimilarProducts(data.category_id, data.id),
         fetchRelationProducts(data.perfect_match_ids || [], setPerfectMatch),
-        fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether, true, data.category_id),
+        // Bought Together ưu tiên chọn tay, nếu không có thì fallback sang logic category
+        fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether),
         fetchSettings()
       ]);
     } catch (error) {
@@ -87,23 +101,28 @@ export default function ProductDetailPage() {
     if (data) setShippingPolicy(data.shipping_policy_summary);
   };
 
-  const fetchRelationProducts = async (ids: string[], setter: (val: any[]) => void, useFallback = false, catId = "") => {
-    if (ids && ids.length > 0) {
-      const { data } = await supabase.from('products').select('*').in('id', ids);
-      if (data && data.length > 0) {
-        setter(data);
-        return;
-      }
-    }
+  // Logic lấy sản phẩm gợi ý phối đồ (Cross-sell)
+  const fetchCrossSell = async (categorySlug: string, currentId: string) => {
+    // Tìm danh mục liên quan
+    let targetCategories = CROSS_SELL_MAP[categorySlug] || CROSS_SELL_MAP['default'];
     
-    // Fallback: Lấy các sản phẩm khác cùng loại nếu chưa setup
-    if (useFallback && catId) {
-      const { data } = await supabase.from('products')
-        .select('*')
-        .eq('category_id', catId)
-        .limit(4);
-      setter(data || []);
-    }
+    // Nếu không tìm thấy map chính xác, thử tìm map của danh mục cha (cần logic phức tạp hơn, ở đây ta fallback về default)
+    if (!targetCategories) targetCategories = CROSS_SELL_MAP['default'];
+
+    const { data } = await supabase
+      .from('products')
+      .select('*')
+      .in('category_id', targetCategories)
+      .neq('id', currentId)
+      .limit(4);
+    
+    setCrossSellProducts(data || []);
+  };
+
+  const fetchRelationProducts = async (ids: string[], setter: (val: any[]) => void) => {
+    if (!ids || ids.length === 0) return;
+    const { data } = await supabase.from('products').select('*').in('id', ids);
+    setter(data || []);
   };
 
   const fetchCategoryHierarchy = async (categorySlug: string) => {
@@ -136,7 +155,7 @@ export default function ProductDetailPage() {
       .select('*')
       .eq('category_id', categoryId)
       .neq('id', currentId)
-      .limit(8);
+      .limit(4); // Giới hạn 4 cho đẹp layout
     setSimilarProducts(data || []);
   };
 
@@ -196,25 +215,13 @@ export default function ProductDetailPage() {
             <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
           </div>
 
-          {/* Main Content Area */}
+          {/* Main Content Area - Ordered as requested */}
           <div className="max-w-6xl mx-auto space-y-24">
-            {/* 1. Article Description (Khám phá sản phẩm) */}
+            
+            {/* 1. Khám phá sản phẩm (Description) */}
             <ProductDescription description={product.description} />
             
-            {/* 2. Perfect Match (Gợi ý phối cảnh) */}
-            {perfectMatch.length > 0 && (
-              <ProductInspiration product={product} comboProducts={perfectMatch} />
-            )}
-
-            {/* 3. Bought Together (Thường mua cùng nhau) */}
-            {boughtTogether.length > 0 && (
-              <ProductHorizontalList products={boughtTogether} title="Thường được mua cùng nhau" />
-            )}
-            
-            {/* 4. AI QnA Section */}
-            <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
-            
-            {/* 5. Reviews Section */}
+            {/* 2. Đánh giá (Reviews) */}
             <ProductReviews 
               reviews={reviews} 
               product={product} 
@@ -223,27 +230,59 @@ export default function ProductDetailPage() {
               onSubmitReview={handleSubmitReview}
             />
 
-            {/* 6. Similar Products */}
+            {/* 3. Hỏi AI (QnA) */}
+            <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
+
+            {/* 4. Gợi ý mua cùng (Cross-sell: Sofa -> Bàn trà) */}
+            {crossSellProducts.length > 0 && (
+              <ProductHorizontalList products={crossSellProducts} title="Gợi ý phối đồ hoàn hảo" />
+            )}
+
+            {/* 5. Sản phẩm tương tự (Cùng danh mục) */}
             <ProductHorizontalList products={similarProducts} title="Sản phẩm tương tự" />
 
-            {/* 7. Shipping Policy (From Site Settings) */}
+            {/* 6. Bộ sưu tập (Perfect Match - Manual Select) */}
+            {perfectMatch.length > 0 && (
+              <ProductInspiration product={product} comboProducts={perfectMatch} />
+            )}
+
+            {/* 7. Thường mua cùng nhau (Bought Together - Manual Select) */}
+            {boughtTogether.length > 0 && (
+              <ProductHorizontalList products={boughtTogether} title="Thường được mua cùng nhau" />
+            )}
+
+            {/* 8. Lịch sử xem */}
+            <RecentlyViewed />
+
+            {/* 9. Vận chuyển & Hoàn trả */}
             {shippingPolicy && (
               <section className="py-16 border-t border-border/60">
-                <div className="flex items-center gap-3 mb-8">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <Truck className="w-5 h-5" />
+                <div className="flex flex-col md:flex-row gap-12">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                        <Truck className="w-5 h-5" />
+                      </div>
+                      <h2 className="text-lg font-bold uppercase tracking-widest text-charcoal">Vận chuyển & Hoàn trả</h2>
+                    </div>
+                    <div 
+                      className="rich-text-content prose prose-stone max-w-none text-muted-foreground prose-li:mb-2 prose-a:text-primary text-sm leading-relaxed text-justify"
+                      dangerouslySetInnerHTML={{ __html: shippingPolicy }}
+                    />
                   </div>
-                  <h2 className="text-xl font-bold uppercase tracking-widest text-charcoal">Chính sách Giao hàng & Đổi trả</h2>
+                  <div className="w-full md:w-1/3 bg-secondary/20 p-6 rounded-2xl h-fit">
+                    <h3 className="font-bold mb-4 flex items-center gap-2"><RotateCcw className="w-4 h-4" /> Cam kết OHOUSE</h3>
+                    <ul className="space-y-3 text-sm text-muted-foreground">
+                      <li className="flex gap-2">✓ Đổi trả trong 30 ngày</li>
+                      <li className="flex gap-2">✓ Bảo hành chính hãng 2 năm</li>
+                      <li className="flex gap-2">✓ Miễn phí lắp đặt nội thành</li>
+                      <li className="flex gap-2">✓ Hỗ trợ trả góp 0%</li>
+                    </ul>
+                  </div>
                 </div>
-                <div 
-                  className="rich-text-content prose prose-stone max-w-none text-muted-foreground"
-                  dangerouslySetInnerHTML={{ __html: shippingPolicy }}
-                />
               </section>
             )}
           </div>
-
-          <RecentlyViewed />
         </div>
       </main>
 
