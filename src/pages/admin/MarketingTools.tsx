@@ -31,22 +31,28 @@ const VN_LAST_NAMES = ["Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh
 const VN_MID_NAMES = ["Văn", "Thị", "Hồng", "Minh", "Anh", "Quang", "Xuân", "Thanh", "Đức", "Trọng", "Kim", "Ngọc"];
 const VN_FIRST_NAMES = ["An", "Bình", "Chi", "Dũng", "Giang", "Hương", "Khánh", "Linh", "Nam", "Oanh", "Phúc", "Quyên", "Sơn", "Thảo", "Uyên", "Vinh", "Yến", "Tùng", "Lâm", "Hải"];
 
+// Danh sách comment được cải tiến chân thực hơn
 const REVIEW_COMMENTS = [
-  "Sản phẩm rất đẹp, đúng như mô tả. Giao hàng nhanh.",
-  "Chất lượng tuyệt vời, gỗ rất chắc chắn. Rất hài lòng.",
-  "Đóng gói cẩn thận, nhân viên lắp đặt nhiệt tình. 5 sao!",
-  "Màu sắc sang trọng, phù hợp với phòng khách nhà mình.",
-  "Giá cả hợp lý so với chất lượng. Sẽ ủng hộ shop tiếp.",
-  "Hàng đẹp, giao đúng hẹn. Cảm ơn shop.",
-  "Rất ưng ý với bộ sản phẩm này. Đẳng cấp thực sự.",
-  "Sofa ngồi rất êm, hoàn thiện cực kỳ tỉ mỉ.",
-  "Thiết kế hiện đại, chắc chắn hơn mình nghĩ nhiều.",
-  "Dịch vụ chăm sóc khách hàng của OHOUSE rất chuyên nghiệp.",
-  "Mới nhận hàng sáng nay, lắp đặt xong nhìn mê luôn.",
-  "Chất liệu cao cấp, sờ vào thấy khác biệt hẳn.",
-  "Đáng đồng tiền bát gạo, mọi người nên mua nhé.",
-  "Tìm mãi mới được mẫu ưng ý thế này, cảm ơn đội ngũ tư vấn.",
-  "Giao hàng tỉnh mà cũng rất nhanh, đóng thùng gỗ cẩn thận."
+  "Hàng đẹp lắm mng ơi, nên mua nhaaa 😍 sp đóng gói kỹ, ko trầy xước tí nào luôn",
+  "Rất ưbg mẫu này luôn ạ. Gỗ chắc chắn, màu sang hơn trên ảnh nhiều ✨✨",
+  "Giao hàng nhanh vãi, mới đặt hôm kia mà nay có r. Nhân viên lắp đặt nhiệt tình lắm 👍👍",
+  "Sp tốt, đúng mô tả. Đáng tiền bát gạo 💯💯💯",
+  "Màu này hợp phong thủy nhà mình cực, ai đến cũng khen. Cảm ơn shop nhen!",
+  "Đẹp quáaaaa, nhìn xịn xò hẳn cái phòng khách. Ưng cái bụng ghê",
+  "Sofa êm cực kỳ, hoàn thiện tỉ mỉ. Ohousr làm ăn uy tín thật sự",
+  "Ko uổng công chờ đợi, sp quá xuất sắc mng ạ. 5 saooooo ⭐⭐⭐⭐⭐",
+  "Hàng chuẩn auth, gỗ thơm tự nhiên. Sẽ ủng hộ shop dài dài",
+  "Xịn đét luôn, ko có điểm gì để chê. Đóng thùng gỗ cẩn thận lắm ạ ❤️❤️",
+  "Lắp xong cái mê luôn, mẫu mã hiện đại, chắc chắn. Shop tư vấn có tâm lắm",
+  "Đẹp hơn mong đợi, sp okela lắm nha. Giao hàng tỉnh mà nhanh bất ngờ",
+  "Chất liệu cao cấp sờ sướng tay cực. Ưng vãi chưởng 😂",
+  "Mng nên mua nhé, shop này làm đồ nội thất đỉnh thật sự. Giá hơi cao tí nhưng sắt ra miếng",
+  "Vừa nhận đc hàng xong, cảm nhận ban đầu là sp cực kỳ chất lượng. Sẽ giới thiệu cho bạn bè",
+  "Sp 10/10 nha mng, ko mua là phí lắm. Shop phục vụ quá tốt 🔥🔥🔥",
+  "Ship nhanh, đóng gói cẩn thận. Sp ko lỗi lầm gì, quá tuyệt vời!",
+  "Chất lượng gỗ quá ok, vân đẹp. Ohouse số 1 luôn nhé 👍",
+  "Lần đầu mua nội thất online mà ưng ntn. Đúng là tiền nào của nấy",
+  "Sản phẩm sang chảnh, nâng tầm căn hộ luôn. Love itttt 😍✨"
 ];
 
 export default function MarketingTools() {
@@ -65,7 +71,7 @@ export default function MarketingTools() {
     min_sold: "50", max_sold: "200",
     min_reviews: "10", max_reviews: "30",
     min_rating: "4.8", max_rating: "5.0",
-    review_days_back: "60", // Mặc định sinh đánh giá trong 60 ngày qua
+    review_days_back: "60",
     display_order: ""
   });
 
@@ -122,12 +128,10 @@ export default function MarketingTools() {
         const count = p.fake_review_count || 0;
         if (count === 0) continue;
 
-        // Xóa đánh giá cũ trước khi sinh mới
         await supabase.from('reviews').delete().eq('product_id', p.id);
 
         const newReviews = [];
         for (let i = 0; i < count; i++) {
-          // Tạo ngày giờ ngẫu nhiên dựa trên tham số daysBack
           const randomDays = getRandomInt(1, daysBack);
           const randomHours = getRandomInt(0, 23);
           const randomMins = getRandomInt(0, 59);
