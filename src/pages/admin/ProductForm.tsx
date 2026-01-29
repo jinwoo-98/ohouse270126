@@ -43,6 +43,7 @@ export default function ProductForm() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEdit);
   const [categories, setCategories] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
   
   // Attributes state
   const [availableAttributes, setAvailableAttributes] = useState<any[]>([]);
@@ -66,14 +67,16 @@ export default function ProductForm() {
     fake_sold: "0",
     fake_review_count: "0",
     fake_rating: "5",
+    perfect_match_ids: [] as string[],
+    bought_together_ids: [] as string[]
   });
 
   useEffect(() => {
     fetchCategories();
+    fetchAllProducts();
     if (isEdit) fetchProduct();
   }, [id]);
 
-  // Fetch attributes whenever category changes
   useEffect(() => {
     if (formData.category_id) {
       fetchAttributesForCategory(formData.category_id);
@@ -88,6 +91,11 @@ export default function ProductForm() {
       .select('id, name, slug, parent_id')
       .order('display_order', { ascending: true });
     setCategories(data || []);
+  };
+
+  const fetchAllProducts = async () => {
+    const { data } = await supabase.from('products').select('id, name').neq('id', id || 'new').limit(200); // Limit to check perf
+    setAllProducts(data || []);
   };
 
   const fetchAttributesForCategory = async (categorySlug: string) => {
@@ -143,6 +151,8 @@ export default function ProductForm() {
           fake_sold: data.fake_sold?.toString() || "0",
           fake_review_count: data.fake_review_count?.toString() || "0",
           fake_rating: data.fake_rating?.toString() || "5",
+          perfect_match_ids: data.perfect_match_ids || [],
+          bought_together_ids: data.bought_together_ids || []
         });
 
         const { data: pAttrs } = await supabase
@@ -220,6 +230,8 @@ export default function ProductForm() {
       fake_sold: parseInt(formData.fake_sold) || 0,
       fake_review_count: parseInt(formData.fake_review_count) || 0,
       fake_rating: parseFloat(formData.fake_rating) || 5,
+      perfect_match_ids: formData.perfect_match_ids,
+      bought_together_ids: formData.bought_together_ids,
       updated_at: new Date()
     };
 
@@ -334,12 +346,94 @@ export default function ProductForm() {
             </div>
           </div>
 
-          {availableAttributes.length > 0 && (
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                <List className="w-4 h-4" /> 2. Thông số kỹ thuật
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+              <Box className="w-4 h-4" /> 2. Cross-sell & Up-sell (Thủ công)
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Gợi ý phối cảnh (Perfect Match)</Label>
+                <Select 
+                  onValueChange={(val) => {
+                    if (!formData.perfect_match_ids.includes(val)) {
+                      setFormData({...formData, perfect_match_ids: [...formData.perfect_match_ids, val]})
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-11 rounded-xl">
+                    <SelectValue placeholder="Chọn sản phẩm để phối..." />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {allProducts.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.perfect_match_ids.map(pid => {
+                    const p = allProducts.find(x => x.id === pid);
+                    return p ? (
+                      <Badge key={pid} variant="secondary" className="gap-2 pl-3">
+                        {p.name}
+                        <button type="button" onClick={() => setFormData({...formData, perfect_match_ids: formData.perfect_match_ids.filter(x => x !== pid)})} className="hover:text-destructive"><X className="w-3 h-3" /></button>
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Thường được mua cùng (Bought Together)</Label>
+                <Select 
+                  onValueChange={(val) => {
+                    if (!formData.bought_together_ids.includes(val)) {
+                      setFormData({...formData, bought_together_ids: [...formData.bought_together_ids, val]})
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-11 rounded-xl">
+                    <SelectValue placeholder="Chọn sản phẩm mua cùng..." />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {allProducts.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.bought_together_ids.map(pid => {
+                    const p = allProducts.find(x => x.id === pid);
+                    return p ? (
+                      <Badge key={pid} variant="secondary" className="gap-2 pl-3">
+                        {p.name}
+                        <button type="button" onClick={() => setFormData({...formData, bought_together_ids: formData.bought_together_ids.filter(x => x !== pid)})} className="hover:text-destructive"><X className="w-3 h-3" /></button>
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+              <Info className="w-4 h-4" /> 3. Thông tin chi tiết
+            </h3>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tên sản phẩm đầy đủ *</Label>
+              <Input 
+                value={formData.name} 
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="Ví dụ: Sofa da Ý cao cấp 3 chỗ ngồi"
+                required
+                className="h-12 rounded-xl text-lg font-bold"
+              />
+            </div>
+            
+            {/* Attributes Section */}
+            {availableAttributes.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-secondary/10 rounded-2xl">
                 {availableAttributes.map(attr => (
                   <div key={attr.id} className="space-y-3">
                     <Label className="text-[10px] font-bold uppercase text-muted-foreground">{attr.name}</Label>
@@ -359,7 +453,7 @@ export default function ProductForm() {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="flex flex-wrap gap-3 p-3 border rounded-xl bg-gray-50/50">
+                      <div className="flex flex-wrap gap-3 p-3 border rounded-xl bg-white">
                         {attr.options?.map((opt: string) => (
                           <div key={opt} className="flex items-center space-x-2">
                             <Checkbox 
@@ -375,33 +469,8 @@ export default function ProductForm() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Info className="w-4 h-4" /> {availableAttributes.length > 0 ? "3." : "2."} Thông tin chi tiết
-            </h3>
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tên sản phẩm đầy đủ *</Label>
-              <Input 
-                value={formData.name} 
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="Ví dụ: Sofa da Ý cao cấp 3 chỗ ngồi"
-                required
-                className="h-12 rounded-xl text-lg font-bold"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Chất liệu (Tag tìm kiếm)</Label>
-                <Input value={formData.material} onChange={(e) => setFormData({...formData, material: e.target.value})} placeholder="Gỗ Óc Chó, Da thật..." className="h-12 rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Phong cách (Tag tìm kiếm)</Label>
-                <Input value={formData.style} onChange={(e) => setFormData({...formData, style: e.target.value})} placeholder="Luxury, Minimalist..." className="h-12 rounded-xl" />
-              </div>
-            </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả bài viết</Label>
@@ -453,28 +522,6 @@ export default function ProductForm() {
                 onChange={(urls) => setFormData(prev => ({ ...prev, gallery_urls: urls as string[] }))} 
               />
               <p className="text-[10px] text-muted-foreground mt-3 text-center italic">Chọn nhiều ảnh cùng lúc để tải lên bộ sưu tập.</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" /> Marketing (Số liệu ảo)
-            </h3>
-            <div className="grid gap-4">
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Thứ tự hiển thị</Label>
-                <Input type="number" value={formData.display_order} onChange={(e) => setFormData({...formData, display_order: e.target.value})} className="h-10 rounded-lg" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Đã bán</Label>
-                  <Input type="number" value={formData.fake_sold} onChange={(e) => setFormData({...formData, fake_sold: e.target.value})} className="h-10 rounded-lg" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">Sao (Max 5)</Label>
-                  <Input type="number" step="0.1" max="5" value={formData.fake_rating} onChange={(e) => setFormData({...formData, fake_rating: e.target.value})} className="h-10 rounded-lg" />
-                </div>
-              </div>
             </div>
           </div>
 

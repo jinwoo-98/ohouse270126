@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { toast } from "sonner";
-import { Loader2, Save, Globe, MapPin, Phone, Mail, Clock, Share2 } from "lucide-react";
+import { Loader2, Save, Globe, MapPin, Phone, Mail, Clock, Share2, Truck } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
 export default function GeneralSettings() {
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,8 @@ export default function GeneralSettings() {
     youtube_url: "",
     tiktok_url: "",
     working_hours: "",
-    map_iframe_url: ""
+    map_iframe_url: "",
+    shipping_policy_summary: ""
   });
 
   useEffect(() => {
@@ -43,7 +45,8 @@ export default function GeneralSettings() {
         youtube_url: data.youtube_url || "",
         tiktok_url: data.tiktok_url || "",
         working_hours: data.working_hours || "",
-        map_iframe_url: data.map_iframe_url || ""
+        map_iframe_url: data.map_iframe_url || "",
+        shipping_policy_summary: data.shipping_policy_summary || ""
       });
     }
   };
@@ -83,10 +86,11 @@ export default function GeneralSettings() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="bg-white border p-1 rounded-xl h-12 w-full justify-start">
+        <TabsList className="bg-white border p-1 rounded-xl h-12 w-full justify-start overflow-x-auto">
           <TabsTrigger value="general" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Thông tin chung</TabsTrigger>
           <TabsTrigger value="contact" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Liên hệ & Địa chỉ</TabsTrigger>
           <TabsTrigger value="social" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Mạng xã hội</TabsTrigger>
+          <TabsTrigger value="shipping" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Chính sách SP</TabsTrigger>
         </TabsList>
 
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
@@ -101,7 +105,7 @@ export default function GeneralSettings() {
                   <Label>Logo Website</Label>
                   <ImageUpload 
                     value={settings.logo_url} 
-                    onChange={(url) => setSettings({...settings, logo_url: url})} 
+                    onChange={(url) => setSettings({...settings, logo_url: url as string})} 
                   />
                   <p className="text-[10px] text-muted-foreground italic">Khuyên dùng ảnh PNG trong suốt, kích thước tối thiểu 200x60px.</p>
                 </div>
@@ -212,6 +216,21 @@ export default function GeneralSettings() {
                   <Input value={settings.tiktok_url} onChange={(e) => setSettings({...settings, tiktok_url: e.target.value})} placeholder="https://tiktok.com/..." />
                 </div>
               </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="shipping" className="mt-0 space-y-6">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
+              <Truck className="w-4 h-4" /> Tóm tắt Vận chuyển & Đổi trả
+            </h3>
+            <div className="space-y-2">
+              <Label>Nội dung hiển thị cuối trang chi tiết sản phẩm</Label>
+              <RichTextEditor 
+                value={settings.shipping_policy_summary} 
+                onChange={(val) => setSettings({...settings, shipping_policy_summary: val})}
+                placeholder="Nhập tóm tắt chính sách vận chuyển, đổi trả..."
+              />
+              <p className="text-[10px] text-muted-foreground italic">Nội dung này sẽ hiển thị ở cuối mỗi trang chi tiết sản phẩm.</p>
             </div>
           </TabsContent>
 

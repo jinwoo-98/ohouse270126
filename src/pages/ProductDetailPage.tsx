@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight, Loader2, MapPin, Truck } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RecentlyViewed, trackProductView } from "@/components/RecentlyViewed";
@@ -11,22 +10,25 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { AIChatWindow } from "@/components/contact/AIChatWindow";
 import { ProductInfo } from "@/components/product/detail/ProductInfo";
 import { ProductDescription } from "@/components/product/detail/ProductDescription";
-import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
 import { ProductReviews } from "@/components/product/detail/ProductReviews";
-import { RelatedProducts } from "@/components/product/detail/RelatedProducts";
+import { ProductHorizontalList } from "@/components/product/detail/ProductHorizontalList";
+import { ProductQnA } from "@/components/product/detail/ProductQnA";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState<any[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
-  const [similarProducts, setSimilarProducts] = useState<any[]>([]);
-  const [comboProducts, setComboProducts] = useState<any[]>([]);
   
+  // Lists
+  const [similarProducts, setSimilarProducts] = useState<any[]>([]);
+  const [perfectMatchProducts, setPerfectMatchProducts] = useState<any[]>([]);
+  const [boughtTogetherProducts, setBoughtTogetherProducts] = useState<any[]>([]);
+  
+  const [shippingSummary, setShippingSummary] = useState("");
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   useEffect(() => {
@@ -35,6 +37,15 @@ export default function ProductDetailPage() {
       window.scrollTo(0, 0);
     }
   }, [id]);
+
+  useEffect(() => {
+    // Fetch Shipping Summary
+    const fetchSettings = async () => {
+      const { data } = await supabase.from('site_settings').select('shipping_policy_summary').single();
+      if (data?.shipping_policy_summary) setShippingSummary(data.shipping_policy_summary);
+    };
+    fetchSettings();
+  }, []);
 
   const fetchProduct = async () => {
     setLoading(true);
@@ -59,9 +70,11 @@ export default function ProductDetailPage() {
         fetchReviews(), 
         fetchAttributes(),
         fetchSimilarProducts(data.category_id, data.id),
-        fetchComboProducts(data.id)
+        fetchProductList(data.perfect_match_ids, setPerfectMatchProducts, 4, 'random'),
+        fetchProductList(data.bought_together_ids, setBoughtTogetherProducts, 4, 'random')
       ]);
     } catch (error) {
+      console.error(error);
       toast.error("Sản phẩm không tồn tại");
       navigate("/");
     } finally {
@@ -92,19 +105,22 @@ export default function ProductDetailPage() {
         .select('*')
         .eq('category_id', categoryId)
         .neq('id', currentId)
-        .limit(4);
+        .limit(6);
       setSimilarProducts(data || []);
     } catch (err) {}
   };
 
-  const fetchComboProducts = async (currentId: string) => {
+  // Helper fetch list by IDs OR random fallback
+  const fetchProductList = async (ids: string[] | null, setter: (val: any[]) => void, limit: number, fallback: 'random' | 'none') => {
     try {
-      const { data } = await supabase
-        .from('products')
-        .select('*')
-        .neq('id', currentId)
-        .limit(2);
-      setComboProducts(data || []);
+      if (ids && ids.length > 0) {
+        const { data } = await supabase.from('products').select('*').in('id', ids);
+        setter(data || []);
+      } else if (fallback === 'random') {
+        // Random fallback logic
+        const { data } = await supabase.from('products').select('*').limit(limit).neq('id', id); // Simplified random
+        setter(data || []);
+      }
     } catch (err) {}
   };
 
@@ -119,18 +135,15 @@ export default function ProductDetailPage() {
     } catch (err) {}
   };
 
-  const handleReviewSubmit = async (rating: number, comment: string) => {
-    if (!user) {
-      toast.error("Vui lòng đăng nhập để đánh giá.");
-      return;
-    }
+  const handleReviewSubmit = async (rating: number, comment: string, name: string) => {
     try {
+      // In real app, user_id is optional for guest orders or we link via email
+      // Here we assume basic review structure
       await supabase.from('reviews').insert({
         product_id: String(id),
-        user_id: user.id,
         rating: rating,
         comment: comment,
-        user_name: user.user_metadata?.first_name || user.email?.split('@')[0]
+        user_name: name
       });
       toast.success("Cảm ơn đánh giá của bạn!");
       fetchReviews();
@@ -157,41 +170,67 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="container-luxury py-8">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 mb-16">
+          {/* 1. Main Info Section */}
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 mb-20">
             <ProductGallery 
               mainImage={product.image_url} 
               galleryImages={product.gallery_urls} 
               productName={product.name} 
             />
-
             <ProductInfo 
               product={product} 
               attributes={attributes} 
-              comboProducts={comboProducts} 
               reviewsCount={reviews.length} 
             />
           </div>
 
+          {/* 2. Product Description */}
           <ProductDescription description={product.description} />
 
-          <ProductInspiration product={product} comboProducts={comboProducts} />
-
+          {/* 3. Reviews */}
           <ProductReviews 
             reviews={reviews}
             product={product}
-            user={user}
             displayRating={product.fake_rating || 5}
             displayReviewCount={(product.fake_review_count || 0) + reviews.length}
             onSubmitReview={handleReviewSubmit}
-            onOpenAIChat={() => setIsAIChatOpen(true)}
           />
 
-          <RelatedProducts products={similarProducts} />
+          {/* 4. AI Q&A Section (Separate Row) */}
+          <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
 
+          {/* 5. Perfect Match (Horizontal) */}
+          <ProductHorizontalList products={perfectMatchProducts} title="Gợi Ý Phối Cảnh Hoàn Hảo (Perfect Match)" />
+
+          {/* 6. Similar Products (Horizontal) */}
+          <ProductHorizontalList products={similarProducts} title="Sản phẩm tương tự" />
+
+          {/* 7. Bought Together (Horizontal) */}
+          <ProductHorizontalList products={boughtTogetherProducts} title="Thường được mua cùng" />
+
+          {/* 8. Recently Viewed */}
           <RecentlyViewed />
+
+          {/* 9. Shipping Policy Summary */}
+          {shippingSummary && (
+            <section className="mt-16 pt-10 border-t border-border">
+              <div className="bg-white p-8 rounded-3xl border border-border/60 shadow-sm flex flex-col md:flex-row gap-8 items-start">
+                <div className="shrink-0 flex items-center gap-3 text-primary">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <Truck className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-bold uppercase tracking-widest hidden md:block">Chính sách<br/>Vận chuyển & Đổi trả</h3>
+                </div>
+                <div className="flex-1 prose prose-sm max-w-none text-muted-foreground">
+                  <div dangerouslySetInnerHTML={{ __html: shippingSummary }} />
+                </div>
+              </div>
+            </section>
+          )}
         </div>
       </main>
       
+      {/* Pass Product context to AI if possible, simple implementation for now */}
       <AIChatWindow isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} />
       <Footer />
     </div>
