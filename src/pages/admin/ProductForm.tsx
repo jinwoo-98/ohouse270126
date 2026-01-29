@@ -1,10 +1,26 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Save, Loader2, Info, FileText, ImageIcon, Layers, Box, Settings2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Info, FileText, ImageIcon, Layers, Box, Settings2, Ruler, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  Select, 
+  SelectContent, 
+  SelectGroup, 
+  SelectItem, 
+  SelectLabel, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ImageUpload } from "@/components/admin/ImageUpload";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
 
 // Import các section đã tách nhỏ
 import { PricingCategorySection } from "@/components/admin/product-form/PricingCategorySection";
@@ -210,10 +226,22 @@ export default function ProductForm() {
             <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-4">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Settings2 className="w-4 h-4" /> Chỉ số ảo (Marketing)</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="space-y-2"><Label>Lượt bán ảo</Label><Input type="number" value={formData.fake_sold} onChange={e=>setFormData({...formData, fake_sold: e.target.value})} /></div>
-                <div className="space-y-2"><Label>Lượt đánh giá ảo</Label><Input type="number" value={formData.fake_review_count} onChange={e=>setFormData({...formData, fake_review_count: e.target.value})} /></div>
-                <div className="space-y-2"><Label>Điểm đánh giá ảo</Label><Input type="number" step="0.1" value={formData.fake_rating} onChange={e=>setFormData({...formData, fake_rating: e.target.value})} /></div>
-                <div className="space-y-2"><Label>Thứ tự hiển thị</Label><Input type="number" value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} /></div>
+                <div className="space-y-2">
+                  <Label>Lượt bán ảo</Label>
+                  <Input type="number" value={formData.fake_sold} onChange={e=>setFormData({...formData, fake_sold: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Lượt đánh giá ảo</Label>
+                  <Input type="number" value={formData.fake_review_count} onChange={e=>setFormData({...formData, fake_review_count: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Điểm đánh giá ảo</Label>
+                  <Input type="number" step="0.1" value={formData.fake_rating} onChange={e=>setFormData({...formData, fake_rating: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Thứ tự hiển thị</Label>
+                  <Input type="number" value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} />
+                </div>
               </div>
             </div>
           </TabsContent>
