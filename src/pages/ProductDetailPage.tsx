@@ -194,21 +194,25 @@ export default function ProductDetailPage() {
           {/* Main Content Area */}
           <div className="max-w-6xl mx-auto space-y-24">
             
-            <ProductDescription description={product.description} />
+            <div id="description"><ProductDescription description={product.description} /></div>
             
-            <ProductReviews 
-              reviews={reviews} 
-              product={product} 
-              displayRating={product.fake_rating || 5} 
-              displayReviewCount={product.fake_review_count || reviews.length}
-              onSubmitReview={handleSubmitReview}
-            />
+            <div id="reviews">
+              <ProductReviews 
+                reviews={reviews} 
+                product={product} 
+                displayRating={product.fake_rating || 5} 
+                displayReviewCount={product.fake_review_count || reviews.length}
+                onSubmitReview={handleSubmitReview}
+              />
+            </div>
 
             <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
 
             {/* 4. Bộ sưu tập phối sẵn */}
             {perfectMatch.length > 0 && (
-              <ProductHorizontalList products={perfectMatch} title="Bộ Sưu Tập Hoàn Hảo" />
+              <div id="inspiration">
+                <ProductHorizontalList products={perfectMatch} title="Bộ Sưu Tập Hoàn Hảo" />
+              </div>
             )}
 
             {/* 5. Gợi ý mua kèm */}
@@ -217,7 +221,9 @@ export default function ProductDetailPage() {
             )}
 
             {/* 6. Sản phẩm tương tự */}
-            <ProductHorizontalList products={similarProducts} title="Sản Phẩm Tương Tự" />
+            <div id="related">
+              <ProductHorizontalList products={similarProducts} title="Sản Phẩm Tương Tự" />
+            </div>
 
             {/* 7. Lịch sử xem */}
             <RecentlyViewed />
@@ -237,7 +243,6 @@ export default function ProductDetailPage() {
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-10">
-                    {/* Vận chuyển */}
                     <div className="space-y-4">
                       <h3 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Chính Sách Giao Hàng
@@ -249,7 +254,6 @@ export default function ProductDetailPage() {
                       </div>
                     </div>
 
-                    {/* Đổi trả */}
                     <div className="space-y-4">
                       <h3 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Chính Sách Đổi Trả
@@ -262,7 +266,6 @@ export default function ProductDetailPage() {
                     </div>
                   </div>
 
-                  {/* Dynamic summary from settings if exists */}
                   {shippingPolicy && (
                     <div 
                       className="mt-10 p-6 bg-secondary/30 rounded-2xl border border-border/40 prose prose-sm max-w-none text-muted-foreground"

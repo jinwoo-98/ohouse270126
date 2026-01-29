@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShoppingBag, Heart } from "lucide-react";
+import { ShoppingBag, Heart, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn, formatPrice } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
@@ -16,52 +16,95 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
+  const navItems = [
+    { label: "Chi tiết", target: "description" },
+    { label: "Đánh giá", target: "reviews" },
+    { label: "Phối đồ", target: "inspiration" },
+    { label: "Gợi ý", target: "related" },
+  ];
+
   useEffect(() => {
     const handleScroll = () => {
-      // Hiện thanh khi cuộn qua 800px (thường là qua phần gallery)
-      setIsVisible(window.scrollY > 800);
+      // Hiện thanh khi cuộn qua 600px (thường là bắt đầu vào phần mô tả)
+      setIsVisible(window.scrollY > 600);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 100; // Khoảng cách trừ hao cho thanh sticky
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
+
   if (!product) return null;
 
   return (
     <div className={cn(
-      "fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-border/60 z-[100] transition-all duration-500 transform",
-      isVisible ? "translate-y-0" : "translate-y-full"
+      "fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-border/40 z-[100] transition-all duration-500 transform shadow-medium",
+      isVisible ? "translate-y-0" : "-translate-y-full"
     )}>
-      <div className="container-luxury h-20 md:h-24 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl overflow-hidden hidden sm:block border shrink-0">
-            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-          </div>
-          <div className="min-w-0">
-            <h4 className="text-sm font-bold text-charcoal truncate max-w-[200px] md:max-w-md">{product.name}</h4>
-            <p className="text-primary font-bold text-lg">{formatPrice(product.price)}</p>
-          </div>
+      <div className="container-luxury h-16 md:h-20 flex items-center justify-between gap-4">
+        {/* Left Side: Navigation Tabs */}
+        <div className="hidden md:flex items-center gap-1 lg:gap-4">
+          {navItems.map((item) => (
+            <button
+              key={item.target}
+              onClick={() => scrollToSection(item.target)}
+              className="px-4 py-2 text-[10px] lg:text-[11px] font-bold uppercase tracking-[0.15em] text-charcoal/60 hover:text-primary transition-colors relative group"
+            >
+              {item.label}
+              <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+            </button>
+          ))}
         </div>
 
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => toggleWishlist(product)}
-            className={cn(
-              "p-3 rounded-xl border-2 transition-all",
-              isInWishlist(product.id) ? "bg-primary/5 border-primary text-primary" : "border-border hover:border-primary/40"
-            )}
-          >
-            <Heart className={cn("w-5 h-5", isInWishlist(product.id) && "fill-current")} />
-          </button>
-          
-          <Button 
-            className="btn-hero h-12 md:h-14 px-8 md:px-12 rounded-xl shadow-gold text-xs md:text-sm font-bold"
-            onClick={() => addToCart({ ...product, quantity: 1, image: product.image_url })}
-          >
-            <ShoppingBag className="w-4 h-4 mr-2" /> 
-            <span className="hidden sm:inline">THÊM VÀO GIỎ</span>
-            <span className="sm:hidden">MUA NGAY</span>
-          </Button>
+        {/* Mobile View: Simple Indicator */}
+        <div className="md:hidden flex items-center gap-2">
+           <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Đang xem sản phẩm</span>
+           <ChevronDown className="w-3 h-3 text-primary animate-bounce" />
+        </div>
+
+        {/* Right Side: Price + Wishlist + Cart */}
+        <div className="flex items-center gap-3 md:gap-6">
+          <div className="text-right hidden sm:block">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground leading-none mb-1">Giá ưu đãi</p>
+            <p className="text-primary font-bold text-lg md:text-xl leading-none">{formatPrice(product.price)}</p>
+          </div>
+
+          <div className="flex items-center gap-2 md:gap-3">
+            <button 
+              onClick={() => toggleWishlist(product)}
+              className={cn(
+                "p-2.5 md:p-3 rounded-xl border transition-all",
+                isInWishlist(product.id) 
+                  ? "bg-primary/5 border-primary text-primary shadow-sm" 
+                  : "border-border hover:border-primary/40 bg-white"
+              )}
+              title="Thêm vào yêu thích"
+            >
+              <Heart className={cn("w-4 h-4 md:w-5 md:h-5", isInWishlist(product.id) && "fill-current")} />
+            </button>
+            
+            <Button 
+              className="btn-hero h-11 md:h-13 px-6 md:px-10 rounded-xl shadow-gold text-[10px] md:text-xs font-bold"
+              onClick={() => addToCart({ ...product, quantity: 1, image: product.image_url })}
+            >
+              <ShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4 mr-2" /> 
+              <span>MUA NGAY</span>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
