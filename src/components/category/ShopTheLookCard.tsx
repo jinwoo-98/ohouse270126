@@ -10,7 +10,7 @@ interface ShopTheLookCardProps {
 
 export function ShopTheLookCard({ look, onQuickView }: ShopTheLookCardProps) {
   return (
-    <div className="md:col-span-2 group relative aspect-video md:aspect-[2/1] rounded-3xl overflow-hidden shadow-subtle hover:shadow-medium transition-all duration-500">
+    <div className="col-span-2 group relative aspect-video md:aspect-[2/1] rounded-3xl overflow-hidden shadow-subtle hover:shadow-medium transition-all duration-500">
       <Link to={`/y-tuong/${look.id}`}>
         <img 
           src={look.image_url} 
