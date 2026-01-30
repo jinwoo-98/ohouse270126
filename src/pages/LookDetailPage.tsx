@@ -53,9 +53,10 @@ export default function LookDetailPage() {
   };
 
   const visibleItems = useMemo(() => {
-    if (!look || !currentImage) return [];
-    return look.shop_look_items.filter((item: any) => item.target_image_url === currentImage && item.products);
-  }, [look, currentImage]);
+    if (!look) return [];
+    // Hiển thị tất cả sản phẩm có trong look, không lọc theo ảnh
+    return look.shop_look_items.filter((item: any) => item.products);
+  }, [look]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
@@ -129,7 +130,7 @@ export default function LookDetailPage() {
             <div className="flex flex-col">
               <h1 className="text-2xl md:text-3xl font-bold mb-4">{look.title}</h1>
               <p className="text-muted-foreground mb-8">
-                {`Khám phá ${visibleItems.length} sản phẩm trong góc nhìn này và thêm vào giỏ hàng của bạn.`}
+                {`Khám phá ${visibleItems.length} sản phẩm trong không gian này và thêm vào giỏ hàng của bạn.`}
               </p>
               
               <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2">
