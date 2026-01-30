@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 export function HeaderMenuManager() {
   const [categories, setCategories] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>({
-    top_banner_messages: [{ text: "", link: "", end_time: "" }],
+    top_banner_messages: [{ content: "", end_time: "" }], // Đổi từ 'text' sang 'content'
     top_banner_shipping: "",
     logo_url: "",
     shipping_modal_title: "",
@@ -58,9 +58,11 @@ export function HeaderMenuManager() {
         top_banner_messages: (setData.top_banner_messages && setData.top_banner_messages.length > 0) 
           ? setData.top_banner_messages.map((m: any) => ({
               ...m,
+              // Đảm bảo trường content tồn tại, và end_time được format
+              content: m.content || m.text || "", // Fallback cho trường hợp dữ liệu cũ
               end_time: m.end_time ? new Date(m.end_time).toISOString().slice(0, 16) : ""
             }))
-          : [{ text: "", link: "", end_time: "" }],
+          : [{ content: "", end_time: "" }],
         top_banner_text_color: setData.top_banner_text_color || "#FFFFFF",
         top_banner_countdown_color: setData.top_banner_countdown_color || "#000000",
       });
@@ -71,7 +73,7 @@ export function HeaderMenuManager() {
   const handleAddMessage = () => {
     setSettings({
       ...settings,
-      top_banner_messages: [...settings.top_banner_messages, { text: "", link: "", end_time: "" }]
+      top_banner_messages: [...settings.top_banner_messages, { content: "", end_time: "" }]
     });
   };
 
@@ -108,7 +110,7 @@ export function HeaderMenuManager() {
       const { data: existing } = await supabase.from('site_settings').select('id').single();
       
       const filteredMessages = settings.top_banner_messages
-        .filter((m: any) => m.text.trim() !== "")
+        .filter((m: any) => m.content.trim() !== "")
         .map((m: any) => ({
           ...m,
           end_time: m.end_time ? new Date(m.end_time).toISOString() : null
@@ -184,40 +186,26 @@ export function HeaderMenuManager() {
                   <div className="space-y-5">
                     <div className="space-y-2">
                       <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                        Nội dung thông báo (Hỗ trợ HTML/Link)
+                        Nội dung thông báo (Hỗ trợ Rich Text/Link)
                       </Label>
-                      <Input 
-                        value={msg.text} 
-                        onChange={e => handleUpdateMessage(idx, 'text', e.target.value)}
-                        placeholder="VD: Flash Sale: Giảm 50% toàn bộ bàn ăn"
-                        className="h-11 text-sm font-bold rounded-xl bg-secondary/10 border-none focus-visible:ring-1 focus-visible:ring-primary"
+                      <RichTextEditor 
+                        value={msg.content} 
+                        onChange={val => handleUpdateMessage(idx, 'content', val)}
+                        placeholder="Nhập nội dung, sử dụng công cụ để chèn link và màu chữ..."
                       />
+                      <p className="text-[10px] text-muted-foreground italic">Sử dụng công cụ chèn link và màu chữ trong trình soạn thảo.</p>
                     </div>
                     
-                    <div className="space-y-5">
-                      <div className="space-y-2">
-                        <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                          <LinkIcon className="w-3 h-3 text-primary" /> Liên kết (Link)
-                        </Label>
-                        <Input 
-                          value={msg.link} 
-                          onChange={e => handleUpdateMessage(idx, 'link', e.target.value)}
-                          placeholder="/sale"
-                          className="h-11 text-xs rounded-xl"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2 pt-2 border-t border-dashed border-border/40">
-                        <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                          <Clock className="w-3 h-3 text-destructive" /> Thời gian tự động kết thúc
-                        </Label>
-                        <Input 
-                          type="datetime-local" 
-                          value={msg.end_time} 
-                          onChange={e => handleUpdateMessage(idx, 'end_time', e.target.value)}
-                          className="h-12 text-sm rounded-xl focus:ring-1 border-primary/20 bg-primary/5"
-                        />
-                      </div>
+                    <div className="space-y-2 pt-2 border-t border-dashed border-border/40">
+                      <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
+                        <Clock className="w-3 h-3 text-destructive" /> Thời gian tự động kết thúc
+                      </Label>
+                      <Input 
+                        type="datetime-local" 
+                        value={msg.end_time} 
+                        onChange={e => handleUpdateMessage(idx, 'end_time', e.target.value)}
+                        className="h-12 text-sm rounded-xl focus:ring-1 border-primary/20 bg-primary/5"
+                      />
                     </div>
                   </div>
                 </div>

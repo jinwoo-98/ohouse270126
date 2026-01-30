@@ -85,14 +85,14 @@ export function HeaderTopBanner() {
                   transition={{ duration: 0.5 }}
                   className="absolute inset-0 flex items-center gap-2 md:gap-3"
                 >
-                  {/* Nội dung thông báo */}
+                  {/* Nội dung thông báo (Sử dụng content từ Rich Text Editor) */}
                   <div 
                     className="font-bold underline-offset-2 hover:no-underline block max-w-full text-left top-banner-text-container"
                     style={{ color: textColor }}
                   >
                     <span 
                       className="top-banner-text"
-                      dangerouslySetInnerHTML={{ __html: currentMsg.text }} 
+                      dangerouslySetInnerHTML={{ __html: currentMsg.content || currentMsg.text || "" }} 
                     />
                   </div>
 
@@ -168,11 +168,17 @@ export function HeaderTopBanner() {
           }
         }
         
-        /* Đảm bảo link trong banner vẫn có màu chữ */
+        /* Đảm bảo link và màu chữ trong banner được áp dụng từ Rich Text Editor */
         .top-banner-text a {
-          color: ${textColor} !important;
           text-decoration: underline;
           font-weight: bold;
+        }
+        /* Đảm bảo màu chữ mặc định của banner không ghi đè lên màu chữ tùy chỉnh từ Rich Text */
+        .top-banner-text * {
+          color: inherit; /* Kế thừa màu chữ mặc định của banner */
+        }
+        .top-banner-text [style*="color"] {
+          color: var(--ql-color) !important; /* Ưu tiên màu chữ được set trong editor */
         }
       `}</style>
     </>
