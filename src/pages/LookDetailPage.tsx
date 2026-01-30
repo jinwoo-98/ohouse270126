@@ -11,6 +11,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -71,20 +72,34 @@ export default function LookDetailPage() {
         <div className="container-luxury py-8 md:py-12">
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Left: Image with Hotspots */}
-            <div className="relative aspect-square rounded-3xl overflow-hidden shadow-subtle border border-border/40">
-              <img src={look.image_url} alt={look.title} className="w-full h-full object-cover" />
-              {look.shop_look_items.map((item: any) => (
-                <button
-                  key={item.id}
-                  onClick={() => setQuickViewProduct(item.products)}
-                  className="absolute w-8 h-8 -ml-4 -mt-4 bg-white/90 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in z-10 group"
-                  style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                >
-                  <Plus className="w-4 h-4" />
-                  <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-75 group-hover:hidden" />
-                </button>
-              ))}
-            </div>
+            <TooltipProvider>
+              <div className="relative aspect-square rounded-3xl overflow-hidden shadow-subtle border border-border/40">
+                <img src={look.image_url} alt={look.title} className="w-full h-full object-cover" />
+                {look.shop_look_items.map((item: any) => {
+                  const product = item.products;
+                  if (!product) return null;
+
+                  return (
+                    <Tooltip key={item.id} delayDuration={0}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setQuickViewProduct(product)}
+                          className="absolute w-8 h-8 -ml-4 -mt-4 bg-white/90 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in z-10 group/dot"
+                          style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-75 group-hover/dot:hidden" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 shadow-elevated rounded-xl">
+                        <p className="font-bold text-xs uppercase tracking-wider">{product.name}</p>
+                        <p className="text-primary font-bold text-xs mt-1">{formatPrice(product.price)}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </TooltipProvider>
 
             {/* Right: Product List (Updated to 2-column minimal card) */}
             <div className="flex flex-col">
@@ -112,7 +127,6 @@ export default function LookDetailPage() {
                             alt={product.name} 
                             className="w-full h-full object-cover" 
                           />
-                          {/* Removed the hover overlay here */}
                         </div>
                         <div className="p-3 text-center">
                           <h3 className="text-xs font-bold line-clamp-1 mb-1 group-hover:text-primary transition-colors">{product.name}</h3>
