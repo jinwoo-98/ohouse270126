@@ -17,6 +17,7 @@ import { ProductReviews } from "@/components/product/detail/ProductReviews";
 import { StickyActionToolbar } from "@/components/product/detail/StickyActionToolbar";
 import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
+import { useProductRelations } from "@/hooks/useProductRelations";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -29,12 +30,18 @@ export default function ProductDetailPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
-  const [perfectMatch, setPerfectMatch] = useState<any[]>([]);
-  const [boughtTogether, setBoughtTogether] = useState<any[]>([]);
   const [shippingPolicy, setShippingPolicy] = useState("");
   
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
-  const [quickViewProduct, setQuickViewProduct] = useState<any>(null); // New state for QuickView
+  const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+
+  // Sử dụng hook mới để fetch sản phẩm liên quan
+  const { perfectMatch, boughtTogether, isLoadingRelations } = useProductRelations(
+    product?.id, 
+    product?.category_id, 
+    product?.perfect_match_ids || [], 
+    product?.bought_together_ids || []
+  );
 
   useEffect(() => {
     if (slug) {
@@ -63,10 +70,8 @@ export default function ProductDetailPage() {
 
       await Promise.all([
         fetchReviews(data.id), 
-        fetchAttributes(data), // Pass product data
+        fetchAttributes(data),
         fetchSimilarProducts(data.category_id, data.id),
-        fetchRelationProducts(data.perfect_match_ids || [], setPerfectMatch, true, data.category_id, data.id),
-        fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether, true, 'all', data.id),
         fetchSettings()
       ]);
     } catch (error) {
@@ -80,27 +85,6 @@ export default function ProductDetailPage() {
   const fetchSettings = async () => {
     const { data } = await supabase.from('site_settings').select('shipping_policy_summary').single();
     if (data) setShippingPolicy(data.shipping_policy_summary);
-  };
-
-  const fetchRelationProducts = async (ids: string[], setter: (val: any[]) => void, useFallback = false, catId = "", currentId = "") => {
-    if (ids && ids.length > 0) {
-      const { data } = await supabase.from('products').select('*').in('id', ids);
-      if (data && data.length > 0) {
-        setter(data);
-        return;
-      }
-    }
-    
-    if (useFallback) {
-      let query = supabase.from('products').select('*').neq('id', currentId).limit(8);
-      if (catId !== 'all') {
-        query = query.eq('category_id', catId);
-      } else {
-        query = query.eq('is_featured', true);
-      }
-      const { data } = await query;
-      setter(data || []);
-    }
   };
 
   const fetchCategoryHierarchy = async (categorySlug: string) => {
