@@ -41,8 +41,8 @@ export function ProductHorizontalScroll({ products, title = "Sản phẩm liên 
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="hidden md:flex left-0 -translate-x-1/2 bg-white shadow-medium border-border/50" />
-        <CarouselNext className="hidden md:flex right-0 translate-x-1/2 bg-white shadow-medium border-border/50" />
+        <CarouselPrevious className="hidden md:flex left-0 -translate-x-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 shadow-medium border-border/50" />
+        <CarouselNext className="hidden md:flex right-0 translate-x-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 shadow-medium border-border/50" />
       </Carousel>
     </section>
   );

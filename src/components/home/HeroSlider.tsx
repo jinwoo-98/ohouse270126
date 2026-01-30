@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
+const swipeConfidenceThreshold = 10000;
+const swipePower = (offset: number, velocity: number) => {
+  return Math.abs(offset) * velocity;
+};
+
 export function HeroSlider() {
   const [slides, setSlides] = useState<any[]>([]);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [[page, direction], setPage] = useState([0, 0]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,34 +34,50 @@ export function HeroSlider() {
     }
   };
 
+  const imageIndex = page % slides.length;
+  const current = slides[imageIndex];
+
+  const paginate = (newDirection: number) => {
+    setPage([page + newDirection, newDirection]);
+  };
+
   useEffect(() => {
     if (slides.length > 1) {
       const timer = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % slides.length);
+        paginate(1);
       }, 6000);
       return () => clearInterval(timer);
     }
-  }, [slides.length]);
+  }, [slides.length, page]);
 
-  const goToPrev = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  const goToNext = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
+  const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
+    const swipe = swipePower(offset.x, velocity.x);
+    if (swipe < -swipeConfidenceThreshold) {
+      paginate(1);
+    } else if (swipe > swipeConfidenceThreshold) {
+      paginate(-1);
+    }
+  };
 
   if (loading) return <div className="h-[60vh] md:h-[85vh] bg-charcoal flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
   if (slides.length === 0) return null;
 
-  const current = slides[currentSlide];
-
   return (
     <section className="relative h-[60vh] md:h-[85vh] overflow-hidden bg-charcoal">
       <div className="absolute inset-0">
-        <AnimatePresence initial={false}>
+        <AnimatePresence initial={false} custom={direction}>
           <motion.div
-            key={current.id}
+            key={page}
+            custom={direction}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.5, ease: "easeInOut" }}
             className="absolute inset-0"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={1}
+            onDragEnd={handleDragEnd}
           >
             <motion.img
               initial={{ scale: 1.1 }}
@@ -131,18 +152,18 @@ export function HeroSlider() {
 
       {slides.length > 1 && (
         <>
-          <button onClick={goToPrev} className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 w-12 h-40 bg-card/10 backdrop-blur-md rounded-r-2xl text-white hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 items-center justify-center group border border-white/10">
-            <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
+          <button onClick={() => paginate(-1)} className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-20 items-center justify-center group shadow-medium">
+            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
           </button>
-          <button onClick={goToNext} className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 w-12 h-40 bg-card/10 backdrop-blur-md rounded-l-2xl text-white hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 items-center justify-center group border border-white/10">
-            <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+          <button onClick={() => paginate(1)} className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-20 items-center justify-center group shadow-medium">
+            <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </button>
           <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3">
             {slides.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`h-1.5 rounded-full transition-all duration-500 ${index === currentSlide ? "bg-primary w-8 md:w-12" : "bg-white/30 w-2 md:w-3 hover:bg-white/60"}`}
+                onClick={() => setPage([index, index > imageIndex ? 1 : -1])}
+                className={`h-1.5 rounded-full transition-all duration-500 ${index === imageIndex ? "bg-primary w-8 md:w-12" : "bg-white/30 w-2 md:w-3 hover:bg-white/60"}`}
               />
             ))}
           </div>
