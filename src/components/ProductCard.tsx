@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Heart, ShoppingBag } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
@@ -25,13 +25,14 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   
   const isFavorite = isInWishlist(product.id);
-  const gallery = [product.image_url, ...(product.gallery_urls || [])].slice(0, 4);
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Nếu là mobile, ưu tiên mở Quick View
+    // Ngăn chặn nếu nhấn vào các vùng chức năng đã có stopPropagation
     if (isMobile) {
-      e.preventDefault();
       setIsQuickViewOpen(true);
+    } else {
+      // Trên Desktop: Chuyển hướng sang trang chi tiết
+      navigate(`/san-pham/${product.slug || product.id}`);
     }
   };
 
@@ -105,7 +106,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
           {!isMobile && (
             <div className="absolute inset-x-3 bottom-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
               <button 
-                onClick={(e) => { e.stopPropagation(); setIsQuickViewOpen(true); }}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  setIsQuickViewOpen(true); 
+                }}
                 className="w-full bg-charcoal/90 backdrop-blur-md text-white py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-white/10 hover:bg-primary transition-all shadow-lg"
               >
                 XEM NHANH

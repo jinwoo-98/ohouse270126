@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, ShoppingBag, ArrowRight, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export function FeaturedProducts() {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -48,6 +49,14 @@ export function FeaturedProducts() {
       console.error("Error loading featured products:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCardClick = (product: any) => {
+    if (isMobile) {
+      setSelectedProduct(product);
+    } else {
+      navigate(`/san-pham/${product.slug || product.id}`);
     }
   };
 
@@ -102,7 +111,7 @@ export function FeaturedProducts() {
                 >
                   <div 
                     className="group card-luxury relative h-full flex flex-col cursor-pointer"
-                    onClick={() => isMobile && setSelectedProduct(product)}
+                    onClick={() => handleCardClick(product)}
                   >
                     <div className="relative aspect-square img-zoom">
                       <div className="block h-full">
@@ -131,7 +140,10 @@ export function FeaturedProducts() {
 
                       {!isMobile && (
                         <button 
-                          onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }} 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setSelectedProduct(product); 
+                          }} 
                           className="absolute bottom-3 left-3 bg-card/90 backdrop-blur-sm text-foreground p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-primary hover:text-primary-foreground shadow-sm items-center gap-1.5 flex"
                         >
                           <Eye className="w-3.5 h-3.5" />

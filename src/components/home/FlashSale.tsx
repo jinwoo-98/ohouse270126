@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Clock, ShoppingBag, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ function formatPrice(price: number) {
 
 export function FlashSale() {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
   const [products, setProducts] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
@@ -61,6 +62,14 @@ export function FlashSale() {
     return () => clearInterval(timer);
   }, [config]);
 
+  const handleCardClick = (product: any) => {
+    if (isMobile) {
+      setSelectedProduct(product);
+    } else {
+      navigate(`/san-pham/${product.slug || product.id}`);
+    }
+  };
+
   if (!isLoading && products.length === 0) return null;
 
   return (
@@ -106,7 +115,7 @@ export function FlashSale() {
                 whileInView={{ opacity: 1, y: 0 }} 
                 transition={{ delay: index * 0.1 }} 
                 className="group card-luxury h-full flex flex-col cursor-pointer"
-                onClick={() => isMobile && setSelectedProduct(product)}
+                onClick={() => handleCardClick(product)}
               >
                 <div className="relative aspect-square img-zoom">
                   <div className="block h-full">
@@ -120,22 +129,24 @@ export function FlashSale() {
                   
                   {!isMobile && (
                     <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
-                      <Button 
-                        variant="secondary"
-                        className="w-full h-10 text-[10px] py-0 font-bold uppercase tracking-wider"
-                        onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }}
+                      <button 
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setSelectedProduct(product); 
+                        }}
+                        className="w-full h-10 bg-secondary text-foreground rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-secondary/80 transition-colors"
                       >
-                        <Eye className="w-3.5 h-3.5 mr-2" /> Xem Nhanh
-                      </Button>
-                      <Button 
-                        className="w-full btn-hero h-10 text-[10px] py-0" 
+                        <Eye className="w-3.5 h-3.5" /> Xem Nhanh
+                      </button>
+                      <button 
+                        className="w-full h-10 bg-primary text-primary-foreground rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
                         onClick={(e) => { 
                           e.stopPropagation();
                           addToCart({ id: product.id, name: product.name, price: product.price, image: product.image_url, quantity: 1 });
                         }}
                       >
-                        <ShoppingBag className="w-3.5 h-3.5 mr-2" /> Thêm Vào Giỏ
-                      </Button>
+                        <ShoppingBag className="w-3.5 h-3.5" /> Thêm Vào Giỏ
+                      </button>
                     </div>
                   )}
                 </div>
