@@ -142,11 +142,6 @@
 }
 
 @layer utilities {
-  /* FIX: Ensure inline styles (like color from RTE) are prioritized in the top banner */
-  .top-banner-text *[style*="color"] {
-    color: inherit !important;
-  }
-  
   /* Ensure links are clickable and styled correctly */
   .top-banner-text a {
     text-decoration: underline;
