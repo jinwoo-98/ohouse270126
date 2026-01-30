@@ -77,12 +77,26 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       setVariants(vRes.data || []);
       setReviews(rRes.data || []);
       
+      let dynamicAttributes: any[] = [];
       if (aRes.data) {
-        setAttributes(aRes.data.map(item => ({ 
+        dynamicAttributes = aRes.data.map(item => ({ 
           name: (item.attributes as any)?.name, 
           value: item.value 
-        })));
+        }));
       }
+      
+      // Add static attributes (Material, Style) if available on the product object
+      const staticAttributes = [];
+      if (product.material) {
+        staticAttributes.push({ name: "Chất liệu", value: product.material });
+      }
+      if (product.style) {
+        staticAttributes.push({ name: "Phong cách", value: product.style });
+      }
+      
+      // Combine static and dynamic attributes
+      setAttributes([...staticAttributes, ...dynamicAttributes]);
+      
     } catch (e) {
       console.error(e);
     } finally {

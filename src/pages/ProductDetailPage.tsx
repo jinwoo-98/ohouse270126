@@ -61,7 +61,7 @@ export default function ProductDetailPage() {
 
       await Promise.all([
         fetchReviews(data.id), 
-        fetchAttributes(data.id),
+        fetchAttributes(data), // Pass product data
         fetchSimilarProducts(data.category_id, data.id),
         fetchRelationProducts(data.perfect_match_ids || [], setPerfectMatch, true, data.category_id, data.id),
         fetchRelationProducts(data.bought_together_ids || [], setBoughtTogether, true, 'all', data.id),
@@ -114,16 +114,33 @@ export default function ProductDetailPage() {
     } catch (e) {}
   };
 
-  const fetchAttributes = async (productId: string) => {
+  const fetchAttributes = async (productData: any) => {
+    const staticAttributes = [];
+    
+    // Include Material and Style if they exist on the product object
+    if (productData.material) {
+      staticAttributes.push({ name: "Chất liệu", value: productData.material });
+    }
+    if (productData.style) {
+      staticAttributes.push({ name: "Phong cách", value: productData.style });
+    }
+
     try {
-      const { data } = await supabase.from('product_attributes').select('value, attributes(name)').eq('product_id', productId);
+      const { data } = await supabase.from('product_attributes').select('value, attributes(name)').eq('product_id', productData.id);
+      
+      let dynamicAttributes: any[] = [];
       if (data) {
-        setAttributes(data.map(item => ({ 
+        dynamicAttributes = data.map(item => ({ 
           name: (item.attributes as any)?.name, 
           value: item.value 
-        })));
+        }));
       }
-    } catch (err) {}
+      
+      // Combine static and dynamic attributes
+      setAttributes([...staticAttributes, ...dynamicAttributes]);
+    } catch (err) {
+      setAttributes(staticAttributes);
+    }
   };
 
   const fetchSimilarProducts = async (categoryId: string, currentId: string) => {
