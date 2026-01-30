@@ -1,23 +1,16 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Maximize } from "lucide-react";
-
-interface Look {
-  id: number;
-  title: string;
-  image: string;
-  category: string;
-  style: string;
-  productsCount: number;
-  href: string;
-}
+import { Plus } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { formatPrice } from "@/lib/utils";
 
 interface InspirationLookCardProps {
-  look: Look;
+  look: any;
   index: number;
+  onQuickView: (product: any) => void;
 }
 
-export function InspirationLookCard({ look, index }: InspirationLookCardProps) {
+export function InspirationLookCard({ look, index, onQuickView }: InspirationLookCardProps) {
   return (
     <motion.div
       key={look.id}
@@ -26,36 +19,48 @@ export function InspirationLookCard({ look, index }: InspirationLookCardProps) {
       transition={{ duration: 0.5, delay: index * 0.1 }}
       viewport={{ once: true }}
       layout
-      // col-span-2 ensures it takes up double the space of a standard card in the grid
-      className="col-span-2" 
+      className="group flex flex-col gap-5"
     >
-      <Link to={look.href} className="group block card-luxury">
-        <div className="relative aspect-[4/3] img-zoom">
+      <div className="relative aspect-video rounded-[32px] overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
+        <Link to={`/y-tuong/${look.id}`}>
           <img 
-            src={look.image} 
+            src={look.image_url} 
             alt={look.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-            <span className="bg-card text-foreground px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-              <Maximize className="w-4 h-4" />
-              Xem Chi Tiết
-            </span>
-          </div>
-          <span className="absolute top-3 left-3 bg-card/90 backdrop-blur-sm text-foreground px-3 py-1 rounded text-xs font-medium">
-            {look.category}
-          </span>
-        </div>
-        <div className="p-5">
-          <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
-            {look.title}
-          </h3>
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>Phong cách: <span className="font-medium text-primary">{look.style}</span></span>
-            <span>{look.productsCount} sản phẩm</span>
-          </div>
-        </div>
-      </Link>
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
+        </Link>
+        
+        <TooltipProvider>
+          {look.shop_look_items
+            .filter((item: any) => item.target_image_url === look.image_url && item.products)
+            .map((item: any) => (
+            <Tooltip key={item.id} delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  className="absolute w-8 h-8 -ml-4 -mt-4 bg-white/95 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in z-20 group/dot"
+                  style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    if (item.products) onQuickView(item.products);
+                  }}
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-75 group-hover/dot:hidden" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-charcoal text-cream border-none p-3 rounded-xl shadow-elevated">
+                <p className="font-bold text-[10px] uppercase tracking-wider">{item.products.name}</p>
+                <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </TooltipProvider>
+      </div>
+      <div className="px-3 text-center">
+        <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
+        <p className="text-xs text-muted-foreground mt-1">{look.shop_look_items?.length || 0} sản phẩm phối hợp</p>
+      </div>
     </motion.div>
   );
 }
