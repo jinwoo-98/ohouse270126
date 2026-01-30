@@ -209,7 +209,7 @@ export default function ProductDetailPage() {
 
               {perfectMatch.length > 0 && (
                 <div id="inspiration">
-                  <ProductHorizontalList products={perfectMatch} title="Bộ Sưu Tập Hoàn Hảo" onQuickView={setQuickViewProduct} />
+                  <ProductInspiration product={product} comboProducts={perfectMatch} />
                 </div>
               )}
 
