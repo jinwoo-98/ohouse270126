@@ -16,6 +16,7 @@ import { ProductDescription } from "@/components/product/detail/ProductDescripti
 import { ProductReviews } from "@/components/product/detail/ProductReviews";
 import { StickyActionToolbar } from "@/components/product/detail/StickyActionToolbar";
 import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
+import { QuickViewSheet } from "@/components/QuickViewSheet";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -33,6 +34,7 @@ export default function ProductDetailPage() {
   const [shippingPolicy, setShippingPolicy] = useState("");
   
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [quickViewProduct, setQuickViewProduct] = useState<any>(null); // New state for QuickView
 
   useEffect(() => {
     if (slug) {
@@ -227,16 +229,16 @@ export default function ProductDetailPage() {
 
               {perfectMatch.length > 0 && (
                 <div id="inspiration">
-                  <ProductHorizontalList products={perfectMatch} title="Bộ Sưu Tập Hoàn Hảo" />
+                  <ProductHorizontalList products={perfectMatch} title="Bộ Sưu Tập Hoàn Hảo" onQuickView={setQuickViewProduct} />
                 </div>
               )}
 
               {boughtTogether.length > 0 && (
-                <ProductHorizontalList products={boughtTogether} title="Gợi Ý Mua Kèm" />
+                <ProductHorizontalList products={boughtTogether} title="Gợi Ý Mua Kèm" onQuickView={setQuickViewProduct} />
               )}
 
               <div id="related">
-                <ProductHorizontalList products={similarProducts} title="Sản Phẩm Tương Tự" />
+                <ProductHorizontalList products={similarProducts} title="Sản Phẩm Tương Tự" onQuickView={setQuickViewProduct} />
               </div>
 
               <RecentlyViewed />
@@ -307,6 +309,7 @@ export default function ProductDetailPage() {
       <StickyActionToolbar product={product} />
       <AIChatWindow isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} productContext={product} />
       <Footer />
+      <QuickViewSheet product={quickViewProduct} isOpen={!!quickViewProduct} onClose={() => setQuickViewProduct(null)} />
     </div>
   );
 }
