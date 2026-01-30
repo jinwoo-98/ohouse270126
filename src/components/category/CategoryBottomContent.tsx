@@ -18,9 +18,10 @@ interface CategoryBottomContentProps {
   categorySlug?: string;
   seoContent?: string;
   isParentCategory?: boolean;
+  parentSlug?: string; // Thêm parentSlug
 }
 
-export function CategoryBottomContent({ categoryId, categorySlug, seoContent, isParentCategory }: CategoryBottomContentProps) {
+export function CategoryBottomContent({ categoryId, categorySlug, seoContent, isParentCategory, parentSlug }: CategoryBottomContentProps) {
   const { addToCart } = useCart();
   const [keywords, setKeywords] = useState<any[]>([]);
   const [shopLooks, setShopLooks] = useState<any[]>([]);
@@ -30,11 +31,9 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
   useEffect(() => {
     if (categoryId) {
       fetchKeywords();
-      if (!isParentCategory && categorySlug) {
-        fetchLooks();
-      }
+      fetchLooks();
     }
-  }, [categoryId, categorySlug, isParentCategory]);
+  }, [categoryId, categorySlug, isParentCategory, parentSlug]);
 
   const fetchKeywords = async () => {
     const { data } = await supabase
@@ -47,6 +46,20 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
   };
 
   const fetchLooks = async () => {
+    let slugsToQuery: string[] = [];
+    
+    // 1. Luôn lấy Lookbook gán trực tiếp cho danh mục hiện tại
+    if (categorySlug) {
+      slugsToQuery.push(categorySlug);
+    }
+
+    // 2. Nếu đây là danh mục con, lấy thêm Lookbook của danh mục cha
+    if (!isParentCategory && parentSlug) {
+      slugsToQuery.push(parentSlug);
+    }
+    
+    if (slugsToQuery.length === 0) return;
+
     const { data } = await supabase
       .from('shop_looks')
       .select(`
@@ -56,10 +69,16 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
           products:product_id (*)
         )
       `)
-      .eq('category_id', categorySlug)
+      .in('category_id', slugsToQuery)
       .eq('is_active', true)
       .limit(4);
-    setShopLooks(data || []);
+      
+    // Lọc trùng lặp nếu Lookbook được gán cho cả cha và con (ưu tiên Lookbook của con)
+    const uniqueLooks = data?.filter((look, index, self) => 
+      index === self.findIndex((l) => l.id === look.id)
+    ) || [];
+    
+    setShopLooks(uniqueLooks);
   };
 
   return (
@@ -90,7 +109,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
       )}
 
       {/* 2. Shop The Look (Design Inspiration) */}
-      {!isParentCategory && shopLooks.length > 0 && (
+      {shopLooks.length > 0 && (
         <section>
           <div className="flex items-center gap-3 mb-10">
             <Sparkles className="w-6 h-6 text-primary" />
@@ -112,7 +131,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                   onClick={() => setSelectedLook(look)}
                 >
                   <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-transparent" />
                   
                   {/* Active Dots on Image */}
                   <TooltipProvider>
@@ -140,6 +159,14 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                       </Tooltip>
                     ))}
                   </TooltipProvider>
+                  
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-2 block">Shop The Look</span>
+                    <h3 className="text-lg md:text-xl font-bold leading-tight group-hover:text-primary transition-colors">{look.title}</h3>
+                    <div className="flex items-center gap-2 text-xs font-bold mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      Khám phá ngay <ChevronRight className="w-4 h-4" />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between px-3">

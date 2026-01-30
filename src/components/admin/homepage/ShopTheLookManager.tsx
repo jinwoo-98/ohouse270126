@@ -32,7 +32,7 @@ export function ShopTheLookManager() {
   const fetchData = async () => {
     const { data: l } = await supabase.from('shop_looks').select('*, shop_look_items(*)').order('display_order');
     const { data: p } = await supabase.from('products').select('id, name');
-    const { data: c } = await supabase.from('categories').select('id, name, slug, parent_id').order('name');
+    const { data: c } = await supabase.from('categories').select('id, name, slug, parent_id, menu_location').order('name');
     
     setLooks(l || []);
     setProducts(p || []);
@@ -70,7 +70,7 @@ export function ShopTheLookManager() {
           product_id: i.product_id, 
           x_position: i.x_position, 
           y_position: i.y_position,
-          target_image_url: i.target_image_url // Thêm trường mới
+          target_image_url: i.target_image_url
         })));
       }
       toast.success("Đã lưu Lookbook");
@@ -157,6 +157,7 @@ export function ShopTheLookManager() {
                         {parentCategories.map(parent => (
                           <SelectGroup key={parent.id}>
                             <SelectLabel className="font-bold text-primary">{parent.name}</SelectLabel>
+                            {/* Cho phép chọn danh mục cha */}
                             <SelectItem value={parent.slug}>-- Trang chính {parent.name}</SelectItem>
                             {categories.filter(c => c.parent_id === parent.id).map(child => (
                               <SelectItem key={child.id} value={child.slug}>&nbsp;&nbsp;&nbsp;{child.name}</SelectItem>

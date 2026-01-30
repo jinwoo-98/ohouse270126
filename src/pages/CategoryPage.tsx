@@ -18,6 +18,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { ShopTheLookCard } from "@/components/category/ShopTheLookCard";
+import { QuickViewSheet } from "@/components/QuickViewSheet";
 
 const priceRanges = [
   { label: "Dưới 10 triệu", value: "0-10" },
@@ -58,6 +59,7 @@ export default function CategoryPage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [parentCategory, setParentCategory] = useState<any>(null);
   const [shopLooks, setShopLooks] = useState<any[]>([]);
+  const [quickViewProduct, setQuickViewProduct] = useState<any>(null); // State cho QuickView
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 200);
@@ -68,25 +70,55 @@ export default function CategoryPage() {
   // Fetch Parent Category for Breadcrumb & Shop The Look
   useEffect(() => {
     async function fetchExtraData() {
+      let parentSlug = null;
       if (currentCategory?.parent_id) {
         const { data } = await supabase.from('categories').select('name, slug').eq('id', currentCategory.parent_id).single();
         setParentCategory(data);
+        parentSlug = data?.slug;
       } else {
         setParentCategory(null);
       }
       
       if (categorySlug) {
         let slugsToQuery = [categorySlug];
-        // Nếu là trang cha, lấy cả look của con
-        if (currentCategory && !currentCategory.parent_id) {
-          const { data: children } = await supabase.from('categories').select('slug').eq('parent_id', currentCategory.id);
-          if (children) {
-            slugsToQuery = [...slugsToQuery, ...children.map(c => c.slug)];
-          }
+        
+        // Nếu là danh mục con, lấy thêm Lookbook của danh mục cha
+        if (parentSlug) {
+          slugsToQuery.push(parentSlug);
         }
         
-        const { data } = await supabase.from('shop_looks').select('*').in('category_id', slugsToQuery).eq('is_active', true).limit(2);
-        setShopLooks(data || []);
+        const { data } = await supabase
+          .from('shop_looks')
+          .select(`
+            *,
+            shop_look_items (
+              *,
+              products:product_id (id, name, price, image_url, slug)
+            )
+          `)
+          .in('category_id', slugsToQuery)
+          .eq('is_active', true)
+          .limit(2);
+          
+        // Lọc trùng lặp và chỉ lấy Lookbook gán trực tiếp cho danh mục hiện tại
+        // Nếu Lookbook được gán cho cha (parentSlug) và hiện tại là con (categorySlug), ta vẫn hiển thị.
+        // Nếu Lookbook được gán cho con, nó chỉ hiển thị trên trang con đó.
+        
+        const filteredLooks = data?.filter(look => {
+            // Nếu Lookbook được gán cho danh mục con, chỉ hiện trên trang con đó
+            if (look.category_id === categorySlug) return true;
+            
+            // Nếu Lookbook được gán cho danh mục cha, và trang hiện tại là trang cha, thì hiện
+            if (look.category_id === parentSlug && categorySlug === parentSlug) return true;
+            
+            // Nếu Lookbook được gán cho danh mục cha, và trang hiện tại là trang con, thì không hiện (theo yêu cầu mới)
+            if (look.category_id === parentSlug && currentCategory?.parent_id) return false;
+            
+            // Trường hợp còn lại: Lookbook gán cho cha, và trang hiện tại là trang cha (đã xử lý ở trên)
+            return false;
+        }) || [];
+        
+        setShopLooks(filteredLooks);
       }
     }
     fetchExtraData();
@@ -97,6 +129,7 @@ export default function CategoryPage() {
 
   const displayItems = useMemo(() => {
     const items: any[] = products.map(p => ({ type: 'product', data: p, id: p.id }));
+    
     if (shopLooks.length > 0) {
       const lookItem = { type: 'look', data: shopLooks[0], id: `look-${shopLooks[0].id}` };
       // Chèn vào vị trí thứ 3 (sau 2 sản phẩm đầu)
@@ -243,7 +276,7 @@ export default function CategoryPage() {
                   </div>
                 ) : displayItems.map((item) => (
                   item.type === 'look' 
-                    ? <ShopTheLookCard key={item.id} look={item.data} />
+                    ? <ShopTheLookCard key={item.id} look={item.data} onQuickView={setQuickViewProduct} />
                     : <ProductCard key={item.id} product={item.data} />
                 ))}
               </div>
@@ -254,6 +287,7 @@ export default function CategoryPage() {
                   categorySlug={currentCategory?.slug || categorySlug} 
                   seoContent={currentCategory?.seo_content} 
                   isParentCategory={isParent} 
+                  parentSlug={parentCategory?.slug}
                 />
               )}
             </div>
@@ -261,6 +295,7 @@ export default function CategoryPage() {
         </div>
       </main>
       <Footer />
+      <QuickViewSheet product={quickViewProduct} isOpen={!!quickViewProduct} onClose={() => setQuickViewProduct(null)} />
     </div>
   );
 }
