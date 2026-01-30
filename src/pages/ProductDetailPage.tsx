@@ -18,6 +18,7 @@ import { StickyActionToolbar } from "@/components/product/detail/StickyActionToo
 import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { useProductRelations } from "@/hooks/useProductRelations";
+import { useSimilarProducts } from "@/hooks/useSimilarProducts";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -29,18 +30,23 @@ export default function ProductDetailPage() {
   
   const [reviews, setReviews] = useState<any[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
-  const [similarProducts, setSimilarProducts] = useState<any[]>([]);
   const [shippingPolicy, setShippingPolicy] = useState("");
   
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
 
-  // Sử dụng hook mới để fetch sản phẩm liên quan
+  // Hooks for related products
   const { perfectMatch, boughtTogether, isLoadingRelations } = useProductRelations(
     product?.id, 
     product?.category_id, 
     product?.perfect_match_ids || [], 
     product?.bought_together_ids || []
+  );
+  
+  // Hook for similar products
+  const { similarProducts, isLoadingSimilar } = useSimilarProducts(
+    product?.category_id,
+    product?.id
   );
 
   useEffect(() => {
@@ -71,7 +77,6 @@ export default function ProductDetailPage() {
       await Promise.all([
         fetchReviews(data.id), 
         fetchAttributes(data),
-        fetchSimilarProducts(data.category_id, data.id),
         fetchSettings()
       ]);
     } catch (error) {
@@ -120,15 +125,6 @@ export default function ProductDetailPage() {
       console.error("Error fetching attributes:", err);
       setAttributes([]); // Set to empty array on error
     }
-  };
-
-  const fetchSimilarProducts = async (categoryId: string, currentId: string) => {
-    const { data } = await supabase.from('products')
-      .select('*')
-      .eq('category_id', categoryId)
-      .neq('id', currentId)
-      .limit(8);
-    setSimilarProducts(data || []);
   };
 
   const fetchReviews = async (productId: string) => {
