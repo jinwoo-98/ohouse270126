@@ -10,7 +10,7 @@ import { RecentlyViewed, trackProductView } from "@/components/RecentlyViewed";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { AIChatWindow } from "@/components/contact/AIChatWindow";
 import { ProductInfo } from "@/components/product/detail/ProductInfo";
-import { ProductHorizontalList } from "@/components/product/detail/ProductHorizontalList";
+import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll"; // NEW IMPORT
 import { ProductQnA } from "@/components/product/detail/ProductQnA";
 import { ProductDescription } from "@/components/product/detail/ProductDescription";
 import { ProductReviews } from "@/components/product/detail/ProductReviews";
@@ -214,11 +214,11 @@ export default function ProductDetailPage() {
               )}
 
               {boughtTogether.length > 0 && (
-                <ProductHorizontalList products={boughtTogether} title="Gợi Ý Mua Kèm" onQuickView={setQuickViewProduct} />
+                <ProductHorizontalScroll products={boughtTogether} title="Gợi Ý Mua Kèm" onQuickView={setQuickViewProduct} />
               )}
 
               <div id="related">
-                <ProductHorizontalList products={similarProducts} title="Sản Phẩm Tương Tự" onQuickView={setQuickViewProduct} />
+                <ProductHorizontalScroll products={similarProducts} title="Sản Phẩm Tương Tự" onQuickView={setQuickViewProduct} />
               </div>
 
               <RecentlyViewed />
