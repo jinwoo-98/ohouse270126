@@ -162,14 +162,14 @@ export default function AdminLayout() {
       
       // Logic cho mục 'customers' (Hub mới)
       if (item.id === 'customers') {
-        // Editor cần ít nhất 1 trong 3 quyền: subscribers, design-requests, messages
-        return permissions['subscribers'] || permissions['design-requests'] || permissions['messages'];
+        // Editor cần ít nhất 1 trong 4 quyền: subscribers, design-requests, messages, cooperation-requests
+        return permissions['subscribers'] || permissions['design-requests'] || permissions['messages'] || permissions['cooperation-requests'];
       }
       
       // Logic cho trang content hub
       if (item.id === 'content') {
         // Editor chỉ thấy mục này nếu có ít nhất 1 quyền con (không tính homepage)
-        return Object.keys(permissions).some(p => ['news', 'projects', 'pages'].includes(p) && permissions[p]);
+        return Object.keys(permissions).some(p => ['news', 'projects', 'pages', 'cooperation-requests'].includes(p) && permissions[p]);
       }
       
       // Các mục khác, bao gồm 'homepage', sẽ được kiểm tra quyền trực tiếp

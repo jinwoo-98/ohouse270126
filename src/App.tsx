@@ -57,7 +57,8 @@ import ReviewManager from "./pages/admin/ReviewManager";
 import MarketingTools from "./pages/admin/MarketingTools";
 import TeamManager from "./pages/admin/TeamManager";
 import ContentManager from "./pages/admin/ContentManager";
-import CustomerHub from "./pages/admin/CustomerHub"; // NEW IMPORT
+import CustomerHub from "./pages/admin/CustomerHub"; 
+import CooperationRequestManager from "./pages/admin/CooperationRequestManager"; // NEW IMPORT
 
 // Homepage Sub-pages
 import SlidePage from "./pages/admin/homepage/SlidePage.tsx";
@@ -144,6 +145,7 @@ const App = () => (
                   <Route path="content/looks" element={<LookbookManagerPage />} />
                   <Route path="content/looks/new" element={<LookbookForm />} />
                   <Route path="content/looks/edit/:id" element={<LookbookForm />} />
+                  <Route path="cooperation-requests" element={<CooperationRequestManager />} /> {/* NEW ROUTE */}
                   
                   {/* Sales & Product Management */}
                   <Route path="orders" element={<OrderManager />} />
@@ -159,7 +161,7 @@ const App = () => (
                   <Route path="reviews" element={<ReviewManager />} />
                   
                   {/* Marketing & Customer */}
-                  <Route path="customers" element={<CustomerHub />} /> {/* NEW ROUTE */}
+                  <Route path="customers" element={<CustomerHub />} /> 
                   <Route path="marketing" element={<MarketingTools />} />
                   
                   {/* Content Pages (CMS Hub destinations) */}

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const partnerTypes = [
   { icon: Building2, title: "Đại Lý Phân Phối", desc: "Trở thành đối tác phân phối sản phẩm OHOUSE với chính sách chiết khấu hấp dẫn." },
@@ -19,14 +20,42 @@ const partnerTypes = [
 
 export default function CooperationPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    type: "",
+    message: ""
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name || !formData.phone || !formData.type) {
+      toast.error("Vui lòng nhập đầy đủ Tên, Số điện thoại và Loại hình hợp tác.");
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { error } = await supabase
+        .from('cooperation_requests')
+        .insert({
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          type: formData.type,
+          message: formData.message
+        });
+
+      if (error) throw error;
+      
       toast.success("Yêu cầu hợp tác đã được gửi! Bộ phận B2B của chúng tôi sẽ liên hệ trong vòng 24h.");
-    }, 1500);
+      setFormData({ name: "", phone: "", email: "", type: "", message: "" });
+    } catch (error: any) {
+      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -138,38 +167,62 @@ export default function CooperationPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Tên doanh nghiệp / cá nhân</Label>
-                      <Input placeholder="Nhập tên của bạn" required className="h-12 rounded-xl" />
+                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Tên doanh nghiệp / cá nhân *</Label>
+                      <Input 
+                        placeholder="Nhập tên của bạn" 
+                        required 
+                        className="h-12 rounded-xl" 
+                        value={formData.name}
+                        onChange={e => setFormData({...formData, name: e.target.value})}
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Số điện thoại liên hệ</Label>
-                      <Input placeholder="Nhập SĐT" required className="h-12 rounded-xl" />
+                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Số điện thoại liên hệ *</Label>
+                      <Input 
+                        placeholder="Nhập SĐT" 
+                        required 
+                        className="h-12 rounded-xl" 
+                        value={formData.phone}
+                        onChange={e => setFormData({...formData, phone: e.target.value})}
+                      />
                     </div>
                   </div>
                   
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Địa chỉ Email</Label>
-                    <Input type="email" placeholder="email@congty.com" required className="h-12 rounded-xl" />
+                    <Input 
+                      type="email" 
+                      placeholder="email@congty.com" 
+                      className="h-12 rounded-xl" 
+                      value={formData.email}
+                      onChange={e => setFormData({...formData, email: e.target.value})}
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Loại hình hợp tác</Label>
-                    <Select>
+                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Loại hình hợp tác *</Label>
+                    <Select value={formData.type} onValueChange={val => setFormData({...formData, type: val})}>
                       <SelectTrigger className="h-12 rounded-xl">
                         <SelectValue placeholder="Chọn loại hình" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="dealer">Đại Lý Phân Phối</SelectItem>
-                        <SelectItem value="contractor">Nhà Thầu Dự Án</SelectItem>
-                        <SelectItem value="architect">Kiến Trúc Sư / Thiết Kế</SelectItem>
-                        <SelectItem value="other">Khác</SelectItem>
+                        <SelectItem value="Đại lý Phân phối">Đại Lý Phân Phối</SelectItem>
+                        <SelectItem value="Nhà thầu Dự án">Nhà Thầu Dự Án</SelectItem>
+                        <SelectItem value="Kiến trúc sư">Kiến Trúc Sư / Thiết Kế</SelectItem>
+                        <SelectItem value="Khác">Khác</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Nội dung trao đổi</Label>
-                    <Textarea placeholder="Mô tả sơ lược về dự án hoặc yêu cầu hợp tác của bạn..." rows={5} className="rounded-xl resize-none" />
+                    <Textarea 
+                      placeholder="Mô tả sơ lược về dự án hoặc yêu cầu hợp tác của bạn..." 
+                      rows={5} 
+                      className="rounded-xl resize-none" 
+                      value={formData.message}
+                      onChange={e => setFormData({...formData, message: e.target.value})}
+                    />
                   </div>
 
                   <Button type="submit" className="w-full btn-hero h-14 text-sm font-bold shadow-gold" disabled={isLoading}>

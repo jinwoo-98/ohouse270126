@@ -6,7 +6,8 @@ import {
   Newspaper, 
   MessageSquare, 
   Settings,
-  ChevronRight
+  ChevronRight,
+  Handshake
 } from "lucide-react";
 
 const contentSections = [
@@ -32,16 +33,16 @@ const contentSections = [
     color: "text-green-600 bg-green-50 border-green-200"
   },
   {
-    icon: LayoutTemplate,
-    title: "Trang Dịch Vụ Thiết Kế",
-    description: "Xem và quản lý các yêu cầu tư vấn thiết kế từ khách hàng.",
-    href: "/admin/design-requests",
-    color: "text-indigo-600 bg-indigo-50 border-indigo-200"
+    icon: Handshake,
+    title: "Yêu cầu Hợp tác",
+    description: "Xem và quản lý các yêu cầu hợp tác kinh doanh (B2B, Đại lý).",
+    href: "/admin/cooperation-requests",
+    color: "text-orange-600 bg-orange-50 border-orange-200"
   },
   {
     icon: Settings,
-    title: "Trang Tĩnh (Giới thiệu, Hợp tác...)",
-    description: "Chỉnh sửa nội dung các trang tĩnh như Giới thiệu, Tuyển dụng, Hợp tác.",
+    title: "Trang Tĩnh (Giới thiệu, Hỗ trợ...)",
+    description: "Chỉnh sửa nội dung các trang tĩnh như Giới thiệu, Tuyển dụng, Hợp tác, Hỗ trợ.",
     href: "/admin/pages",
     color: "text-gray-600 bg-gray-100 border-gray-200"
   }
