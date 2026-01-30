@@ -39,13 +39,6 @@ const contentSections = [
     color: "text-indigo-600 bg-indigo-50 border-indigo-200"
   },
   {
-    icon: MessageSquare,
-    title: "Trang Liên Hệ",
-    description: "Quản lý tin nhắn và thông tin liên hệ hiển thị trên trang.",
-    href: "/admin/messages",
-    color: "text-orange-600 bg-orange-50 border-orange-200"
-  },
-  {
     icon: Settings,
     title: "Trang Tĩnh (Giới thiệu, Hợp tác...)",
     description: "Chỉnh sửa nội dung các trang tĩnh như Giới thiệu, Tuyển dụng, Hợp tác.",

@@ -65,6 +65,8 @@ const menuGroups = [
     items: [
       { id: 'marketing', title: "Marketing & SEO", icon: TrendingUp, href: "/admin/marketing" },
       { id: 'subscribers', title: "Khách hàng", icon: Users, href: "/admin/subscribers" },
+      { id: 'design-requests', title: "Yêu cầu Thiết kế", icon: LayoutGrid, href: "/admin/design-requests" },
+      { id: 'messages', title: "Tin nhắn khách hàng", icon: MessageSquareText, href: "/admin/messages" },
     ]
   },
   {
@@ -133,9 +135,13 @@ export default function AdminLayout() {
     );
   }
 
-  if (!user) {
+  const role = userProfile?.role;
+  const permissions = userProfile?.permissions || {};
+
+  // Kiểm tra quyền truy cập Admin chung
+  if (role !== 'admin' && role !== 'editor') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-charcoal p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full bg-white rounded-3xl shadow-elevated p-8 md:p-10">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4"><Lock className="w-8 h-8 text-primary" /></div>
@@ -144,37 +150,6 @@ export default function AdminLayout() {
           </div>
           <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={[]} theme="light" />
         </motion.div>
-      </div>
-    );
-  }
-
-  const role = userProfile?.role;
-  const permissions = userProfile?.permissions || {};
-
-  // Kiểm tra quyền truy cập Admin chung
-  if (role !== 'admin' && role !== 'editor') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-elevated p-8 text-center border border-destructive/20">
-          <ShieldAlert className="w-20 h-20 text-destructive mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Truy Cập Bị Từ Chối</h1>
-          
-          <div className="bg-secondary/50 rounded-xl p-4 mb-6 text-left space-y-2">
-            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Thông tin tài khoản:</p>
-            <p className="text-sm">Email: <strong>{user.email}</strong></p>
-            <p className="text-sm">Vai trò: <Badge variant="outline" className="ml-1 uppercase text-[10px] font-bold">{role || 'null'}</Badge></p>
-          </div>
-
-          <p className="text-sm text-muted-foreground mb-8 italic">Vui lòng đảm bảo bạn đã chạy lệnh SQL gán quyền Admin/Editor và thử làm mới trang.</p>
-          
-          <div className="flex flex-col gap-3">
-            <Button className="w-full btn-hero" onClick={() => fetchProfile()}>
-              <RefreshCw className="w-4 h-4 mr-2" /> Thử làm mới quyền
-            </Button>
-            <Button variant="ghost" className="w-full text-xs font-bold" onClick={() => navigate("/")}>Về Trang Chủ</Button>
-            <Button variant="link" className="text-destructive text-[10px]" onClick={handleLogout}>Đăng xuất để đổi tài khoản khác</Button>
-          </div>
-        </div>
       </div>
     );
   }
