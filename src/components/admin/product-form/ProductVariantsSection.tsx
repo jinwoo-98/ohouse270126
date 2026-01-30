@@ -103,6 +103,8 @@ export function ProductVariantsSection({
       const attributeToUpdate = attributes.find(a => a.name === newConfig[index].name);
       if (attributeToUpdate && !attributeToUpdate.options.includes(valueToAdd)) {
         const newOptions = [...attributeToUpdate.options, valueToAdd];
+        
+        // Cập nhật DB
         const { error } = await supabase
           .from('attributes')
           .update({ options: newOptions })
@@ -113,6 +115,9 @@ export function ProductVariantsSection({
           return; // Dừng lại nếu không cập nhật được DB
         }
         toast.success(`Đã thêm "${valueToAdd}" vào hệ thống thuộc tính.`);
+        
+        // Cập nhật lại danh sách attributes trong ProductForm (nếu cần)
+        // Hiện tại, chúng ta chỉ cần cập nhật state local của tierConfig
       }
       
       // Sau đó mới cập nhật state local
