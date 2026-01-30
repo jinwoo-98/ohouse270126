@@ -1,19 +1,30 @@
-import * as React from "react";
+import { useState, useEffect } from 'react';
 
 const MOBILE_BREAKPOINT = 768;
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
+const getIsMobile = () => {
+  if (typeof window === 'undefined') {
+    return false; // Mặc định là desktop trên server
+  }
+  return window.innerWidth < MOBILE_BREAKPOINT;
+};
 
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+export function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(getIsMobile());
+
+  useEffect(() => {
+    const onResize = () => {
+      setIsMobile(getIsMobile());
     };
-    mql.addEventListener("change", onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    return () => mql.removeEventListener("change", onChange);
+
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
   }, []);
 
-  return !!isMobile;
+  return isMobile;
 }
