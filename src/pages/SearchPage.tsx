@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { ChevronRight, Search as SearchIcon, X, SlidersHorizontal } from "lucide-react";
+import { ChevronRight, Search as SearchIcon, SlidersHorizontal } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 import { ProductCard } from "@/components/ProductCard";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const priceRanges = [
   { label: "Dưới 10 triệu", value: "0-10" },
@@ -22,11 +23,28 @@ export default function SearchPage() {
   const query = searchParams.get("q") || "";
   
   const { products, filters, updateFilters, toggleFilter, clearFilters, isLoading } = useProducts("noi-that", query);
-  const [showFilters, setShowFilters] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   useEffect(() => {
     updateFilters({ searchQuery: query });
   }, [query]);
+
+  const FilterContent = () => (
+    <div className="space-y-6">
+      <div>
+        <h4 className="font-bold mb-4 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Khoảng Giá</h4>
+        <div className="space-y-2">
+          {priceRanges.map((range) => (
+            <label key={range.value} className="flex items-center gap-3 cursor-pointer p-1.5 -ml-1.5 rounded-lg transition-colors">
+              <Checkbox checked={filters.priceRange.includes(range.value)} onCheckedChange={() => toggleFilter('priceRange', range.value)} />
+              <span className="text-sm font-medium">{range.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+      <Button variant="outline" className="w-full text-xs font-bold" onClick={() => { clearFilters(); setIsFiltersOpen(false); }}>XÓA BỘ LỌC</Button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -45,27 +63,33 @@ export default function SearchPage() {
           </p>
 
           <div className="flex flex-col lg:flex-row gap-8">
-            <aside className={`lg:w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-              <div className="lg:bg-card lg:rounded-2xl lg:p-6 lg:shadow-subtle lg:sticky lg:top-24 border">
-                <h3 className="font-bold text-lg mb-4 uppercase tracking-widest">Bộ Lọc</h3>
-                <div className="mb-6">
-                  <h4 className="font-semibold mb-3 text-[10px] uppercase tracking-widest text-muted-foreground">Khoảng Giá</h4>
-                  <div className="space-y-2">
-                    {priceRanges.map((range) => (
-                      <label key={range.value} className="flex items-center gap-3 cursor-pointer">
-                        <Checkbox checked={filters.priceRange.includes(range.value)} onCheckedChange={() => toggleFilter('priceRange', range.value)} />
-                        <span className="text-sm font-medium">{range.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <Button variant="outline" className="w-full text-xs font-bold" onClick={clearFilters}>XÓA BỘ LỌC</Button>
+            {/* Desktop Sidebar */}
+            <aside className="hidden lg:block w-64 flex-shrink-0">
+              <div className="sticky top-24">
+                <h3 className="font-bold text-sm mb-4 uppercase tracking-widest">Bộ Lọc</h3>
+                <FilterContent />
               </div>
             </aside>
 
             <div className="flex-1">
               <div className="flex items-center justify-between mb-6 pb-4 border-b">
-                <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setShowFilters(!showFilters)}><SlidersHorizontal className="w-4 h-4 mr-2" />Lọc</Button>
+                {/* Mobile Filter Trigger */}
+                <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm" className="lg:hidden gap-2">
+                      <SlidersHorizontal className="w-4 h-4" /> Lọc
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-full max-w-sm p-0">
+                    <SheetHeader className="p-6 border-b">
+                      <SheetTitle className="uppercase tracking-widest font-bold text-sm">Bộ lọc sản phẩm</SheetTitle>
+                    </SheetHeader>
+                    <div className="p-6">
+                      <FilterContent />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+
                 <Select value={filters.sortBy} onValueChange={(val: any) => updateFilters({ sortBy: val })}>
                   <SelectTrigger className="w-44"><SelectValue placeholder="Sắp xếp" /></SelectTrigger>
                   <SelectContent>
@@ -86,6 +110,7 @@ export default function SearchPage() {
                 <div className="text-center py-24 bg-secondary/20 rounded-3xl">
                   <SearchIcon className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
                   <h2 className="text-xl font-semibold">Không tìm thấy sản phẩm nào</h2>
+                  <p className="text-muted-foreground mt-2">Vui lòng thử với từ khóa khác.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
