@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, SlidersHorizontal, ArrowUpDown, ChevronDown, ChevronUp, Plus, Minus } from "lucide-react";
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
+import { ShopTheLookCard } from "@/components/category/ShopTheLookCard";
 
 const priceRanges = [
   { label: "Dưới 10 triệu", value: "0-10" },
@@ -56,6 +57,7 @@ export default function CategoryPage() {
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [parentCategory, setParentCategory] = useState<any>(null);
+  const [shopLooks, setShopLooks] = useState<any[]>([]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 200);
@@ -63,7 +65,7 @@ export default function CategoryPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Fetch Parent Category for Breadcrumb
+  // Fetch Parent Category for Breadcrumb & Shop The Look
   useEffect(() => {
     if (currentCategory?.parent_id) {
       supabase.from('categories').select('name, slug').eq('id', currentCategory.parent_id).single()
@@ -71,10 +73,26 @@ export default function CategoryPage() {
     } else {
       setParentCategory(null);
     }
-  }, [currentCategory]);
+    
+    if (categorySlug) {
+      supabase.from('shop_looks').select('*').eq('category_id', categorySlug).eq('is_active', true).limit(2)
+        .then(({ data }) => setShopLooks(data || []));
+    }
+  }, [currentCategory, categorySlug]);
   
   const pageTitle = currentCategory?.name || "Nội Thất";
   const isParent = currentCategory ? !currentCategory.parent_id : true;
+
+  const displayItems = useMemo(() => {
+    const items: any[] = products.map(p => ({ type: 'product', data: p, id: p.id }));
+    if (shopLooks.length > 0) {
+      const lookItem = { type: 'look', data: shopLooks[0], id: `look-${shopLooks[0].id}` };
+      // Chèn vào vị trí thứ 5 (index 4) nếu có đủ sản phẩm
+      const insertionIndex = Math.min(4, items.length);
+      items.splice(insertionIndex, 0, lookItem);
+    }
+    return items;
+  }, [products, shopLooks]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -206,12 +224,16 @@ export default function CategoryPage() {
                 "grid grid-cols-2 gap-4 md:gap-6 lg:gap-10", 
                 isSidebarVisible ? "xl:grid-cols-4" : "xl:grid-cols-5"
               )}>
-                {isLoading ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />) : products.length === 0 ? (
+                {isLoading ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />) : displayItems.length === 0 ? (
                   <div className="col-span-full py-32 text-center bg-secondary/10 rounded-[32px]">
                     <p className="text-muted-foreground font-medium italic">Không tìm thấy sản phẩm nào phù hợp với yêu cầu của bạn.</p>
                     <Button variant="link" onClick={clearFilters} className="mt-4 text-primary font-bold uppercase tracking-widest text-[10px]">Quay lại danh mục</Button>
                   </div>
-                ) : products.map((product) => <ProductCard key={product.id} product={product} />)}
+                ) : displayItems.map((item) => (
+                  item.type === 'look' 
+                    ? <ShopTheLookCard key={item.id} look={item.data} />
+                    : <ProductCard key={item.id} product={item.data} />
+                ))}
               </div>
               
               {!isLoading && (

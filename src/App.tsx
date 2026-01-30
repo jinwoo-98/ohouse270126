@@ -34,6 +34,7 @@ import SearchPage from "./pages/SearchPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CooperationPage from "./pages/CooperationPage";
+import LookDetailPage from "./pages/LookDetailPage";
 
 // Admin Pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -102,6 +103,7 @@ const App = () => (
                 <Route path="/dang-nhap" element={<AccountPage />} />
                 <Route path="/showroom" element={<ShowroomPage />} />
                 <Route path="/cam-hung" element={<InspirationPage />} />
+                <Route path="/y-tuong/:id" element={<LookDetailPage />} />
                 <Route path="/thiet-ke" element={<DesignServicePage />} />
                 <Route path="/ve-chung-toi" element={<AboutPage />} />
                 <Route path="/tuyen-dung" element={<RecruitmentPage />} />
