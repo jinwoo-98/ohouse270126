@@ -217,7 +217,7 @@ export default function ProductDetailPage() {
 
               {perfectMatch.length > 0 && (
                 <div id="inspiration">
-                  <ProductInspiration product={product} comboProducts={perfectMatch} />
+                  <ProductHorizontalList products={perfectMatch} title="Bộ Sưu Tập Hoàn Hảo" />
                 </div>
               )}
 
