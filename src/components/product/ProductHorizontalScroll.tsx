@@ -13,6 +13,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { ProductCard } from "../ProductCard";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProductHorizontalScrollProps {
   products: any[];
@@ -21,6 +22,7 @@ interface ProductHorizontalScrollProps {
 }
 
 export function ProductHorizontalScroll({ products, title = "Sản phẩm liên quan", onQuickView }: ProductHorizontalScrollProps) {
+  const isMobile = useIsMobile();
   if (!products || products.length === 0) return null;
 
   return (
@@ -41,8 +43,12 @@ export function ProductHorizontalScroll({ products, title = "Sản phẩm liên 
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="hidden md:flex left-0 -translate-x-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 shadow-medium border-border/50" />
-        <CarouselNext className="hidden md:flex right-0 translate-x-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 shadow-medium border-border/50" />
+        {!isMobile && (
+          <>
+            <CarouselPrevious className="flex left-0 -translate-x-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 shadow-medium border-border/50" />
+            <CarouselNext className="flex right-0 translate-x-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 shadow-medium border-border/50" />
+          </>
+        )}
       </Carousel>
     </section>
   );

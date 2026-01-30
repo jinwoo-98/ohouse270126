@@ -3,6 +3,7 @@ import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, ZoomIn, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProductGalleryProps {
   mainImage: string;
@@ -22,6 +23,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, children
   
   const [[page, direction], setPage] = useState([0, 0]);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const imageIndex = page % allImages.length;
 
@@ -75,8 +77,8 @@ export function ProductGallery({ mainImage, galleryImages, productName, children
           </button>
         </div>
 
-        {allImages.length > 1 && (
-          <div className="hidden sm:block">
+        {allImages.length > 1 && !isMobile && (
+          <>
             <button 
               onClick={(e) => { e.stopPropagation(); paginate(-1); }}
               className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 flex items-center justify-center group shadow-medium"
@@ -89,7 +91,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, children
             >
               <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
             </button>
-          </div>
+          </>
         )}
         
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-charcoal/80 backdrop-blur-md px-3 py-1.5 rounded-full text-white text-[10px] font-bold uppercase tracking-widest border border-white/10 z-10">
