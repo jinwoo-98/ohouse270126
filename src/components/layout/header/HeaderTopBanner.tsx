@@ -87,7 +87,7 @@ export function HeaderTopBanner() {
                 >
                   {/* Nội dung thông báo (Sử dụng content từ Rich Text Editor) */}
                   <div 
-                    className="font-bold underline-offset-2 hover:no-underline block max-w-full text-left top-banner-text-container"
+                    className="underline-offset-2 hover:no-underline block max-w-full text-left top-banner-text-container"
                     style={{ color: textColor }}
                   >
                     <span 
