@@ -64,9 +64,7 @@ const menuGroups = [
   {
     label: "Tương Tác & Marketing",
     items: [
-      { id: 'subscribers', title: "Khách hàng", icon: Users, href: "/admin/subscribers" },
-      { id: 'design-requests', title: "Yêu cầu Thiết kế", icon: LayoutGrid, href: "/admin/design-requests" },
-      { id: 'messages', title: "Tin nhắn khách hàng", icon: MessageSquareText, href: "/admin/messages" },
+      { id: 'customers', title: "Khách hàng & Tương tác", icon: Users, href: "/admin/customers" },
       { id: 'marketing', title: "Marketing & SEO", icon: TrendingUp, href: "/admin/marketing" },
     ]
   },
@@ -161,11 +159,19 @@ export default function AdminLayout() {
       if (role === 'admin') return true;
       if (item.id === 'dashboard') return true;
       if (item.id === 'team') return false; 
+      
+      // Logic cho mục 'customers' (Hub mới)
+      if (item.id === 'customers') {
+        // Editor cần ít nhất 1 trong 3 quyền: subscribers, design-requests, messages
+        return permissions['subscribers'] || permissions['design-requests'] || permissions['messages'];
+      }
+      
       // Logic cho trang content hub
       if (item.id === 'content') {
         // Editor chỉ thấy mục này nếu có ít nhất 1 quyền con (không tính homepage)
-        return Object.keys(permissions).some(p => ['news', 'projects', 'pages', 'design-requests', 'messages'].includes(p) && permissions[p]);
+        return Object.keys(permissions).some(p => ['news', 'projects', 'pages'].includes(p) && permissions[p]);
       }
+      
       // Các mục khác, bao gồm 'homepage', sẽ được kiểm tra quyền trực tiếp
       return permissions[item.id] === true;
     });

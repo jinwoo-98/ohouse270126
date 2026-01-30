@@ -47,8 +47,6 @@ import CategoryForm from "./pages/admin/CategoryForm";
 import AttributeManager from "./pages/admin/AttributeManager";
 import AttributeForm from "./pages/admin/AttributeForm";
 import OrderManager from "./pages/admin/OrderManager";
-import DesignRequestManager from "./pages/admin/DesignRequestManager";
-import ContactMessageManager from "./pages/admin/ContactMessageManager";
 import PageManager from "./pages/admin/PageManager";
 import PageForm from "./pages/admin/PageForm";
 import NewsManager from "./pages/admin/NewsManager";
@@ -56,10 +54,10 @@ import NewsForm from "./pages/admin/NewsForm";
 import ProjectManager from "./pages/admin/ProjectManager";
 import ProjectForm from "./pages/admin/ProjectForm";
 import ReviewManager from "./pages/admin/ReviewManager";
-import SubscriberManager from "./pages/admin/SubscriberManager";
 import MarketingTools from "./pages/admin/MarketingTools";
 import TeamManager from "./pages/admin/TeamManager";
 import ContentManager from "./pages/admin/ContentManager";
+import CustomerHub from "./pages/admin/CustomerHub"; // NEW IMPORT
 
 // Homepage Sub-pages
 import SlidePage from "./pages/admin/homepage/SlidePage.tsx";
@@ -161,10 +159,8 @@ const App = () => (
                   <Route path="reviews" element={<ReviewManager />} />
                   
                   {/* Marketing & Customer */}
+                  <Route path="customers" element={<CustomerHub />} /> {/* NEW ROUTE */}
                   <Route path="marketing" element={<MarketingTools />} />
-                  <Route path="subscribers" element={<SubscriberManager />} />
-                  <Route path="design-requests" element={<DesignRequestManager />} />
-                  <Route path="messages" element={<ContactMessageManager />} />
                   
                   {/* Content Pages (CMS Hub destinations) */}
                   <Route path="pages" element={<PageManager />} />
