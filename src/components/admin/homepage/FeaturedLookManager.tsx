@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Eye, EyeOff, GripVertical, Link as LinkIcon } from "lucide-react";
+import { Loader2, Eye, EyeOff, GripVertical, Link as LinkIcon, FolderTree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
 export function FeaturedLookManager() {
   const [looks, setLooks] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]); // State to hold categories
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,19 +21,54 @@ export function FeaturedLookManager() {
   const fetchLooks = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('shop_looks')
-        .select('id, title, image_url, is_active, display_order, category_id')
-        .order('display_order', { ascending: true });
+      const [looksRes, catsRes] = await Promise.all([
+        supabase
+          .from('shop_looks')
+          .select('id, title, image_url, is_active, display_order, category_id')
+          .order('display_order', { ascending: true }),
+        supabase
+          .from('categories')
+          .select('id, name, slug')
+      ]);
 
-      if (error) throw error;
-      setLooks(data || []);
+      if (looksRes.error) throw looksRes.error;
+      if (catsRes.error) throw catsRes.error;
+      
+      setLooks(looksRes.data || []);
+      setCategories(catsRes.data || []);
     } catch (error) {
       toast.error("Lỗi tải dữ liệu Lookbook.");
     } finally {
       setLoading(false);
     }
   };
+  
+  // Group looks by category_id (slug)
+  const groupedLooks = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    looks.forEach(look => {
+      if (look.category_id) {
+        if (!groups[look.category_id]) {
+          groups[look.category_id] = [];
+        }
+        groups[look.category_id].push(look);
+      }
+    });
+    
+    // Sort groups by category name for stable display
+    const sortedGroups = Object.keys(groups).sort((a, b) => {
+      const nameA = categories.find(c => c.slug === a)?.name || a;
+      const nameB = categories.find(c => c.slug === b)?.name || b;
+      return nameA.localeCompare(nameB);
+    });
+    
+    return sortedGroups.map(slug => ({
+      slug,
+      name: categories.find(c => c.slug === slug)?.name || slug,
+      looks: groups[slug].sort((a, b) => a.display_order - b.display_order) // Ensure looks within group are sorted by current order
+    }));
+  }, [looks, categories]);
+
 
   const toggleActive = async (id: string, currentStatus: boolean) => {
     const { error } = await supabase.from('shop_looks').update({ is_active: !currentStatus }).eq('id', id);
@@ -45,16 +81,36 @@ export function FeaturedLookManager() {
   };
 
   const onDragEnd = async (result: DropResult) => {
-    const { destination, source } = result;
+    const { destination, source, destination: { droppableId: destinationCategorySlug } } = result;
+    
     if (!destination) return;
-    if (destination.index === source.index) return;
-
-    const newLooks = Array.from(looks);
+    
+    // Prevent dragging between categories
+    if (source.droppableId !== destinationCategorySlug) {
+        toast.error("Chỉ có thể sắp xếp thứ tự trong cùng một danh mục.");
+        return;
+    }
+    
+    const categorySlug = source.droppableId;
+    // Get the current list of looks for this category, sorted by display_order
+    const categoryLooks = looks.filter(l => l.category_id === categorySlug).sort((a, b) => a.display_order - b.display_order);
+    
+    const newLooks = Array.from(categoryLooks);
     const [reorderedItem] = newLooks.splice(source.index, 1);
     newLooks.splice(destination.index, 0, reorderedItem);
 
-    setLooks(newLooks);
+    // 1. Update local state immediately with new display_order
+    const updatedLooks = looks.map(l => {
+        const foundInNew = newLooks.find(n => n.id === l.id);
+        if (foundInNew) {
+            const newOrder = newLooks.indexOf(foundInNew) + 1;
+            return { ...l, display_order: newOrder };
+        }
+        return l;
+    });
+    setLooks(updatedLooks);
 
+    // 2. Persist changes to database
     try {
       const promises = newLooks.map((item, index) => 
         supabase
@@ -64,10 +120,10 @@ export function FeaturedLookManager() {
       );
       
       await Promise.all(promises);
-      toast.success("Đã cập nhật vị trí Lookbook");
+      toast.success(`Đã cập nhật vị trí Lookbook trong danh mục ${categorySlug}`);
     } catch (error) {
       toast.error("Lỗi khi lưu vị trí");
-      fetchLooks();
+      fetchLooks(); // Re-fetch on error
     }
   };
 
@@ -76,58 +132,72 @@ export function FeaturedLookManager() {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId="lookbook-list">
-        {(provided) => (
-          <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-            {looks.map((look, index) => (
-              <Draggable key={look.id} draggableId={look.id} index={index}>
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    className={cn(
-                      "bg-white p-4 rounded-2xl border shadow-sm flex items-center gap-4 transition-all",
-                      snapshot.isDragging ? "shadow-elevated scale-[1.01] border-primary/40 z-50" : "",
-                      !look.is_active && "opacity-60"
-                    )}
-                  >
-                    <div {...provided.dragHandleProps} className="text-muted-foreground/30 hover:text-primary cursor-grab active:cursor-grabbing px-1">
-                      <GripVertical className="w-5 h-5" />
-                    </div>
-                    
-                    <div className="w-16 h-16 bg-primary/5 rounded-xl overflow-hidden shrink-0 border border-border/50">
-                      <img src={look.image_url} className="w-full h-full object-cover" alt={look.title} />
-                    </div>
+      <div className="space-y-6">
+        {groupedLooks.map(group => (
+          <div key={group.slug} className="bg-white p-6 rounded-2xl border shadow-sm">
+            <h3 className="font-bold text-lg mb-4 text-charcoal flex items-center gap-2">
+              <FolderTree className="w-5 h-5 text-primary" />
+              {group.name} 
+              <Badge variant="secondary" className="text-[10px]">{group.looks.length}</Badge>
+            </h3>
+            
+            <Droppable droppableId={group.slug}>
+              {(provided, snapshot) => (
+                <div 
+                  {...provided.droppableProps} 
+                  ref={provided.innerRef} 
+                  className={cn("space-y-4 p-1 transition-all", snapshot.isDraggingOver && "bg-secondary/50 rounded-xl")}
+                >
+                  {group.looks.map((look, index) => (
+                    <Draggable key={look.id} draggableId={look.id} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={cn(
+                            "bg-secondary/30 p-4 rounded-xl border border-border/50 flex items-center gap-4 transition-all",
+                            snapshot.isDragging ? "shadow-elevated scale-[1.01] border-primary/40 z-50 bg-white" : "",
+                            !look.is_active && "opacity-60"
+                          )}
+                        >
+                          <div {...provided.dragHandleProps} className="text-muted-foreground/30 hover:text-primary cursor-grab active:cursor-grabbing px-1">
+                            <GripVertical className="w-5 h-5" />
+                          </div>
+                          
+                          <div className="w-16 h-16 bg-primary/5 rounded-xl overflow-hidden shrink-0 border border-border/50">
+                            <img src={look.image_url} className="w-full h-full object-cover" alt={look.title} />
+                          </div>
 
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-sm text-charcoal truncate">{look.title}</h3>
-                      <p className="text-[10px] text-muted-foreground truncate mt-1 flex items-center gap-1">
-                        <LinkIcon className="w-3 h-3" /> {look.category_id}
-                      </p>
-                    </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-sm text-charcoal truncate">{look.title}</h3>
+                            <p className="text-[10px] text-muted-foreground truncate mt-1 flex items-center gap-1">
+                              <LinkIcon className="w-3 h-3" /> Thứ tự: {look.display_order}
+                            </p>
+                          </div>
 
-                    <div className="flex items-center gap-4 border-l border-border/50 pl-4">
-                      <button 
-                        onClick={() => toggleActive(look.id, look.is_active)}
-                        className={cn(
-                          "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase border transition-all",
-                          look.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-gray-100 text-gray-400 border-transparent"
-                        )}
-                      >
-                        {look.is_active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                        <span className="hidden sm:inline">{look.is_active ? "Hiện" : "Ẩn"}</span>
-                      </button>
-                      
-                      {/* Nút chỉnh sửa đã được loại bỏ theo yêu cầu */}
-                    </div>
-                  </div>
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
+                          <div className="flex items-center gap-4 border-l border-border/50 pl-4">
+                            <button 
+                              onClick={() => toggleActive(look.id, look.is_active)}
+                              className={cn(
+                                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase border transition-all",
+                                look.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-gray-100 text-gray-400 border-transparent"
+                              )}
+                            >
+                              {look.is_active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                              <span className="hidden sm:inline">{look.is_active ? "Hiện" : "Ẩn"}</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
           </div>
-        )}
-      </Droppable>
+        ))}
+      </div>
     </DragDropContext>
   );
 }
