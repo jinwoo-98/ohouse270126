@@ -167,33 +167,6 @@ export function HeaderTopBanner() {
             max-height: 2.5rem; /* Đảm bảo không vượt quá 2 dòng */
           }
         }
-        
-        /* Đảm bảo link và màu chữ trong banner được áp dụng từ Rich Text Editor */
-        .top-banner-text a {
-          text-decoration: underline;
-          font-weight: bold;
-        }
-        
-        /* FIX: Đảm bảo màu chữ được set trong style attribute của các thẻ con (do Rich Text Editor tạo ra) được ưu tiên */
-        .top-banner-text * {
-          /* Không dùng color: inherit nữa */
-          /* Thay vào đó, chúng ta chỉ cần đảm bảo các thẻ con không bị ghi đè bởi màu mặc định của banner */
-        }
-        
-        /* Sử dụng !important để đảm bảo màu từ style attribute của Quill Editor được áp dụng */
-        .top-banner-text [style*="color"] {
-          color: var(--ql-color) !important; 
-        }
-        
-        /* Nếu Quill không dùng var(--ql-color) mà dùng trực tiếp hex/rgb, ta cần đảm bảo nó được ưu tiên */
-        .top-banner-text span[style], .top-banner-text a[style] {
-            color: inherit !important; /* Kế thừa màu từ style attribute */
-        }
-        
-        /* Cần một cách mạnh mẽ hơn để ưu tiên màu từ style attribute */
-        .top-banner-text *[style*="color"] {
-            color: inherit !important;
-        }
       `}</style>
     </>
   );
