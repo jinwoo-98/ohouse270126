@@ -2,12 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, ShoppingBag, ChevronRight, ChevronLeft, ArrowRight, Heart, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import { Plus, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useCart } from "@/contexts/CartContext";
-import { useWishlist } from "@/contexts/WishlistContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useCategories } from "@/hooks/useCategories";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
@@ -16,19 +13,23 @@ function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
 }
 
+// Cấu hình độ nhạy cho thao tác vuốt
+const swipeConfidenceThreshold = 10000;
+const swipePower = (offset: number, velocity: number) => {
+  return Math.abs(offset) * velocity;
+};
+
 export function ShopTheLook() {
-  const { addToCart } = useCart();
-  const { toggleWishlist, isInWishlist } = useWishlist();
-  
   const [allLooks, setAllLooks] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
   const [activeCategorySlug, setActiveCategorySlug] = useState<string>("");
-  const [currentLookIndex, setCurrentLookIndex] = useState(0); // Index của Lookbook trong danh mục
-  const [currentImageIndex, setCurrentImageIndex] = useState(0); // Index của ảnh trong Lookbook
+  const [currentLookIndex, setCurrentLookIndex] = useState(0); 
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+  const [[page, direction], setPage] = useState([0, 0]); // State cho animation chuyển slide
 
   const { data: categoriesData } = useCategories();
 
@@ -93,17 +94,32 @@ export function ShopTheLook() {
     setCurrentImageIndex(0);
   }, [activeLook]);
 
-  const goToNextLook = () => {
-    setCurrentLookIndex((prev) => (prev + 1) % currentCategoryLooks.length);
+  // Điều hướng Look (Slide lớn)
+  const paginateLook = (newDirection: number) => {
+    setPage([page + newDirection, newDirection]);
+    if (newDirection === 1) {
+        setCurrentLookIndex((prev) => (prev + 1) % currentCategoryLooks.length);
+    } else {
+        setCurrentLookIndex((prev) => (prev - 1 + currentCategoryLooks.length) % currentCategoryLooks.length);
+    }
     setCurrentImageIndex(0);
   };
-  const goToPrevLook = () => {
-    setCurrentLookIndex((prev) => (prev - 1 + currentCategoryLooks.length) % currentCategoryLooks.length);
-    setCurrentImageIndex(0);
-  };
-  
+
+  // Điều hướng Ảnh con (Slide nhỏ trong Look)
   const goToNextImage = () => setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
   const goToPrevImage = () => setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+
+  // Xử lý sự kiện vuốt (Drag End)
+  const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
+    const swipe = swipePower(offset.x, velocity.x);
+
+    // Ưu tiên chuyển Look trước
+    if (swipe < -swipeConfidenceThreshold) {
+      paginateLook(1); // Vuốt trái -> Next Look
+    } else if (swipe > swipeConfidenceThreshold) {
+      paginateLook(-1); // Vuốt phải -> Prev Look
+    }
+  };
 
   if (loading) return <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   if (allLooks.length === 0) return null;
@@ -146,32 +162,43 @@ export function ShopTheLook() {
         </div>
 
         <div className="relative rounded-3xl overflow-hidden bg-background shadow-elevated border border-border/40">
-          <AnimatePresence mode="wait">
+          <AnimatePresence initial={false} custom={direction} mode="wait">
             {activeLook ? (
               <motion.div
-                key={activeLook.id + currentImageIndex} // Key thay đổi khi Lookbook hoặc ảnh thay đổi
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="relative aspect-square md:aspect-[16/8] w-full group" 
+                key={activeLook.id} // Chỉ remount khi đổi Look
+                custom={direction}
+                initial={{ opacity: 0, x: direction > 0 ? 200 : -200 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: direction > 0 ? -200 : 200 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="relative aspect-square md:aspect-[16/8] w-full group cursor-grab active:cursor-grabbing"
+                drag="x" // BẬT TÍNH NĂNG KÉO
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={1}
+                onDragEnd={handleDragEnd}
               >
                 <img
                   src={currentImageUrl}
                   alt={activeLook.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover pointer-events-none" // Quan trọng: Chặn sự kiện chuột vào ảnh để cho phép kéo container
+                  draggable="false"
                 />
                 
+                {/* Lớp phủ chứa Hotspot */}
                 <div className="absolute inset-0 bg-black/5">
                   <TooltipProvider>
                     {activeLook.shop_look_items
-                      .filter((item: any) => item.target_image_url === currentImageUrl) // Lọc theo ảnh đang hiển thị
+                      .filter((item: any) => item.target_image_url === currentImageUrl)
                       .map((item: any) => (
                       <Tooltip key={item.id} delayDuration={0}>
                         <TooltipTrigger asChild>
                           <button
-                            onClick={() => { if (item.products) setQuickViewProduct(item.products); }}
-                            className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/95 shadow-elevated flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-10 group/dot"
+                            onClick={(e) => { 
+                                e.stopPropagation(); // Ngăn sự kiện drag
+                                if (item.products) setQuickViewProduct(item.products); 
+                            }}
+                            // Thêm touch-action-none để ưu tiên sự kiện click trên mobile cho nút này
+                            className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/95 shadow-elevated flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-30 group/dot touch-manipulation"
                             style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                           >
                             <span className="absolute w-full h-full rounded-full bg-white/50 animate-ping opacity-75 group-hover/dot:hidden"></span>
@@ -179,7 +206,7 @@ export function ShopTheLook() {
                           </button>
                         </TooltipTrigger>
                         {item.products && (
-                          <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 shadow-elevated rounded-xl hidden md:block">
+                          <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 shadow-elevated rounded-xl hidden md:block z-40">
                             <p className="font-bold text-xs uppercase tracking-wider">{item.products.name}</p>
                             <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
                           </TooltipContent>
@@ -189,17 +216,17 @@ export function ShopTheLook() {
                   </TooltipProvider>
                 </div>
 
-                {/* Navigation Arrows (Chuyển Lookbook) */}
+                {/* Nút điều hướng Lookbook (Chỉ hiện trên Desktop) */}
                 {currentCategoryLooks.length > 1 && (
                   <>
                     <button 
-                      onClick={goToPrevLook} 
+                      onClick={(e) => { e.stopPropagation(); paginateLook(-1); }}
                       className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 w-12 h-40 bg-card/10 backdrop-blur-md rounded-r-2xl text-white hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 items-center justify-center group border border-white/10"
                     >
                       <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
                     </button>
                     <button 
-                      onClick={goToNextLook} 
+                      onClick={(e) => { e.stopPropagation(); paginateLook(1); }}
                       className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 w-12 h-40 bg-card/10 backdrop-blur-md rounded-l-2xl text-white hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 items-center justify-center group border border-white/10"
                     >
                       <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
@@ -207,36 +234,35 @@ export function ShopTheLook() {
                   </>
                 )}
                 
-                {/* Image Navigation Arrows (Chuyển ảnh trong Lookbook) */}
+                {/* Nút chuyển ảnh trong Lookbook (Chỉ hiện trên Desktop) */}
                 {allImages.length > 1 && (
                   <>
                     <button 
-                      onClick={goToPrevImage} 
-                      className="absolute left-16 top-1/2 -translate-y-1/2 p-2 bg-white/90 rounded-full text-charcoal hover:bg-primary hover:text-white transition-colors z-20 shadow-md"
+                      onClick={(e) => { e.stopPropagation(); goToPrevImage(); }}
+                      className="hidden md:flex absolute left-16 top-1/2 -translate-y-1/2 p-2 bg-white/90 rounded-full text-charcoal hover:bg-primary hover:text-white transition-colors z-20 shadow-md"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button 
-                      onClick={goToNextImage} 
-                      className="absolute right-16 top-1/2 -translate-y-1/2 p-2 bg-white/90 rounded-full text-charcoal hover:bg-primary hover:text-white transition-colors z-20 shadow-md"
+                      onClick={(e) => { e.stopPropagation(); goToNextImage(); }}
+                      className="hidden md:flex absolute right-16 top-1/2 -translate-y-1/2 p-2 bg-white/90 rounded-full text-charcoal hover:bg-primary hover:text-white transition-colors z-20 shadow-md"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </>
                 )}
 
-                <div className="absolute top-6 left-6 bg-charcoal/80 backdrop-blur-md text-cream px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border border-white/10">
+                <div className="absolute top-6 left-6 bg-charcoal/80 backdrop-blur-md text-cream px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border border-white/10 pointer-events-none">
                   {activeLook.title}
                 </div>
                 
-                {/* Dots for Lookbook Index */}
+                {/* Dots indicator */}
                 {currentCategoryLooks.length > 1 && (
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20 pointer-events-none">
                     {currentCategoryLooks.map((_, idx) => (
-                      <button
+                      <div
                         key={idx}
-                        onClick={() => { setCurrentLookIndex(idx); setCurrentImageIndex(0); }}
-                        className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentLookIndex ? "bg-white w-8" : "bg-white/30 w-2 hover:bg-white/60"}`}
+                        className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentLookIndex ? "bg-white w-8" : "bg-white/30 w-2"}`}
                       />
                     ))}
                   </div>
@@ -251,7 +277,6 @@ export function ShopTheLook() {
         </div>
       </div>
 
-      {/* Quick View Handler */}
       <QuickViewSheet 
         product={quickViewProduct} 
         isOpen={!!quickViewProduct} 

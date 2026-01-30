@@ -85,10 +85,10 @@ export function HeroSlider() {
               transition={{ duration: 6, ease: "linear" }}
               src={current.image_url}
               alt={current.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover pointer-events-none" // Quan trọng: pointer-events-none để không chặn thao tác vuốt
               draggable="false"
             />
-            <div className="absolute inset-0 bg-black/20" />
+            <div className="absolute inset-0 bg-black/20 pointer-events-none" />
           </motion.div>
         </AnimatePresence>
       </div>
@@ -103,7 +103,7 @@ export function HeroSlider() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className={`max-w-2xl relative z-10 pointer-events-auto ${
+              className={`max-w-2xl relative z-10 pointer-events-auto ${ // Bật lại pointer-events cho nội dung để click được nút
                 current.text_align === 'left' ? 'mr-auto text-left' : 
                 current.text_align === 'right' ? 'ml-auto text-right' : 
                 'mx-auto text-center'
@@ -154,7 +154,7 @@ export function HeroSlider() {
 
       {slides.length > 1 && (
         <>
-          {/* Nút điều hướng: Ẩn trên mobile (hidden), hiện trên desktop (md:flex) */}
+          {/* Nút điều hướng: CHỈ HIỆN TRÊN DESKTOP (hidden md:flex) */}
           <button 
             onClick={() => paginate(-1)} 
             className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-20 items-center justify-center group shadow-medium"
@@ -168,12 +168,12 @@ export function HeroSlider() {
             <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </button>
           
-          <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20">
+          <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20 pointer-events-none">
             {slides.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setPage([index, index > imageIndex ? 1 : -1])}
-                className={`h-1.5 rounded-full transition-all duration-500 ${index === imageIndex ? "bg-primary w-8 md:w-12" : "bg-white/30 w-2 md:w-3 hover:bg-white/60"}`}
+                className={`h-1.5 rounded-full transition-all duration-500 pointer-events-auto ${index === imageIndex ? "bg-primary w-8 md:w-12" : "bg-white/30 w-2 md:w-3 hover:bg-white/60"}`}
               />
             ))}
           </div>
