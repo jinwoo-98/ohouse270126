@@ -85,9 +85,9 @@ export function HeaderTopBanner() {
                   transition={{ duration: 0.5 }}
                   className="absolute inset-0 flex items-center gap-2 md:gap-3"
                 >
-                  {/* Nội dung thông báo (Hỗ trợ HTML) */}
+                  {/* Nội dung thông báo */}
                   <div 
-                    className="font-bold underline-offset-2 hover:no-underline block max-w-[180px] xs:max-w-none text-ellipsis overflow-hidden text-left"
+                    className="font-bold underline-offset-2 hover:no-underline block max-w-full text-left top-banner-text-container"
                     style={{ color: textColor }}
                   >
                     <span 
@@ -146,19 +146,28 @@ export function HeaderTopBanner() {
         content={settings?.shipping_modal_content}
       />
       
-      {/* Custom CSS for mobile text wrapping */}
+      {/* Custom CSS for text wrapping */}
       <style>{`
+        /* Desktop: Luôn hiển thị 1 dòng, ẩn phần thừa */
+        .top-banner-text-container {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        /* Mobile (max-width: 640px): Cho phép 2 dòng */
         @media (max-width: 640px) {
-          .top-banner-text {
+          .top-banner-text-container {
+            white-space: normal;
             display: -webkit-box;
-            -webkit-line-clamp: 2; /* Cho phép 2 dòng */
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: normal;
-            max-height: 2.5rem; /* Khoảng 2 dòng text 10px */
+            max-height: 2.5rem; /* Đảm bảo không vượt quá 2 dòng */
           }
         }
+        
         /* Đảm bảo link trong banner vẫn có màu chữ */
         .top-banner-text a {
           color: ${textColor} !important;
