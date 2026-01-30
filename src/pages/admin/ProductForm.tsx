@@ -113,7 +113,7 @@ export default function ProductForm() {
       if (aRes.data) {
         const attrMap: Record<string, string[]> = {};
         aRes.data.forEach(item => {
-          // Đảm bảo giá trị luôn là mảng string
+          // Đảm bảo giá trị luôn là mảng string khi đưa vào state
           let values: string[] = [];
           if (Array.isArray(item.value)) {
             values = item.value.filter((v: any) => typeof v === 'string');
@@ -192,8 +192,8 @@ export default function ProductForm() {
         .map(([attrId, values]) => ({
           product_id: productId,
           attribute_id: attrId,
-          // Đối với single select, lưu giá trị đầu tiên (string) thay vì mảng 1 phần tử
-          value: allAttributes.find(a => a.id === attrId)?.type === 'single' ? values[0] : values
+          // LUÔN LƯU DƯỚI DẠNG MẢNG (JSONB) để đảm bảo tính nhất quán
+          value: values
         }));
         
       if (attrPayloads.length > 0) await supabase.from('product_attributes').insert(attrPayloads);
