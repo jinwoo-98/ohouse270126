@@ -39,7 +39,7 @@ import AdminLayout from "./layouts/AdminLayout";
 import DashboardOverview from "./pages/admin/DashboardOverview";
 import ThemeSettings from "./pages/admin/ThemeSettings";
 import GeneralSettings from "./pages/admin/GeneralSettings";
-import HomepageManager from "./pages/admin/HomepageManager";
+import HomepageSectionManager from "./pages/admin/HomepageSectionManager";
 import ProductManager from "./pages/admin/ProductManager";
 import ProductForm from "./pages/admin/ProductForm";
 import CategoryManager from "./pages/admin/CategoryManager";
@@ -60,6 +60,15 @@ import SubscriberManager from "./pages/admin/SubscriberManager";
 import MarketingTools from "./pages/admin/MarketingTools";
 import TeamManager from "./pages/admin/TeamManager";
 import ContentManager from "./pages/admin/ContentManager";
+
+// Homepage Sub-pages
+import SlidePage from "./pages/admin/homepage/SlidePage.tsx";
+import SectionConfigPage from "./pages/admin/homepage/SectionConfigPage.tsx";
+import USPPage from "./pages/admin/homepage/USPPage.tsx";
+import CategoryMenuPage from "./pages/admin/homepage/CategoryMenuPage.tsx";
+import ShopTheLookPage from "./pages/admin/homepage/ShopTheLookPage.tsx";
+import MarketingPage from "./pages/admin/homepage/MarketingPage.tsx";
+
 
 const queryClient = new QueryClient();
 
@@ -118,8 +127,20 @@ const App = () => (
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<DashboardOverview />} />
-                  <Route path="homepage" element={<HomepageManager />} />
+                  
+                  {/* Homepage Manager (New Structure) */}
+                  <Route path="homepage" element={<HomepageSectionManager />} />
+                  <Route path="homepage/slides" element={<SlidePage />} />
+                  <Route path="homepage/sections" element={<SectionConfigPage />} />
+                  <Route path="homepage/usp" element={<USPPage />} />
+                  <Route path="homepage/categories-menu" element={<CategoryMenuPage />} />
+                  <Route path="homepage/looks" element={<ShopTheLookPage />} />
+                  <Route path="homepage/marketing" element={<MarketingPage />} />
+                  
+                  {/* CMS Hub */}
                   <Route path="content" element={<ContentManager />} />
+                  
+                  {/* Sales & Product Management */}
                   <Route path="orders" element={<OrderManager />} />
                   <Route path="products" element={<ProductManager />} />
                   <Route path="products/new" element={<ProductForm />} />
@@ -130,20 +151,26 @@ const App = () => (
                   <Route path="attributes" element={<AttributeManager />} />
                   <Route path="attributes/new" element={<AttributeForm />} />
                   <Route path="attributes/edit/:id" element={<AttributeForm />} />
-                  <Route path="marketing" element={<MarketingTools />} />
                   <Route path="reviews" element={<ReviewManager />} />
+                  
+                  {/* Marketing & Customer */}
+                  <Route path="marketing" element={<MarketingTools />} />
                   <Route path="subscribers" element={<SubscriberManager />} />
-                  <Route path="projects" element={<ProjectManager />} />
-                  <Route path="projects/new" element={<ProjectForm />} />
-                  <Route path="projects/edit/:id" element={<ProjectForm />} />
                   <Route path="design-requests" element={<DesignRequestManager />} />
                   <Route path="messages" element={<ContactMessageManager />} />
+                  
+                  {/* Content Pages (CMS Hub destinations) */}
                   <Route path="pages" element={<PageManager />} />
                   <Route path="pages/new" element={<PageForm />} />
                   <Route path="pages/edit/:id" element={<PageForm />} />
                   <Route path="news" element={<NewsManager />} />
                   <Route path="news/new" element={<NewsForm />} />
                   <Route path="news/edit/:id" element={<NewsForm />} />
+                  <Route path="projects" element={<ProjectManager />} />
+                  <Route path="projects/new" element={<ProjectForm />} />
+                  <Route path="projects/edit/:id" element={<ProjectForm />} />
+                  
+                  {/* System Settings */}
                   <Route path="theme" element={<ThemeSettings />} />
                   <Route path="settings" element={<GeneralSettings />} />
                   <Route path="team" element={<TeamManager />} />
