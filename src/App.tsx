@@ -69,6 +69,9 @@ import CategoryMenuPage from "./pages/admin/homepage/CategoryMenuPage.tsx";
 import ShopTheLookPage from "./pages/admin/homepage/ShopTheLookPage.tsx";
 import MarketingPage from "./pages/admin/homepage/MarketingPage.tsx";
 
+// CMS Sub-pages
+import LookbookManagerPage from "./pages/admin/content/LookbookManagerPage.tsx";
+
 
 const queryClient = new QueryClient();
 
@@ -139,6 +142,7 @@ const App = () => (
                   
                   {/* CMS Hub */}
                   <Route path="content" element={<ContentManager />} />
+                  <Route path="content/looks" element={<LookbookManagerPage />} />
                   
                   {/* Sales & Product Management */}
                   <Route path="orders" element={<OrderManager />} />

@@ -12,9 +12,9 @@ import {
 const contentSections = [
   {
     icon: Sparkles,
-    title: "Trang Cảm Hứng (Shop The Look)",
-    description: "Quản lý các bộ sưu tập không gian, gắn thẻ sản phẩm vào hình ảnh.",
-    href: "/admin/homepage", // Tab "Shop The Look"
+    title: "Quản Lý Lookbook",
+    description: "Tạo, chỉnh sửa chi tiết và gắn thẻ sản phẩm cho các bộ sưu tập không gian.",
+    href: "/admin/content/looks",
     color: "text-purple-600 bg-purple-50 border-purple-200"
   },
   {

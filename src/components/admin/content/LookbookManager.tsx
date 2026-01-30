@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit, Trash2, X, Search, Image as ImageIcon } from "lucide-react";
+import { Plus, Edit, Trash2, X, Search, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,8 +14,10 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 
-export function ShopTheLookManager() {
+export function LookbookManager() {
   const [looks, setLooks] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
@@ -24,19 +26,23 @@ export function ShopTheLookManager() {
   const [lookItems, setLookItems] = useState<any[]>([]);
   const [productSearch, setProductSearch] = useState("");
   const [activeEditingImage, setActiveEditingImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
     const { data: l } = await supabase.from('shop_looks').select('*, shop_look_items(*)').order('display_order');
-    const { data: p } = await supabase.from('products').select('id, name');
+    const { data: p } = await supabase.from('products').select('id, name, image_url, slug');
     const { data: c } = await supabase.from('categories').select('id, name, slug, parent_id, menu_location').order('name');
     
     setLooks(l || []);
     setProducts(p || []);
     setCategories(c || []);
+    setLoading(false);
   };
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -79,10 +85,18 @@ export function ShopTheLookManager() {
     } catch (e) { toast.error("Lỗi lưu dữ liệu"); }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Xóa?")) return;
-    await supabase.from('shop_looks').delete().eq('id', id);
-    fetchData();
+  const handleDeleteConfirm = async () => {
+    if (!deleteId) return;
+    const toastId = toast.loading("Đang xóa Lookbook...");
+    try {
+      await supabase.from('shop_looks').delete().eq('id', deleteId);
+      toast.success("Đã xóa Lookbook thành công.", { id: toastId });
+      fetchData();
+    } catch (e) {
+      toast.error("Lỗi xóa Lookbook.", { id: toastId });
+    } finally {
+      setDeleteId(null);
+    }
   };
 
   const toggleActive = async (id: string, currentStatus: boolean) => {
@@ -102,38 +116,50 @@ export function ShopTheLookManager() {
     }));
   };
 
-  const filteredProducts = products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()));
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(productSearch.toLowerCase())
+  );
+
   const parentCategories = categories.filter(c => !c.parent_id && c.menu_location === 'main');
 
   const allEditingImages = [editingLook?.image_url, ...(editingLook?.gallery_urls || [])].filter(Boolean);
 
   return (
     <div className="space-y-6 mt-6">
-      <div className="flex justify-end"><Button onClick={() => { setEditingLook({ gallery_urls: [], is_active: true }); setLookItems([]); setIsOpen(true); }} className="btn-hero h-10 shadow-gold"><Plus className="w-4 h-4 mr-2" /> Thêm Look</Button></div>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {looks.map(look => {
-          const categoryName = categories.find(c => c.slug === look.category_id)?.name || look.category_id;
-          return (
-            <div key={look.id} className="bg-white rounded-2xl border shadow-sm overflow-hidden group">
-              <div className="relative aspect-square">
-                <img src={look.image_url} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
-                  <Button size="sm" variant="secondary" onClick={() => { setEditingLook(look); setLookItems(look.shop_look_items || []); setActiveEditingImage(look.image_url); setIsOpen(true); }}><Edit className="w-4 h-4" /></Button>
-                  <Button size="sm" variant="destructive" onClick={() => handleDelete(look.id)}><Trash2 className="w-4 h-4" /></Button>
-                </div>
-                <div className="absolute top-2 right-2">
-                  <Switch checked={look.is_active} onCheckedChange={() => toggleActive(look.id, look.is_active)} />
-                </div>
-              </div>
-              <div className="p-4 text-center">
-                <Badge variant="secondary" className="mb-2 uppercase text-[9px] bg-primary/10 text-primary border-none">{categoryName}</Badge>
-                <h3 className="font-bold text-sm line-clamp-1">{look.title}</h3>
-                <p className="text-xs text-muted-foreground mt-1">{look.shop_look_items?.length || 0} sản phẩm</p>
-              </div>
-            </div>
-          );
-        })}
+      <div className="flex justify-end">
+        <Button onClick={() => { setEditingLook({ gallery_urls: [], is_active: true, category_id: parentCategories[0]?.slug || '' }); setLookItems([]); setActiveEditingImage(null); setIsOpen(true); }} className="btn-hero h-10 shadow-gold">
+          <Plus className="w-4 h-4 mr-2" /> Thêm Look
+        </Button>
       </div>
+      
+      {loading ? (
+        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {looks.map(look => {
+            const categoryName = categories.find(c => c.slug === look.category_id)?.name || look.category_id;
+            return (
+              <div key={look.id} className="bg-white rounded-2xl border shadow-sm overflow-hidden group">
+                <div className="relative aspect-square">
+                  <img src={look.image_url} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
+                    <Button size="sm" variant="secondary" onClick={() => { setEditingLook(look); setLookItems(look.shop_look_items || []); setActiveEditingImage(look.image_url); setIsOpen(true); }}><Edit className="w-4 h-4" /></Button>
+                    <Button size="sm" variant="destructive" onClick={() => setDeleteId(look.id)}><Trash2 className="w-4 h-4" /></Button>
+                  </div>
+                  <div className="absolute top-2 right-2">
+                    <Switch checked={look.is_active} onCheckedChange={() => toggleActive(look.id, look.is_active)} />
+                  </div>
+                </div>
+                <div className="p-4 text-center">
+                  <Badge variant="secondary" className="mb-2 uppercase text-[9px] bg-primary/10 text-primary border-none">{categoryName}</Badge>
+                  <h3 className="font-bold text-sm line-clamp-1">{look.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{look.shop_look_items?.length || 0} sản phẩm</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-6xl rounded-3xl h-[90vh] overflow-y-auto">
@@ -192,6 +218,10 @@ export function ShopTheLookManager() {
                         key={p.id} 
                         className="flex items-center justify-between p-2 hover:bg-white rounded-lg cursor-pointer transition-colors text-xs"
                         onClick={() => {
+                          if (!activeEditingImage) {
+                            toast.error("Vui lòng chọn ảnh để gắn Hotspot trước.");
+                            return;
+                          }
                           if (!lookItems.find(i => i.product_id === p.id && i.target_image_url === activeEditingImage)) {
                             setLookItems([...lookItems, { product_id: p.id, product_name: p.name, x_position: 50, y_position: 50, target_image_url: activeEditingImage }]);
                           }
@@ -206,24 +236,27 @@ export function ShopTheLookManager() {
                   <div className="space-y-4 pt-2 border-t border-dashed border-border/50">
                     <Label className="text-xs font-bold uppercase text-muted-foreground">Vị trí Hotspot ({lookItems.filter(i => i.target_image_url === activeEditingImage).length})</Label>
                     <div className="max-h-48 overflow-y-auto space-y-3 custom-scrollbar">
-                      {lookItems.filter(i => i.target_image_url === activeEditingImage).map((item, idx) => (
-                        <div key={item.product_id} className="bg-white p-3 rounded-lg text-[10px] space-y-2 shadow-sm border border-border/50">
-                          <div className="flex justify-between font-bold text-charcoal">
-                            <span className="truncate max-w-[150px]">{item.product_name}</span>
-                            <button type="button" onClick={()=>setLookItems(lookItems.filter(i => i.product_id !== item.product_id || i.target_image_url !== item.target_image_url))} className="text-destructive hover:bg-destructive/10 p-1 rounded"><X className="w-3 h-3" /></button>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-1">
-                              <span className="text-[9px] text-muted-foreground">Vị trí X (%)</span>
-                              <Slider value={[item.x_position]} max={100} onValueChange={([v])=>{const n=[...lookItems]; const originalIndex = n.findIndex(i => i.product_id === item.product_id && i.target_image_url === item.target_image_url); if(originalIndex > -1) n[originalIndex].x_position=v; setLookItems(n);}} />
+                      {lookItems.filter(i => i.target_image_url === activeEditingImage).map((item, idx) => {
+                        const productInfo = products.find(p => p.id === item.product_id);
+                        return (
+                          <div key={item.product_id} className="bg-white p-3 rounded-lg text-[10px] space-y-2 shadow-sm border border-border/50">
+                            <div className="flex justify-between font-bold text-charcoal">
+                              <span className="truncate max-w-[150px]">{productInfo?.name || item.product_name}</span>
+                              <button type="button" onClick={()=>setLookItems(lookItems.filter(i => i.product_id !== item.product_id || i.target_image_url !== item.target_image_url))} className="text-destructive hover:bg-destructive/10 p-1 rounded"><X className="w-3 h-3" /></button>
                             </div>
-                            <div className="space-y-1">
-                              <span className="text-[9px] text-muted-foreground">Vị trí Y (%)</span>
-                              <Slider value={[item.y_position]} max={100} onValueChange={([v])=>{const n=[...lookItems]; const originalIndex = n.findIndex(i => i.product_id === item.product_id && i.target_image_url === item.target_image_url); if(originalIndex > -1) n[originalIndex].y_position=v; setLookItems(n);}} />
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="space-y-1">
+                                <span className="text-[9px] text-muted-foreground">Vị trí X (%)</span>
+                                <Slider value={[item.x_position]} max={100} onValueChange={([v])=>{const n=[...lookItems]; const originalIndex = n.findIndex(i => i.product_id === item.product_id && i.target_image_url === item.target_image_url); if(originalIndex > -1) n[originalIndex].x_position=v; setLookItems(n);}} />
+                              </div>
+                              <div className="space-y-1">
+                                <span className="text-[9px] text-muted-foreground">Vị trí Y (%)</span>
+                                <Slider value={[item.y_position]} max={100} onValueChange={([v])=>{const n=[...lookItems]; const originalIndex = n.findIndex(i => i.product_id === item.product_id && i.target_image_url === item.target_image_url); if(originalIndex > -1) n[originalIndex].y_position=v; setLookItems(n);}} />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -250,7 +283,7 @@ export function ShopTheLookManager() {
                             key={item.product_id} 
                             className="absolute w-6 h-6 bg-white border-2 border-primary rounded-full flex items-center justify-center text-primary font-bold text-xs transform -translate-x-1/2 -translate-y-1/2 shadow-lg cursor-grab active:cursor-grabbing hover:scale-110 transition-transform" 
                             style={{left:`${item.x_position}%`, top:`${item.y_position}%`}}
-                            title={item.product_name}
+                            title={products.find(p => p.id === item.product_id)?.name || item.product_name}
                           >
                             +
                           </div>
@@ -267,7 +300,7 @@ export function ShopTheLookManager() {
                   <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Quản lý ảnh</h3>
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh chính</Label>
-                    <ImageUpload value={editingLook?.image_url} onChange={(url) => setEditingLook({...editingLook, image_url: url})} />
+                    <ImageUpload value={editingLook?.image_url} onChange={(url) => { setEditingLook({...editingLook, image_url: url}); setActiveEditingImage(url as string); }} />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh phụ</Label>
@@ -292,6 +325,15 @@ export function ShopTheLookManager() {
           </form>
         </DialogContent>
       </Dialog>
+      
+      <ConfirmDialog 
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Xác nhận xóa Lookbook"
+        description="Hành động này sẽ xóa vĩnh viễn Lookbook và các sản phẩm gắn thẻ khỏi hệ thống."
+        confirmText="Vẫn xóa Lookbook"
+      />
     </div>
   );
 }
