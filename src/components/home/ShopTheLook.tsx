@@ -206,15 +206,15 @@ export function ShopTheLook() {
                   <>
                     <button 
                       onClick={(e) => { e.stopPropagation(); paginateLook(-1); }}
-                      className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 w-12 h-40 bg-card/10 backdrop-blur-md rounded-r-2xl text-white hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 items-center justify-center group border border-white/10"
+                      className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-20 items-center justify-center group shadow-medium"
                     >
-                      <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
+                      <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); paginateLook(1); }}
-                      className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 w-12 h-40 bg-card/10 backdrop-blur-md rounded-l-2xl text-white hover:bg-primary hover:text-primary-foreground transition-all duration-500 z-20 items-center justify-center group border border-white/10"
+                      className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-20 items-center justify-center group shadow-medium"
                     >
-                      <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
                     </button>
                   </>
                 )}
