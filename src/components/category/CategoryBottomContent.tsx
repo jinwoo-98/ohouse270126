@@ -131,11 +131,13 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                   onClick={() => setSelectedLook(look)}
                 >
                   <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
                   
-                  {/* Active Dots on Image */}
+                  {/* Active Dots on Image - FIXED LOGIC */}
                   <TooltipProvider>
-                    {look.shop_look_items?.map((item: any, i: number) => (
+                    {look.shop_look_items
+                      .filter((item: any) => item.target_image_url === look.image_url && item.products)
+                      .map((item: any, i: number) => (
                       <Tooltip key={i} delayDuration={0}>
                         <TooltipTrigger asChild>
                           <button
@@ -159,14 +161,6 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                       </Tooltip>
                     ))}
                   </TooltipProvider>
-                  
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-2 block">Shop The Look</span>
-                    <h3 className="text-lg md:text-xl font-bold leading-tight group-hover:text-primary transition-colors">{look.title}</h3>
-                    <div className="flex items-center gap-2 text-xs font-bold mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      Khám phá ngay <ChevronRight className="w-4 h-4" />
-                    </div>
-                  </div>
                 </div>
 
                 <div className="flex items-center justify-between px-3">
