@@ -24,7 +24,8 @@ import {
   MonitorPlay,
   ShieldCheck,
   RefreshCw,
-  ListFilter
+  ListFilter,
+  LayoutTemplate
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +57,7 @@ const menuGroups = [
     label: "Quản Trị Nội Dung (CMS)",
     items: [
       { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
+      { id: 'content', title: "Quản trị Nội dung", icon: LayoutTemplate, href: "/admin/content" },
       { id: 'news', title: "Tin tức & Blog", icon: Newspaper, href: "/admin/news" },
       { id: 'projects', title: "Dự án", icon: Briefcase, href: "/admin/projects" },
       { id: 'pages', title: "Trang tĩnh", icon: Files, href: "/admin/pages" },

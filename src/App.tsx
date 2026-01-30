@@ -59,6 +59,7 @@ import ReviewManager from "./pages/admin/ReviewManager";
 import SubscriberManager from "./pages/admin/SubscriberManager";
 import MarketingTools from "./pages/admin/MarketingTools";
 import TeamManager from "./pages/admin/TeamManager";
+import ContentManager from "./pages/admin/ContentManager";
 
 const queryClient = new QueryClient();
 
@@ -118,6 +119,7 @@ const App = () => (
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<DashboardOverview />} />
                   <Route path="homepage" element={<HomepageManager />} />
+                  <Route path="content" element={<ContentManager />} />
                   <Route path="orders" element={<OrderManager />} />
                   <Route path="products" element={<ProductManager />} />
                   <Route path="products/new" element={<ProductForm />} />
