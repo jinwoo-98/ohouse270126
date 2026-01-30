@@ -15,6 +15,7 @@ import { ProductQnA } from "@/components/product/detail/ProductQnA";
 import { ProductDescription } from "@/components/product/detail/ProductDescription";
 import { ProductReviews } from "@/components/product/detail/ProductReviews";
 import { StickyActionToolbar } from "@/components/product/detail/StickyActionToolbar";
+import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -216,7 +217,7 @@ export default function ProductDetailPage() {
 
               {perfectMatch.length > 0 && (
                 <div id="inspiration">
-                  <ProductHorizontalList products={perfectMatch} title="Bộ Sưu Tập Hoàn Hảo" />
+                  <ProductInspiration product={product} comboProducts={perfectMatch} />
                 </div>
               )}
 
