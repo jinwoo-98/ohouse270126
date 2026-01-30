@@ -14,20 +14,18 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
-import AboutPage from "./pages/AboutPage";
+import ContentPage from "./pages/ContentPage";
 import SupportPage from "./pages/SupportPage";
 import CartPage from "./pages/CartPage";
 import WishlistPage from "./pages/WishlistPage";
 import RecentlyViewedPage from "./pages/RecentlyViewedPage";
 import AccountPage from "./pages/AccountPage";
 import ProfileDashboard from "./pages/ProfileDashboard";
-import RecruitmentPage from "./pages/RecruitmentPage";
 import NewsPage from "./pages/NewsPage";
 import NewsDetailPage from "./pages/NewsDetailPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import ContactPage from "./pages/ContactPage";
-import ShowroomPage from "./pages/ShowroomPage";
 import InspirationPage from "./pages/InspirationPage";
 import DesignServicePage from "./pages/DesignServicePage";
 import SearchPage from "./pages/SearchPage";
@@ -101,12 +99,12 @@ const App = () => (
                 </Route>
 
                 <Route path="/dang-nhap" element={<AccountPage />} />
-                <Route path="/showroom" element={<ShowroomPage />} />
+                <Route path="/showroom" element={<ContentPage />} />
                 <Route path="/cam-hung" element={<InspirationPage />} />
                 <Route path="/y-tuong/:id" element={<LookDetailPage />} />
                 <Route path="/thiet-ke" element={<DesignServicePage />} />
-                <Route path="/ve-chung-toi" element={<AboutPage />} />
-                <Route path="/tuyen-dung" element={<RecruitmentPage />} />
+                <Route path="/ve-chung-toi" element={<ContentPage />} />
+                <Route path="/tuyen-dung" element={<ContentPage />} />
                 <Route path="/tin-tuc" element={<NewsPage />} />
                 <Route path="/tin-tuc/:id" element={<NewsDetailPage />} />
                 <Route path="/du-an" element={<ProjectsPage />} />
