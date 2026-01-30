@@ -112,12 +112,7 @@ export default function LookDetailPage() {
                             alt={product.name} 
                             className="w-full h-full object-cover" 
                           />
-                          <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <span className="bg-card text-foreground px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
-                              <Eye className="w-4 h-4" />
-                              Xem Nhanh
-                            </span>
-                          </div>
+                          {/* Removed the hover overlay here */}
                         </div>
                         <div className="p-3 text-center">
                           <h3 className="text-xs font-bold line-clamp-1 mb-1 group-hover:text-primary transition-colors">{product.name}</h3>
