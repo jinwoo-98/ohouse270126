@@ -25,7 +25,8 @@ import {
   ShieldCheck,
   RefreshCw,
   ListFilter,
-  LayoutTemplate
+  LayoutTemplate,
+  Headset
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,12 +62,12 @@ const menuGroups = [
     ]
   },
   {
-    label: "Khách Hàng & Marketing",
+    label: "Tương Tác & Marketing",
     items: [
-      { id: 'marketing', title: "Marketing & SEO", icon: TrendingUp, href: "/admin/marketing" },
       { id: 'subscribers', title: "Khách hàng", icon: Users, href: "/admin/subscribers" },
       { id: 'design-requests', title: "Yêu cầu Thiết kế", icon: LayoutGrid, href: "/admin/design-requests" },
       { id: 'messages', title: "Tin nhắn khách hàng", icon: MessageSquareText, href: "/admin/messages" },
+      { id: 'marketing', title: "Marketing & SEO", icon: TrendingUp, href: "/admin/marketing" },
     ]
   },
   {
