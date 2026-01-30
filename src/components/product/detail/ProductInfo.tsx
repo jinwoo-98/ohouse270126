@@ -193,9 +193,11 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
         <CollapsibleContent className="pt-4 animate-accordion-down">
           <div className="grid grid-cols-1 gap-3">
             {attributes.length > 0 ? attributes.map((attr, i) => (
-              <div key={i} className="flex justify-between py-2 border-b border-dashed border-border/40 text-sm">
-                <span className="text-muted-foreground font-medium">{attr.name}</span>
-                <span className="text-charcoal font-bold">{Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}</span>
+              <div key={i} className="flex items-start justify-between gap-4 py-3 border-b border-dashed border-border/40 text-sm">
+                <span className="text-muted-foreground font-medium shrink-0">{attr.name}</span>
+                <span className="text-charcoal font-bold text-right break-words max-w-[70%]">
+                  {Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}
+                </span>
               </div>
             )) : <p className="text-xs italic text-muted-foreground">Chưa có thông số chi tiết.</p>}
           </div>

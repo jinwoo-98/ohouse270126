@@ -289,8 +289,8 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                         <CollapsibleContent className="pb-4 animate-accordion-down">
                           <div className="grid gap-2">
                             {attributes.map((attr, i) => (
-                              <div key={i} className="flex justify-between py-2.5 border-b border-dashed border-border/40 text-xs">
-                                <span className="text-muted-foreground font-medium">{attr.name}</span>
+                              <div key={i} className="flex items-start justify-between gap-4 py-2.5 border-b border-dashed border-border/40 text-xs">
+                                <span className="text-muted-foreground font-medium shrink-0">{attr.name}</span>
                                 <span className="text-charcoal font-bold text-right break-words max-w-[70%]">
                                   {Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}
                                 </span>
