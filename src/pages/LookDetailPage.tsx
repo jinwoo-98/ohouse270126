@@ -78,11 +78,8 @@ export default function LookDetailPage() {
                 mainImage={look.image_url} 
                 galleryImages={look.gallery_urls} 
                 productName={look.title} 
-              />
-              
-              {/* Hotspots Overlay on the main image container of ProductGallery */}
-              <TooltipProvider>
-                <div className="relative -mt-full aspect-square pointer-events-none">
+              >
+                <TooltipProvider>
                   {look.shop_look_items.map((item: any) => {
                     const product = item.products;
                     if (!product) return null;
@@ -91,7 +88,7 @@ export default function LookDetailPage() {
                       <Tooltip key={item.id} delayDuration={0}>
                         <TooltipTrigger asChild>
                           <button
-                            onClick={() => setQuickViewProduct(product)}
+                            onClick={(e) => { e.stopPropagation(); setQuickViewProduct(product); }}
                             className="absolute w-8 h-8 -ml-4 -mt-4 bg-white/90 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in z-10 group/dot pointer-events-auto"
                             style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                           >
@@ -106,8 +103,8 @@ export default function LookDetailPage() {
                       </Tooltip>
                     );
                   })}
-                </div>
-              </TooltipProvider>
+                </TooltipProvider>
+              </ProductGallery>
             </div>
 
             {/* Right: Product List */}

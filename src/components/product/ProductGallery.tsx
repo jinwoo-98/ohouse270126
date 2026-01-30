@@ -10,9 +10,10 @@ interface ProductGalleryProps {
   mainImage: string;
   galleryImages?: string[] | null;
   productName: string;
+  children?: React.ReactNode; // Add children prop
 }
 
-export function ProductGallery({ mainImage, galleryImages, productName }: ProductGalleryProps) {
+export function ProductGallery({ mainImage, galleryImages, productName, children }: ProductGalleryProps) {
   const safeGallery = Array.isArray(galleryImages) ? galleryImages : [];
   const allImages = [mainImage, ...safeGallery].filter(Boolean);
   
@@ -47,6 +48,9 @@ export function ProductGallery({ mainImage, galleryImages, productName }: Produc
             />
           </motion.div>
         </AnimatePresence>
+
+        {/* Render children as overlay */}
+        {children}
 
         {/* Overlay Tools */}
         <div className="absolute top-4 right-4 z-20">
