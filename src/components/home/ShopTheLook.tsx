@@ -26,7 +26,6 @@ export function ShopTheLook() {
   
   const [activeCategorySlug, setActiveCategorySlug] = useState<string>("");
   const [currentLookIndex, setCurrentLookIndex] = useState(0); 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [[page, direction], setPage] = useState([0, 0]); // State cho animation chuyển slide
@@ -83,16 +82,9 @@ export function ShopTheLook() {
   const currentCategoryLooks = useMemo(() => allLooks.filter(l => l.category_id === activeCategorySlug), [allLooks, activeCategorySlug]);
   const activeLook = currentCategoryLooks[currentLookIndex];
   
-  const allImages = useMemo(() => {
-    if (!activeLook) return [];
-    return [activeLook.image_url, ...(activeLook.gallery_urls || [])].filter(Boolean);
-  }, [activeLook]);
-  
-  const currentImageUrl = allImages[currentImageIndex];
-
   useEffect(() => {
-    setCurrentImageIndex(0);
-  }, [activeLook]);
+    setCurrentLookIndex(0);
+  }, [activeCategorySlug]);
 
   // Điều hướng Look (Slide lớn)
   const paginateLook = (newDirection: number) => {
@@ -102,12 +94,7 @@ export function ShopTheLook() {
     } else {
         setCurrentLookIndex((prev) => (prev - 1 + currentCategoryLooks.length) % currentCategoryLooks.length);
     }
-    setCurrentImageIndex(0);
   };
-
-  // Điều hướng Ảnh con (Slide nhỏ trong Look)
-  const goToNextImage = () => setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
-  const goToPrevImage = () => setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
 
   // Xử lý sự kiện vuốt (Drag End)
   const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
@@ -147,8 +134,6 @@ export function ShopTheLook() {
               key={cat.dropdownKey}
               onClick={() => { 
                 setActiveCategorySlug(cat.dropdownKey!); 
-                setCurrentLookIndex(0);
-                setCurrentImageIndex(0); 
               }}
               className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap ${
                 cat.dropdownKey === activeCategorySlug 
@@ -178,7 +163,7 @@ export function ShopTheLook() {
                 onDragEnd={handleDragEnd}
               >
                 <img
-                  src={currentImageUrl}
+                  src={activeLook.image_url}
                   alt={activeLook.title}
                   className="w-full h-full object-cover pointer-events-none" // Quan trọng: Chặn sự kiện chuột vào ảnh để cho phép kéo container
                   draggable="false"
@@ -188,7 +173,7 @@ export function ShopTheLook() {
                 <div className="absolute inset-0 bg-black/5">
                   <TooltipProvider>
                     {activeLook.shop_look_items
-                      .filter((item: any) => item.target_image_url === currentImageUrl)
+                      .filter((item: any) => item.target_image_url === activeLook.image_url)
                       .map((item: any) => (
                       <Tooltip key={item.id} delayDuration={0}>
                         <TooltipTrigger asChild>
@@ -234,24 +219,6 @@ export function ShopTheLook() {
                   </>
                 )}
                 
-                {/* Nút chuyển ảnh trong Lookbook (Chỉ hiện trên Desktop) */}
-                {allImages.length > 1 && (
-                  <>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); goToPrevImage(); }}
-                      className="hidden md:flex absolute left-16 top-1/2 -translate-y-1/2 p-2 bg-white/90 rounded-full text-charcoal hover:bg-primary hover:text-white transition-colors z-20 shadow-md"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); goToNextImage(); }}
-                      className="hidden md:flex absolute right-16 top-1/2 -translate-y-1/2 p-2 bg-white/90 rounded-full text-charcoal hover:bg-primary hover:text-white transition-colors z-20 shadow-md"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </>
-                )}
-
                 <div className="absolute top-6 left-6 bg-charcoal/80 backdrop-blur-md text-cream px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border border-white/10 pointer-events-none">
                   {activeLook.title}
                 </div>
