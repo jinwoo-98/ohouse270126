@@ -70,21 +70,39 @@ export default function CategoryPage() {
   // Fetch Parent Category for Breadcrumb & Shop The Look
   useEffect(() => {
     async function fetchExtraData() {
+      if (!currentCategory && categorySlug !== 'noi-that') return; // Wait for category data or handle special pages
+
       let parentSlug = null;
+      let parentId = null;
+      
       if (currentCategory?.parent_id) {
-        const { data } = await supabase.from('categories').select('name, slug').eq('id', currentCategory.parent_id).single();
+        const { data } = await supabase.from('categories').select('id, name, slug').eq('id', currentCategory.parent_id).single();
         setParentCategory(data);
         parentSlug = data?.slug;
+        parentId = data?.id;
       } else {
         setParentCategory(null);
+        parentId = currentCategory?.id;
       }
       
       if (categorySlug) {
-        let slugsToQuery = [categorySlug];
+        let slugsToQuery: string[] = [];
         
-        // Nếu là danh mục con, lấy thêm Lookbook của danh mục cha
-        if (parentSlug) {
-          slugsToQuery.push(parentSlug);
+        if (currentCategory?.parent_id) {
+            // Case 1: Child Page (e.g., /sofa). Query child slug AND parent slug.
+            slugsToQuery.push(categorySlug);
+            if (parentSlug) {
+                slugsToQuery.push(parentSlug);
+            }
+        } else {
+            // Case 2: Parent Page (e.g., /phong-khach). Query parent slug AND all child slugs.
+            slugsToQuery.push(categorySlug);
+            if (parentId) {
+                const { data: children } = await supabase.from('categories').select('slug').eq('parent_id', parentId);
+                if (children) {
+                    slugsToQuery = [...slugsToQuery, ...children.map(c => c.slug)];
+                }
+            }
         }
         
         const { data } = await supabase
@@ -100,25 +118,7 @@ export default function CategoryPage() {
           .eq('is_active', true)
           .limit(2);
           
-        // Lọc trùng lặp và chỉ lấy Lookbook gán trực tiếp cho danh mục hiện tại
-        // Nếu Lookbook được gán cho cha (parentSlug) và hiện tại là con (categorySlug), ta vẫn hiển thị.
-        // Nếu Lookbook được gán cho con, nó chỉ hiển thị trên trang con đó.
-        
-        const filteredLooks = data?.filter(look => {
-            // Nếu Lookbook được gán cho danh mục con, chỉ hiện trên trang con đó
-            if (look.category_id === categorySlug) return true;
-            
-            // Nếu Lookbook được gán cho danh mục cha, và trang hiện tại là trang cha, thì hiện
-            if (look.category_id === parentSlug && categorySlug === parentSlug) return true;
-            
-            // Nếu Lookbook được gán cho danh mục cha, và trang hiện tại là trang con, thì không hiện (theo yêu cầu mới)
-            if (look.category_id === parentSlug && currentCategory?.parent_id) return false;
-            
-            // Trường hợp còn lại: Lookbook gán cho cha, và trang hiện tại là trang cha (đã xử lý ở trên)
-            return false;
-        }) || [];
-        
-        setShopLooks(filteredLooks);
+        setShopLooks(data || []);
       }
     }
     fetchExtraData();
