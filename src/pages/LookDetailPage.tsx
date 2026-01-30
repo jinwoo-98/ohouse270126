@@ -23,6 +23,7 @@ export default function LookDetailPage() {
   const [look, setLook] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+  const [currentImage, setCurrentImage] = useState<string>(""); // State để theo dõi ảnh đang hiển thị
 
   useEffect(() => {
     if (id) {
@@ -45,6 +46,7 @@ export default function LookDetailPage() {
         return;
       }
       setLook(data);
+      setCurrentImage(data.image_url); // Đặt ảnh chính làm ảnh mặc định
     } finally {
       setLoading(false);
     }
@@ -79,35 +81,42 @@ export default function LookDetailPage() {
                 galleryImages={look.gallery_urls} 
                 productName={look.title} 
               >
-                {(currentImageUrl) => (
-                  <TooltipProvider>
-                    {look.shop_look_items
-                      .filter((item: any) => item.target_image_url === currentImageUrl)
-                      .map((item: any) => {
-                        const product = item.products;
-                        if (!product) return null;
+                {(currentImageUrl) => {
+                  // Cập nhật currentImage khi ProductGallery thay đổi ảnh
+                  useEffect(() => {
+                    setCurrentImage(currentImageUrl);
+                  }, [currentImageUrl]);
 
-                        return (
-                          <Tooltip key={item.id} delayDuration={0}>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setQuickViewProduct(product); }}
-                                className="absolute w-8 h-8 -ml-4 -mt-4 bg-white/90 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in z-10 group/dot pointer-events-auto"
-                                style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                              >
-                                <Plus className="w-4 h-4" />
-                                <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-75 group-hover/dot:hidden" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 shadow-elevated rounded-xl">
-                              <p className="font-bold text-xs uppercase tracking-wider">{product.name}</p>
-                              <p className="text-primary font-bold text-xs mt-1">{formatPrice(product.price)}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        );
-                    })}
-                  </TooltipProvider>
-                )}
+                  return (
+                    <TooltipProvider>
+                      {look.shop_look_items
+                        .filter((item: any) => item.target_image_url === currentImageUrl)
+                        .map((item: any) => {
+                          const product = item.products;
+                          if (!product) return null;
+
+                          return (
+                            <Tooltip key={item.id} delayDuration={0}>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setQuickViewProduct(product); }}
+                                  className="absolute w-8 h-8 -ml-4 -mt-4 bg-white/90 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in z-10 group/dot pointer-events-auto"
+                                  style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
+                                >
+                                  <Plus className="w-4 h-4" />
+                                  <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-75 group-hover/dot:hidden" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 shadow-elevated rounded-xl">
+                                <p className="font-bold text-xs uppercase tracking-wider">{product.name}</p>
+                                <p className="text-primary font-bold text-xs mt-1">{formatPrice(product.price)}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          );
+                      })}
+                    </TooltipProvider>
+                  );
+                }}
               </ProductGallery>
             </div>
 
