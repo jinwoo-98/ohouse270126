@@ -110,7 +110,7 @@ export function LookbookList() {
       ) : categoriesWithLooks.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-border text-muted-foreground italic">Chưa có Lookbook nào được tạo hoặc gán vào danh mục chính.</div>
       ) : (
-        <Accordion type="multiple" defaultValue={categoriesWithLooks.map(c => c.slug)} className="w-full space-y-4">
+        <Accordion type="multiple" defaultValue={[]} className="w-full space-y-4">
           {categoriesWithLooks.map(cat => {
             const childLooks = looksByCategorySlug[cat.slug] || [];
 
