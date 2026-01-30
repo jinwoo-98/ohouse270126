@@ -277,7 +277,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                             {attributes.map((attr, i) => (
                               <div key={i} className="flex justify-between py-2.5 border-b border-dashed border-border/40 text-xs">
                                 <span className="text-muted-foreground font-medium">{attr.name}</span>
-                                <span className="text-charcoal font-bold text-right break-words max-w-[60%]">
+                                <span className="text-charcoal font-bold text-right break-words max-w-[70%]">
                                   {Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}
                                 </span>
                               </div>
@@ -320,6 +320,11 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                               <StarRating rating={rev.rating} size="w-3 h-3" />
                             </div>
                             <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed italic">"{rev.comment}"</p>
+                            {rev.image_url && (
+                              <div className="mt-4 aspect-square w-24 rounded-xl overflow-hidden border border-border/60">
+                                 <img src={rev.image_url} className="w-full h-full object-cover" alt="Customer review" />
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
