@@ -137,8 +137,14 @@ export default function ProductForm() {
     }
 
     setLoading(true);
+    
+    // 1. Generate slug if missing
+    const slugifiedName = formData.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    const finalSlug = formData.slug || slugifiedName;
+
     const payload = {
       ...formData,
+      slug: finalSlug, // Use the generated slug
       price: parseFloat(formData.price) || 0,
       original_price: formData.original_price ? parseFloat(formData.original_price) : null,
       display_order: parseInt(formData.display_order),

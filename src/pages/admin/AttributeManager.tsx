@@ -88,7 +88,7 @@ export default function AttributeManager() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1 max-w-md">
-                      {item.options?.slice(0, 5).map((opt: string, i: number) => (
+                      {(Array.isArray(item.options) ? item.options : []).slice(0, 5).map((opt: string, i: number) => (
                         <span key={i} className="text-[10px] bg-gray-100 px-2 py-1 rounded border">{opt}</span>
                       ))}
                       {item.options?.length > 5 && <span className="text-[10px] text-muted-foreground">+{item.options.length - 5} nữa...</span>}

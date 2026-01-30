@@ -30,7 +30,7 @@ export default function AttributeForm() {
     const { data } = await supabase.from('attributes').select('*').eq('id', id).single();
     if (data) {
       setFormData({ name: data.name, type: data.type, note: data.note || "" });
-      setOptions(data.options || []);
+      setOptions(Array.isArray(data.options) ? data.options : []);
     }
   };
 
