@@ -86,40 +86,47 @@ export default function LookDetailPage() {
               ))}
             </div>
 
-            {/* Right: Product List */}
+            {/* Right: Product List (Updated to 2-column minimal card) */}
             <div className="flex flex-col">
               <h1 className="text-2xl md:text-3xl font-bold mb-4">{look.title}</h1>
               <p className="text-muted-foreground mb-8">Khám phá các sản phẩm được sử dụng trong không gian này và thêm vào giỏ hàng của bạn.</p>
               
-              <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2">
-                {look.shop_look_items.map((item: any) => {
-                  const product = item.products;
-                  if (!product) return null;
-                  const isFavorite = isInWishlist(product.id);
-                  
-                  return (
-                    <div key={item.id} className="group flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all shadow-subtle">
-                      <Link to={`/san-pham/${product.slug}`} className="w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-secondary/20">
-                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      </Link>
-                      <div className="flex-1 min-w-0">
-                        <Link to={`/san-pham/${product.slug}`}><h3 className="text-sm font-bold truncate group-hover:text-primary">{product.name}</h3></Link>
-                        <p className="text-primary font-bold mt-1">{formatPrice(product.price)}</p>
-                        <div className="flex items-center gap-2 mt-3">
-                          <Button size="sm" className="h-8 text-[10px] font-bold" onClick={() => setQuickViewProduct(product)}>
-                            <Eye className="w-3 h-3 mr-1.5" /> Xem nhanh
-                          </Button>
-                          <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold" onClick={() => addToCart({ ...product, quantity: 1, image: product.image_url })}>
-                            <ShoppingBag className="w-3 h-3 mr-1.5" /> Thêm vào giỏ
-                          </Button>
-                          <Button size="icon" variant="ghost" className={`h-8 w-8 ${isFavorite ? 'text-primary' : ''}`} onClick={() => toggleWishlist(product)}>
-                            <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
-                          </Button>
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2">
+                <div className="grid grid-cols-2 gap-4">
+                  {look.shop_look_items.map((item: any, index: number) => {
+                    const product = item.products;
+                    if (!product) return null;
+                    
+                    return (
+                      <motion.div 
+                        key={item.id} 
+                        className="group card-luxury cursor-pointer"
+                        onClick={() => setQuickViewProduct(product)}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                      >
+                        <div className="relative aspect-square img-zoom">
+                          <img 
+                            src={product.image_url} 
+                            alt={product.name} 
+                            className="w-full h-full object-cover" 
+                          />
+                          <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <span className="bg-card text-foreground px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+                              <Eye className="w-4 h-4" />
+                              Xem Nhanh
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                        <div className="p-3 text-center">
+                          <h3 className="text-xs font-bold line-clamp-1 mb-1 group-hover:text-primary transition-colors">{product.name}</h3>
+                          <p className="text-primary font-bold text-sm">{formatPrice(product.price)}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
