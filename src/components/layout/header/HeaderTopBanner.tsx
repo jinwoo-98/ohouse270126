@@ -4,6 +4,7 @@ import { Truck, Loader2, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShippingInfoDialog } from "./ShippingInfoDialog";
+import { cn } from "@/lib/utils";
 
 export function HeaderTopBanner() {
   const [settings, setSettings] = useState<any>(null);
@@ -66,10 +67,12 @@ export function HeaderTopBanner() {
   if (messages.length === 0) return null;
 
   const hasCountdown = currentMsg?.end_time && (countdown.days > 0 || countdown.hours > 0 || countdown.minutes > 0 || countdown.seconds > 0);
+  const textColor = settings?.top_banner_text_color || '#FFFFFF';
+  const countdownColor = settings?.top_banner_countdown_color || '#000000';
 
   return (
     <>
-      <div className="bg-primary text-primary-foreground overflow-hidden w-full">
+      <div className="bg-primary text-primary-foreground overflow-hidden w-full" style={{ color: textColor }}>
         <div className="container-luxury flex items-center justify-between h-10 text-[10px] md:text-xs">
           <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
             <div className="relative h-6 flex-1 max-w-full md:max-w-[450px] overflow-hidden">
@@ -82,30 +85,37 @@ export function HeaderTopBanner() {
                   transition={{ duration: 0.5 }}
                   className="absolute inset-0 flex items-center gap-2 md:gap-3"
                 >
-                  <Link to={currentMsg.link || "/sale"} className="font-bold underline underline-offset-2 hover:no-underline truncate block max-w-[180px] xs:max-w-none">
-                    {currentMsg.text}
-                  </Link>
+                  {/* Nội dung thông báo (Hỗ trợ HTML) */}
+                  <div 
+                    className="font-bold underline-offset-2 hover:no-underline block max-w-[180px] xs:max-w-none text-ellipsis overflow-hidden text-left"
+                    style={{ color: textColor }}
+                  >
+                    <span 
+                      className="top-banner-text"
+                      dangerouslySetInnerHTML={{ __html: currentMsg.text }} 
+                    />
+                  </div>
 
                   {hasCountdown && (
                     <div className="flex items-center gap-1 shrink-0 animate-fade-in scale-[0.85] origin-left">
                       <div className="flex items-center gap-0.5">
                         {countdown.days > 0 && (
                           <>
-                            <div className="bg-black text-white px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10">
+                            <div className="px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10" style={{ backgroundColor: countdownColor, color: textColor }}>
                               {countdown.days}d
                             </div>
-                            <span className="text-[8px] font-bold mx-0.5">:</span>
+                            <span className="text-[8px] font-bold mx-0.5" style={{ color: textColor }}>:</span>
                           </>
                         )}
-                        <div className="bg-black text-white px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10">
+                        <div className="px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10" style={{ backgroundColor: countdownColor, color: textColor }}>
                           {String(countdown.hours).padStart(2, '0')}
                         </div>
-                        <span className="text-[8px] font-bold mx-0.5">:</span>
-                        <div className="bg-black text-white px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10">
+                        <span className="text-[8px] font-bold mx-0.5" style={{ color: textColor }}>:</span>
+                        <div className="px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10" style={{ backgroundColor: countdownColor, color: textColor }}>
                           {String(countdown.minutes).padStart(2, '0')}
                         </div>
-                        <span className="text-[8px] font-bold mx-0.5">:</span>
-                        <div className="bg-black text-white px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10 animate-pulse">
+                        <span className="text-[8px] font-bold mx-0.5" style={{ color: textColor }}>:</span>
+                        <div className="px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10 animate-pulse" style={{ backgroundColor: countdownColor, color: textColor }}>
                           {String(countdown.seconds).padStart(2, '0')}
                         </div>
                       </div>
@@ -135,6 +145,27 @@ export function HeaderTopBanner() {
         title={settings?.shipping_modal_title}
         content={settings?.shipping_modal_content}
       />
+      
+      {/* Custom CSS for mobile text wrapping */}
+      <style>{`
+        @media (max-width: 640px) {
+          .top-banner-text {
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Cho phép 2 dòng */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+            max-height: 2.5rem; /* Khoảng 2 dòng text 10px */
+          }
+        }
+        /* Đảm bảo link trong banner vẫn có màu chữ */
+        .top-banner-text a {
+          color: ${textColor} !important;
+          text-decoration: underline;
+          font-weight: bold;
+        }
+      `}</style>
     </>
   );
 }

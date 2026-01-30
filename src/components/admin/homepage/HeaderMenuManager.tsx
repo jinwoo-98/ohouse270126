@@ -15,7 +15,8 @@ import {
   Calendar,
   AlertCircle,
   Link as LinkIcon,
-  Truck
+  Truck,
+  Palette
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -34,7 +35,9 @@ export function HeaderMenuManager() {
     top_banner_shipping: "",
     logo_url: "",
     shipping_modal_title: "",
-    shipping_modal_content: ""
+    shipping_modal_content: "",
+    top_banner_text_color: "#FFFFFF",
+    top_banner_countdown_color: "#000000",
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -57,7 +60,9 @@ export function HeaderMenuManager() {
               ...m,
               end_time: m.end_time ? new Date(m.end_time).toISOString().slice(0, 16) : ""
             }))
-          : [{ text: "", link: "", end_time: "" }]
+          : [{ text: "", link: "", end_time: "" }],
+        top_banner_text_color: setData.top_banner_text_color || "#FFFFFF",
+        top_banner_countdown_color: setData.top_banner_countdown_color || "#000000",
       });
     }
     setLoading(false);
@@ -115,6 +120,8 @@ export function HeaderMenuManager() {
         logo_url: settings.logo_url,
         shipping_modal_title: settings.shipping_modal_title,
         shipping_modal_content: settings.shipping_modal_content,
+        top_banner_text_color: settings.top_banner_text_color,
+        top_banner_countdown_color: settings.top_banner_countdown_color,
         updated_at: new Date()
       };
 
@@ -177,7 +184,7 @@ export function HeaderMenuManager() {
                   <div className="space-y-5">
                     <div className="space-y-2">
                       <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1.5">
-                        Nội dung thông báo
+                        Nội dung thông báo (Hỗ trợ HTML/Link)
                       </Label>
                       <Input 
                         value={msg.text} 
@@ -231,7 +238,35 @@ export function HeaderMenuManager() {
           </div>
         </div>
 
-        {/* NEW SECTION: SHIPPING MODAL CONFIG */}
+        {/* NEW SECTION: COLOR CONFIG */}
+        <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
+          <div className="flex items-center gap-3 border-b pb-4">
+            <div className="p-2 bg-primary/10 rounded-lg text-primary"><Palette className="w-5 h-5" /></div>
+            <div>
+              <h3 className="font-bold text-sm uppercase tracking-widest">Màu sắc Top Banner</h3>
+              <p className="text-[10px] text-muted-foreground font-medium">Tùy chỉnh màu chữ và bộ đếm giờ</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Màu chữ thông báo</Label>
+              <div className="flex gap-2">
+                <Input type="color" value={settings.top_banner_text_color} onChange={e => setSettings({...settings, top_banner_text_color: e.target.value})} className="w-12 h-12 p-1 rounded-lg shrink-0" />
+                <Input value={settings.top_banner_text_color} onChange={e => setSettings({...settings, top_banner_text_color: e.target.value})} className="font-mono text-[10px] uppercase h-12 rounded-xl" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Màu bộ đếm giờ</Label>
+              <div className="flex gap-2">
+                <Input type="color" value={settings.top_banner_countdown_color} onChange={e => setSettings({...settings, top_banner_countdown_color: e.target.value})} className="w-12 h-12 p-1 rounded-lg shrink-0" />
+                <Input value={settings.top_banner_countdown_color} onChange={e => setSettings({...settings, top_banner_countdown_color: e.target.value})} className="font-mono text-[10px] uppercase h-12 rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SHIPPING MODAL CONFIG */}
         <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
           <div className="flex items-center gap-3 border-b pb-4">
             <div className="p-2 bg-primary/10 rounded-lg text-primary"><Truck className="w-5 h-5" /></div>
