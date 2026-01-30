@@ -1,48 +1,35 @@
-import { ProductCard } from "@/components/ProductCard";
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselNext, 
-  CarouselPrevious 
-} from "@/components/ui/carousel";
+import { Link } from "react-router-dom";
+import { formatPrice } from "@/lib/utils";
 
-interface ProductHorizontalListProps {
+interface RelatedProductsProps {
   products: any[];
-  title: string;
+  title?: string;
 }
 
-export function ProductHorizontalList({ products, title }: ProductHorizontalListProps) {
+// Need to define locally since lib/utils might not have it yet based on previous steps context
+function localFormatPrice(price: number) {
+  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
+}
+
+export function ProductHorizontalList({ products, title = "Sản phẩm tương tự" }: RelatedProductsProps) {
   if (!products || products.length === 0) return null;
 
   return (
-    <section className="mb-20 overflow-hidden">
-      <div className="flex flex-col items-center text-center mb-8">
-        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary mb-3">Khám phá thêm</span>
-        <h2 className="text-xl md:text-2xl font-bold uppercase tracking-widest text-charcoal">{title}</h2>
-        <div className="w-10 h-0.5 bg-primary mt-4 rounded-full" />
-      </div>
-      
-      <div className="px-4 md:px-12">
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-4">
-            {products.map((p) => (
-              <CarouselItem key={p.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
-                <div className="h-full">
-                  <ProductCard product={p} className="h-full border border-border/40" />
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden md:flex -left-4 md:-left-12 h-10 w-10 border-border" />
-          <CarouselNext className="hidden md:flex -right-4 md:-right-12 h-10 w-10 border-border" />
-        </Carousel>
+    <section className="mb-16">
+      <h2 className="text-xl font-bold uppercase tracking-widest mb-8">{title}</h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {products.map(p => (
+          <Link key={p.id} to={`/san-pham/${p.slug || p.id}`} className="group block card-luxury">
+            <div className="aspect-square overflow-hidden bg-secondary/10 relative">
+              <img src={p.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              {p.is_sale && <span className="absolute top-2 left-2 bg-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider text-charcoal">Sale</span>}
+            </div>
+            <div className="p-4">
+              <h3 className="font-bold text-sm text-charcoal line-clamp-1 mb-1 group-hover:text-primary transition-colors">{p.name}</h3>
+              <p className="text-primary font-bold text-sm">{localFormatPrice(p.price)}</p>
+            </div>
+          </Link>
+        ))}
       </div>
     </section>
   );
