@@ -113,7 +113,14 @@ export default function ProductForm() {
       if (aRes.data) {
         const attrMap: Record<string, string[]> = {};
         aRes.data.forEach(item => {
-          attrMap[item.attribute_id] = Array.isArray(item.value) ? item.value : [item.value];
+          // Đảm bảo giá trị luôn là mảng string
+          let values: string[] = [];
+          if (Array.isArray(item.value)) {
+            values = item.value.filter((v: any) => typeof v === 'string');
+          } else if (typeof item.value === 'string') {
+            values = [item.value];
+          }
+          attrMap[item.attribute_id] = values;
         });
         setProductAttrs(attrMap);
       }
@@ -126,6 +133,7 @@ export default function ProductForm() {
       if (isMulti) {
         return { ...prev, [attrId]: current.includes(value) ? current.filter(v => v !== value) : [...current, value] };
       }
+      // Single select: replace the array with a new array containing only the selected value
       return { ...prev, [attrId]: [value] };
     });
   };
@@ -179,11 +187,15 @@ export default function ProductForm() {
 
       // Sync Attributes
       await supabase.from('product_attributes').delete().eq('product_id', productId);
-      const attrPayloads = Object.entries(productAttrs).map(([attrId, values]) => ({
-        product_id: productId,
-        attribute_id: attrId,
-        value: values
-      }));
+      const attrPayloads = Object.entries(productAttrs)
+        .filter(([, values]) => values.length > 0) // Chỉ lưu các thuộc tính có giá trị
+        .map(([attrId, values]) => ({
+          product_id: productId,
+          attribute_id: attrId,
+          // Đối với single select, lưu giá trị đầu tiên (string) thay vì mảng 1 phần tử
+          value: allAttributes.find(a => a.id === attrId)?.type === 'single' ? values[0] : values
+        }));
+        
       if (attrPayloads.length > 0) await supabase.from('product_attributes').insert(attrPayloads);
 
       toast.success("Đã lưu sản phẩm thành công!");

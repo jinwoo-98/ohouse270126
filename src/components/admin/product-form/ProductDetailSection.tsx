@@ -43,6 +43,17 @@ export function ProductDetailSection({
         />
       </div>
       
+      <div className="space-y-2">
+        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Đường dẫn (Slug)</Label>
+        <Input 
+          value={formData.slug} 
+          onChange={(e) => setFormData({...formData, slug: e.target.value})}
+          placeholder="sofa-da-y-cao-cap"
+          className="h-11 rounded-xl font-mono text-xs"
+        />
+        <p className="text-[10px] text-muted-foreground italic">* Để trống để hệ thống tự động tạo từ tên sản phẩm.</p>
+      </div>
+      
       {/* Attributes Section */}
       {availableAttributes.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-secondary/10 rounded-2xl">
@@ -52,6 +63,7 @@ export function ProductDetailSection({
               
               {attr.type === 'single' ? (
                 <Select 
+                  // Single select: giá trị đã chọn là phần tử đầu tiên trong mảng (hoặc chuỗi rỗng)
                   value={productAttrs[attr.id]?.[0] || ""} 
                   onValueChange={(val) => handleAttributeChange(attr.id, val, false)}
                 >
@@ -70,6 +82,7 @@ export function ProductDetailSection({
                     <div key={opt} className="flex items-center space-x-2">
                       <Checkbox 
                         id={`${attr.id}-${opt}`}
+                        // Multi select: kiểm tra xem giá trị có trong mảng đã chọn không
                         checked={productAttrs[attr.id]?.includes(opt)}
                         onCheckedChange={() => handleAttributeChange(attr.id, opt, true)}
                       />
