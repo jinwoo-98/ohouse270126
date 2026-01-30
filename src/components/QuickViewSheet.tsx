@@ -277,7 +277,9 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                             {attributes.map((attr, i) => (
                               <div key={i} className="flex justify-between py-2.5 border-b border-dashed border-border/40 text-xs">
                                 <span className="text-muted-foreground font-medium">{attr.name}</span>
-                                <span className="text-charcoal font-bold">{Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}</span>
+                                <span className="text-charcoal font-bold text-right break-words max-w-[60%]">
+                                  {Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}
+                                </span>
                               </div>
                             ))}
                           </div>
