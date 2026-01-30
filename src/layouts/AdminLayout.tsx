@@ -35,7 +35,7 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { motion } from "framer-motion";
 
-// Định nghĩa cấu trúc nhóm menu
+// Định nghĩa cấu trúc nhóm menu đã được tối ưu
 const menuGroups = [
   {
     label: "Tổng Quan",
@@ -56,11 +56,7 @@ const menuGroups = [
   {
     label: "Quản Trị Nội Dung (CMS)",
     items: [
-      { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
       { id: 'content', title: "Quản trị Nội dung", icon: LayoutTemplate, href: "/admin/content" },
-      { id: 'news', title: "Tin tức & Blog", icon: Newspaper, href: "/admin/news" },
-      { id: 'projects', title: "Dự án", icon: Briefcase, href: "/admin/projects" },
-      { id: 'pages', title: "Trang tĩnh", icon: Files, href: "/admin/pages" },
     ]
   },
   {
@@ -68,8 +64,6 @@ const menuGroups = [
     items: [
       { id: 'marketing', title: "Marketing & SEO", icon: TrendingUp, href: "/admin/marketing" },
       { id: 'subscribers', title: "Khách hàng", icon: Users, href: "/admin/subscribers" },
-      { id: 'design-requests', title: "Yêu cầu thiết kế", icon: LayoutGrid, href: "/admin/design-requests" },
-      { id: 'messages', title: "Tin nhắn hỗ trợ", icon: MessageSquareText, href: "/admin/messages" },
     ]
   },
   {
@@ -190,6 +184,11 @@ export default function AdminLayout() {
       if (role === 'admin') return true;
       if (item.id === 'dashboard') return true;
       if (item.id === 'team') return false; 
+      // Logic cho trang content hub
+      if (item.id === 'content') {
+        // Editor chỉ thấy mục này nếu có ít nhất 1 quyền con
+        return Object.keys(permissions).some(p => ['homepage', 'news', 'projects', 'pages', 'design-requests', 'messages'].includes(p) && permissions[p]);
+      }
       return permissions[item.id] === true;
     });
     return { ...group, items: allowedItems };
