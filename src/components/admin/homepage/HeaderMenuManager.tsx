@@ -37,7 +37,7 @@ export function HeaderMenuManager() {
     shipping_modal_title: "",
     shipping_modal_content: "",
     top_banner_text_color: "#FFFFFF",
-    top_banner_countdown_color: "#000000",
+    top_banner_countdown_color: "#000000", // Giữ nguyên tên trường DB để tránh lỗi schema
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -245,7 +245,7 @@ export function HeaderMenuManager() {
               </div>
             </div>
             <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Màu bộ đếm giờ</Label>
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Màu nền bộ đếm giờ</Label>
               <div className="flex gap-2">
                 <Input type="color" value={settings.top_banner_countdown_color} onChange={e => setSettings({...settings, top_banner_countdown_color: e.target.value})} className="w-12 h-12 p-1 rounded-lg shrink-0" />
                 <Input value={settings.top_banner_countdown_color} onChange={e => setSettings({...settings, top_banner_countdown_color: e.target.value})} className="font-mono text-[10px] uppercase h-12 rounded-xl" />

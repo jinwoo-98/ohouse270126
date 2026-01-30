@@ -68,7 +68,7 @@ export function HeaderTopBanner() {
 
   const hasCountdown = currentMsg?.end_time && (countdown.days > 0 || countdown.hours > 0 || countdown.minutes > 0 || countdown.seconds > 0);
   const textColor = settings?.top_banner_text_color || '#FFFFFF';
-  const countdownColor = settings?.top_banner_countdown_color || '#000000';
+  const countdownBgColor = settings?.top_banner_countdown_color || '#000000'; // Đổi tên biến
 
   return (
     <>
@@ -101,21 +101,21 @@ export function HeaderTopBanner() {
                       <div className="flex items-center gap-0.5">
                         {countdown.days > 0 && (
                           <>
-                            <div className="px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10" style={{ backgroundColor: countdownColor, color: textColor }}>
+                            <div className="px-1 py-0.5 rounded-sm font-mono font-bold min-w-[18px] text-center border border-white/10" style={{ backgroundColor: countdownBgColor, color: textColor }}>
                               {countdown.days}d
                             </div>
                             <span className="text-[8px] font-bold mx-0.5" style={{ color: textColor }}>:</span>
                           </>
                         )}
-                        <div className="px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10" style={{ backgroundColor: countdownColor, color: textColor }}>
+                        <div className="px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10" style={{ backgroundColor: countdownBgColor, color: textColor }}>
                           {String(countdown.hours).padStart(2, '0')}
                         </div>
                         <span className="text-[8px] font-bold mx-0.5" style={{ color: textColor }}>:</span>
-                        <div className="px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10" style={{ backgroundColor: countdownColor, color: textColor }}>
+                        <div className="px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10" style={{ backgroundColor: countdownBgColor, color: textColor }}>
                           {String(countdown.minutes).padStart(2, '0')}
                         </div>
                         <span className="text-[8px] font-bold mx-0.5" style={{ color: textColor }}>:</span>
-                        <div className="px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10 animate-pulse" style={{ backgroundColor: countdownColor, color: textColor }}>
+                        <div className="px-0.5 py-0.5 rounded-sm font-mono font-bold min-w-[16px] text-center border border-white/10 animate-pulse" style={{ backgroundColor: countdownBgColor, color: textColor }}>
                           {String(countdown.seconds).padStart(2, '0')}
                         </div>
                       </div>
