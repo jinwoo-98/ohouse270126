@@ -71,6 +71,7 @@ import MarketingPage from "./pages/admin/homepage/MarketingPage.tsx";
 
 // CMS Sub-pages
 import LookbookManagerPage from "./pages/admin/content/LookbookManagerPage.tsx";
+import LookbookForm from "./pages/admin/content/LookbookForm.tsx";
 
 
 const queryClient = new QueryClient();
@@ -143,6 +144,8 @@ const App = () => (
                   {/* CMS Hub */}
                   <Route path="content" element={<ContentManager />} />
                   <Route path="content/looks" element={<LookbookManagerPage />} />
+                  <Route path="content/looks/new" element={<LookbookForm />} />
+                  <Route path="content/looks/edit/:id" element={<LookbookForm />} />
                   
                   {/* Sales & Product Management */}
                   <Route path="orders" element={<OrderManager />} />

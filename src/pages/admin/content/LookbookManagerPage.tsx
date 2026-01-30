@@ -2,7 +2,7 @@ import { Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { LookbookManager } from "@/components/admin/content/LookbookManager.tsx";
+import { LookbookList } from "@/components/admin/content/LookbookList";
 
 export default function LookbookManagerPage() {
   return (
@@ -16,7 +16,7 @@ export default function LookbookManagerPage() {
           <p className="text-muted-foreground text-sm">Tạo mới, chỉnh sửa nội dung và gắn thẻ sản phẩm (hotspot) cho các bộ sưu tập không gian.</p>
         </div>
       </div>
-      <LookbookManager />
+      <LookbookList />
     </div>
   );
 }

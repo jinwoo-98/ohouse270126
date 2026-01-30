@@ -119,7 +119,7 @@ export function FeaturedLookManager() {
                       </button>
                       
                       <Button variant="ghost" size="icon" className="h-9 w-9 text-blue-600 hover:bg-blue-50" asChild>
-                        <Link to="/admin/content/looks"><Edit className="w-4 h-4" /></Link>
+                        <Link to={`/admin/content/looks/edit/${look.id}`}><Edit className="w-4 h-4" /></Link>
                       </Button>
                     </div>
                   </div>
