@@ -85,17 +85,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
         }));
       }
       
-      // Add static attributes (Material, Style) if available on the product object
-      const staticAttributes = [];
-      if (product.material) {
-        staticAttributes.push({ name: "Chất liệu", value: product.material });
-      }
-      if (product.style) {
-        staticAttributes.push({ name: "Phong cách", value: product.style });
-      }
-      
-      // Combine static and dynamic attributes
-      setAttributes([...staticAttributes, ...dynamicAttributes]);
+      setAttributes(dynamicAttributes);
       
     } catch (e) {
       console.error(e);

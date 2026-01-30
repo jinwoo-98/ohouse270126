@@ -115,18 +115,11 @@ export default function ProductDetailPage() {
   };
 
   const fetchAttributes = async (productData: any) => {
-    const staticAttributes = [];
-    
-    // Include Material and Style if they exist on the product object
-    if (productData.material) {
-      staticAttributes.push({ name: "Chất liệu", value: productData.material });
-    }
-    if (productData.style) {
-      staticAttributes.push({ name: "Phong cách", value: productData.style });
-    }
-
     try {
-      const { data } = await supabase.from('product_attributes').select('value, attributes(name)').eq('product_id', productData.id);
+      const { data } = await supabase
+        .from('product_attributes')
+        .select('value, attributes(name)')
+        .eq('product_id', productData.id);
       
       let dynamicAttributes: any[] = [];
       if (data) {
@@ -136,10 +129,10 @@ export default function ProductDetailPage() {
         }));
       }
       
-      // Combine static and dynamic attributes
-      setAttributes([...staticAttributes, ...dynamicAttributes]);
+      setAttributes(dynamicAttributes);
     } catch (err) {
-      setAttributes(staticAttributes);
+      console.error("Error fetching attributes:", err);
+      setAttributes([]); // Set to empty array on error
     }
   };
 
