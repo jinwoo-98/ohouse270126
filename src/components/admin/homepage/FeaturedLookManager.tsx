@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Eye, EyeOff, Edit, GripVertical, Link as LinkIcon } from "lucide-react";
+import { Loader2, Eye, EyeOff, Edit, GripVertical, Link as LinkIcon, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
@@ -118,8 +118,8 @@ export function FeaturedLookManager() {
                         <span className="hidden sm:inline">{look.is_active ? "Hiện" : "Ẩn"}</span>
                       </button>
                       
-                      <Button variant="ghost" size="icon" className="h-9 w-9 text-blue-600 hover:bg-blue-50" asChild>
-                        <Link to={`/admin/content/looks/edit/${look.id}`}><Edit className="w-4 h-4" /></Link>
+                      <Button variant="ghost" size="icon" className="h-9 w-9 text-blue-600 hover:bg-blue-50" asChild title="Chỉnh sửa chi tiết Lookbook">
+                        <Link to={`/admin/content/looks/edit/${look.id}`}><Maximize2 className="w-4 h-4" /></Link>
                       </Button>
                     </div>
                   </div>
