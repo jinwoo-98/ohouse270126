@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGr
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
 
 export function ShopTheLookManager() {
   const [looks, setLooks] = useState<any[]>([]);
@@ -44,8 +45,8 @@ export function ShopTheLookManager() {
       title: formData.get('title'), 
       category_id: editingLook?.category_id, 
       image_url: editingLook?.image_url, 
-      gallery_urls: editingLook?.gallery_urls || [], // Lưu ảnh phụ
-      is_active: true 
+      gallery_urls: editingLook?.gallery_urls || [],
+      is_active: editingLook?.is_active ?? true
     };
 
     if (!lookPayload.image_url) { toast.error("Thiếu ảnh chính"); return; }
@@ -81,6 +82,16 @@ export function ShopTheLookManager() {
     fetchData();
   };
 
+  const toggleActive = async (id: string, currentStatus: boolean) => {
+    const { error } = await supabase.from('shop_looks').update({ is_active: !currentStatus }).eq('id', id);
+    if (error) {
+      toast.error("Lỗi cập nhật trạng thái.");
+    } else {
+      toast.success("Đã đổi trạng thái hiển thị.");
+      fetchData();
+    }
+  };
+
   const handleRemoveGalleryImage = (index: number) => {
     setEditingLook((prev: any) => ({
       ...prev,
@@ -93,7 +104,7 @@ export function ShopTheLookManager() {
 
   return (
     <div className="space-y-6 mt-6">
-      <div className="flex justify-end"><Button onClick={() => { setEditingLook({ gallery_urls: [] }); setLookItems([]); setIsOpen(true); }} className="btn-hero h-10 shadow-gold"><Plus className="w-4 h-4 mr-2" /> Thêm Look</Button></div>
+      <div className="flex justify-end"><Button onClick={() => { setEditingLook({ gallery_urls: [], is_active: true }); setLookItems([]); setIsOpen(true); }} className="btn-hero h-10 shadow-gold"><Plus className="w-4 h-4 mr-2" /> Thêm Look</Button></div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {looks.map(look => {
           const categoryName = categories.find(c => c.slug === look.category_id)?.name || look.category_id;
@@ -104,6 +115,9 @@ export function ShopTheLookManager() {
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
                   <Button size="sm" variant="secondary" onClick={() => { setEditingLook(look); setLookItems(look.shop_look_items || []); setIsOpen(true); }}><Edit className="w-4 h-4" /></Button>
                   <Button size="sm" variant="destructive" onClick={() => handleDelete(look.id)}><Trash2 className="w-4 h-4" /></Button>
+                </div>
+                <div className="absolute top-2 right-2">
+                  <Switch checked={look.is_active} onCheckedChange={() => toggleActive(look.id, look.is_active)} />
                 </div>
               </div>
               <div className="p-4 text-center">
@@ -146,6 +160,10 @@ export function ShopTheLookManager() {
                       </SelectContent>
                     </Select>
                     <p className="text-[10px] text-muted-foreground italic">Lookbook sẽ hiển thị ở cuối trang danh mục này.</p>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
+                    <Label className="text-xs font-bold uppercase">Hiển thị Lookbook</Label>
+                    <Switch checked={editingLook?.is_active} onCheckedChange={(val) => setEditingLook({...editingLook, is_active: val})} />
                   </div>
                 </div>
 
