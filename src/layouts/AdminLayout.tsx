@@ -56,7 +56,8 @@ const menuGroups = [
   {
     label: "Quản Trị Nội Dung (CMS)",
     items: [
-      { id: 'content', title: "Quản trị Nội dung", icon: LayoutTemplate, href: "/admin/content" },
+      { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
+      { id: 'content', title: "Các trang khác", icon: LayoutTemplate, href: "/admin/content" },
     ]
   },
   {
@@ -186,9 +187,10 @@ export default function AdminLayout() {
       if (item.id === 'team') return false; 
       // Logic cho trang content hub
       if (item.id === 'content') {
-        // Editor chỉ thấy mục này nếu có ít nhất 1 quyền con
-        return Object.keys(permissions).some(p => ['homepage', 'news', 'projects', 'pages', 'design-requests', 'messages'].includes(p) && permissions[p]);
+        // Editor chỉ thấy mục này nếu có ít nhất 1 quyền con (không tính homepage)
+        return Object.keys(permissions).some(p => ['news', 'projects', 'pages', 'design-requests', 'messages'].includes(p) && permissions[p]);
       }
+      // Các mục khác, bao gồm 'homepage', sẽ được kiểm tra quyền trực tiếp
       return permissions[item.id] === true;
     });
     return { ...group, items: allowedItems };
