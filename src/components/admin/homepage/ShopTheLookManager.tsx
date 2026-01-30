@@ -13,6 +13,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
 export function ShopTheLookManager() {
   const [looks, setLooks] = useState<any[]>([]);
@@ -22,6 +23,7 @@ export function ShopTheLookManager() {
   const [editingLook, setEditingLook] = useState<any>(null);
   const [lookItems, setLookItems] = useState<any[]>([]);
   const [productSearch, setProductSearch] = useState("");
+  const [activeEditingImage, setActiveEditingImage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -67,7 +69,8 @@ export function ShopTheLookManager() {
           look_id: lookId, 
           product_id: i.product_id, 
           x_position: i.x_position, 
-          y_position: i.y_position 
+          y_position: i.y_position,
+          target_image_url: i.target_image_url // Thêm trường mới
         })));
       }
       toast.success("Đã lưu Lookbook");
@@ -102,6 +105,8 @@ export function ShopTheLookManager() {
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()));
   const parentCategories = categories.filter(c => !c.parent_id);
 
+  const allEditingImages = [editingLook?.image_url, ...(editingLook?.gallery_urls || [])].filter(Boolean);
+
   return (
     <div className="space-y-6 mt-6">
       <div className="flex justify-end"><Button onClick={() => { setEditingLook({ gallery_urls: [], is_active: true }); setLookItems([]); setIsOpen(true); }} className="btn-hero h-10 shadow-gold"><Plus className="w-4 h-4 mr-2" /> Thêm Look</Button></div>
@@ -113,7 +118,7 @@ export function ShopTheLookManager() {
               <div className="relative aspect-square">
                 <img src={look.image_url} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
-                  <Button size="sm" variant="secondary" onClick={() => { setEditingLook(look); setLookItems(look.shop_look_items || []); setIsOpen(true); }}><Edit className="w-4 h-4" /></Button>
+                  <Button size="sm" variant="secondary" onClick={() => { setEditingLook(look); setLookItems(look.shop_look_items || []); setActiveEditingImage(look.image_url); setIsOpen(true); }}><Edit className="w-4 h-4" /></Button>
                   <Button size="sm" variant="destructive" onClick={() => handleDelete(look.id)}><Trash2 className="w-4 h-4" /></Button>
                 </div>
                 <div className="absolute top-2 right-2">
@@ -185,8 +190,8 @@ export function ShopTheLookManager() {
                         key={p.id} 
                         className="flex items-center justify-between p-2 hover:bg-white rounded-lg cursor-pointer transition-colors text-xs"
                         onClick={() => {
-                          if (!lookItems.find(i => i.product_id === p.id)) {
-                            setLookItems([...lookItems, { product_id: p.id, product_name: p.name, x_position: 50, y_position: 50 }]);
+                          if (!lookItems.find(i => i.product_id === p.id && i.target_image_url === activeEditingImage)) {
+                            setLookItems([...lookItems, { product_id: p.id, product_name: p.name, x_position: 50, y_position: 50, target_image_url: activeEditingImage }]);
                           }
                         }}
                       >
@@ -197,22 +202,22 @@ export function ShopTheLookManager() {
                   </div>
 
                   <div className="space-y-4 pt-2 border-t border-dashed border-border/50">
-                    <Label className="text-xs font-bold uppercase text-muted-foreground">Vị trí Hotspot ({lookItems.length})</Label>
+                    <Label className="text-xs font-bold uppercase text-muted-foreground">Vị trí Hotspot ({lookItems.filter(i => i.target_image_url === activeEditingImage).length})</Label>
                     <div className="max-h-48 overflow-y-auto space-y-3 custom-scrollbar">
-                      {lookItems.map((item, idx) => (
+                      {lookItems.filter(i => i.target_image_url === activeEditingImage).map((item, idx) => (
                         <div key={item.product_id} className="bg-white p-3 rounded-lg text-[10px] space-y-2 shadow-sm border border-border/50">
                           <div className="flex justify-between font-bold text-charcoal">
                             <span className="truncate max-w-[150px]">{item.product_name}</span>
-                            <button type="button" onClick={()=>setLookItems(lookItems.filter((_,i)=>i!==idx))} className="text-destructive hover:bg-destructive/10 p-1 rounded"><X className="w-3 h-3" /></button>
+                            <button type="button" onClick={()=>setLookItems(lookItems.filter(i => i.product_id !== item.product_id || i.target_image_url !== item.target_image_url))} className="text-destructive hover:bg-destructive/10 p-1 rounded"><X className="w-3 h-3" /></button>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-1">
                               <span className="text-[9px] text-muted-foreground">Vị trí X (%)</span>
-                              <Slider value={[item.x_position]} max={100} onValueChange={([v])=>{const n=[...lookItems]; n[idx].x_position=v; setLookItems(n);}} />
+                              <Slider value={[item.x_position]} max={100} onValueChange={([v])=>{const n=[...lookItems]; const originalIndex = n.findIndex(i => i.product_id === item.product_id && i.target_image_url === item.target_image_url); if(originalIndex > -1) n[originalIndex].x_position=v; setLookItems(n);}} />
                             </div>
                             <div className="space-y-1">
                               <span className="text-[9px] text-muted-foreground">Vị trí Y (%)</span>
-                              <Slider value={[item.y_position]} max={100} onValueChange={([v])=>{const n=[...lookItems]; n[idx].y_position=v; setLookItems(n);}} />
+                              <Slider value={[item.y_position]} max={100} onValueChange={([v])=>{const n=[...lookItems]; const originalIndex = n.findIndex(i => i.product_id === item.product_id && i.target_image_url === item.target_image_url); if(originalIndex > -1) n[originalIndex].y_position=v; setLookItems(n);}} />
                             </div>
                           </div>
                         </div>
@@ -222,17 +227,23 @@ export function ShopTheLookManager() {
                 </div>
               </div>
 
-              {/* Cột 2: Ảnh chính & Hotspot Preview */}
+              {/* Cột 2: Ảnh & Hotspot Preview */}
               <div className="lg:col-span-2 space-y-6">
                 <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Ảnh chính (Hotspot)</h3>
-                  <ImageUpload value={editingLook?.image_url} onChange={(url) => setEditingLook({...editingLook, image_url: url})} />
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Ảnh & Hotspot</h3>
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {allEditingImages.map(img => (
+                      <button key={img} type="button" onClick={() => setActiveEditingImage(img)} className={cn("w-20 h-20 rounded-xl overflow-hidden border-2 shrink-0", activeEditingImage === img ? "border-primary" : "border-transparent")}>
+                        <img src={img} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
                   
                   <div className="bg-gray-100 rounded-2xl relative aspect-square overflow-hidden border border-border/50 shadow-inner">
-                    {editingLook?.image_url ? (
+                    {activeEditingImage ? (
                       <>
-                        <img src={editingLook.image_url} className="w-full h-full object-cover" />
-                        {lookItems.map((item, i) => (
+                        <img src={activeEditingImage} className="w-full h-full object-cover" />
+                        {lookItems.filter(i => i.target_image_url === activeEditingImage).map((item) => (
                           <div 
                             key={item.product_id} 
                             className="absolute w-6 h-6 bg-white border-2 border-primary rounded-full flex items-center justify-center text-primary font-bold text-xs transform -translate-x-1/2 -translate-y-1/2 shadow-lg cursor-grab active:cursor-grabbing hover:scale-110 transition-transform" 
@@ -244,37 +255,31 @@ export function ShopTheLookManager() {
                         ))}
                       </>
                     ) : (
-                      <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Chưa có ảnh</div>
+                      <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Chọn ảnh để gắn hotspot</div>
                     )}
                   </div>
                 </div>
 
-                {/* Ảnh phụ */}
+                {/* Ảnh chính & phụ */}
                 <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4" /> Bộ sưu tập ảnh phụ
-                  </h3>
-                  <div className="grid grid-cols-3 gap-3 mb-4">
-                    {(editingLook?.gallery_urls || []).map((url: string, idx: number) => (
-                      <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
-                        <img src={url} alt="Gallery" className="w-full h-full object-cover" />
-                        <button 
-                          type="button"
-                          onClick={() => handleRemoveGalleryImage(idx)}
-                          className="absolute top-1 right-1 p-1 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Quản lý ảnh</h3>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh chính</Label>
+                    <ImageUpload value={editingLook?.image_url} onChange={(url) => setEditingLook({...editingLook, image_url: url})} />
                   </div>
-                  <div className="p-4 border-2 border-dashed border-border rounded-2xl bg-secondary/5">
-                    <ImageUpload 
-                      multiple
-                      value={editingLook?.gallery_urls || []}
-                      onChange={(urls) => setEditingLook((prev: any) => ({ ...prev, gallery_urls: urls as string[] }))} 
-                    />
-                    <p className="text-[10px] text-muted-foreground mt-3 text-center italic">Chọn nhiều ảnh cùng lúc để tải lên bộ sưu tập.</p>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh phụ</Label>
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      {(editingLook?.gallery_urls || []).map((url: string, idx: number) => (
+                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
+                          <img src={url} alt="Gallery" className="w-full h-full object-cover" />
+                          <button type="button" onClick={() => handleRemoveGalleryImage(idx)} className="absolute top-1 right-1 p-1 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="p-4 border-2 border-dashed border-border rounded-2xl bg-secondary/5">
+                      <ImageUpload multiple value={editingLook?.gallery_urls || []} onChange={(urls) => setEditingLook((prev: any) => ({ ...prev, gallery_urls: urls as string[] }))} />
+                    </div>
                   </div>
                 </div>
               </div>

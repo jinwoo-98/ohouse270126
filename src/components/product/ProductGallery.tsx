@@ -10,7 +10,7 @@ interface ProductGalleryProps {
   mainImage: string;
   galleryImages?: string[] | null;
   productName: string;
-  children?: React.ReactNode; // Add children prop
+  children?: (currentImageUrl: string) => React.ReactNode;
 }
 
 export function ProductGallery({ mainImage, galleryImages, productName, children }: ProductGalleryProps) {
@@ -50,7 +50,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, children
         </AnimatePresence>
 
         {/* Render children as overlay */}
-        {children}
+        {typeof children === 'function' && children(allImages[currentIndex])}
 
         {/* Overlay Tools */}
         <div className="absolute top-4 right-4 z-20">
