@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProductVariantsSectionProps {
   attributes: any[];
@@ -90,18 +91,35 @@ export function ProductVariantsSection({
     setTierConfig(newConfig);
   };
 
-  const addValueToTier = (index: number, val?: string) => {
-    const valueToAdd = val || tempValue[index];
-    if (!valueToAdd || !valueToAdd.trim()) return;
-    
+  const addValueToTier = async (index: number, val?: string) => {
+    const valueToAdd = (val || tempValue[index] || "").trim();
+    if (!valueToAdd) return;
+
     const newConfig = [...tierConfig];
     const currentValues = newConfig[index].values;
-    
-    if (!currentValues.includes(valueToAdd.trim())) {
-      newConfig[index].values = [...currentValues, valueToAdd.trim()];
+
+    if (!currentValues.includes(valueToAdd)) {
+      // Cập nhật thuộc tính trong DB trước
+      const attributeToUpdate = attributes.find(a => a.name === newConfig[index].name);
+      if (attributeToUpdate && !attributeToUpdate.options.includes(valueToAdd)) {
+        const newOptions = [...attributeToUpdate.options, valueToAdd];
+        const { error } = await supabase
+          .from('attributes')
+          .update({ options: newOptions })
+          .eq('id', attributeToUpdate.id);
+        
+        if (error) {
+          toast.error("Lỗi đồng bộ thuộc tính: " + error.message);
+          return; // Dừng lại nếu không cập nhật được DB
+        }
+        toast.success(`Đã thêm "${valueToAdd}" vào hệ thống thuộc tính.`);
+      }
+      
+      // Sau đó mới cập nhật state local
+      newConfig[index].values = [...currentValues, valueToAdd];
       setTierConfig(newConfig);
     }
-    
+
     if (!val) {
       setTempValue({ ...tempValue, [index]: "" });
     }
