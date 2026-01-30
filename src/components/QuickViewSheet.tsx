@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, Heart, Minus, Plus, Loader2, Ruler, Info, FileText, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingBag, Heart, Minus, Plus, Loader2, Ruler, Info, FileText, ChevronRight, ChevronDown, ChevronUp, Star, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
@@ -270,6 +270,43 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
+              )}
+            </div>
+
+            {/* PHẦN ĐÁNH GIÁ MỚI THÊM VÀO */}
+            <div className="space-y-6 pt-6 border-t border-border/40">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <MessageSquare className="w-4 h-4 text-primary" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal">Đánh giá thực tế</span>
+                </div>
+                {reviews.length > 0 && (
+                  <Link 
+                    to={`/san-pham/${product.slug}#reviews`} 
+                    onClick={onClose}
+                    className="text-[9px] font-bold uppercase text-primary hover:underline"
+                  >
+                    Xem tất cả ({reviews.length})
+                  </Link>
+                )}
+              </div>
+
+              {reviews.length === 0 ? (
+                <div className="py-8 bg-secondary/20 rounded-2xl border border-dashed border-border/40 text-center">
+                  <p className="text-[10px] text-muted-foreground italic">Chưa có đánh giá cho sản phẩm này.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map((rev) => (
+                    <div key={rev.id} className="bg-white p-4 rounded-xl border border-border/40 shadow-sm">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[11px] font-bold text-charcoal">{rev.user_name}</span>
+                        <StarRating rating={rev.rating} size="w-3 h-3" />
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed italic">"{rev.comment}"</p>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
