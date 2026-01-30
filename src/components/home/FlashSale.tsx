@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Clock, ShoppingBag, Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useCart } from "@/contexts/CartContext";
+import { Clock, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { ProductCard } from "@/components/ProductCard";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 
 function formatPrice(price: number) {
@@ -14,9 +12,6 @@ function formatPrice(price: number) {
 }
 
 export function FlashSale() {
-  const isMobile = useIsMobile();
-  const navigate = useNavigate();
-  const { addToCart } = useCart();
   const [products, setProducts] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,14 +57,6 @@ export function FlashSale() {
     return () => clearInterval(timer);
   }, [config]);
 
-  const handleCardClick = (product: any) => {
-    if (isMobile) {
-      setSelectedProduct(product);
-    } else {
-      navigate(`/san-pham/${product.slug || product.id}`);
-    }
-  };
-
   if (!isLoading && products.length === 0) return null;
 
   return (
@@ -114,51 +101,8 @@ export function FlashSale() {
                 initial={{ opacity: 0, y: 20 }} 
                 whileInView={{ opacity: 1, y: 0 }} 
                 transition={{ delay: index * 0.1 }} 
-                className="group card-luxury h-full flex flex-col cursor-pointer"
-                onClick={() => handleCardClick(product)}
               >
-                <div className="relative aspect-square img-zoom">
-                  <div className="block h-full">
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                  </div>
-                  {product.original_price && (
-                    <div className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-1 rounded shadow-sm">
-                      -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
-                    </div>
-                  )}
-                  
-                  {!isMobile && (
-                    <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
-                      <button 
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          setSelectedProduct(product); 
-                        }}
-                        className="w-full h-10 bg-secondary text-foreground rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-secondary/80 transition-colors"
-                      >
-                        <Eye className="w-3.5 h-3.5" /> Xem Nhanh
-                      </button>
-                      <button 
-                        className="w-full h-10 bg-primary text-primary-foreground rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
-                        onClick={(e) => { 
-                          e.stopPropagation();
-                          addToCart({ id: product.id, name: product.name, price: product.price, image: product.image_url, quantity: 1 });
-                        }}
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5" /> Thêm Vào Giỏ
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div className="p-4 flex-1 flex flex-col">
-                  <h3 className="font-bold text-sm line-clamp-1 mb-2 group-hover:text-primary transition-colors">{product.name}</h3>
-                  <div className="mt-auto flex items-center gap-3">
-                    <span className="text-base font-bold text-primary">{formatPrice(product.price)}</span>
-                    {product.original_price && (
-                      <span className="text-xs text-muted-foreground line-through">{formatPrice(product.original_price)}</span>
-                    )}
-                  </div>
-                </div>
+                <ProductCard product={product} />
               </motion.div>
             ))
           )}
