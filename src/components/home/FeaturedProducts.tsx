@@ -8,14 +8,12 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import { StarRating } from "@/components/product/detail/ProductReviews";
-
-function formatPrice(price: number) {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
-}
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function FeaturedProducts() {
+  const isMobile = useIsMobile();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -95,10 +93,19 @@ export function FeaturedProducts() {
               const sold = product.fake_sold || 0;
 
               return (
-                <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.05 }} viewport={{ once: true }}>
-                  <div className="group card-luxury relative h-full flex flex-col">
+                <motion.div 
+                  key={product.id} 
+                  initial={{ opacity: 0, y: 20 }} 
+                  whileInView={{ opacity: 1, y: 0 }} 
+                  transition={{ duration: 0.5, delay: index * 0.05 }} 
+                  viewport={{ once: true }}
+                >
+                  <div 
+                    className="group card-luxury relative h-full flex flex-col cursor-pointer"
+                    onClick={() => isMobile && setSelectedProduct(product)}
+                  >
                     <div className="relative aspect-square img-zoom">
-                      <Link to={`/san-pham/${product.slug || product.id}`} className="block h-full">
+                      <div className="block h-full">
                         <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                         <div className="absolute top-2 left-2 flex flex-col gap-1">
                           {product.is_new && (
@@ -108,30 +115,38 @@ export function FeaturedProducts() {
                             <span className="bg-white text-charcoal px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-sm">Sale</span>
                           )}
                         </div>
-                      </Link>
+                      </div>
 
-                      <div className="absolute top-2 right-2 md:top-3 md:right-3 flex flex-col gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity z-10 pointer-events-auto">
-                        <button onClick={() => toggleWishlist({ ...product, slug: product.slug })} className={`p-2 md:p-2.5 rounded-full shadow-medium transition-colors ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'}`}>
+                      <div className="absolute top-2 right-2 md:top-3 md:right-3 flex flex-col gap-2 z-10">
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            toggleWishlist({ ...product, slug: product.slug }); 
+                          }} 
+                          className={`p-2 md:p-2.5 rounded-full shadow-medium transition-colors ${isFavorite ? 'bg-primary text-primary-foreground' : 'bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground'}`}
+                        >
                           <Heart className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isFavorite ? 'fill-current' : ''}`} />
                         </button>
                       </div>
 
-                      <button onClick={() => setSelectedProduct(product)} className="hidden lg:flex absolute bottom-3 left-3 bg-card/90 backdrop-blur-sm text-foreground p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-primary hover:text-primary-foreground shadow-sm items-center gap-1.5">
-                        <Eye className="w-3.5 h-3.5" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">Xem nhanh</span>
-                      </button>
+                      {!isMobile && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }} 
+                          className="absolute bottom-3 left-3 bg-card/90 backdrop-blur-sm text-foreground p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-primary hover:text-primary-foreground shadow-sm items-center gap-1.5 flex"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-bold uppercase tracking-wider">Xem nhanh</span>
+                        </button>
+                      )}
                     </div>
                     
                     <div className="p-3 md:p-4 flex-1 flex flex-col">
-                      {/* Ẩn phần đánh giá trên mobile bằng hidden md:flex */}
                       <div className="hidden md:flex items-center gap-1 mb-1">
                         <StarRating rating={rating} size="w-3 h-3" />
                         <span className="text-[9px] text-muted-foreground ml-1">({reviews})</span>
                       </div>
                       
-                      <Link to={`/san-pham/${product.slug || product.id}`}>
-                        <h3 className="font-medium text-xs md:text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors">{product.name}</h3>
-                      </Link>
+                      <h3 className="font-medium text-xs md:text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors">{product.name}</h3>
                       
                       <div className="mt-auto">
                         <div className="flex items-center gap-2">
@@ -140,7 +155,6 @@ export function FeaturedProducts() {
                             <p className="text-[10px] text-muted-foreground line-through">{formatPrice(product.original_price)}</p>
                           )}
                         </div>
-                        {/* Ẩn phần lượt bán trên mobile bằng hidden md:block */}
                         {sold > 0 && (
                           <p className="hidden md:block text-[10px] text-muted-foreground mt-1">Đã bán {sold}</p>
                         )}
