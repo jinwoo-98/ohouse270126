@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronRight, ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { secondaryLinks } from "@/constants/header-data";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCategories } from "@/hooks/useCategories";
 
@@ -21,6 +20,7 @@ export function HeaderMobileMenu({ isOpen, onClose, onOpenAuth }: HeaderMobileMe
 
   const mainCategories = data?.mainCategories || [];
   const productCategories = data?.productCategories || {};
+  const secondaryLinks = data?.secondaryLinks || [];
 
   if (!isOpen) return null;
 

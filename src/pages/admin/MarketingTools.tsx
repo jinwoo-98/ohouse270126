@@ -28,7 +28,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { mainCategories, productCategories } from "@/constants/header-data";
+import { useCategories } from "@/hooks/useCategories";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
@@ -108,8 +108,11 @@ export default function MarketingTools() {
   const [updateZeroOnly, setUpdateZeroOnly] = useState(false);
   const [deleteOldReviews, setDeleteOldReviews] = useState(true);
 
-  // State for ConfirmDialog
   const [confirmType, setConfirmType] = useState<'stats' | 'reviews' | null>(null);
+
+  const { data: categoriesData, isLoading: isLoadingCategories } = useCategories();
+  const mainCategories = categoriesData?.mainCategories || [];
+  const productCategories = categoriesData?.productCategories || {};
 
   const [stats, setStats] = useState({
     min_sold: "50", max_sold: "200",
@@ -289,15 +292,17 @@ export default function MarketingTools() {
                       <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Chọn danh mục" /></SelectTrigger>
                       <SelectContent className="rounded-xl">
                         <SelectItem value="all">Toàn bộ website</SelectItem>
-                        {mainCategories.filter(c => c.dropdownKey).map(parent => (
-                          <SelectGroup key={parent.dropdownKey}>
-                            <SelectLabel className="text-primary font-bold">{parent.name}</SelectLabel>
-                            <SelectItem value={parent.dropdownKey!}>— Tất cả {parent.name}</SelectItem>
-                            {productCategories[parent.dropdownKey!]?.map(child => (
-                              <SelectItem key={child.href} value={child.href.replace('/', '')}>&nbsp;&nbsp;&nbsp;{child.name}</SelectItem>
-                            ))}
-                          </SelectGroup>
-                        ))}
+                        {isLoadingCategories ? <div className="p-2 text-xs text-muted-foreground">Đang tải...</div> : 
+                          mainCategories.filter(c => c.dropdownKey).map(parent => (
+                            <SelectGroup key={parent.dropdownKey}>
+                              <SelectLabel className="text-primary font-bold">{parent.name}</SelectLabel>
+                              <SelectItem value={parent.dropdownKey!}>— Tất cả {parent.name}</SelectItem>
+                              {productCategories[parent.dropdownKey!]?.map(child => (
+                                <SelectItem key={child.href} value={child.href.replace('/', '')}>&nbsp;&nbsp;&nbsp;{child.name}</SelectItem>
+                              ))}
+                            </SelectGroup>
+                          ))
+                        }
                       </SelectContent>
                     </Select>
                   ) : (

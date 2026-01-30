@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { supabase } from "@/integrations/supabase/client";
-import { mainCategories } from "@/constants/header-data";
+import { useCategories } from "@/hooks/useCategories";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 
 function formatPrice(price: number) {
@@ -29,6 +29,8 @@ export function ShopTheLook() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0); // Index của ảnh trong Lookbook
   
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+
+  const { data: categoriesData } = useCategories();
 
   useEffect(() => {
     fetchData();
@@ -57,11 +59,6 @@ export function ShopTheLook() {
 
       if (error) throw error;
       setAllLooks(data || []);
-
-      if (data && data.length > 0) {
-        const firstWithData = mainCategories.find(c => data.some(l => l.category_id === c.dropdownKey));
-        if (firstWithData) setActiveCategorySlug(firstWithData.dropdownKey!);
-      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -69,14 +66,22 @@ export function ShopTheLook() {
     }
   };
 
-  const categoriesWithLooks = useMemo(() => mainCategories.filter(c => 
-    c.dropdownKey && allLooks.some(l => l.category_id === c.dropdownKey)
-  ), [allLooks]);
+  const categoriesWithLooks = useMemo(() => {
+    if (!categoriesData) return [];
+    return categoriesData.mainCategories.filter(c => 
+      c.dropdownKey && allLooks.some(l => l.category_id === c.dropdownKey)
+    );
+  }, [allLooks, categoriesData]);
+
+  useEffect(() => {
+    if (allLooks.length > 0 && categoriesWithLooks.length > 0 && !activeCategorySlug) {
+      setActiveCategorySlug(categoriesWithLooks[0].dropdownKey!);
+    }
+  }, [allLooks, categoriesWithLooks, activeCategorySlug]);
   
   const currentCategoryLooks = useMemo(() => allLooks.filter(l => l.category_id === activeCategorySlug), [allLooks, activeCategorySlug]);
   const activeLook = currentCategoryLooks[currentLookIndex];
   
-  // Danh sách tất cả ảnh (chính + phụ) của Lookbook đang hoạt động
   const allImages = useMemo(() => {
     if (!activeLook) return [];
     return [activeLook.image_url, ...(activeLook.gallery_urls || [])].filter(Boolean);
@@ -84,7 +89,6 @@ export function ShopTheLook() {
   
   const currentImageUrl = allImages[currentImageIndex];
 
-  // Reset image index khi Lookbook thay đổi
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [activeLook]);
