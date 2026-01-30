@@ -24,8 +24,10 @@ export function LookbookList() {
 
   const fetchData = async () => {
     setLoading(true);
+    // Lấy lookbook và items
     const { data: l } = await supabase.from('shop_looks').select('*, shop_look_items(*)').order('display_order');
-    const { data: c } = await supabase.from('categories').select('slug, name, parent_id, menu_location');
+    // Lấy danh mục
+    const { data: c } = await supabase.from('categories').select('id, slug, name, parent_id, menu_location');
     
     setLooks(l || []);
     setCategories(c || []);
@@ -51,28 +53,40 @@ export function LookbookList() {
     l.category_id?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Lấy danh mục cha chính (menu_location = 'main')
   const mainCategories = useMemo(() => 
     categories.filter(c => !c.parent_id && c.menu_location === 'main'),
     [categories]
   );
 
-  const looksByCategory = useMemo(() => {
+  // Nhóm Lookbook theo slug danh mục cha (category_id trong lookbook là slug)
+  const looksByCategorySlug = useMemo(() => {
     const grouped: Record<string, any[]> = {};
     filteredLooks.forEach(look => {
+      // Tìm danh mục cha của lookbook (dựa trên category_id là slug)
       const cat = categories.find(c => c.slug === look.category_id);
-      const parentId = cat?.parent_id || cat?.id;
-      if (!grouped[parentId]) {
-        grouped[parentId] = [];
+      let parentSlug = cat?.slug;
+      
+      if (cat?.parent_id) {
+        const parent = categories.find(c => c.id === cat.parent_id);
+        parentSlug = parent?.slug;
       }
-      grouped[parentId].push(look);
+      
+      if (parentSlug) {
+        if (!grouped[parentSlug]) {
+          grouped[parentSlug] = [];
+        }
+        grouped[parentSlug].push(look);
+      }
     });
     return grouped;
   }, [filteredLooks, categories]);
 
-  const uncategorizedLooks = filteredLooks.filter(l => {
-    const cat = categories.find(c => c.slug === l.category_id);
-    return !cat || !mainCategories.some(mc => mc.id === (cat.parent_id || cat.id));
-  });
+  // Lấy danh sách các slug danh mục cha có Lookbook
+  const categoriesWithLooks = useMemo(() => {
+    return mainCategories.filter(cat => looksByCategorySlug[cat.slug]?.length > 0);
+  }, [mainCategories, looksByCategorySlug]);
+
 
   return (
     <div className="space-y-6 mt-6">
@@ -93,14 +107,15 @@ export function LookbookList() {
       
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+      ) : categoriesWithLooks.length === 0 ? (
+        <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-border text-muted-foreground italic">Chưa có Lookbook nào được tạo hoặc gán vào danh mục chính.</div>
       ) : (
-        <Accordion type="multiple" defaultValue={mainCategories.map(c => c.id)} className="w-full space-y-4">
-          {mainCategories.map(cat => {
-            const childLooks = looksByCategory[cat.id] || [];
-            if (childLooks.length === 0) return null;
+        <Accordion type="multiple" defaultValue={categoriesWithLooks.map(c => c.slug)} className="w-full space-y-4">
+          {categoriesWithLooks.map(cat => {
+            const childLooks = looksByCategorySlug[cat.slug] || [];
 
             return (
-              <AccordionItem key={cat.id} value={cat.id} className="border-none">
+              <AccordionItem key={cat.slug} value={cat.slug} className="border-none">
                 <AccordionTrigger className="bg-white p-4 rounded-2xl border shadow-sm hover:no-underline">
                   <div className="flex items-center gap-3">
                     <Folder className="w-5 h-5 text-primary" />

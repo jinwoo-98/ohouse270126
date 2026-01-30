@@ -102,7 +102,7 @@ export function FeaturedLookManager() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-sm text-charcoal truncate">{look.title}</h3>
                       <p className="text-[10px] text-muted-foreground truncate mt-1 flex items-center gap-1">
-                        <LinkIcon className="w-3 h-3" /> /y-tuong/{look.id.slice(0, 8)}
+                        <LinkIcon className="w-3 h-3" /> {look.category_id}
                       </p>
                     </div>
 
