@@ -103,7 +103,7 @@ export function ShopTheLookManager() {
   };
 
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()));
-  const parentCategories = categories.filter(c => !c.parent_id);
+  const parentCategories = categories.filter(c => !c.parent_id && c.menu_location === 'main');
 
   const allEditingImages = [editingLook?.image_url, ...(editingLook?.gallery_urls || [])].filter(Boolean);
 
@@ -157,6 +157,7 @@ export function ShopTheLookManager() {
                         {parentCategories.map(parent => (
                           <SelectGroup key={parent.id}>
                             <SelectLabel className="font-bold text-primary">{parent.name}</SelectLabel>
+                            <SelectItem value={parent.slug}>-- Trang chính {parent.name}</SelectItem>
                             {categories.filter(c => c.parent_id === parent.id).map(child => (
                               <SelectItem key={child.id} value={child.slug}>&nbsp;&nbsp;&nbsp;{child.name}</SelectItem>
                             ))}

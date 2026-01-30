@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -134,7 +136,9 @@ export function ShopTheLook() {
                 
                 <div className="absolute inset-0 bg-black/5">
                   <TooltipProvider>
-                    {activeLook.shop_look_items.map((item: any) => (
+                    {activeLook.shop_look_items
+                      .filter((item: any) => item.target_image_url === activeLook.image_url)
+                      .map((item: any) => (
                       <Tooltip key={item.id} delayDuration={0}>
                         <TooltipTrigger asChild>
                           <button

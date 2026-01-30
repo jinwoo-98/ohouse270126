@@ -67,17 +67,29 @@ export default function CategoryPage() {
 
   // Fetch Parent Category for Breadcrumb & Shop The Look
   useEffect(() => {
-    if (currentCategory?.parent_id) {
-      supabase.from('categories').select('name, slug').eq('id', currentCategory.parent_id).single()
-        .then(({ data }) => setParentCategory(data));
-    } else {
-      setParentCategory(null);
+    async function fetchExtraData() {
+      if (currentCategory?.parent_id) {
+        const { data } = await supabase.from('categories').select('name, slug').eq('id', currentCategory.parent_id).single();
+        setParentCategory(data);
+      } else {
+        setParentCategory(null);
+      }
+      
+      if (categorySlug) {
+        let slugsToQuery = [categorySlug];
+        // Nếu là trang cha, lấy cả look của con
+        if (currentCategory && !currentCategory.parent_id) {
+          const { data: children } = await supabase.from('categories').select('slug').eq('parent_id', currentCategory.id);
+          if (children) {
+            slugsToQuery = [...slugsToQuery, ...children.map(c => c.slug)];
+          }
+        }
+        
+        const { data } = await supabase.from('shop_looks').select('*').in('category_id', slugsToQuery).eq('is_active', true).limit(2);
+        setShopLooks(data || []);
+      }
     }
-    
-    if (categorySlug) {
-      supabase.from('shop_looks').select('*').eq('category_id', categorySlug).eq('is_active', true).limit(2)
-        .then(({ data }) => setShopLooks(data || []));
-    }
+    fetchExtraData();
   }, [currentCategory, categorySlug]);
   
   const pageTitle = currentCategory?.name || "Nội Thất";
@@ -87,8 +99,8 @@ export default function CategoryPage() {
     const items: any[] = products.map(p => ({ type: 'product', data: p, id: p.id }));
     if (shopLooks.length > 0) {
       const lookItem = { type: 'look', data: shopLooks[0], id: `look-${shopLooks[0].id}` };
-      // Chèn vào vị trí thứ 5 (index 4) nếu có đủ sản phẩm
-      const insertionIndex = Math.min(4, items.length);
+      // Chèn vào vị trí thứ 3 (sau 2 sản phẩm đầu)
+      const insertionIndex = Math.min(2, items.length);
       items.splice(insertionIndex, 0, lookItem);
     }
     return items;
