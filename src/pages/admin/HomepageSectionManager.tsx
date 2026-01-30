@@ -7,8 +7,10 @@ import {
   TrendingUp, 
   LayoutGrid, 
   Palette,
-  ChevronRight
+  ChevronRight,
+  ArrowLeft
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const homepageSections = [
   {
@@ -58,12 +60,15 @@ const homepageSections = [
 export default function HomepageSectionManager() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-3">
-          <MonitorPlay className="w-7 h-7 text-primary" />
-          Quản Lý Trang Chủ
-        </h1>
-        <p className="text-muted-foreground text-sm">Chọn một mục để bắt đầu chỉnh sửa nội dung tương ứng trên trang chủ.</p>
+      <div className="flex items-center gap-4">
+        <Button variant="outline" size="icon" asChild><Link to="/admin/content"><ArrowLeft className="w-4 h-4" /></Link></Button>
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-3">
+            <MonitorPlay className="w-7 h-7 text-primary" />
+            Quản Lý Trang Chủ
+          </h1>
+          <p className="text-muted-foreground text-sm">Chọn một mục để bắt đầu chỉnh sửa nội dung tương ứng trên trang chủ.</p>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">

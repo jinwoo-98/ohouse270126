@@ -57,7 +57,7 @@ const menuGroups = [
     label: "Quản Trị Nội Dung (CMS)",
     items: [
       { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
-      { id: 'content', title: "Các trang khác", icon: LayoutTemplate, href: "/admin/content" },
+      { id: 'content', title: "Trang Nội Dung Khác", icon: LayoutTemplate, href: "/admin/content" },
     ]
   },
   {
