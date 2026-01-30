@@ -6,36 +6,14 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-
-const footerLinks = {
-  products: [
-    { name: "Phòng Khách", href: "/phong-khach" },
-    { name: "Phòng Ngủ", href: "/phong-ngu" },
-    { name: "Phòng Ăn", href: "/phong-an" },
-    { name: "Phòng Làm Việc", href: "/phong-lam-viec" },
-    { name: "Đèn Trang Trí", href: "/den-trang-tri" },
-    { name: "Decor & Phụ Kiện", href: "/decor" },
-  ],
-  support: [
-    { name: "Hướng Dẫn Mua Hàng", href: "/huong-dan" },
-    { name: "Chính Sách Đổi Trả", href: "/doi-tra" },
-    { name: "Chính Sách Bảo Hành", href: "/bao-hanh" },
-    { name: "Hình Thức Thanh Toán", href: "/thanh-toan" },
-    { name: "Chính Sách Vận Chuyển", href: "/van-chuyen" },
-    { name: "Câu Hỏi Thường Gặp", href: "/faq" },
-  ],
-  about: [
-    { name: "Về OHOUSE", href: "/ve-chung-toi" },
-    { name: "Tuyển Dụng", href: "/tuyen-dung" },
-    { name: "Tin Tức", href: "/tin-tuc" },
-    { name: "Dự Án Nội Thất", href: "/du-an" },
-    { name: "Liên Hệ Hợp Tác", href: "/lien-he" },
-  ],
-};
+import { useCategories } from "@/hooks/useCategories";
 
 export function Footer() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { data: categoriesData, isLoading: isLoadingCategories } = useCategories();
+
+  const footerLinks = categoriesData?.footerLinks || { products: [], support: [], about: [] };
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,21 +86,27 @@ export function Footer() {
           </div>
           <div>
             <h4 className="font-display font-bold mb-8 uppercase tracking-widest text-[10px] text-primary">Sản Phẩm</h4>
-            <ul className="space-y-4 text-sm">
-              {footerLinks.products.map(l => <li key={l.name}><Link to={l.href} className="text-taupe hover:text-primary transition-colors">{l.name}</Link></li>)}
-            </ul>
+            {isLoadingCategories ? <div className="space-y-2"><div className="h-4 w-24 bg-white/10 rounded animate-pulse" /><div className="h-4 w-32 bg-white/10 rounded animate-pulse" /></div> : (
+              <ul className="space-y-4 text-sm">
+                {footerLinks.products.map(l => <li key={l.name}><Link to={l.href} className="text-taupe hover:text-primary transition-colors">{l.name}</Link></li>)}
+              </ul>
+            )}
           </div>
           <div>
             <h4 className="font-display font-bold mb-8 uppercase tracking-widest text-[10px] text-primary">Hỗ Trợ</h4>
-            <ul className="space-y-4 text-sm">
-              {footerLinks.support.map(l => <li key={l.name}><Link to={l.href} className="text-taupe hover:text-primary transition-colors">{l.name}</Link></li>)}
-            </ul>
+            {isLoadingCategories ? <div className="space-y-2"><div className="h-4 w-24 bg-white/10 rounded animate-pulse" /><div className="h-4 w-32 bg-white/10 rounded animate-pulse" /></div> : (
+              <ul className="space-y-4 text-sm">
+                {footerLinks.support.map(l => <li key={l.name}><Link to={l.href} className="text-taupe hover:text-primary transition-colors">{l.name}</Link></li>)}
+              </ul>
+            )}
           </div>
           <div>
             <h4 className="font-display font-bold mb-8 uppercase tracking-widest text-[10px] text-primary">Về Chúng Tôi</h4>
-            <ul className="space-y-4 text-sm">
-              {footerLinks.about.map(l => <li key={l.name}><Link to={l.href} className="text-taupe hover:text-primary transition-colors">{l.name}</Link></li>)}
-            </ul>
+            {isLoadingCategories ? <div className="space-y-2"><div className="h-4 w-24 bg-white/10 rounded animate-pulse" /><div className="h-4 w-32 bg-white/10 rounded animate-pulse" /></div> : (
+              <ul className="space-y-4 text-sm">
+                {footerLinks.about.map(l => <li key={l.name}><Link to={l.href} className="text-taupe hover:text-primary transition-colors">{l.name}</Link></li>)}
+              </ul>
+            )}
           </div>
         </div>
 
@@ -139,6 +123,10 @@ export function Footer() {
             <AccordionItem value="support" className="border-none">
               <AccordionTrigger className="text-[10px] font-bold uppercase tracking-widest text-primary hover:no-underline py-4">Hỗ Trợ</AccordionTrigger>
               <AccordionContent><ul className="space-y-4 pb-4">{footerLinks.support.map(l => <li key={l.name}><Link to={l.href} className="text-taupe block text-sm">{l.name}</Link></li>)}</ul></AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="about" className="border-none">
+              <AccordionTrigger className="text-[10px] font-bold uppercase tracking-widest text-primary hover:no-underline py-4">Về Chúng Tôi</AccordionTrigger>
+              <AccordionContent><ul className="space-y-4 pb-4">{footerLinks.about.map(l => <li key={l.name}><Link to={l.href} className="text-taupe block text-sm">{l.name}</Link></li>)}</ul></AccordionContent>
             </AccordionItem>
           </Accordion>
           <div className="flex items-center gap-6 justify-center pt-6">

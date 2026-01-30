@@ -15,13 +15,15 @@ export function useCategories() {
 
       const categories = data || [];
 
-      // 1. Lọc các liên kết cho Hàng 3 (secondary)
-      const secondaryItems = categories
-        .filter(c => c.menu_location === 'secondary' && !c.parent_id)
+      const createLinks = (location: string) => categories
+        .filter(c => c.menu_location === location && !c.parent_id)
         .map(c => ({
           name: c.name,
           href: c.slug.startsWith('/') ? c.slug : `/${c.slug}`
         }));
+
+      // 1. Lọc các liên kết cho Hàng 3 (secondary)
+      const secondaryItems = createLinks('secondary');
 
       // 2. Lọc các liên kết cho Hàng 4 (main)
       const mainItems = categories.filter(c => c.menu_location === 'main' && !c.parent_id);
@@ -44,6 +46,13 @@ export function useCategories() {
         }
       });
 
+      // 4. Fetch Footer Links
+      const footerLinks = {
+        products: createLinks('footer_products'),
+        support: createLinks('footer_support'),
+        about: createLinks('footer_about'),
+      };
+
       return {
         secondaryLinks: secondaryItems,
         mainCategories: mainItems.map(c => ({
@@ -53,7 +62,8 @@ export function useCategories() {
           dropdownKey: c.slug,
           isHighlight: c.is_highlight
         })),
-        productCategories: subItemsMap
+        productCategories: subItemsMap,
+        footerLinks
       };
     }
   });
