@@ -19,7 +19,7 @@ export function ShopTheLookCard({ look, onQuickView }: ShopTheLookCardProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-transparent" />
         
-        {/* Hotspots Overlay - Chỉ hiển thị hotspot gán cho ảnh chính (image_url) */}
+        {/* Hotspots Overlay - FIXED: Lọc hotspot theo ảnh chính */}
         <TooltipProvider>
           {look.shop_look_items
             .filter((item: any) => item.target_image_url === look.image_url && item.products)
@@ -47,14 +47,7 @@ export function ShopTheLookCard({ look, onQuickView }: ShopTheLookCardProps) {
           ))}
         </TooltipProvider>
 
-        {/* Footer Text - Giữ lại để hiển thị thông tin Lookbook */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-2 block">Shop The Look</span>
-          <h3 className="text-lg md:text-xl font-bold leading-tight group-hover:text-primary transition-colors">{look.title}</h3>
-          <div className="flex items-center gap-2 text-xs font-bold mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            Khám phá ngay <ArrowRight className="w-4 h-4" />
-          </div>
-        </div>
+        {/* Footer Text - REMOVED */}
       </Link>
     </div>
   );
