@@ -123,8 +123,8 @@ export function FeaturedProducts() {
                     </div>
                     
                     <div className="p-3 md:p-4 flex-1 flex flex-col">
-                      <div className="flex items-center gap-1 mb-1">
-                        {/* Sử dụng component StarRating để hiển thị sao lẻ */}
+                      {/* Ẩn phần đánh giá trên mobile bằng hidden md:flex */}
+                      <div className="hidden md:flex items-center gap-1 mb-1">
                         <StarRating rating={rating} size="w-3 h-3" />
                         <span className="text-[9px] text-muted-foreground ml-1">({reviews})</span>
                       </div>
@@ -140,8 +140,9 @@ export function FeaturedProducts() {
                             <p className="text-[10px] text-muted-foreground line-through">{formatPrice(product.original_price)}</p>
                           )}
                         </div>
+                        {/* Ẩn phần lượt bán trên mobile bằng hidden md:block */}
                         {sold > 0 && (
-                          <p className="text-[10px] text-muted-foreground mt-1">Đã bán {sold}</p>
+                          <p className="hidden md:block text-[10px] text-muted-foreground mt-1">Đã bán {sold}</p>
                         )}
                       </div>
                     </div>
