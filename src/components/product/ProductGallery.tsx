@@ -3,7 +3,6 @@ import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, ZoomIn, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProductGalleryProps {
   mainImage: string;
@@ -23,7 +22,6 @@ export function ProductGallery({ mainImage, galleryImages, productName, children
   
   const [[page, direction], setPage] = useState([0, 0]);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const isMobile = useIsMobile();
 
   const imageIndex = page % allImages.length;
 
@@ -51,7 +49,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, children
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute inset-0 w-full h-full"
+            className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={1}
@@ -60,8 +58,13 @@ export function ProductGallery({ mainImage, galleryImages, productName, children
             <img
               src={allImages[imageIndex]}
               alt={productName}
-              className="w-full h-full object-cover cursor-zoom-in"
-              onClick={() => setIsLightboxOpen(true)}
+              className="w-full h-full object-cover pointer-events-none" // Quan trọng: pointer-events-none để tránh kéo ảnh thay vì vuốt slide
+              draggable="false"
+            />
+            {/* Lớp phủ trong suốt để nhận sự kiện click mở lightbox mà không ảnh hưởng vuốt */}
+            <div 
+                className="absolute inset-0 cursor-zoom-in" 
+                onClick={() => setIsLightboxOpen(true)}
             />
           </motion.div>
         </AnimatePresence>
@@ -77,17 +80,17 @@ export function ProductGallery({ mainImage, galleryImages, productName, children
           </button>
         </div>
 
-        {allImages.length > 1 && !isMobile && (
+        {allImages.length > 1 && (
           <>
             <button 
               onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 flex items-center justify-center group shadow-medium"
+              className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 items-center justify-center group shadow-medium"
             >
               <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); paginate(1); }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 flex items-center justify-center group shadow-medium"
+              className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 items-center justify-center group shadow-medium"
             >
               <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
             </button>
