@@ -21,27 +21,35 @@ export function USPBar() {
   if (usps.length === 0) return null;
 
   return (
-    <section className="bg-secondary/40 py-10">
+    <section className="bg-secondary/40 py-6 md:py-10">
       <div className="container-luxury">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {usps.map((usp, index) => {
+        {/* Thay đổi grid-cols-2 thành grid-cols-4 để tất cả nằm trên 1 hàng */}
+        <div className="grid grid-cols-4 gap-2 md:gap-8">
+          {usps.slice(0, 4).map((usp, index) => {
             const Icon = iconMap[usp.icon_name] || Truck;
             
             return (
               <motion.div
                 key={usp.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="flex items-center gap-4"
+                className="flex flex-col md:flex-row items-center text-center md:text-left gap-2 md:gap-4"
               >
-                <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-primary" />
+                {/* Thu nhỏ icon trên mobile */}
+                <div className="flex-shrink-0 w-8 h-8 md:w-12 md:h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Icon className="w-4 h-4 md:w-6 h-6 text-primary" />
                 </div>
-                <div>
-                  <h3 className="font-bold text-sm text-charcoal">{usp.title}</h3>
-                  <p className="text-xs text-muted-foreground">{usp.description}</p>
+                <div className="min-w-0">
+                  {/* Chỉnh font chữ tiêu đề nhỏ lại trên mobile để không bị xuống dòng */}
+                  <h3 className="font-bold text-[8px] md:text-sm text-charcoal leading-tight uppercase md:normal-case">
+                    {usp.title}
+                  </h3>
+                  {/* Ẩn mô tả trên mobile, chỉ hiện trên desktop */}
+                  <p className="hidden md:block text-xs text-muted-foreground mt-1">
+                    {usp.description}
+                  </p>
                 </div>
               </motion.div>
             );
