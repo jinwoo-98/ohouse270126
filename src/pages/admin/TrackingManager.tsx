@@ -227,8 +227,8 @@ export default function TrackingManager() {
                 <Select name="location" defaultValue={editingScript?.location || 'head'}>
                   <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="head">Trong thẻ <head></SelectItem>
-                    <SelectItem value="body">Ngay sau thẻ <body></SelectItem>
+                    <SelectItem value="head">{'Trong thẻ <head>'}</SelectItem>
+                    <SelectItem value="body">{'Ngay sau thẻ <body>'}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
