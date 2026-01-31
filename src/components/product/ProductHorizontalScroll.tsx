@@ -26,6 +26,9 @@ export function ProductHorizontalScroll({ products, title = "Sản phẩm liên 
       <Carousel
         opts={{
           align: "start",
+          // Thêm options để tối ưu hóa trải nghiệm vuốt trên mobile
+          dragFree: true, // Cho phép kéo tự do
+          containScroll: 'trimSnaps', // Giữ cuộn trong giới hạn
         }}
         className="w-full"
       >

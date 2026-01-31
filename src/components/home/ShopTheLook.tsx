@@ -99,10 +99,12 @@ export function ShopTheLook() {
   const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
     const swipe = swipePower(offset.x, velocity.x);
 
-    // Ưu tiên chuyển Look trước
-    if (swipe < -swipeConfidenceThreshold) {
+    // Tăng ngưỡng vuốt trên mobile để tránh nhầm lẫn với cuộn dọc
+    const threshold = window.innerWidth < 768 ? 500 : swipeConfidenceThreshold;
+
+    if (swipe < -threshold) {
       paginateLook(1); // Vuốt trái -> Next Look
-    } else if (swipe > swipeConfidenceThreshold) {
+    } else if (swipe > threshold) {
       paginateLook(-1); // Vuốt phải -> Prev Look
     }
   };
@@ -115,7 +117,13 @@ export function ShopTheLook() {
   return (
     <section className="py-10 md:py-24 bg-secondary/20 overflow-hidden">
       <div className="container-luxury">
-        <div className="text-center mb-10 md:mb-14">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="text-center mb-10 md:mb-14"
+        >
           {config?.subtitle && (
             <span className="font-bold uppercase tracking-[0.3em] text-[10px] mb-4 block" style={{ color: config.subtitle_color }}>
               {config.subtitle}
@@ -127,7 +135,7 @@ export function ShopTheLook() {
           <p className="text-sm md:text-base max-w-2xl mx-auto" style={{ color: config?.content_color }}>
             {config?.description || "Khám phá những mẫu thiết kế nội thất hoàn mỹ và sở hữu ngay các sản phẩm trong ảnh chỉ với một cú chạm."}
           </p>
-        </div>
+        </motion.div>
 
         <div className="flex justify-center gap-2 mb-10 overflow-x-auto pb-2 no-scrollbar px-4">
           {categoriesWithLooks.map((cat) => (
@@ -161,7 +169,7 @@ export function ShopTheLook() {
                   className="relative aspect-video w-full group cursor-grab active:cursor-grabbing"
                   drag="x" // BẬT TÍNH NĂNG KÉO
                   dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={1}
+                  dragElastic={0.5} // Giảm độ đàn hồi để dễ vuốt hơn
                   onDragEnd={handleDragEnd}
                 >
                   <Link to={`/y-tuong/${activeLook.id}`} className="absolute inset-0 z-10">
