@@ -186,12 +186,16 @@ export function ShopTheLook() {
                                   e.stopPropagation(); // Ngăn sự kiện drag
                                   if (item.products) setQuickViewProduct(item.products); 
                               }}
-                              // Thêm touch-action-none để ưu tiên sự kiện click trên mobile cho nút này
-                              className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/95 shadow-elevated flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-30 group/dot touch-manipulation"
+                              // Thiết kế Hotspot mới: Vòng tròn ngoài mờ, vòng tròn trong đậm, hiệu ứng hover
+                              className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-30 group/dot touch-manipulation"
                               style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                             >
+                              {/* Vòng tròn ngoài (Ping effect) */}
                               <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-75 group-hover/dot:hidden"></span>
-                              <Plus className="w-4 h-4" />
+                              {/* Vòng tròn trong (Hotspot chính) */}
+                              <span className="relative w-6 h-6 rounded-full bg-white/95 backdrop-blur-sm border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-200 group-hover/dot:bg-primary group-hover/dot:text-white">
+                                <Plus className="w-3 h-3" />
+                              </span>
                             </button>
                           </TooltipTrigger>
                           {item.products && (

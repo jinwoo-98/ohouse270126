@@ -106,11 +106,16 @@ export default function LookDetailPage() {
                               <TooltipTrigger asChild>
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setQuickViewProduct(product); }}
-                                  className="absolute w-8 h-8 -ml-4 -mt-4 bg-white/90 backdrop-blur-sm border-2 border-primary rounded-full shadow-gold flex items-center justify-center text-primary hover:scale-125 transition-all animate-fade-in z-10 group/dot pointer-events-auto"
+                                  // Thiết kế Hotspot mới
+                                  className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-10 group/dot pointer-events-auto"
                                   style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                                 >
-                                  <Plus className="w-4 h-4" />
-                                  <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-75 group-hover/dot:hidden" />
+                                  {/* Vòng tròn ngoài (Ping effect) */}
+                                  <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-75 group-hover/dot:hidden" />
+                                  {/* Vòng tròn trong (Hotspot chính) */}
+                                  <span className="relative w-6 h-6 rounded-full bg-white/95 backdrop-blur-sm border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-200 group-hover/dot:bg-primary group-hover/dot:text-white">
+                                    <Plus className="w-3 h-3" />
+                                  </span>
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 shadow-elevated rounded-xl">
