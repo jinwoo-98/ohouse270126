@@ -163,12 +163,14 @@ export function ShopTheLook() {
                 dragElastic={1}
                 onDragEnd={handleDragEnd}
               >
-                <img
-                  src={activeLook.homepage_image_url || activeLook.image_url}
-                  alt={activeLook.title}
-                  className="w-full h-full object-cover pointer-events-none" // Quan trọng: Chặn sự kiện chuột vào ảnh để cho phép kéo container
-                  draggable="false"
-                />
+                <Link to={`/y-tuong/${activeLook.id}`} className="absolute inset-0 z-10">
+                  <img
+                    src={activeLook.homepage_image_url || activeLook.image_url}
+                    alt={activeLook.title}
+                    className="w-full h-full object-cover pointer-events-none" // Quan trọng: Chặn sự kiện chuột vào ảnh để cho phép kéo container
+                    draggable="false"
+                  />
+                </Link>
                 
                 {/* Lớp phủ chứa Hotspot */}
                 <div className="absolute inset-0 bg-black/5">
@@ -220,8 +222,8 @@ export function ShopTheLook() {
                   </>
                 )}
                 
-                {/* Tiêu đề Lookbook */}
-                <div className="absolute top-4 left-4 right-4 md:top-6 md:left-6 md:right-auto md:max-w-xs bg-charcoal/80 backdrop-blur-md text-cream p-3 rounded-lg border border-white/10 pointer-events-none">
+                {/* Tiêu đề Lookbook - ẨN TRÊN MOBILE (hidden) */}
+                <div className="absolute top-4 left-4 right-4 bg-charcoal/80 backdrop-blur-md text-cream px-3 py-1 rounded-lg border border-white/10 pointer-events-none hidden md:block md:top-6 md:left-6 md:right-auto md:max-w-xs md:px-5 md:py-2 md:text-[10px]">
                   <h3 className="text-xs font-bold uppercase tracking-widest line-clamp-2">{activeLook.title}</h3>
                 </div>
                 
