@@ -68,7 +68,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
             )}
           </div>
 
-          {/* Vertical Action Buttons (Top Right) */}
+          {/* Vertical Action Buttons (Top Right) - CHỈ GIỮ LẠI NÚT YÊU THÍCH */}
           <div className="absolute top-3 right-3 flex flex-col gap-2 z-20 md:opacity-0 md:group-hover:opacity-100 transition-all duration-500 transform translate-x-2 md:group-hover:translate-x-0">
             <button 
               onClick={(e) => { 
@@ -76,25 +76,16 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 toggleWishlist({ ...product, slug: product.slug }); 
               }}
               className={cn(
-                "w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-medium",
+                "w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-medium backdrop-blur-sm",
                 isFavorite 
                   ? "bg-primary text-white" 
-                  : "bg-white text-charcoal hover:bg-primary hover:text-white"
+                  : "bg-white/80 text-charcoal hover:bg-primary hover:text-white"
               )}
               title="Yêu thích"
             >
               <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
             </button>
-            <button 
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                addToCart({ ...product, quantity: 1, image: product.image_url }); 
-              }}
-              className="w-9 h-9 rounded-full bg-white text-charcoal hover:bg-primary hover:text-white flex items-center justify-center transition-all shadow-medium"
-              title="Thêm vào giỏ"
-            >
-              <ShoppingBag className="w-4 h-4" />
-            </button>
+            {/* Nút Thêm vào giỏ hàng đã bị loại bỏ */}
           </div>
 
           {/* Quick View Button (Desktop only) */}
