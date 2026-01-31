@@ -203,29 +203,6 @@ export function ShopTheLook() {
                     ))}
                   </TooltipProvider>
                 </div>
-
-                {/* Nút điều hướng Lookbook (Chỉ hiện trên Desktop) */}
-                {currentCategoryLooks.length > 1 && (
-                  <>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); paginateLook(-1); }}
-                      className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-20 items-center justify-center group shadow-medium"
-                    >
-                      <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-                    </button>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); paginateLook(1); }}
-                      className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-20 items-center justify-center group shadow-medium"
-                    >
-                      <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
-                    </button>
-                  </>
-                )}
-                
-                {/* Tiêu đề Lookbook (Đã ẩn) */}
-                {/* <div className="absolute top-4 left-4 right-4 md:top-6 md:left-6 md:right-auto md:max-w-xs bg-charcoal/80 backdrop-blur-md text-cream p-3 rounded-lg border border-white/10 pointer-events-none hidden md:block md:px-5 md:py-2 md:text-[10px]">
-                  <h3 className="text-xs font-bold uppercase tracking-widest line-clamp-2">{activeLook.title}</h3>
-                </div> */}
                 
               </motion.div>
             ) : (
@@ -237,7 +214,7 @@ export function ShopTheLook() {
           
           {/* Dots indicator - Đã di chuyển ra ngoài ảnh, ngay bên dưới */}
           {currentCategoryLooks.length > 1 && (
-            <div className="flex justify-center items-center gap-3 p-4 bg-card border-t border-border/40">
+            <div className="flex justify-center items-center gap-3 p-4 bg-background border-t border-border/40">
               {currentCategoryLooks.map((_, idx) => (
                 <button
                   key={idx}
