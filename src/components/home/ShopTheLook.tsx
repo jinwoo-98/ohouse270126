@@ -166,13 +166,15 @@ export function ShopTheLook() {
             >
               {currentCategoryLooks.map((look) => (
                 <div key={look.id} className="relative h-full w-full flex-shrink-0 group">
-                  <img
-                    src={look.homepage_image_url || look.image_url}
-                    alt={look.title}
-                    className="w-full h-full object-cover pointer-events-none"
-                    draggable="false"
-                  />
-                  <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-colors duration-300">
+                  <Link to={`/y-tuong/${look.id}`} className="absolute inset-0 z-10">
+                    <img
+                      src={look.homepage_image_url || look.image_url}
+                      alt={look.title}
+                      className="w-full h-full object-cover pointer-events-none"
+                      draggable="false"
+                    />
+                  </Link>
+                  <div className="absolute inset-0 bg-black/5">
                     <TooltipProvider>
                       {look.shop_look_items
                         .filter((item: any) => item.target_image_url === look.image_url)
@@ -200,7 +202,7 @@ export function ShopTheLook() {
                         </Tooltip>
                       ))}
                     </TooltipProvider>
-                    <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block">
                       <Button asChild size="sm" className="btn-hero h-9 text-[10px] shadow-gold">
                         <Link to={`/y-tuong/${look.id}`}>
                           Xem Chi Tiết <ChevronRight className="w-3 h-3 ml-1" />
