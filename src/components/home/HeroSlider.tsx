@@ -96,7 +96,7 @@ export function HeroSlider() {
             animate="center"
             exit="exit"
             transition={{
-              x: { type: "tween", ease: "linear", duration: 0.4 }, // Giảm thời gian chuyển cảnh
+              x: { type: "tween", ease: "linear", duration: 0.3 }, // Đã giảm xuống 0.3s
             }}
             className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
             drag="x"
