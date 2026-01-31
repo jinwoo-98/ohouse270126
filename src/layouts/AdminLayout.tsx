@@ -26,7 +26,8 @@ import {
   RefreshCw,
   ListFilter,
   LayoutTemplate,
-  Headset
+  Headset,
+  Handshake // Import Handshake icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +66,7 @@ const menuGroups = [
     label: "Tương Tác & Marketing",
     items: [
       { id: 'customers', title: "Khách hàng & Tương tác", icon: Users, href: "/admin/customers" },
+      { id: 'cooperation-requests', title: "Yêu cầu Hợp tác", icon: Handshake, href: "/admin/cooperation-requests" },
       { id: 'marketing', title: "Marketing & SEO", icon: TrendingUp, href: "/admin/marketing" },
     ]
   },

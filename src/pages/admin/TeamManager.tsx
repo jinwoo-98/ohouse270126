@@ -37,6 +37,7 @@ const PERMISSION_KEYS = [
   { key: 'design-requests', label: 'Yêu cầu Thiết kế' },
   { key: 'messages', label: 'Tin nhắn khách hàng' },
   { key: 'subscribers', label: 'Danh sách đăng ký' },
+  { key: 'cooperation-requests', label: 'Yêu cầu Hợp tác' },
   { key: 'theme', label: 'Cấu hình Giao diện' },
   { key: 'settings', label: 'Cài đặt Hệ thống' },
 ];
