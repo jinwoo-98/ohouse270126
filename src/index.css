@@ -114,7 +114,8 @@
   }
 
   .container-luxury { 
-    @apply max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8; 
+    /* Giảm padding ngang trên mobile (px-2) */
+    @apply max-w-[1440px] mx-auto px-2 md:px-6 lg:px-8; 
     width: 100%;
     box-sizing: border-box;
   }
