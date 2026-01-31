@@ -28,7 +28,8 @@ import {
   LayoutTemplate,
   Headset,
   Handshake,
-  Sparkles // Added Sparkles icon for Lookbook
+  Sparkles,
+  Code // Import Code icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,7 +62,7 @@ const menuGroups = [
     label: "Quản Trị Nội Dung (CMS)",
     items: [
       { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
-      { id: 'looks', title: "Lookbook", icon: Sparkles, href: "/admin/content/looks" }, // Added Lookbook
+      { id: 'looks', title: "Lookbook", icon: Sparkles, href: "/admin/content/looks" },
       { id: 'pages', title: "Trang nội dung", icon: Files, href: "/admin/pages" },
       { id: 'news', title: "Tin tức", icon: Newspaper, href: "/admin/news" },
       { id: 'projects', title: "Dự án", icon: Briefcase, href: "/admin/projects" },
@@ -80,6 +81,7 @@ const menuGroups = [
     items: [
       { id: 'theme', title: "Giao diện", icon: Palette, href: "/admin/theme" },
       { id: 'settings', title: "Cấu hình chung", icon: Settings, href: "/admin/settings" },
+      { id: 'tracking', title: "Mã Theo Dõi", icon: Code, href: "/admin/tracking" }, // Mục mới
       { id: 'team', title: "Phân quyền", icon: ShieldCheck, href: "/admin/team" },
     ]
   }
