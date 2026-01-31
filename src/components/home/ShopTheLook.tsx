@@ -182,7 +182,7 @@ export function ShopTheLook() {
                   animate="center"
                   exit="exit"
                   transition={{
-                    x: { type: "tween", ease: "linear", duration: 0.3 }, // Đã giảm xuống 0.3s
+                    x: { type: "tween", ease: "linear", duration: 0.2 }, // Đã giảm xuống 0.2s
                   }}
                   className="absolute inset-0 aspect-video w-full group cursor-grab active:cursor-grabbing"
                   drag="x"
