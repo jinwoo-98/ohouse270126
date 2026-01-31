@@ -220,7 +220,8 @@ export function ShopTheLook() {
                   </>
                 )}
                 
-                <div className="absolute top-6 left-6 bg-charcoal/80 backdrop-blur-md text-cream px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border border-white/10 pointer-events-none">
+                {/* Điều chỉnh kích thước và padding trên mobile */}
+                <div className="absolute top-4 left-4 bg-charcoal/80 backdrop-blur-md text-cream px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] border border-white/10 pointer-events-none md:top-6 md:left-6 md:px-5 md:py-2 md:text-[10px]">
                   {activeLook.title}
                 </div>
                 

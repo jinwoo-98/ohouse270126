@@ -163,14 +163,16 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                   </TooltipProvider>
                 </div>
 
-                <div className="flex items-center justify-between px-3">
-                  <div>
-                    <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
+                <div className="flex items-center justify-between px-3 pt-2"> {/* Thêm pt-2 để tăng khoảng cách */}
+                  <div className="flex-1 min-w-0 pr-4"> {/* Thêm pr-4 để tạo khoảng cách với nút */}
+                    <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight line-clamp-2">
+                      {look.title}
+                    </h3>
                     <p className="text-xs text-muted-foreground mt-1">{look.shop_look_items?.length || 0} sản phẩm phối hợp</p>
                   </div>
                   <Button 
                     variant="outline" 
-                    className="rounded-xl px-6 h-12 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm"
+                    className="rounded-xl px-4 h-10 text-[9px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm shrink-0" // Giảm kích thước nút trên mobile
                     onClick={() => setSelectedLook(look)}
                   >
                     XEM NGAY +
