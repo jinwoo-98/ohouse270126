@@ -93,7 +93,7 @@ export function HeroSlider() {
             animate="center"
             exit="exit"
             transition={{
-              x: { type: "tween", ease: "easeInOut", duration: 0.8 },
+              x: { type: "tween", ease: "linear", duration: 0.6 },
             }}
             className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
             drag="x"
