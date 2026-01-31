@@ -266,7 +266,7 @@ export default function CategoryPage() {
 
             <div className="flex-1 min-w-0">
               <div className={cn(
-                "grid grid-cols-2 gap-3 md:gap-6 lg:gap-10", // Giảm gap trên mobile từ gap-4 xuống gap-3
+                "grid grid-cols-2 gap-2 md:gap-6 lg:gap-10", // Đã đổi gap-3 thành gap-2
                 isSidebarVisible ? "xl:grid-cols-4" : "xl:grid-cols-5"
               )}>
                 {isLoading ? Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />) : displayItems.length === 0 ? (
