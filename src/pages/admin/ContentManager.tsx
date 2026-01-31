@@ -36,14 +36,6 @@ const contentSections = [
     component: Link
   },
   {
-    icon: Handshake,
-    title: "Yêu cầu Hợp tác",
-    description: "Xem và quản lý các yêu cầu hợp tác kinh doanh (B2B, Đại lý).",
-    href: "/admin/cooperation-requests",
-    color: "text-orange-600 bg-orange-50 border-orange-200",
-    component: Link
-  },
-  {
     icon: Files,
     title: "Các Trang Tĩnh Khác",
     description: "Chỉnh sửa nội dung các trang tĩnh như Giới thiệu, Tuyển dụng, Hỗ trợ.",
