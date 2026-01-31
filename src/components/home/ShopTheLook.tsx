@@ -13,13 +13,11 @@ function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
 }
 
-// Cấu hình độ nhạy cho thao tác vuốt
 const swipeConfidenceThreshold = 10000;
 const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
-// Cấu hình animation trượt ngang liền mạch
 const variants = {
   enter: (direction: number) => ({
     x: direction > 0 ? "100%" : "-100%",
@@ -46,7 +44,7 @@ export function ShopTheLook() {
   const [currentLookIndex, setCurrentLookIndex] = useState(0); 
   
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
-  const [[page, direction], setPage] = useState([0, 0]); // State cho animation chuyển slide
+  const [[page, direction], setPage] = useState([0, 0]);
 
   const { data: categoriesData } = useCategories();
 
@@ -103,10 +101,9 @@ export function ShopTheLook() {
   
   useEffect(() => {
     setCurrentLookIndex(0);
-    setPage([0, 0]); // Reset page state khi đổi category
+    setPage([0, 0]);
   }, [activeCategorySlug]);
 
-  // Điều hướng Look (Slide lớn)
   const paginateLook = (newDirection: number) => {
     if (currentCategoryLooks.length <= 1) return;
     const newIndex = (currentLookIndex + newDirection + currentCategoryLooks.length) % currentCategoryLooks.length;
@@ -114,7 +111,6 @@ export function ShopTheLook() {
     setCurrentLookIndex(newIndex);
   };
 
-  // Xử lý sự kiện vuốt (Drag End)
   const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
     if (currentCategoryLooks.length <= 1) return;
     
@@ -187,7 +183,6 @@ export function ShopTheLook() {
                   exit="exit"
                   transition={{
                     x: { type: "spring", stiffness: 300, damping: 30 },
-                    opacity: { duration: 0.2 },
                   }}
                   className="absolute inset-0 aspect-video w-full group cursor-grab active:cursor-grabbing"
                   drag="x"

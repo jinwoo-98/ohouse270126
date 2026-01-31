@@ -9,6 +9,23 @@ const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
+const variants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? "100%" : "-100%",
+    opacity: 1,
+  }),
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    zIndex: 0,
+    x: direction < 0 ? "100%" : "-100%",
+    opacity: 1,
+  }),
+};
+
 export function HeroSlider() {
   const [slides, setSlides] = useState<any[]>([]);
   const [[page, direction], setPage] = useState([0, 0]);
@@ -34,10 +51,11 @@ export function HeroSlider() {
     }
   };
 
-  const imageIndex = page % slides.length;
+  const imageIndex = page % (slides.length || 1);
   const current = slides[imageIndex];
 
   const paginate = (newDirection: number) => {
+    if (slides.length <= 1) return;
     setPage([page + newDirection, newDirection]);
   };
 
@@ -53,7 +71,6 @@ export function HeroSlider() {
   const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
     const swipe = swipePower(offset.x, velocity.x);
     
-    // Ngưỡng vuốt thấp hơn trên mobile để dễ chuyển slide hơn
     const threshold = window.innerWidth < 768 ? 500 : swipeConfidenceThreshold;
 
     if (swipe < -threshold) {
@@ -73,17 +90,18 @@ export function HeroSlider() {
           <motion.div
             key={page}
             custom={direction}
-            initial={{ opacity: 0, x: direction > 0 ? 1000 : -1000 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction > 0 ? -1000 : 1000 }}
-            transition={{ 
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
               x: { type: "spring", stiffness: 300, damping: 30 },
               opacity: { duration: 0.2 }
             }}
             className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
             drag="x"
-            dragConstraints={{ left: 0, right: 0 }} // Giữ nguyên 0,0 để chỉ dùng cho tính toán velocity
-            dragElastic={1} // Cho phép kéo ảnh ra khỏi vị trí để tạo cảm giác vuốt
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={1}
             onDragEnd={handleDragEnd}
           >
             <motion.img
@@ -100,7 +118,6 @@ export function HeroSlider() {
         </AnimatePresence>
       </div>
 
-      {/* Container nội dung: pointer-events-none để cho phép vuốt xuyên qua */}
       <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
         <div className="container-luxury w-full">
           <AnimatePresence mode="wait">
@@ -110,7 +127,7 @@ export function HeroSlider() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className={`max-w-2xl relative z-10 pointer-events-auto ${ // Bật lại pointer-events cho nội dung để click được nút
+              className={`max-w-2xl relative z-10 pointer-events-auto ${
                 current.text_align === 'left' ? 'mr-auto text-left' : 
                 current.text_align === 'right' ? 'ml-auto text-right' : 
                 'mx-auto text-center'
@@ -161,7 +178,6 @@ export function HeroSlider() {
 
       {slides.length > 1 && (
         <>
-          {/* Nút điều hướng: CHỈ HIỆN TRÊN DESKTOP (hidden md:flex) */}
           <button 
             onClick={() => paginate(-1)} 
             className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-20 items-center justify-center group shadow-medium"
