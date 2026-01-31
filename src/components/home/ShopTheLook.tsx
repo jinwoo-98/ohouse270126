@@ -21,17 +21,14 @@ const swipePower = (offset: number, velocity: number) => {
 const variants = {
   enter: (direction: number) => ({
     x: direction > 0 ? "100%" : "-100%",
-    opacity: 1,
   }),
   center: {
     zIndex: 1,
     x: 0,
-    opacity: 1,
   },
   exit: (direction: number) => ({
     zIndex: 0,
     x: direction < 0 ? "100%" : "-100%",
-    opacity: 1,
   }),
 };
 
@@ -182,7 +179,7 @@ export function ShopTheLook() {
                   animate="center"
                   exit="exit"
                   transition={{
-                    x: { type: "spring", stiffness: 300, damping: 30 },
+                    x: { type: "tween", ease: "easeInOut", duration: 0.8 },
                   }}
                   className="absolute inset-0 aspect-video w-full group cursor-grab active:cursor-grabbing"
                   drag="x"
