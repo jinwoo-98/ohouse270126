@@ -124,7 +124,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                className="group flex flex-col gap-5"
+                className="group flex flex-col"
               >
                 <div 
                   className="relative aspect-video rounded-[32px] overflow-hidden cursor-pointer shadow-medium group-hover:shadow-elevated transition-all duration-500"
@@ -163,16 +163,16 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                   </TooltipProvider>
                 </div>
 
-                <div className="flex items-center justify-between px-3 pt-2"> {/* Thêm pt-2 để tăng khoảng cách */}
-                  <div className="flex-1 min-w-0 pr-4"> {/* Thêm pr-4 để tạo khoảng cách với nút */}
+                <div className="flex items-start justify-between p-4">
+                  <div className="flex-1 min-w-0 pr-4">
                     <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight line-clamp-2">
                       {look.title}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-1">{look.shop_look_items?.length || 0} sản phẩm phối hợp</p>
+                    <p className="text-xs text-muted-foreground mt-2">{look.shop_look_items?.length || 0} sản phẩm phối hợp</p>
                   </div>
                   <Button 
                     variant="outline" 
-                    className="rounded-xl px-4 h-10 text-[9px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm shrink-0" // Giảm kích thước nút trên mobile
+                    className="rounded-xl px-4 h-10 text-[9px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm shrink-0"
                     onClick={() => setSelectedLook(look)}
                   >
                     XEM NGAY +

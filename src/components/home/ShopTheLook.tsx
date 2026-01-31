@@ -220,9 +220,9 @@ export function ShopTheLook() {
                   </>
                 )}
                 
-                {/* Điều chỉnh kích thước và padding trên mobile */}
-                <div className="absolute top-4 left-4 bg-charcoal/80 backdrop-blur-md text-cream px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] border border-white/10 pointer-events-none md:top-6 md:left-6 md:px-5 md:py-2 md:text-[10px]">
-                  {activeLook.title}
+                {/* Tiêu đề Lookbook */}
+                <div className="absolute top-4 left-4 right-4 md:top-6 md:left-6 md:right-auto md:max-w-xs bg-charcoal/80 backdrop-blur-md text-cream p-3 rounded-lg border border-white/10 pointer-events-none">
+                  <h3 className="text-xs font-bold uppercase tracking-widest line-clamp-2">{activeLook.title}</h3>
                 </div>
                 
                 {/* Dots indicator */}
