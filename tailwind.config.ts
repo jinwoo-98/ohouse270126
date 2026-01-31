@@ -79,6 +79,9 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 4px)",
+        '2xl': "calc(var(--radius) + 8px)",
+        '3xl': "calc(var(--radius) + 16px)",
       },
       boxShadow: {
         subtle: "var(--shadow-subtle)",

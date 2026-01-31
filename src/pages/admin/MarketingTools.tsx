@@ -107,6 +107,7 @@ export default function MarketingTools() {
   const [targetId, setTargetId] = useState("all");
   const [updateZeroOnly, setUpdateZeroOnly] = useState(false);
   const [deleteOldReviews, setDeleteOldReviews] = useState(true);
+  const [randomizeWidely, setRandomizeWidely] = useState(false); // New state for wide randomization
 
   const [confirmType, setConfirmType] = useState<'stats' | 'reviews' | null>(null);
 
@@ -182,8 +183,21 @@ export default function MarketingTools() {
 
       const promises = filtered.map(p => {
         const payload: any = { updated_at: new Date() };
-        payload.fake_sold = getRandomInt(parseInt(stats.min_sold), parseInt(stats.max_sold));
-        payload.fake_review_count = getRandomInt(parseInt(stats.min_reviews), parseInt(stats.max_reviews));
+        
+        let minSold = parseInt(stats.min_sold);
+        let maxSold = parseInt(stats.max_sold);
+        let minReviews = parseInt(stats.min_reviews);
+        let maxReviews = parseInt(stats.max_reviews);
+        
+        if (randomizeWidely) {
+          minSold = Math.max(0, Math.floor(minSold * 0.5));
+          maxSold = Math.floor(maxSold * 1.5);
+          minReviews = Math.max(0, Math.floor(minReviews * 0.5));
+          maxReviews = Math.floor(maxReviews * 1.5);
+        }
+
+        payload.fake_sold = getRandomInt(minSold, maxSold);
+        payload.fake_review_count = getRandomInt(minReviews, maxReviews);
         payload.fake_rating = parseFloat(getRandomFloat(parseFloat(stats.min_rating), parseFloat(stats.max_rating)));
         if (stats.display_order) payload.display_order = parseInt(stats.display_order);
         return supabase.from('products').update(payload).eq('id', p.id);
@@ -220,7 +234,14 @@ export default function MarketingTools() {
           await supabase.from('reviews').delete().eq('product_id', p.id);
         }
 
-        const countToGenerate = getRandomInt(parseInt(stats.min_reviews), parseInt(stats.max_reviews));
+        let minReviews = parseInt(stats.min_reviews);
+        let maxReviews = parseInt(stats.max_reviews);
+        if (randomizeWidely) {
+          minReviews = Math.max(1, Math.floor(minReviews * 0.5));
+          maxReviews = Math.floor(maxReviews * 1.5);
+        }
+        const countToGenerate = getRandomInt(minReviews, maxReviews);
+        
         const comments = getDiverseComments(p.name, countToGenerate);
         const newReviews = [];
         
@@ -339,6 +360,13 @@ export default function MarketingTools() {
                     <div className="col-span-4 flex items-center gap-4">
                       <Input type="number" step="0.1" value={stats.min_rating} onChange={e => setStats({...stats, min_rating: e.target.value})} className="h-12 rounded-xl" />
                       <Input type="number" step="0.1" value={stats.max_rating} onChange={e => setStats({...stats, max_rating: e.target.value})} className="h-12 rounded-xl" />
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 p-4 bg-secondary/30 rounded-xl cursor-pointer mt-4" onClick={() => setRandomizeWidely(!randomizeWidely)}>
+                    <Checkbox checked={randomizeWidely} onCheckedChange={(val) => setRandomizeWidely(!!val)} />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold">Ngẫu nhiên hóa rộng</span>
+                      <span className="text-[10px] text-muted-foreground italic">Tạo ra các số liệu đa dạng hơn, có thể vượt ra ngoài khoảng đã nhập.</span>
                     </div>
                   </div>
                 </div>
