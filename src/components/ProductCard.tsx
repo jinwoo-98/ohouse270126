@@ -27,12 +27,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const isFavorite = isInWishlist(product.id);
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Ngăn chặn nếu nhấn vào các vùng chức năng đã có stopPropagation
+    // Trên Mobile: Chuyển hướng thẳng đến trang chi tiết
     if (isMobile) {
-      setIsQuickViewOpen(true);
-    } else {
-      // Trên Desktop: Chuyển hướng sang trang chi tiết
       navigate(`/san-pham/${product.slug || product.id}`);
+    } else {
+      // Trên Desktop: Mở QuickView Sheet
+      setIsQuickViewOpen(true);
     }
   };
 
