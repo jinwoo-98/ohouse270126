@@ -4,10 +4,10 @@ import {
   Sparkles, 
   Briefcase, 
   Newspaper, 
-  MessageSquare, 
-  Settings,
   ChevronRight,
-  Handshake
+  Handshake,
+  Building2,
+  Files
 } from "lucide-react";
 
 const contentSections = [
@@ -17,6 +17,13 @@ const contentSections = [
     description: "Tạo, chỉnh sửa chi tiết và gắn thẻ sản phẩm cho các bộ sưu tập không gian.",
     href: "/admin/content/looks",
     color: "text-purple-600 bg-purple-50 border-purple-200"
+  },
+  {
+    icon: Building2,
+    title: "Trang Showroom",
+    description: "Chỉnh sửa nội dung, địa chỉ và thông tin liên hệ của trang Showroom.",
+    href: "/admin/pages",
+    color: "text-indigo-600 bg-indigo-50 border-indigo-200"
   },
   {
     icon: Briefcase,
@@ -40,9 +47,9 @@ const contentSections = [
     color: "text-orange-600 bg-orange-50 border-orange-200"
   },
   {
-    icon: Settings,
-    title: "Trang Tĩnh (Giới thiệu, Hỗ trợ...)",
-    description: "Chỉnh sửa nội dung các trang tĩnh như Giới thiệu, Tuyển dụng, Hợp tác, Hỗ trợ.",
+    icon: Files,
+    title: "Các Trang Tĩnh Khác",
+    description: "Chỉnh sửa nội dung các trang tĩnh như Giới thiệu, Tuyển dụng, Hỗ trợ.",
     href: "/admin/pages",
     color: "text-gray-600 bg-gray-100 border-gray-200"
   }
