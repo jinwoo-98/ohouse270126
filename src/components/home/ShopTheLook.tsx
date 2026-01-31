@@ -139,7 +139,8 @@ export function ShopTheLook() {
               className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap ${
                 cat.dropdownKey === activeCategorySlug 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
-                  : 'bg-white border-border text-muted-foreground hover:border-charcoal'
+                  // Sử dụng rounded-lg để áp dụng theme
+                  : 'bg-white border-border text-muted-foreground hover:border-charcoal rounded-lg'
               }`}
             >
               {cat.name}
@@ -147,74 +148,76 @@ export function ShopTheLook() {
           ))}
         </div>
 
-        <div className="relative rounded-3xl overflow-hidden bg-transparent shadow-elevated border border-border/40">
-          <AnimatePresence initial={false} custom={direction} mode="wait">
-            {activeLook ? (
-              <motion.div
-                key={activeLook.id} // Chỉ remount khi đổi Look
-                custom={direction}
-                initial={{ opacity: 0, x: direction > 0 ? 200 : -200 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: direction > 0 ? -200 : 200 }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="relative aspect-video w-full group cursor-grab active:cursor-grabbing bg-background"
-                drag="x" // BẬT TÍNH NĂNG KÉO
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={1}
-                onDragEnd={handleDragEnd}
-              >
-                <Link to={`/y-tuong/${activeLook.id}`} className="absolute inset-0 z-10">
-                  <img
-                    src={activeLook.homepage_image_url || activeLook.image_url}
-                    alt={activeLook.title}
-                    className="w-full h-full object-cover pointer-events-none" // Quan trọng: Chặn sự kiện chuột vào ảnh để cho phép kéo container
-                    draggable="false"
-                  />
-                </Link>
-                
-                {/* Lớp phủ chứa Hotspot */}
-                <div className="absolute inset-0 bg-black/5">
-                  <TooltipProvider>
-                    {activeLook.shop_look_items
-                      .filter((item: any) => item.target_image_url === activeLook.image_url)
-                      .map((item: any) => (
-                      <Tooltip key={item.id} delayDuration={0}>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={(e) => { 
-                                e.stopPropagation(); // Ngăn sự kiện drag
-                                if (item.products) setQuickViewProduct(item.products); 
-                            }}
-                            // Thêm touch-action-none để ưu tiên sự kiện click trên mobile cho nút này
-                            className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/95 shadow-elevated flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-30 group/dot touch-manipulation"
-                            style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                          >
-                            <span className="absolute w-full h-full rounded-full bg-white/50 animate-ping opacity-75 group-hover/dot:hidden"></span>
-                            <Plus className="w-4 h-4" />
-                          </button>
-                        </TooltipTrigger>
-                        {item.products && (
-                          <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 shadow-elevated rounded-xl hidden md:block z-40">
-                            <p className="font-bold text-xs uppercase tracking-wider">{item.products.name}</p>
-                            <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    ))}
-                  </TooltipProvider>
+        <div className="relative rounded-lg overflow-hidden bg-transparent shadow-elevated border border-border/40">
+          <div className="bg-background">
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              {activeLook ? (
+                <motion.div
+                  key={activeLook.id} // Chỉ remount khi đổi Look
+                  custom={direction}
+                  initial={{ opacity: 0, x: direction > 0 ? 200 : -200 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: direction > 0 ? -200 : 200 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  className="relative aspect-video w-full group cursor-grab active:cursor-grabbing"
+                  drag="x" // BẬT TÍNH NĂNG KÉO
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={1}
+                  onDragEnd={handleDragEnd}
+                >
+                  <Link to={`/y-tuong/${activeLook.id}`} className="absolute inset-0 z-10">
+                    <img
+                      src={activeLook.homepage_image_url || activeLook.image_url}
+                      alt={activeLook.title}
+                      className="w-full h-full object-cover pointer-events-none" // Quan trọng: Chặn sự kiện chuột vào ảnh để cho phép kéo container
+                      draggable="false"
+                    />
+                  </Link>
+                  
+                  {/* Lớp phủ chứa Hotspot */}
+                  <div className="absolute inset-0 bg-black/5">
+                    <TooltipProvider>
+                      {activeLook.shop_look_items
+                        .filter((item: any) => item.target_image_url === activeLook.image_url)
+                        .map((item: any) => (
+                        <Tooltip key={item.id} delayDuration={0}>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={(e) => { 
+                                  e.stopPropagation(); // Ngăn sự kiện drag
+                                  if (item.products) setQuickViewProduct(item.products); 
+                              }}
+                              // Thêm touch-action-none để ưu tiên sự kiện click trên mobile cho nút này
+                              className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/95 shadow-elevated flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-30 group/dot touch-manipulation"
+                              style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
+                            >
+                              <span className="absolute w-full h-full rounded-full bg-white/50 animate-ping opacity-75 group-hover/dot:hidden"></span>
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </TooltipTrigger>
+                          {item.products && (
+                            <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 shadow-elevated rounded-xl hidden md:block z-40">
+                              <p className="font-bold text-xs uppercase tracking-wider">{item.products.name}</p>
+                              <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      ))}
+                    </TooltipProvider>
+                  </div>
+                  
+                </motion.div>
+              ) : (
+                <div className="aspect-[16/8] flex items-center justify-center text-muted-foreground italic">
+                  Đang cập nhật hình ảnh không gian cho danh mục này...
                 </div>
-                
-              </motion.div>
-            ) : (
-              <div className="aspect-[16/8] flex items-center justify-center text-muted-foreground italic">
-                Đang cập nhật hình ảnh không gian cho danh mục này...
-              </div>
-            )}
-          </AnimatePresence>
+              )}
+            </AnimatePresence>
+          </div>
           
-          {/* Dots indicator - Đã di chuyển ra ngoài ảnh, ngay bên dưới */}
+          {/* Dots indicator */}
           {currentCategoryLooks.length > 1 && (
-            <div className="flex justify-center items-center gap-3 p-4 bg-transparent border-t-0">
+            <div className="flex justify-center items-center gap-3 p-4 bg-secondary/20">
               {currentCategoryLooks.map((_, idx) => (
                 <button
                   key={idx}
