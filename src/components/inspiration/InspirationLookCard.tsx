@@ -46,7 +46,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
                   }}
                 >
                   {/* Vòng tròn ngoài (Ping effect) */}
-                  <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-70 group-hover/dot:hidden" />
+                  <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-85 group-hover/dot:hidden" />
                   {/* Vòng tròn trong (Hotspot chính) */}
                   <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                 </button>
