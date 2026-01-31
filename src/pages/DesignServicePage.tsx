@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { LayoutGrid, Zap, CheckCircle, Send, ArrowRight, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
@@ -20,6 +20,7 @@ const steps = [
 
 export default function DesignServicePage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [pageContent, setPageContent] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -28,6 +29,22 @@ export default function DesignServicePage() {
     budget: "",
     message: ""
   });
+
+  useEffect(() => {
+    fetchPageContent();
+  }, []);
+
+  const fetchPageContent = async () => {
+    const { data } = await supabase
+      .from('site_pages')
+      .select('content')
+      .eq('slug', 'thiet-ke')
+      .single();
+    
+    if (data?.content) {
+      setPageContent(data.content);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,9 +91,16 @@ export default function DesignServicePage() {
               className="text-center text-cream px-4"
             >
               <h1 className="text-3xl md:text-5xl font-bold mb-4 text-primary">Thiết Kế Nội Thất Miễn Phí</h1>
-              <p className="text-lg md:text-xl text-cream/80 max-w-2xl mx-auto">
-                Biến không gian sống trong mơ thành hiện thực với dịch vụ tư vấn 3D miễn phí từ OHOUSE
-              </p>
+              <div className="text-lg md:text-xl text-cream/80 max-w-2xl mx-auto">
+                {pageContent ? (
+                  <div 
+                    dangerouslySetInnerHTML={{ __html: pageContent }} 
+                    className="prose prose-lg prose-invert max-w-none text-cream/80 prose-p:text-cream/80 prose-ul:text-cream/80 prose-li:text-cream/80"
+                  />
+                ) : (
+                  <p>Biến không gian sống trong mơ thành hiện thực với dịch vụ tư vấn 3D miễn phí từ OHOUSE</p>
+                )}
+              </div>
             </motion.div>
           </div>
         </section>
@@ -94,7 +118,7 @@ export default function DesignServicePage() {
                   viewport={{ once: true }}
                   className="text-center p-6 bg-secondary/50 rounded-lg shadow-subtle"
                 >
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <step.icon className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-bold mb-2">{step.title}</h3>

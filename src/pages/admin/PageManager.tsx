@@ -47,6 +47,15 @@ export default function PageManager() {
       setDeleteId(null);
     }
   };
+  
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'support': return <Badge variant="secondary" className="bg-blue-100 text-blue-700">Hỗ trợ khách hàng</Badge>;
+      case 'company': return <Badge variant="secondary" className="bg-purple-100 text-purple-700">Về công ty</Badge>;
+      case 'service': return <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">Dịch vụ</Badge>;
+      default: return <Badge variant="secondary" className="capitalize">{category}</Badge>;
+    }
+  };
 
   const filtered = pages.filter(p => p.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -93,12 +102,12 @@ export default function PageManager() {
                   <td className="px-6 py-4 font-bold text-sm">{page.title}</td>
                   <td className="px-6 py-4 font-mono text-xs text-muted-foreground">/{page.slug}</td>
                   <td className="px-6 py-4">
-                    <Badge variant="secondary" className="capitalize">{page.category}</Badge>
+                    {getCategoryLabel(page.category)}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-1">
                       <Button variant="ghost" size="icon" asChild title="Xem trang">
-                        <Link to={`/ho-tro/${page.slug}`} target="_blank"><ExternalLink className="w-4 h-4" /></Link>
+                        <Link to={page.category === 'support' ? `/ho-tro/${page.slug}` : `/${page.slug}`} target="_blank"><ExternalLink className="w-4 h-4" /></Link>
                       </Button>
                       <Button variant="ghost" size="icon" asChild className="text-blue-600">
                         <Link to={`/admin/pages/edit/${page.id}`}><Edit className="w-4 h-4" /></Link>

@@ -79,7 +79,8 @@ export default function PageForm() {
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="support">Hỗ trợ khách hàng</SelectItem>
-              <SelectItem value="company">Về công ty</SelectItem>
+              <SelectItem value="service">Dịch vụ (Thiết kế, Lắp đặt)</SelectItem>
+              <SelectItem value="company">Về công ty (Giới thiệu, Tuyển dụng)</SelectItem>
               <SelectItem value="other">Khác</SelectItem>
             </SelectContent>
           </Select>

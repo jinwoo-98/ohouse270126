@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Building2, Users, MessageSquare, Briefcase, Phone, Mail, CheckCircle2, Loader2, Send, ChevronRight } from "lucide-react";
 import { Header } from "@/components/layout/Header";
@@ -20,6 +20,7 @@ const partnerTypes = [
 
 export default function CooperationPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [pageContent, setPageContent] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -27,6 +28,22 @@ export default function CooperationPage() {
     type: "",
     message: ""
   });
+
+  useEffect(() => {
+    fetchPageContent();
+  }, []);
+
+  const fetchPageContent = async () => {
+    const { data } = await supabase
+      .from('site_pages')
+      .select('content')
+      .eq('slug', 'hop-tac')
+      .single();
+    
+    if (data?.content) {
+      setPageContent(data.content);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,9 +98,16 @@ export default function CooperationPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <span className="text-primary font-bold uppercase tracking-[0.3em] text-xs mb-4 block">B2B & Partnerships</span>
               <h1 className="text-4xl md:text-6xl font-bold mb-6">Hợp Tác Cùng OHOUSE</h1>
-              <p className="text-taupe max-w-2xl mx-auto text-lg leading-relaxed">
-                Cùng nhau kiến tạo những không gian sống đẳng cấp và phát triển bền vững trong ngành nội thất cao cấp.
-              </p>
+              <div className="text-lg md:text-xl text-cream/80 max-w-2xl mx-auto leading-relaxed">
+                {pageContent ? (
+                  <div 
+                    dangerouslySetInnerHTML={{ __html: pageContent }} 
+                    className="prose prose-lg prose-invert max-w-none text-cream/80 prose-p:text-cream/80 prose-ul:text-cream/80 prose-li:text-cream/80"
+                  />
+                ) : (
+                  <p>Cùng nhau kiến tạo những không gian sống đẳng cấp và phát triển bền vững trong ngành nội thất cao cấp.</p>
+                )}
+              </div>
             </motion.div>
           </div>
         </section>
