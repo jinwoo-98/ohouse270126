@@ -59,7 +59,7 @@ import MarketingTools from "./pages/admin/MarketingTools";
 import TeamManager from "./pages/admin/TeamManager";
 import CustomerHub from "./pages/admin/CustomerHub"; 
 import CooperationRequestManager from "./pages/admin/CooperationRequestManager";
-import TrackingManager from "./pages/admin/TrackingManager"; // Import mới
+import TrackingManager from "./pages/admin/TrackingManager";
 
 // Homepage Sub-pages
 import SlidePage from "./pages/admin/homepage/SlidePage.tsx";
@@ -168,8 +168,19 @@ const App = () => (
                   {/* System Settings */}
                   <Route path="theme" element={<ThemeSettings />} />
                   <Route path="settings" element={<GeneralSettings />} />
+                  <Route path="tracking" element={<TrackingManager />} />
                   <Route path="team" element={<TeamManager />} />
-                  <Route path="tracking" element={<TrackingManager />} /> {/* Route mới */}
+
+                  {/* Missing CMS Routes */}
+                  <Route path="pages" element={<PageManager />} />
+                  <Route path="pages/new" element={<PageForm />} />
+                  <Route path="pages/edit/:id" element={<PageForm />} />
+                  <Route path="news" element={<NewsManager />} />
+                  <Route path="news/new" element={<NewsForm />} />
+                  <Route path="news/edit/:id" element={<NewsForm />} />
+                  <Route path="projects" element={<ProjectManager />} />
+                  <Route path="projects/new" element={<ProjectForm />} />
+                  <Route path="projects/edit/:id" element={<ProjectForm />} />
                 </Route>
 
                 <Route path="/:slug" element={<CategoryPage />} />
