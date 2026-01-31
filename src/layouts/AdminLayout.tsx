@@ -62,7 +62,7 @@ const menuGroups = [
     items: [
       { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
       { id: 'looks', title: "Lookbook", icon: Sparkles, href: "/admin/content/looks" }, // Added Lookbook
-      { id: 'pages', title: "Trang tĩnh", icon: Files, href: "/admin/pages" },
+      { id: 'pages', title: "Trang nội dung", icon: Files, href: "/admin/pages" },
       { id: 'news', title: "Tin tức", icon: Newspaper, href: "/admin/news" },
       { id: 'projects', title: "Dự án", icon: Briefcase, href: "/admin/projects" },
     ]
