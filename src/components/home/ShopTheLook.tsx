@@ -85,16 +85,14 @@ export function ShopTheLook() {
   
   useEffect(() => {
     setCurrentLookIndex(0);
+    setPage([0, 0]); // Reset page state khi đổi category
   }, [activeCategorySlug]);
 
   // Điều hướng Look (Slide lớn)
   const paginateLook = (newDirection: number) => {
+    const newIndex = (currentLookIndex + newDirection + currentCategoryLooks.length) % currentCategoryLooks.length;
     setPage([page + newDirection, newDirection]);
-    if (newDirection === 1) {
-        setCurrentLookIndex((prev) => (prev + 1) % currentCategoryLooks.length);
-    } else {
-        setCurrentLookIndex((prev) => (prev - 1 + currentCategoryLooks.length) % currentCategoryLooks.length);
-    }
+    setCurrentLookIndex(newIndex);
   };
 
   // Xử lý sự kiện vuốt (Drag End)
@@ -111,6 +109,8 @@ export function ShopTheLook() {
 
   if (loading) return <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   if (allLooks.length === 0) return null;
+  
+  const hasMultipleLooks = currentCategoryLooks.length > 1;
 
   return (
     <section className="py-10 md:py-24 bg-secondary/20 overflow-hidden">
@@ -168,7 +168,7 @@ export function ShopTheLook() {
                     <img
                       src={activeLook.homepage_image_url || activeLook.image_url}
                       alt={activeLook.title}
-                      className="w-full h-full object-cover pointer-events-none" // Quan trọng: Chặn sự kiện chuột vào ảnh để cho phép kéo container
+                      className="w-full h-full object-cover pointer-events-none" // Quan trọng: Chặn sự kiện chuột vào ảnh thay vì vuốt slide
                       draggable="false"
                     />
                   </Link>
@@ -190,7 +190,7 @@ export function ShopTheLook() {
                               className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full bg-white/95 shadow-elevated flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-30 group/dot touch-manipulation"
                               style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                             >
-                              <span className="absolute w-full h-full rounded-full bg-white/50 animate-ping opacity-75 group-hover/dot:hidden"></span>
+                              <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-75 group-hover/dot:hidden"></span>
                               <Plus className="w-4 h-4" />
                             </button>
                           </TooltipTrigger>
@@ -214,13 +214,31 @@ export function ShopTheLook() {
             </AnimatePresence>
           </div>
           
+          {/* Nút điều hướng */}
+          {hasMultipleLooks && (
+            <>
+              <button 
+                onClick={() => paginateLook(-1)} 
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-20 items-center justify-center group shadow-medium hidden md:flex"
+              >
+                <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+              </button>
+              <button 
+                onClick={() => paginateLook(1)} 
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-20 items-center justify-center group shadow-medium hidden md:flex"
+              >
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </>
+          )}
+
           {/* Dots indicator */}
           {currentCategoryLooks.length > 1 && (
             <div className="flex justify-center items-center gap-3 p-4 bg-secondary/20">
               {currentCategoryLooks.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setPage([idx, idx > currentLookIndex ? 1 : -1])}
+                  onClick={() => paginateLook(idx - currentLookIndex)}
                   className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentLookIndex ? "bg-primary w-8 md:w-12" : "bg-muted-foreground/30 w-2 md:w-3 hover:bg-primary/60"}`}
                 />
               ))}
