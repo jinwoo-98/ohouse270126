@@ -32,6 +32,7 @@ export default function LookbookForm() {
     image_url: "",
     gallery_urls: [] as string[],
     is_active: true,
+    homepage_image_url: "",
   });
 
   useEffect(() => {
@@ -79,6 +80,7 @@ export default function LookbookForm() {
       image_url: lookData.image_url,
       gallery_urls: lookData.gallery_urls || [],
       is_active: lookData.is_active,
+      homepage_image_url: lookData.homepage_image_url || "",
     });
     setLookItems(lookData.shop_look_items || []);
     setActiveEditingImage(lookData.image_url);
@@ -93,7 +95,8 @@ export default function LookbookForm() {
       category_id: formData.category_id, 
       image_url: formData.image_url, 
       gallery_urls: formData.gallery_urls || [],
-      is_active: formData.is_active
+      is_active: formData.is_active,
+      homepage_image_url: formData.homepage_image_url,
     };
 
     if (!lookPayload.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
@@ -326,6 +329,14 @@ export default function LookbookForm() {
                     setActiveEditingImage(url as string); 
                   }} 
                 />
+              </div>
+              <div className="space-y-2 pt-4 border-t border-dashed">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh cho Shop The Look (Trang chủ)</Label>
+                <ImageUpload 
+                  value={formData.homepage_image_url} 
+                  onChange={(url) => setFormData({...formData, homepage_image_url: url as string})} 
+                />
+                <p className="text-[10px] text-muted-foreground italic">Ảnh này sẽ hiển thị ở mục Shop The Look trên trang chủ. Nếu để trống, sẽ dùng ảnh chính.</p>
               </div>
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh phụ</Label>

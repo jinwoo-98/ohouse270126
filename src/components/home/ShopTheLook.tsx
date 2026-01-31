@@ -49,6 +49,7 @@ export function ShopTheLook() {
         .from('shop_looks')
         .select(`
           *,
+          homepage_image_url,
           shop_look_items (
             *,
             products:product_id (*)
@@ -156,14 +157,14 @@ export function ShopTheLook() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: direction > 0 ? -200 : 200 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="relative aspect-square md:aspect-[16/8] w-full group cursor-grab active:cursor-grabbing"
+                className="relative aspect-video w-full group cursor-grab active:cursor-grabbing"
                 drag="x" // BẬT TÍNH NĂNG KÉO
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={1}
                 onDragEnd={handleDragEnd}
               >
                 <img
-                  src={activeLook.image_url}
+                  src={activeLook.homepage_image_url || activeLook.image_url}
                   alt={activeLook.title}
                   className="w-full h-full object-cover pointer-events-none" // Quan trọng: Chặn sự kiện chuột vào ảnh để cho phép kéo container
                   draggable="false"
