@@ -149,7 +149,13 @@ export default function CooperationRequestManager() {
                     </p>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    {getStatusBadge(req.status)}
+                    {isUpdatingId === req.id ? (
+                        <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-primary animate-pulse">
+                          <Loader2 className="w-3 h-3 animate-spin" /> ĐANG LƯU...
+                        </div>
+                      ) : (
+                        getStatusBadge(req.status)
+                      )}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
