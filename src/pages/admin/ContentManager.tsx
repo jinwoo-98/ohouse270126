@@ -9,6 +9,7 @@ import {
   Building2,
   Files
 } from "lucide-react";
+import { ShowroomPageLink } from "@/components/admin/content/ShowroomPageLink";
 
 const contentSections = [
   {
@@ -16,42 +17,48 @@ const contentSections = [
     title: "Quản Lý Lookbook",
     description: "Tạo, chỉnh sửa chi tiết và gắn thẻ sản phẩm cho các bộ sưu tập không gian.",
     href: "/admin/content/looks",
-    color: "text-purple-600 bg-purple-50 border-purple-200"
+    color: "text-purple-600 bg-purple-50 border-purple-200",
+    component: Link
   },
   {
     icon: Building2,
     title: "Trang Showroom",
     description: "Chỉnh sửa nội dung, địa chỉ và thông tin liên hệ của trang Showroom.",
-    href: "/admin/pages",
-    color: "text-indigo-600 bg-indigo-50 border-indigo-200"
+    href: "/admin/pages/showroom-redirect", // Dùng href giả để kích hoạt ShowroomPageLink
+    color: "text-indigo-600 bg-indigo-50 border-indigo-200",
+    component: ShowroomPageLink
   },
   {
     icon: Briefcase,
     title: "Trang Dự Án",
     description: "Đăng tải và quản lý các dự án, công trình đã thực hiện.",
     href: "/admin/projects",
-    color: "text-blue-600 bg-blue-50 border-blue-200"
+    color: "text-blue-600 bg-blue-50 border-blue-200",
+    component: Link
   },
   {
     icon: Newspaper,
     title: "Trang Tin Tức",
     description: "Viết bài mới, quản lý các bài blog, tin tức và sự kiện.",
     href: "/admin/news",
-    color: "text-green-600 bg-green-50 border-green-200"
+    color: "text-green-600 bg-green-50 border-green-200",
+    component: Link
   },
   {
     icon: Handshake,
     title: "Yêu cầu Hợp tác",
     description: "Xem và quản lý các yêu cầu hợp tác kinh doanh (B2B, Đại lý).",
     href: "/admin/cooperation-requests",
-    color: "text-orange-600 bg-orange-50 border-orange-200"
+    color: "text-orange-600 bg-orange-50 border-orange-200",
+    component: Link
   },
   {
     icon: Files,
     title: "Các Trang Tĩnh Khác",
     description: "Chỉnh sửa nội dung các trang tĩnh như Giới thiệu, Tuyển dụng, Hỗ trợ.",
     href: "/admin/pages",
-    color: "text-gray-600 bg-gray-100 border-gray-200"
+    color: "text-gray-600 bg-gray-100 border-gray-200",
+    component: Link
   }
 ];
 
@@ -67,28 +74,32 @@ export default function ContentManager() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {contentSections.map((section) => (
-          <Link 
-            key={section.title} 
-            to={section.href}
-            className="group block bg-white p-6 rounded-2xl border border-border/60 hover:border-primary/40 hover:shadow-medium transition-all duration-300"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${section.color}`}>
-                  <section.icon className="w-6 h-6" />
+        {contentSections.map((section) => {
+          const Component = section.component;
+          
+          return (
+            <Component 
+              key={section.title} 
+              to={section.href}
+              className="group block bg-white p-6 rounded-2xl border border-border/60 hover:border-primary/40 hover:shadow-medium transition-all duration-300"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${section.color}`}>
+                    <section.icon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-charcoal group-hover:text-primary transition-colors">{section.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{section.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-charcoal group-hover:text-primary transition-colors">{section.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{section.description}</p>
+                <div className="p-2 bg-secondary/40 rounded-full group-hover:bg-primary group-hover:text-white transition-colors">
+                  <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
-              <div className="p-2 bg-secondary/40 rounded-full group-hover:bg-primary group-hover:text-white transition-colors">
-                <ChevronRight className="w-4 h-4" />
-              </div>
-            </div>
-          </Link>
-        ))}
+            </Component>
+          );
+        })}
       </div>
     </div>
   );
