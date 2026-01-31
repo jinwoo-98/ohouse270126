@@ -22,9 +22,8 @@ const swipePower = (offset: number, velocity: number) => {
 // Cấu hình animation trượt ngang liền mạch
 const variants = {
   enter: (direction: number) => ({
-    // Slide mới vào từ bên phải (direction > 0) hoặc bên trái (direction < 0)
     x: direction > 0 ? "100%" : "-100%",
-    opacity: 1, // Giữ opacity 1 để slide liền mạch
+    opacity: 1,
   }),
   center: {
     zIndex: 1,
@@ -32,10 +31,9 @@ const variants = {
     opacity: 1,
   },
   exit: (direction: number) => ({
-    // Slide cũ trượt ra theo hướng ngược lại
-    x: direction < 0 ? "100%" : "-100%",
-    opacity: 1, // Giữ opacity 1
     zIndex: 0,
+    x: direction < 0 ? "100%" : "-100%",
+    opacity: 1,
   }),
 };
 
@@ -112,7 +110,6 @@ export function ShopTheLook() {
   const paginateLook = (newDirection: number) => {
     if (currentCategoryLooks.length <= 1) return;
     const newIndex = (currentLookIndex + newDirection + currentCategoryLooks.length) % currentCategoryLooks.length;
-    // Cập nhật direction dựa trên hướng chuyển động
     setPage([page + newDirection, newDirection]);
     setCurrentLookIndex(newIndex);
   };
@@ -122,14 +119,12 @@ export function ShopTheLook() {
     if (currentCategoryLooks.length <= 1) return;
     
     const swipe = swipePower(offset.x, velocity.x);
-
-    // Tăng ngưỡng vuốt trên mobile để tránh nhầm lẫn với cuộn dọc
     const threshold = window.innerWidth < 768 ? 500 : swipeConfidenceThreshold;
 
     if (swipe < -threshold) {
-      paginateLook(1); // Vuốt trái -> Next Look (direction > 0)
+      paginateLook(1);
     } else if (swipe > threshold) {
-      paginateLook(-1); // Vuốt phải -> Prev Look (direction < 0)
+      paginateLook(-1);
     }
   };
 
@@ -180,8 +175,8 @@ export function ShopTheLook() {
         </div>
 
         <div className="relative rounded-2xl overflow-hidden bg-transparent shadow-elevated border border-border/40">
-          <div className="bg-background relative"> {/* Thêm relative để các slide con absolute có thể xếp chồng */}
-            <AnimatePresence initial={false} custom={direction} mode="wait">
+          <div className="bg-background relative">
+            <AnimatePresence initial={false} custom={direction}>
               {activeLook ? (
                 <motion.div
                   key={activeLook.id}
@@ -192,7 +187,7 @@ export function ShopTheLook() {
                   exit="exit"
                   transition={{
                     x: { type: "spring", stiffness: 300, damping: 30 },
-                    opacity: { duration: 0.01 }, // Giảm thời gian opacity để tập trung vào X
+                    opacity: { duration: 0.2 },
                   }}
                   className="absolute inset-0 aspect-video w-full group cursor-grab active:cursor-grabbing"
                   drag="x"
@@ -209,7 +204,6 @@ export function ShopTheLook() {
                     />
                   </Link>
                   
-                  {/* Lớp phủ chứa Hotspot */}
                   <div className="absolute inset-0 bg-black/5">
                     <TooltipProvider>
                       {activeLook.shop_look_items
@@ -225,9 +219,7 @@ export function ShopTheLook() {
                               className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-30 group/dot touch-manipulation"
                               style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                             >
-                              {/* Vòng tròn ngoài (Ping effect) */}
                               <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden"></span>
-                              {/* Vòng tròn trong (Hotspot chính) */}
                               <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                             </button>
                           </TooltipTrigger>
@@ -249,11 +241,9 @@ export function ShopTheLook() {
                 </div>
               )}
             </AnimatePresence>
-            {/* Đảm bảo div cha có chiều cao cố định để các slide absolute không làm sập layout */}
             <div className="aspect-video" /> 
           </div>
           
-          {/* Nút điều hướng */}
           {hasMultipleLooks && (
             <>
               <button 
@@ -271,7 +261,6 @@ export function ShopTheLook() {
             </>
           )}
 
-          {/* Dots indicator */}
           {currentCategoryLooks.length > 1 && (
             <div className="flex justify-center items-center gap-3 p-4 bg-secondary/20">
               {currentCategoryLooks.map((_, idx) => (
