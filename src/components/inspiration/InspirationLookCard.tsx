@@ -38,7 +38,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
             <Tooltip key={item.id} delayDuration={0}>
               <TooltipTrigger asChild>
                 <button
-                  className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-20 group/dot"
+                  className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot"
                   style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                   onClick={(e) => { 
                     e.stopPropagation(); 
@@ -48,7 +48,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
                   {/* Vòng tròn ngoài (Ping effect) */}
                   <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-50 group-hover/dot:hidden" />
                   {/* Vòng tròn trong (Hotspot chính) */}
-                  <span className="relative w-4 h-4 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-200 group-hover/dot:bg-primary group-hover/dot:border-white" />
+                  <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                 </button>
               </TooltipTrigger>
               <TooltipContent className="bg-charcoal text-cream border-none p-3 rounded-xl shadow-elevated">

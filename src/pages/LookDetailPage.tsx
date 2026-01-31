@@ -107,13 +107,13 @@ export default function LookDetailPage() {
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setQuickViewProduct(product); }}
                                   // Thiết kế Hotspot mới
-                                  className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-300 z-10 group/dot pointer-events-auto"
+                                  className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-10 group/dot pointer-events-auto"
                                   style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                                 >
                                   {/* Vòng tròn ngoài (Ping effect) */}
                                   <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-50 group-hover/dot:hidden" />
                                   {/* Vòng tròn trong (Hotspot chính) */}
-                                  <span className="relative w-4 h-4 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-200 group-hover/dot:bg-primary group-hover/dot:border-white" />
+                                  <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 shadow-elevated rounded-xl">
