@@ -8,7 +8,7 @@ import { CartProvider } from "./contexts/CartContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
 import ScrollToTop from "./components/ScrollToTop";
 import { FloatingActions } from "./components/layout/FloatingActions";
-import { TrackingScripts } from "./components/TrackingScripts"; // Import mới
+import { TrackingScripts } from "./components/TrackingScripts";
 
 // Public Pages
 import Index from "./pages/Index";
@@ -34,6 +34,7 @@ import OrderSuccessPage from "./pages/OrderSuccessPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CooperationPage from "./pages/CooperationPage";
 import LookDetailPage from "./pages/LookDetailPage";
+import ShowroomPage from "./pages/ShowroomPage"; // Import ShowroomPage
 
 // Admin Pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -60,6 +61,8 @@ import TeamManager from "./pages/admin/TeamManager";
 import CustomerHub from "./pages/admin/CustomerHub"; 
 import CooperationRequestManager from "./pages/admin/CooperationRequestManager";
 import TrackingManager from "./pages/admin/TrackingManager";
+import ShowroomManager from "./pages/admin/ShowroomManager"; // Import mới
+import ShowroomForm from "./pages/admin/ShowroomForm"; // Import mới
 
 // Homepage Sub-pages
 import SlidePage from "./pages/admin/homepage/SlidePage.tsx";
@@ -86,7 +89,7 @@ const App = () => (
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
-              <TrackingScripts /> {/* Component chèn mã theo dõi */}
+              <TrackingScripts />
               <Routes>
                 {/* Chuyển hướng / sang /trangchu */}
                 <Route path="/" element={<Navigate to="/trangchu" replace />} />
@@ -114,7 +117,7 @@ const App = () => (
                 </Route>
 
                 <Route path="/dang-nhap" element={<AccountPage />} />
-                <Route path="/showroom" element={<ContentPage />} />
+                <Route path="/showroom" element={<ShowroomPage />} /> {/* Sử dụng ShowroomPage mới */}
                 <Route path="/cam-hung" element={<InspirationPage />} />
                 <Route path="/y-tuong/:id" element={<LookDetailPage />} />
                 <Route path="/thiet-ke" element={<DesignServicePage />} />
@@ -170,6 +173,11 @@ const App = () => (
                   <Route path="settings" element={<GeneralSettings />} />
                   <Route path="tracking" element={<TrackingManager />} />
                   <Route path="team" element={<TeamManager />} />
+                  
+                  {/* Showroom Management (New) */}
+                  <Route path="showrooms" element={<ShowroomManager />} />
+                  <Route path="showrooms/new" element={<ShowroomForm />} />
+                  <Route path="showrooms/edit/:id" element={<ShowroomForm />} />
 
                   {/* Missing CMS Routes */}
                   <Route path="pages" element={<PageManager />} />

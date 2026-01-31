@@ -29,7 +29,8 @@ import {
   Headset,
   Handshake,
   Sparkles,
-  Code // Import Code icon
+  Code,
+  MapPin // Import MapPin icon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +64,7 @@ const menuGroups = [
     items: [
       { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
       { id: 'looks', title: "Lookbook", icon: Sparkles, href: "/admin/content/looks" },
+      { id: 'showrooms', title: "Showroom", icon: MapPin, href: "/admin/showrooms" }, // Mục mới
       { id: 'pages', title: "Trang nội dung", icon: Files, href: "/admin/pages" },
       { id: 'news', title: "Tin tức", icon: Newspaper, href: "/admin/news" },
       { id: 'projects', title: "Dự án", icon: Briefcase, href: "/admin/projects" },
@@ -81,7 +83,7 @@ const menuGroups = [
     items: [
       { id: 'theme', title: "Giao diện", icon: Palette, href: "/admin/theme" },
       { id: 'settings', title: "Cấu hình chung", icon: Settings, href: "/admin/settings" },
-      { id: 'tracking', title: "Mã Theo Dõi", icon: Code, href: "/admin/tracking" }, // Mục mới
+      { id: 'tracking', title: "Mã Theo Dõi", icon: Code, href: "/admin/tracking" },
       { id: 'team', title: "Phân quyền", icon: ShieldCheck, href: "/admin/team" },
     ]
   }

@@ -6,7 +6,6 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ShowroomContent } from "@/components/ShowroomContent";
 
 export default function ContentPage() {
   const location = useLocation();
@@ -15,21 +14,13 @@ export default function ContentPage() {
   const [pageData, setPageData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const isShowroomPage = slug === 'showroom';
-
   useEffect(() => {
     if (slug) {
-      if (!isShowroomPage) {
-        fetchPage();
-      } else {
-        // Showroom content is fetched inside ShowroomContent component
-        setLoading(false);
-        setPageData({ title: "Hệ Thống Showroom" });
-      }
+      fetchPage();
     } else {
       navigate("/404");
     }
-  }, [slug, navigate, isShowroomPage]);
+  }, [slug, navigate]);
 
   const fetchPage = async () => {
     setLoading(true);
@@ -85,14 +76,10 @@ export default function ContentPage() {
                     <h1 className="text-2xl md:text-3xl font-bold">{pageData.title}</h1>
                   </div>
                   
-                  {isShowroomPage ? (
-                    <ShowroomContent />
-                  ) : (
-                    <div 
-                      className="prose prose-lg prose-stone max-w-none text-muted-foreground leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: pageData.content || '' }}
-                    />
-                  )}
+                  <div 
+                    className="prose prose-lg prose-stone max-w-none text-muted-foreground leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: pageData.content || '' }}
+                  />
                 </>
               ) : (
                 <div className="text-center py-20">
