@@ -21,14 +21,17 @@ const swipePower = (offset: number, velocity: number) => {
 const variants = {
   enter: (direction: number) => ({
     x: direction > 0 ? "100%" : "-100%",
+    scale: 1.01, // Phóng to nhẹ để che khe hở pixel
   }),
   center: {
     zIndex: 1,
     x: 0,
+    scale: 1.01, // Phóng to nhẹ để che khe hở pixel
   },
   exit: (direction: number) => ({
     zIndex: 0,
     x: direction < 0 ? "100%" : "-100%",
+    scale: 1.01, // Phóng to nhẹ để che khe hở pixel
   }),
 };
 
@@ -179,7 +182,7 @@ export function ShopTheLook() {
                   animate="center"
                   exit="exit"
                   transition={{
-                    x: { type: "tween", ease: "linear", duration: 0.6 },
+                    x: { type: "tween", ease: "linear", duration: 0.4 }, // Giảm thời gian chuyển cảnh
                   }}
                   className="absolute inset-0 aspect-video w-full group cursor-grab active:cursor-grabbing"
                   drag="x"
