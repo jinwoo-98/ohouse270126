@@ -214,7 +214,7 @@ export function ShopTheLook() {
           
           {/* Dots indicator - Đã di chuyển ra ngoài ảnh, ngay bên dưới */}
           {currentCategoryLooks.length > 1 && (
-            <div className="flex justify-center items-center gap-3 p-4 bg-background border-t border-border/40">
+            <div className="flex justify-center items-center gap-3 p-4 bg-secondary/20 border-t-0">
               {currentCategoryLooks.map((_, idx) => (
                 <button
                   key={idx}
