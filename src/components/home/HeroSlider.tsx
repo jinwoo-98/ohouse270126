@@ -9,26 +9,9 @@ const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
-const variants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? "100%" : "-100%",
-    scale: 1.01, // Phóng to nhẹ để che khe hở pixel
-  }),
-  center: {
-    zIndex: 1,
-    x: 0,
-    scale: 1.01, // Phóng to nhẹ để che khe hở pixel
-  },
-  exit: (direction: number) => ({
-    zIndex: 0,
-    x: direction < 0 ? "100%" : "-100%",
-    scale: 1.01, // Phóng to nhẹ để che khe hở pixel
-  }),
-};
-
 export function HeroSlider() {
   const [slides, setSlides] = useState<any[]>([]);
-  const [[page, direction], setPage] = useState([0, 0]);
+  const [imageIndex, setImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,12 +34,17 @@ export function HeroSlider() {
     }
   };
 
-  const imageIndex = page % (slides.length || 1);
   const current = slides[imageIndex];
 
   const paginate = (newDirection: number) => {
     if (slides.length <= 1) return;
-    setPage([page + newDirection, newDirection]);
+    let newIndex = imageIndex + newDirection;
+    if (newIndex < 0) {
+      newIndex = slides.length - 1;
+    } else if (newIndex >= slides.length) {
+      newIndex = 0;
+    }
+    setImageIndex(newIndex);
   };
 
   useEffect(() => {
@@ -66,11 +54,10 @@ export function HeroSlider() {
       }, 6000);
       return () => clearInterval(timer);
     }
-  }, [slides.length, page]);
+  }, [slides.length, imageIndex]);
 
   const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
     const swipe = swipePower(offset.x, velocity.x);
-    
     const threshold = window.innerWidth < 768 ? 500 : swipeConfidenceThreshold;
 
     if (swipe < -threshold) {
@@ -86,37 +73,30 @@ export function HeroSlider() {
 
   return (
     <section className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-charcoal">
-      <div className="absolute inset-0">
-        <AnimatePresence initial={false} custom={direction}>
-          <motion.div
-            key={page}
-            custom={direction}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{
-              x: { type: "tween", ease: "linear", duration: 0.2 }, // Đã giảm xuống 0.2s
-            }}
-            className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
-            onDragEnd={handleDragEnd}
-          >
+      <motion.div
+        className="flex h-full w-full cursor-grab active:cursor-grabbing"
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.5}
+        onDragEnd={handleDragEnd}
+        animate={{ x: `-${imageIndex * 100}%` }}
+        transition={{ type: "tween", duration: 0.5, ease: "easeOut" }}
+      >
+        {slides.map((slide) => (
+          <div key={slide.id} className="relative h-full w-full flex-shrink-0">
             <motion.img
               initial={{ scale: 1.1 }}
               animate={{ scale: 1 }}
               transition={{ duration: 6, ease: "linear" }}
-              src={current.image_url}
-              alt={current.title}
+              src={slide.image_url}
+              alt={slide.title}
               className="w-full h-full object-cover pointer-events-none"
               draggable="false"
             />
             <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-          </motion.div>
-        </AnimatePresence>
-      </div>
+          </div>
+        ))}
+      </motion.div>
 
       <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
         <div className="container-luxury w-full">
@@ -195,7 +175,7 @@ export function HeroSlider() {
             {slides.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setPage([index, index > imageIndex ? 1 : -1])}
+                onClick={() => setImageIndex(index)}
                 className={`h-1.5 rounded-full transition-all duration-500 pointer-events-auto ${index === imageIndex ? "bg-primary w-8 md:w-12" : "bg-white/30 w-2 md:w-3 hover:bg-white/60"}`}
               />
             ))}

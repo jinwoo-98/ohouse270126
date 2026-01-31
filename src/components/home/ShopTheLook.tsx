@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import { motion, PanInfo } from "framer-motion";
 import { Plus, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,23 +18,6 @@ const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
-const variants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? "100%" : "-100%",
-    scale: 1.01, // Phóng to nhẹ để che khe hở pixel
-  }),
-  center: {
-    zIndex: 1,
-    x: 0,
-    scale: 1.01, // Phóng to nhẹ để che khe hở pixel
-  },
-  exit: (direction: number) => ({
-    zIndex: 0,
-    x: direction < 0 ? "100%" : "-100%",
-    scale: 1.01, // Phóng to nhẹ để che khe hở pixel
-  }),
-};
-
 export function ShopTheLook() {
   const [allLooks, setAllLooks] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
@@ -44,7 +27,6 @@ export function ShopTheLook() {
   const [currentLookIndex, setCurrentLookIndex] = useState(0); 
   
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
-  const [[page, direction], setPage] = useState([0, 0]);
 
   const { data: categoriesData } = useCategories();
 
@@ -97,17 +79,19 @@ export function ShopTheLook() {
   }, [allLooks, categoriesWithLooks, activeCategorySlug]);
   
   const currentCategoryLooks = useMemo(() => allLooks.filter(l => l.category_id === activeCategorySlug), [allLooks, activeCategorySlug]);
-  const activeLook = currentCategoryLooks[currentLookIndex];
   
   useEffect(() => {
     setCurrentLookIndex(0);
-    setPage([0, 0]);
   }, [activeCategorySlug]);
 
   const paginateLook = (newDirection: number) => {
     if (currentCategoryLooks.length <= 1) return;
-    const newIndex = (currentLookIndex + newDirection + currentCategoryLooks.length) % currentCategoryLooks.length;
-    setPage([page + newDirection, newDirection]);
+    let newIndex = currentLookIndex + newDirection;
+    if (newIndex < 0) {
+      newIndex = currentCategoryLooks.length - 1;
+    } else if (newIndex >= currentCategoryLooks.length) {
+      newIndex = 0;
+    }
     setCurrentLookIndex(newIndex);
   };
 
@@ -156,9 +140,7 @@ export function ShopTheLook() {
           {categoriesWithLooks.map((cat) => (
             <button
               key={cat.dropdownKey}
-              onClick={() => { 
-                setActiveCategorySlug(cat.dropdownKey!); 
-              }}
+              onClick={() => setActiveCategorySlug(cat.dropdownKey!)}
               className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap ${
                 cat.dropdownKey === activeCategorySlug 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
@@ -171,38 +153,30 @@ export function ShopTheLook() {
         </div>
 
         <div className="relative rounded-2xl overflow-hidden bg-transparent shadow-elevated border border-border/40">
-          <div className="bg-background relative">
-            <AnimatePresence initial={false} custom={direction}>
-              {activeLook ? (
-                <motion.div
-                  key={activeLook.id}
-                  custom={direction}
-                  variants={variants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{
-                    x: { type: "tween", ease: "linear", duration: 0.2 }, // Đã giảm xuống 0.2s
-                  }}
-                  className="absolute inset-0 aspect-video w-full group cursor-grab active:cursor-grabbing"
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={0.5}
-                  onDragEnd={handleDragEnd}
-                >
-                  <Link to={`/y-tuong/${activeLook.id}`} className="absolute inset-0 z-10">
+          <div className="bg-background relative aspect-video">
+            <motion.div
+              className="flex h-full w-full cursor-grab active:cursor-grabbing"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.5}
+              onDragEnd={handleDragEnd}
+              animate={{ x: `-${currentLookIndex * 100}%` }}
+              transition={{ type: "tween", duration: 0.5, ease: "easeOut" }}
+            >
+              {currentCategoryLooks.map((look) => (
+                <div key={look.id} className="relative h-full w-full flex-shrink-0 group">
+                  <Link to={`/y-tuong/${look.id}`} className="absolute inset-0 z-10">
                     <img
-                      src={activeLook.homepage_image_url || activeLook.image_url}
-                      alt={activeLook.title}
+                      src={look.homepage_image_url || look.image_url}
+                      alt={look.title}
                       className="w-full h-full object-cover pointer-events-none"
                       draggable="false"
                     />
                   </Link>
-                  
                   <div className="absolute inset-0 bg-black/5">
                     <TooltipProvider>
-                      {activeLook.shop_look_items
-                        .filter((item: any) => item.target_image_url === activeLook.image_url)
+                      {look.shop_look_items
+                        .filter((item: any) => item.target_image_url === look.image_url)
                         .map((item: any) => (
                         <Tooltip key={item.id} delayDuration={0}>
                           <TooltipTrigger asChild>
@@ -228,15 +202,9 @@ export function ShopTheLook() {
                       ))}
                     </TooltipProvider>
                   </div>
-                  
-                </motion.div>
-              ) : (
-                <div className="aspect-[16/8] flex items-center justify-center text-muted-foreground italic">
-                  Đang cập nhật hình ảnh không gian cho danh mục này...
                 </div>
-              )}
-            </AnimatePresence>
-            <div className="aspect-video" /> 
+              ))}
+            </motion.div>
           </div>
           
           {hasMultipleLooks && (
@@ -261,7 +229,7 @@ export function ShopTheLook() {
               {currentCategoryLooks.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => paginateLook(idx - currentLookIndex)}
+                  onClick={() => setCurrentLookIndex(idx)}
                   className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentLookIndex ? "bg-primary w-8 md:w-12" : "bg-muted-foreground/30 w-2 md:w-3 hover:bg-primary/60"}`}
                 />
               ))}
