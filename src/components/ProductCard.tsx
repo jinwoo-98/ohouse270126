@@ -27,13 +27,8 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const isFavorite = isInWishlist(product.id);
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Trên Mobile: Chuyển hướng thẳng đến trang chi tiết
-    if (isMobile) {
-      navigate(`/san-pham/${product.slug || product.id}`);
-    } else {
-      // Trên Desktop: Mở QuickView Sheet
-      setIsQuickViewOpen(true);
-    }
+    // Luôn mở QuickView Sheet khi click vào thẻ sản phẩm trên mọi thiết bị
+    setIsQuickViewOpen(true);
   };
 
   return (
