@@ -52,9 +52,13 @@ export function HeroSlider() {
 
   const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
     const swipe = swipePower(offset.x, velocity.x);
-    if (swipe < -swipeConfidenceThreshold) {
+    
+    // Ngưỡng vuốt thấp hơn trên mobile để dễ chuyển slide hơn
+    const threshold = window.innerWidth < 768 ? 500 : swipeConfidenceThreshold;
+
+    if (swipe < -threshold) {
       paginate(1);
-    } else if (swipe > swipeConfidenceThreshold) {
+    } else if (swipe > threshold) {
       paginate(-1);
     }
   };
@@ -69,14 +73,17 @@ export function HeroSlider() {
           <motion.div
             key={page}
             custom={direction}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
-            className="absolute inset-0 cursor-grab active:cursor-grabbing"
+            initial={{ opacity: 0, x: direction > 0 ? 1000 : -1000 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -1000 : 1000 }}
+            transition={{ 
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 }
+            }}
+            className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
             drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
+            dragConstraints={{ left: 0, right: 0 }} // Giữ nguyên 0,0 để chỉ dùng cho tính toán velocity
+            dragElastic={1} // Cho phép kéo ảnh ra khỏi vị trí để tạo cảm giác vuốt
             onDragEnd={handleDragEnd}
           >
             <motion.img
@@ -85,7 +92,7 @@ export function HeroSlider() {
               transition={{ duration: 6, ease: "linear" }}
               src={current.image_url}
               alt={current.title}
-              className="w-full h-full object-cover pointer-events-none" // Quan trọng: pointer-events-none để không chặn thao tác vuốt
+              className="w-full h-full object-cover pointer-events-none"
               draggable="false"
             />
             <div className="absolute inset-0 bg-black/20 pointer-events-none" />
