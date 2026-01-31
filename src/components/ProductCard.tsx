@@ -42,7 +42,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         onClick={handleCardClick}
       >
         {/* Image Section */}
-        <div className="relative aspect-square overflow-hidden bg-secondary/15 shrink-0">
+        <div className="relative aspect-square overflow-hidden bg-secondary/15 shrink-0 rounded-xl">
           <div className="block h-full w-full">
             <AnimatePresence mode="wait">
               <motion.img 

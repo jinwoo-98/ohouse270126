@@ -86,7 +86,7 @@ export function CategoryGrid() {
                 to={`/${category.slug}`}
                 className="group block card-luxury h-full"
               >
-                <div className="aspect-square img-zoom bg-secondary/20">
+                <div className="aspect-square img-zoom bg-secondary/20 rounded-xl overflow-hidden">
                   <img
                     src={category.image_url || "/placeholder.svg"}
                     alt={category.name}
@@ -113,7 +113,7 @@ export function CategoryGrid() {
                 to="/sale"
                 className="group block card-luxury bg-destructive/5 hover:bg-destructive/10 h-full"
               >
-                <div className="aspect-square flex items-center justify-center">
+                <div className="aspect-square flex items-center justify-center rounded-xl overflow-hidden">
                   <div className="text-center p-6">
                     <span className="text-3xl md:text-5xl font-bold text-destructive">
                       SALE

@@ -104,7 +104,7 @@
   }
 
   .card-luxury {
-    @apply bg-transparent rounded-lg overflow-hidden;
+    @apply bg-transparent rounded-2xl overflow-hidden;
     @apply transition-all duration-500 ease-out;
   }
 
