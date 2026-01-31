@@ -19,11 +19,12 @@ const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
-// Cấu hình animation trượt ngang
+// Cấu hình animation trượt ngang liền mạch
 const variants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? 1000 : -1000,
-    opacity: 0,
+    // Slide mới vào từ bên phải (direction > 0) hoặc bên trái (direction < 0)
+    x: direction > 0 ? "100%" : "-100%",
+    opacity: 1, // Giữ opacity 1 để slide liền mạch
   }),
   center: {
     zIndex: 1,
@@ -31,9 +32,10 @@ const variants = {
     opacity: 1,
   },
   exit: (direction: number) => ({
+    // Slide cũ trượt ra theo hướng ngược lại
+    x: direction < 0 ? "100%" : "-100%",
+    opacity: 1, // Giữ opacity 1
     zIndex: 0,
-    x: direction < 0 ? 1000 : -1000,
-    opacity: 0,
   }),
 };
 
@@ -108,6 +110,7 @@ export function ShopTheLook() {
 
   // Điều hướng Look (Slide lớn)
   const paginateLook = (newDirection: number) => {
+    if (currentCategoryLooks.length <= 1) return;
     const newIndex = (currentLookIndex + newDirection + currentCategoryLooks.length) % currentCategoryLooks.length;
     // Cập nhật direction dựa trên hướng chuyển động
     setPage([page + newDirection, newDirection]);
@@ -116,6 +119,8 @@ export function ShopTheLook() {
 
   // Xử lý sự kiện vuốt (Drag End)
   const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
+    if (currentCategoryLooks.length <= 1) return;
+    
     const swipe = swipePower(offset.x, velocity.x);
 
     // Tăng ngưỡng vuốt trên mobile để tránh nhầm lẫn với cuộn dọc
@@ -187,7 +192,7 @@ export function ShopTheLook() {
                   exit="exit"
                   transition={{
                     x: { type: "spring", stiffness: 300, damping: 30 },
-                    opacity: { duration: 0.2 },
+                    opacity: { duration: 0.01 }, // Giảm thời gian opacity để tập trung vào X
                   }}
                   className="absolute inset-0 aspect-video w-full group cursor-grab active:cursor-grabbing"
                   drag="x"
