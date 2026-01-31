@@ -36,7 +36,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
       <motion.div 
         layout
         className={cn(
-          "group flex flex-col bg-transparent rounded-[24px] overflow-hidden transition-all duration-500 hover:bg-card hover:shadow-elevated h-full border border-transparent hover:border-border/40 cursor-pointer", 
+          "group flex flex-col bg-transparent rounded-2xl overflow-hidden transition-all duration-500 hover:bg-card hover:shadow-elevated h-full border border-transparent hover:border-border/40 cursor-pointer", 
           className
         )}
         onClick={handleCardClick}
