@@ -222,22 +222,11 @@ export function ShopTheLook() {
                   </>
                 )}
                 
-                {/* Tiêu đề Lookbook - ẨN TRÊN MOBILE (hidden) */}
-                <div className="absolute top-4 left-4 right-4 bg-charcoal/80 backdrop-blur-md text-cream px-3 py-1 rounded-lg border border-white/10 pointer-events-none hidden md:block md:top-6 md:left-6 md:right-auto md:max-w-xs md:px-5 md:py-2 md:text-[10px]">
+                {/* Tiêu đề Lookbook (Đã ẩn) */}
+                {/* <div className="absolute top-4 left-4 right-4 md:top-6 md:left-6 md:right-auto md:max-w-xs bg-charcoal/80 backdrop-blur-md text-cream p-3 rounded-lg border border-white/10 pointer-events-none hidden md:block md:px-5 md:py-2 md:text-[10px]">
                   <h3 className="text-xs font-bold uppercase tracking-widest line-clamp-2">{activeLook.title}</h3>
-                </div>
+                </div> */}
                 
-                {/* Dots indicator */}
-                {currentCategoryLooks.length > 1 && (
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20 pointer-events-none">
-                    {currentCategoryLooks.map((_, idx) => (
-                      <div
-                        key={idx}
-                        className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentLookIndex ? "bg-white w-8" : "bg-white/30 w-2"}`}
-                      />
-                    ))}
-                  </div>
-                )}
               </motion.div>
             ) : (
               <div className="aspect-[16/8] flex items-center justify-center text-muted-foreground italic">
@@ -245,6 +234,19 @@ export function ShopTheLook() {
               </div>
             )}
           </AnimatePresence>
+          
+          {/* Dots indicator - Đã di chuyển ra ngoài ảnh, ngay bên dưới */}
+          {currentCategoryLooks.length > 1 && (
+            <div className="flex justify-center items-center gap-3 p-4 bg-card border-t border-border/40">
+              {currentCategoryLooks.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setPage([idx, idx > currentLookIndex ? 1 : -1])}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentLookIndex ? "bg-primary w-8 md:w-12" : "bg-muted-foreground/30 w-2 md:w-3 hover:bg-primary/60"}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

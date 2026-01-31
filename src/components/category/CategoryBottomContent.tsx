@@ -130,8 +130,10 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                   className="relative aspect-video rounded-[32px] overflow-hidden cursor-pointer shadow-medium group-hover:shadow-elevated transition-all duration-500"
                   onClick={() => setSelectedLook(look)}
                 >
-                  <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
+                  <Link to={`/y-tuong/${look.id}`} className="absolute inset-0 z-10">
+                    <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
+                  </Link>
                   
                   {/* Active Dots on Image - FIXED LOGIC */}
                   <TooltipProvider>
@@ -165,6 +167,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
 
                 <div className="flex items-start justify-between p-4">
                   <div className="flex-1 min-w-0 pr-4">
+                    {/* Ẩn tiêu đề Lookbook ở đây */}
                     <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight line-clamp-2">
                       {look.title}
                     </h3>
@@ -173,9 +176,11 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                   <Button 
                     variant="outline" 
                     className="rounded-xl px-4 h-10 text-[9px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm shrink-0"
-                    onClick={() => setSelectedLook(look)}
+                    asChild // Thêm asChild để bọc Link
                   >
-                    XEM NGAY +
+                    <Link to={`/y-tuong/${look.id}`}>
+                      XEM NGAY +
+                    </Link>
                   </Button>
                 </div>
               </motion.div>
