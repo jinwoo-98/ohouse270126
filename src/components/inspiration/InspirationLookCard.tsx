@@ -21,7 +21,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
       layout
       className="group flex flex-col gap-5"
     >
-      <div className="relative aspect-video rounded-[32px] overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
+      <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
         <Link to={`/y-tuong/${look.id}`}>
           <img 
             src={look.image_url} 
