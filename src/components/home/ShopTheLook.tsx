@@ -147,7 +147,7 @@ export function ShopTheLook() {
           ))}
         </div>
 
-        <div className="relative rounded-3xl overflow-hidden bg-background shadow-elevated border border-border/40">
+        <div className="relative rounded-3xl overflow-hidden bg-transparent shadow-elevated border border-border/40">
           <AnimatePresence initial={false} custom={direction} mode="wait">
             {activeLook ? (
               <motion.div
@@ -157,7 +157,7 @@ export function ShopTheLook() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: direction > 0 ? -200 : 200 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="relative aspect-video w-full group cursor-grab active:cursor-grabbing"
+                className="relative aspect-video w-full group cursor-grab active:cursor-grabbing bg-background"
                 drag="x" // BẬT TÍNH NĂNG KÉO
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={1}
@@ -214,7 +214,7 @@ export function ShopTheLook() {
           
           {/* Dots indicator - Đã di chuyển ra ngoài ảnh, ngay bên dưới */}
           {currentCategoryLooks.length > 1 && (
-            <div className="flex justify-center items-center gap-3 p-4 bg-secondary/20 border-t-0">
+            <div className="flex justify-center items-center gap-3 p-4 bg-transparent border-t-0">
               {currentCategoryLooks.map((_, idx) => (
                 <button
                   key={idx}
