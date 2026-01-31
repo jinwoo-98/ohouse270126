@@ -56,9 +56,8 @@ import ProjectForm from "./pages/admin/ProjectForm";
 import ReviewManager from "./pages/admin/ReviewManager";
 import MarketingTools from "./pages/admin/MarketingTools";
 import TeamManager from "./pages/admin/TeamManager";
-import ContentManager from "./pages/admin/ContentManager";
 import CustomerHub from "./pages/admin/CustomerHub"; 
-import CooperationRequestManager from "./pages/admin/CooperationRequestManager"; // NEW IMPORT
+import CooperationRequestManager from "./pages/admin/CooperationRequestManager";
 
 // Homepage Sub-pages
 import SlidePage from "./pages/admin/homepage/SlidePage.tsx";
@@ -140,12 +139,11 @@ const App = () => (
                   <Route path="homepage/looks" element={<ShopTheLookPage />} />
                   <Route path="homepage/marketing" element={<MarketingPage />} />
                   
-                  {/* CMS Hub */}
-                  <Route path="content" element={<ContentManager />} />
+                  {/* CMS Hub - Merged into main routes */}
                   <Route path="content/looks" element={<LookbookManagerPage />} />
                   <Route path="content/looks/new" element={<LookbookForm />} />
                   <Route path="content/looks/edit/:id" element={<LookbookForm />} />
-                  <Route path="cooperation-requests" element={<CooperationRequestManager />} /> {/* NEW ROUTE */}
+                  <Route path="cooperation-requests" element={<CooperationRequestManager />} />
                   
                   {/* Sales & Product Management */}
                   <Route path="orders" element={<OrderManager />} />

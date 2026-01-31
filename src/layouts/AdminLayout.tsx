@@ -27,7 +27,7 @@ import {
   ListFilter,
   LayoutTemplate,
   Headset,
-  Handshake // Import Handshake icon
+  Handshake
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,10 +56,13 @@ const menuGroups = [
     ]
   },
   {
+  // Nhóm CMS được liệt kê trực tiếp
     label: "Quản Trị Nội Dung (CMS)",
     items: [
       { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
-      { id: 'content', title: "Trang Nội Dung Khác", icon: LayoutTemplate, href: "/admin/content" },
+      { id: 'pages', title: "Trang tĩnh", icon: Files, href: "/admin/pages" },
+      { id: 'news', title: "Tin tức", icon: Newspaper, href: "/admin/news" },
+      { id: 'projects', title: "Dự án", icon: Briefcase, href: "/admin/projects" },
     ]
   },
   {
@@ -168,13 +171,7 @@ export default function AdminLayout() {
         return permissions['subscribers'] || permissions['design-requests'] || permissions['messages'] || permissions['cooperation-requests'];
       }
       
-      // Logic cho trang content hub
-      if (item.id === 'content') {
-        // Editor chỉ thấy mục này nếu có ít nhất 1 quyền con (không tính homepage)
-        return Object.keys(permissions).some(p => ['news', 'projects', 'pages', 'cooperation-requests'].includes(p) && permissions[p]);
-      }
-      
-      // Các mục khác, bao gồm 'homepage', sẽ được kiểm tra quyền trực tiếp
+      // Các mục khác, bao gồm các mục CMS mới được liệt kê trực tiếp, sẽ được kiểm tra quyền trực tiếp
       return permissions[item.id] === true;
     });
     return { ...group, items: allowedItems };
