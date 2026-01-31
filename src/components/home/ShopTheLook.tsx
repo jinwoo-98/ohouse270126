@@ -19,6 +19,24 @@ const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
+// Cấu hình animation trượt ngang
+const variants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 1000 : -1000,
+    opacity: 0,
+  }),
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    zIndex: 0,
+    x: direction < 0 ? 1000 : -1000,
+    opacity: 0,
+  }),
+};
+
 export function ShopTheLook() {
   const [allLooks, setAllLooks] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
@@ -91,6 +109,7 @@ export function ShopTheLook() {
   // Điều hướng Look (Slide lớn)
   const paginateLook = (newDirection: number) => {
     const newIndex = (currentLookIndex + newDirection + currentCategoryLooks.length) % currentCategoryLooks.length;
+    // Cập nhật direction dựa trên hướng chuyển động
     setPage([page + newDirection, newDirection]);
     setCurrentLookIndex(newIndex);
   };
@@ -103,9 +122,9 @@ export function ShopTheLook() {
     const threshold = window.innerWidth < 768 ? 500 : swipeConfidenceThreshold;
 
     if (swipe < -threshold) {
-      paginateLook(1); // Vuốt trái -> Next Look
+      paginateLook(1); // Vuốt trái -> Next Look (direction > 0)
     } else if (swipe > threshold) {
-      paginateLook(-1); // Vuốt phải -> Prev Look
+      paginateLook(-1); // Vuốt phải -> Prev Look (direction < 0)
     }
   };
 
@@ -156,27 +175,31 @@ export function ShopTheLook() {
         </div>
 
         <div className="relative rounded-2xl overflow-hidden bg-transparent shadow-elevated border border-border/40">
-          <div className="bg-background">
+          <div className="bg-background relative"> {/* Thêm relative để các slide con absolute có thể xếp chồng */}
             <AnimatePresence initial={false} custom={direction} mode="wait">
               {activeLook ? (
                 <motion.div
-                  key={activeLook.id} // Chỉ remount khi đổi Look
+                  key={activeLook.id}
                   custom={direction}
-                  initial={{ opacity: 0, x: direction > 0 ? 200 : -200 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: direction > 0 ? -200 : 200 }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                  className="relative aspect-video w-full group cursor-grab active:cursor-grabbing"
-                  drag="x" // BẬT TÍNH NĂNG KÉO
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{
+                    x: { type: "spring", stiffness: 300, damping: 30 },
+                    opacity: { duration: 0.2 },
+                  }}
+                  className="absolute inset-0 aspect-video w-full group cursor-grab active:cursor-grabbing"
+                  drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={0.5} // Giảm độ đàn hồi để dễ vuốt hơn
+                  dragElastic={0.5}
                   onDragEnd={handleDragEnd}
                 >
                   <Link to={`/y-tuong/${activeLook.id}`} className="absolute inset-0 z-10">
                     <img
                       src={activeLook.homepage_image_url || activeLook.image_url}
                       alt={activeLook.title}
-                      className="w-full h-full object-cover pointer-events-none" // Quan trọng: Chặn sự kiện chuột vào ảnh thay vì vuốt slide
+                      className="w-full h-full object-cover pointer-events-none"
                       draggable="false"
                     />
                   </Link>
@@ -191,10 +214,9 @@ export function ShopTheLook() {
                           <TooltipTrigger asChild>
                             <button
                               onClick={(e) => { 
-                                  e.stopPropagation(); // Ngăn sự kiện drag
+                                  e.stopPropagation();
                                   if (item.products) setQuickViewProduct(item.products); 
                               }}
-                              // Thiết kế Hotspot mới: Tâm trắng đặc, không icon, hiệu ứng hover rõ ràng
                               className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-30 group/dot touch-manipulation"
                               style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                             >
@@ -222,6 +244,8 @@ export function ShopTheLook() {
                 </div>
               )}
             </AnimatePresence>
+            {/* Đảm bảo div cha có chiều cao cố định để các slide absolute không làm sập layout */}
+            <div className="aspect-video" /> 
           </div>
           
           {/* Nút điều hướng */}
