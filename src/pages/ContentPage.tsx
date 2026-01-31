@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { ShowroomContent } from "@/components/ShowroomContent";
 
 export default function ContentPage() {
   const location = useLocation();
@@ -14,13 +15,21 @@ export default function ContentPage() {
   const [pageData, setPageData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const isShowroomPage = slug === 'showroom';
+
   useEffect(() => {
     if (slug) {
-      fetchPage();
+      if (!isShowroomPage) {
+        fetchPage();
+      } else {
+        // Showroom content is fetched inside ShowroomContent component
+        setLoading(false);
+        setPageData({ title: "Hệ Thống Showroom" });
+      }
     } else {
       navigate("/404");
     }
-  }, [slug, navigate]);
+  }, [slug, navigate, isShowroomPage]);
 
   const fetchPage = async () => {
     setLoading(true);
@@ -60,7 +69,7 @@ export default function ContentPage() {
 
         <div className="container-luxury py-8 md:py-12">
           <motion.div 
-            className="max-w-4xl mx-auto"
+            className="max-w-6xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -75,10 +84,15 @@ export default function ContentPage() {
                     </div>
                     <h1 className="text-2xl md:text-3xl font-bold">{pageData.title}</h1>
                   </div>
-                  <div 
-                    className="prose prose-lg prose-stone max-w-none text-muted-foreground leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: pageData.content || '' }}
-                  />
+                  
+                  {isShowroomPage ? (
+                    <ShowroomContent />
+                  ) : (
+                    <div 
+                      className="prose prose-lg prose-stone max-w-none text-muted-foreground leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: pageData.content || '' }}
+                    />
+                  )}
                 </>
               ) : (
                 <div className="text-center py-20">
