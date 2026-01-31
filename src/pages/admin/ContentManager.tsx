@@ -9,7 +9,6 @@ import {
   Building2,
   Files
 } from "lucide-react";
-import { ShowroomPageLink } from "@/components/admin/content/ShowroomPageLink";
 
 const contentSections = [
   {
@@ -19,14 +18,6 @@ const contentSections = [
     href: "/admin/content/looks",
     color: "text-purple-600 bg-purple-50 border-purple-200",
     component: Link
-  },
-  {
-    icon: Building2,
-    title: "Trang Showroom",
-    description: "Chỉnh sửa nội dung, địa chỉ và thông tin liên hệ của trang Showroom.",
-    href: "/admin/pages/showroom-redirect", // Dùng href giả để kích hoạt ShowroomPageLink
-    color: "text-indigo-600 bg-indigo-50 border-indigo-200",
-    component: ShowroomPageLink
   },
   {
     icon: Briefcase,
