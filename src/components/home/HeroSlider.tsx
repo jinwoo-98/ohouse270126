@@ -81,7 +81,9 @@ export function HeroSlider() {
   };
 
   if (loading) return <div className="h-[65vh] md:h-[80vh] bg-charcoal flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
-  if (slides.length === 0) return null;
+  
+  // Sửa lỗi: Kiểm tra nếu không có slide nào (current không tồn tại) thì không render gì cả
+  if (!current) return null;
 
   return (
     <section className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-charcoal">
