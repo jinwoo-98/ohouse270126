@@ -80,7 +80,7 @@ export function HeroSlider() {
         dragElastic={0.5}
         onDragEnd={handleDragEnd}
         animate={{ x: `-${imageIndex * 100}%` }}
-        transition={{ type: "tween", duration: 0.5, ease: "easeOut" }}
+        transition={{ type: "spring", stiffness: 400, damping: 40 }}
       >
         {slides.map((slide) => (
           <div key={slide.id} className="relative h-full w-full flex-shrink-0">
