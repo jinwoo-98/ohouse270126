@@ -42,17 +42,18 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
       viewport={{ once: true }}
       className="group flex flex-col bg-transparent rounded-2xl overflow-hidden h-full"
     >
-      <div className="relative aspect-square overflow-hidden bg-secondary/15 shrink-0 rounded-2xl shadow-subtle group-hover:shadow-medium transition-all duration-500">
-        <Link to={`/y-tuong/${look.id}`} className="block h-full w-full">
-          <img 
-            src={look.image_url} 
-            alt={look.title} 
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/30 to-transparent" />
-        </Link>
+      {/* Toàn bộ khối ảnh là Link */}
+      <Link to={`/y-tuong/${look.id}`} className="block relative aspect-square overflow-hidden bg-secondary/15 shrink-0 rounded-2xl shadow-subtle group-hover:shadow-medium transition-all duration-500">
         
-        {/* Nút Yêu thích */}
+        {/* Image */}
+        <img 
+          src={look.image_url} 
+          alt={look.title} 
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/30 to-transparent" />
+        
+        {/* Nút Yêu thích (Phải trên) */}
         <button 
           onClick={(e) => { 
             e.stopPropagation(); 
@@ -98,22 +99,17 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
           ))}
         </TooltipProvider>
         
-        {/* Product Count Badge */}
-        <div className="absolute bottom-3 left-3 bg-charcoal/80 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+        {/* Product Count Badge (Trái dưới) */}
+        <div className="absolute bottom-3 left-3 bg-charcoal/80 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest z-10">
           {productCount} SP
         </div>
-      </div>
+      </Link>
       
-      {/* Info Section (Tên và nút khám phá) */}
+      {/* Info Section (Đã loại bỏ tiêu đề và nút khám phá) */}
       <div className="p-4 text-center">
-        <h3 className="text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10">
+        <h3 className="text-sm font-bold text-charcoal line-clamp-2 leading-snug h-10">
           {look.title}
         </h3>
-        <Button variant="link" className="p-0 h-auto text-[10px] font-bold uppercase tracking-widest text-primary mt-2 group" asChild>
-          <Link to={`/y-tuong/${look.id}`}>
-            Khám phá <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </Button>
       </div>
     </motion.div>
   );
