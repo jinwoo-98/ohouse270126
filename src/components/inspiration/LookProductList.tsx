@@ -17,7 +17,7 @@ interface LookProductListProps {
 export function LookProductList({ products, onQuickView }: LookProductListProps) {
   const { addToCart } = useCart();
   const [showAll, setShowAll] = useState(false);
-  const MAX_VISIBLE_ITEMS = 3;
+  const MAX_VISIBLE_ITEMS = 4; // Tăng lên 4 để phù hợp với 2 cột
   
   const visibleProducts = showAll ? products : products.slice(0, MAX_VISIBLE_ITEMS);
   const hasMore = products.length > MAX_VISIBLE_ITEMS;
@@ -31,10 +31,10 @@ export function LookProductList({ products, onQuickView }: LookProductListProps)
     <div className="lg:col-span-1 min-w-0 w-full">
       <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest">Sản phẩm trong không gian</h2>
       
-      {/* Grid 2 cột trên mobile, 1 cột trên desktop sidebar */}
+      {/* Grid 2 cột trên mọi kích thước màn hình (trừ mobile nhỏ) */}
       <div className={cn(
         "grid gap-4 transition-all duration-500",
-        "grid-cols-2 lg:grid-cols-1", // 2 cột trên mobile, 1 cột trên desktop
+        "grid-cols-2 lg:grid-cols-2", // Luôn là 2 cột
         !showAll && hasMore ? "max-h-[400px] overflow-hidden" : "max-h-none"
       )}>
         {visibleProducts.map((product: any) => (
