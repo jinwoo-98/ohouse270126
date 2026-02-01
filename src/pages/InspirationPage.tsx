@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2, LayoutGrid, ChevronDown, ChevronUp, Home, Palette, Layers, Zap } from "lucide-react";
+import { ArrowRight, Loader2, LayoutGrid, ChevronDown, ChevronUp, Home, Palette, Layers, Zap, ChevronRight } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import heroLivingRoom from "@/assets/hero-living-room.jpg";
 import { InspirationLookCard } from "@/components/inspiration/InspirationLookCard";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { useLookbookFilters } from "@/hooks/useLookbookFilters";
-import { InspirationToolbar } from "@/components/inspiration/InspirationToolbar"; // Import mới
+import { InspirationToolbar } from "@/components/inspiration/InspirationToolbar";
 import { cn } from "@/lib/utils";
 
 export default function InspirationPage() {
@@ -29,30 +29,40 @@ export default function InspirationPage() {
     updateFilter('selectedMaterial', 'all');
     updateFilter('selectedColor', 'all');
   };
+  
+  const currentCategory = filterOptions.categories.find((c: any) => c.slug === filters.selectedCategorySlug);
+  const pageTitle = currentCategory?.name || "Tất Cả Không Gian";
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1">
-        {/* Hero */}
-        <section className="relative h-[40vh] md:h-[50vh] overflow-hidden">
-          <img src={heroLivingRoom} alt="Cảm hứng thiết kế" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-charcoal/70 flex items-center justify-center">
+        {/* New Header Section */}
+        <section className="bg-secondary/50 py-8 md:py-12 border-b border-border/40">
+          <div className="container-luxury">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+              <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
+              <ChevronRight className="w-3 h-3" />
+              <span className="text-foreground">Cảm hứng thiết kế</span>
+            </div>
+            
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center text-cream px-4"
             >
-              <h1 className="text-3xl md:text-5xl font-bold mb-4">Cảm Hứng Thiết Kế</h1>
-              <p className="text-lg md:text-xl text-cream/80 max-w-2xl mx-auto">
+              <h1 className="text-3xl md:text-4xl font-bold text-charcoal leading-tight">
+                {pageTitle}
+              </h1>
+              <p className="text-muted-foreground mt-2 text-sm">
                 Khám phá những ý tưởng nội thất độc đáo và tinh tế từ OHOUSE
               </p>
             </motion.div>
           </div>
         </section>
         
-        {/* Toolbar (Sticky) */}
+        {/* Toolbar (Now part of the flow) */}
         <InspirationToolbar 
           lookCount={filteredLooks.length}
           filterOptions={filterOptions}

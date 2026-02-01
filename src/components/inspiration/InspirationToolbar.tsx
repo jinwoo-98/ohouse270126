@@ -132,7 +132,7 @@ export function InspirationToolbar({ lookCount, filterOptions, filters, updateFi
   const isAnyFilterActive = filters.selectedCategorySlug !== 'all' || filters.selectedStyle !== 'all' || filters.selectedMaterial !== 'all' || filters.selectedColor !== 'all';
 
   return (
-    <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md shadow-medium py-3 border-b border-border/40">
+    <div className="bg-background/95 backdrop-blur-md shadow-medium py-3 border-b border-border/40">
       <div className="container-luxury">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           
