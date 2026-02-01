@@ -133,10 +133,11 @@ export default function LookDetailPage() {
           </motion.div>
 
           {/* 2. Main Content Grid (Gallery + Product List) */}
-          <div className="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-20 max-w-6xl mx-auto">
+          {/* Thay đổi grid-cols-2 thành grid-cols-3 và giảm gap */}
+          <div className="grid lg:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto">
             
-            {/* LEFT: Gallery (1/2 width) */}
-            <div className="lg:col-span-1 min-w-0 w-full overflow-hidden">
+            {/* LEFT: Gallery (Chiếm 2/3) */}
+            <div className="lg:col-span-2 min-w-0 w-full overflow-hidden">
               <ProductGallery 
                 mainImage={look.image_url} 
                 galleryImages={look.gallery_urls} 
@@ -154,7 +155,7 @@ export default function LookDetailPage() {
               </ProductGallery>
             </div>
 
-            {/* RIGHT: Product List (1/2 width) - DESKTOP ONLY */}
+            {/* RIGHT: Product List (1/3 width) - DESKTOP ONLY */}
             {visibleItems.length > 0 && (
               <div className="lg:col-span-1 min-w-0 w-full hidden lg:block">
                 <LookProductList products={lookbookProducts} onQuickView={setQuickViewProduct} />
