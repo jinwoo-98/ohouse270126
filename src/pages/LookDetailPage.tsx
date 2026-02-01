@@ -20,7 +20,8 @@ import { useLookbookSimilarProducts } from "@/hooks/useLookbookSimilarProducts";
 import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll";
 import { useSimilarLookbooks } from "@/hooks/useSimilarLookbooks";
 import { SimilarLookbooks } from "@/components/inspiration/SimilarLookbooks";
-import { LookProductList } from "@/components/inspiration/LookProductList"; // NEW IMPORT
+import { LookProductList } from "@/components/inspiration/LookProductList";
+import { LookProductVerticalList } from "@/components/inspiration/LookProductVerticalList"; // NEW IMPORT
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -117,7 +118,7 @@ export default function LookDetailPage() {
           </motion.div>
 
           {/* 2. Main Content Grid (Gallery + Product List) */}
-          <div className="grid lg:grid-cols-3 gap-8 md:gap-12 max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-3 gap-8 md:gap-12 lg:gap-20 max-w-6xl mx-auto">
             
             {/* LEFT: Gallery (2/3 width) */}
             <div className="lg:col-span-2 min-w-0 w-full overflow-hidden">
@@ -224,13 +225,13 @@ export default function LookDetailPage() {
               ))}
             </div>
             
-            {/* Similar Products List */}
+            {/* Similar Products List - Dạng dọc mới */}
             {isLoadingSimilar ? (
               <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
             ) : similarProducts.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground italic">Không tìm thấy sản phẩm tương tự trong danh mục này.</div>
             ) : (
-              <ProductHorizontalScroll 
+              <LookProductVerticalList 
                 products={similarProducts} 
                 title="" // Bỏ tiêu đề vì đã có tiêu đề chính
                 onQuickView={setQuickViewProduct} 
