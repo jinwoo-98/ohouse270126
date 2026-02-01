@@ -1,7 +1,6 @@
-import { Sparkles } from "lucide-react";
+import { Sparkles, ListFilter, Plus, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { LookbookList } from "@/components/admin/content/LookbookList";
 
 export default function LookbookManagerPage() {
@@ -16,6 +15,18 @@ export default function LookbookManagerPage() {
           <p className="text-muted-foreground text-sm">Tạo mới, chỉnh sửa nội dung và gắn thẻ sản phẩm (hotspot) cho các bộ sưu tập không gian.</p>
         </div>
       </div>
+      
+      <div className="flex justify-end gap-3">
+        <Button asChild variant="outline" className="h-10 px-6 text-[10px] font-bold uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5">
+          <Link to="/admin/content/looks/filters">
+            <ListFilter className="w-4 h-4 mr-2" /> Quản lý Tùy chọn Bộ lọc
+          </Link>
+        </Button>
+        <Button asChild className="btn-hero h-10 shadow-gold">
+          <Link to="/admin/content/looks/new"><Plus className="w-4 h-4 mr-2" /> Thêm Lookbook</Link>
+        </Button>
+      </div>
+      
       <LookbookList />
     </div>
   );

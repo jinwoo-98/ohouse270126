@@ -64,7 +64,7 @@ const menuGroups = [
     items: [
       { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
       { id: 'looks', title: "Lookbook", icon: Sparkles, href: "/admin/content/looks" },
-      { id: 'lookbook-filters', title: "Bộ lọc Lookbook", icon: ListFilter, href: "/admin/content/looks/filters" },
+      // Đã xóa: { id: 'lookbook-filters', title: "Bộ lọc Lookbook", icon: ListFilter, href: "/admin/content/looks/filters" },
       { id: 'showrooms', title: "Showroom", icon: MapPin, href: "/admin/showrooms" }, // Mục mới
       { id: 'pages', title: "Trang nội dung", icon: Files, href: "/admin/pages" },
       { id: 'news', title: "Tin tức", icon: Newspaper, href: "/admin/news" },
