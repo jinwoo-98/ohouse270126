@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, X, Search, Image as ImageIcon, Loader2, ArrowLeft, Save, Sparkles } from "lucide-react";
+import { Plus, X, Search, Image as ImageIcon, Loader2, ArrowLeft, Save, Sparkles, Layers, Zap, Palette, ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Switch } from "@/components/ui/switch"; // <-- Added Switch import
+import { Switch } from "@/components/ui/switch";
 
 export default function LookbookForm() {
   const { id } = useParams();
@@ -33,6 +33,10 @@ export default function LookbookForm() {
     gallery_urls: [] as string[],
     is_active: true,
     homepage_image_url: "",
+    // NEW FIELDS
+    style: "",
+    material: "",
+    color: "",
   });
 
   useEffect(() => {
@@ -81,6 +85,9 @@ export default function LookbookForm() {
       gallery_urls: lookData.gallery_urls || [],
       is_active: lookData.is_active,
       homepage_image_url: lookData.homepage_image_url || "",
+      style: lookData.style || "",
+      material: lookData.material || "",
+      color: lookData.color || "",
     });
     setLookItems(lookData.shop_look_items || []);
     setActiveEditingImage(lookData.image_url);
@@ -97,6 +104,9 @@ export default function LookbookForm() {
       gallery_urls: formData.gallery_urls || [],
       is_active: formData.is_active,
       homepage_image_url: formData.homepage_image_url,
+      style: formData.style,
+      material: formData.material,
+      color: formData.color,
     };
 
     if (!lookPayload.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
@@ -218,6 +228,25 @@ export default function LookbookForm() {
                 <Switch checked={formData.is_active} onCheckedChange={(val) => setFormData({...formData, is_active: val})} />
               </div>
             </div>
+            
+            {/* NEW FILTER FIELDS */}
+            <div className="space-y-4 bg-white p-6 rounded-3xl border shadow-sm">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><ListFilter className="w-4 h-4" /> Bộ lọc Lookbook</h3>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><Layers className="w-3 h-3" /> Phong cách</Label>
+                <Input value={formData.style} onChange={e => setFormData({...formData, style: e.target.value})} placeholder="VD: Hiện đại, Bắc Âu..." className="h-11 rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><Zap className="w-3 h-3" /> Chất liệu</Label>
+                <Input value={formData.material} onChange={e => setFormData({...formData, material: e.target.value})} placeholder="VD: Gỗ óc chó, Da thật..." className="h-11 rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><Palette className="w-3 h-3" /> Màu sắc chủ đạo</Label>
+                <Input value={formData.color} onChange={e => setFormData({...formData, color: e.target.value})} placeholder="VD: Trắng, Xám, Vàng đồng..." className="h-11 rounded-xl" />
+              </div>
+              <p className="text-[10px] text-muted-foreground italic">Các trường này dùng để lọc Lookbook trên trang Cảm hứng.</p>
+            </div>
+            {/* END NEW FILTER FIELDS */}
 
             <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Sản phẩm gắn thẻ</h3>
