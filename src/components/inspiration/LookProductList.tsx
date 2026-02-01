@@ -31,8 +31,10 @@ export function LookProductList({ products, onQuickView }: LookProductListProps)
     <div className="lg:col-span-1 min-w-0 w-full">
       <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest">Sản phẩm trong không gian</h2>
       
+      {/* Grid 2 cột trên mobile, 1 cột trên desktop sidebar */}
       <div className={cn(
-        "grid grid-cols-1 gap-4 transition-all duration-500",
+        "grid gap-4 transition-all duration-500",
+        "grid-cols-2 lg:grid-cols-1", // 2 cột trên mobile, 1 cột trên desktop
         !showAll && hasMore ? "max-h-[400px] overflow-hidden" : "max-h-none"
       )}>
         {visibleProducts.map((product: any) => (
@@ -40,10 +42,8 @@ export function LookProductList({ products, onQuickView }: LookProductListProps)
             key={product.id} 
             product={product} 
             onQuickView={onQuickView} 
-            // Kích hoạt layout tối giản (flex-row)
-            className="flex-row items-center p-3 rounded-xl border border-border/40 hover:shadow-subtle"
-            imageClassName="w-16 h-16 rounded-lg"
-            infoClassName="flex-1"
+            className="rounded-2xl"
+            imageClassName="rounded-t-2xl"
           />
         ))}
       </div>
