@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // Component con cho các bộ lọc phụ (Style, Material, Color)
-function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { title: string, options: string[], selected: string, onSelect: (value: string) => void, filterKey: string }) {
+function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { title: string, options: string[], selected: string[], onSelect: (value: string) => void, filterKey: string }) {
   
   if (options.length === 0) return null;
 
@@ -28,21 +28,21 @@ function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { 
         <label className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
           <Checkbox 
             id={`${filterKey}-all`} 
-            checked={selected === "all"} 
+            checked={selected.includes("all")} 
             onCheckedChange={() => onSelect("all")} 
             className="data-[state=checked]:bg-primary" 
           />
-          <span className={cn("text-sm font-medium", selected === "all" ? "text-primary font-bold" : "text-foreground/80")}>Tất Cả</span>
+          <span className={cn("text-sm font-medium", selected.includes("all") ? "text-primary font-bold" : "text-foreground/80")}>Tất Cả</span>
         </label>
         {options.map((opt) => (
           <label key={opt} className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
             <Checkbox 
               id={`${filterKey}-${opt}`} 
-              checked={selected === opt} 
+              checked={selected.includes(opt)} 
               onCheckedChange={() => onSelect(opt)} 
               className="data-[state=checked]:bg-primary" 
             />
-            <span className={cn("text-sm font-medium", selected === opt ? "text-primary font-bold" : "text-foreground/80")}>{opt}</span>
+            <span className={cn("text-sm font-medium", selected.includes(opt) ? "text-primary font-bold" : "text-foreground/80")}>{opt}</span>
           </label>
         ))}
       </div>
@@ -61,11 +61,11 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
         <Button 
           variant="outline" 
           className={cn(
-            "h-10 px-3 md:h-11 md:px-6 rounded-2xl text-[10px] md:text-xs font-bold uppercase tracking-widest gap-1 md:gap-2 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
+            "h-10 px-2 md:h-11 md:px-6 rounded-2xl text-[9px] md:text-xs font-bold uppercase tracking-widest gap-1 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
-          <Home className="w-3 h-3 sm:w-4 sm:h-4 hidden sm:block" />
+          <Home className="w-4 h-4 hidden sm:block" />
           <span className="truncate">{isFiltered ? currentCategory?.name : "Không Gian"}</span>
           <ChevronDown className="w-3 h-3 ml-1 opacity-50" />
         </Button>
@@ -100,11 +100,11 @@ function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilt
         <Button 
           variant="outline" 
           className={cn(
-            "h-10 px-3 md:h-11 md:px-6 rounded-2xl text-[10px] md:text-xs font-bold uppercase tracking-widest gap-1 md:gap-2 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
+            "h-10 px-2 md:h-11 md:px-6 rounded-2xl text-[9px] md:text-xs font-bold uppercase tracking-widest gap-1 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
-          <Icon className="w-3 h-3 sm:w-4 sm:h-4 hidden sm:block" />
+          <Icon className="w-4 h-4 hidden sm:block" />
           <span className="truncate">{title}</span>
           <ChevronDown className="w-3 h-3 ml-1 opacity-50" />
         </Button>
