@@ -91,7 +91,7 @@ export default function LookDetailPage() {
   if (!look) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Header />
       <main className="flex-1">
         <div className="bg-secondary/50 py-3 border-b border-border/40">
@@ -105,13 +105,13 @@ export default function LookDetailPage() {
         </div>
 
         <div className="container-luxury py-8 md:py-12">
-          {/* 1. Title and Description Section (Full Width) */}
+          {/* 1. Title and Description Section (Full Width) - CĂN GIỮA */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center max-w-4xl mx-auto mb-12"
           >
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">{look.title}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-charcoal">{look.title}</h1>
             <p className="text-muted-foreground">
               {`Khám phá ${visibleItems.length} sản phẩm trong không gian này và thêm vào giỏ hàng của bạn.`}
             </p>
@@ -176,7 +176,7 @@ export default function LookDetailPage() {
           {/* NEW: Product List - MOBILE ONLY (Horizontal Scroll) */}
           {visibleItems.length > 0 && (
             <div className="lg:hidden mt-8">
-              <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest">Sản phẩm trong không gian</h2>
+              <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest text-center">Sản phẩm trong không gian</h2>
               <LookProductHorizontalScroll products={lookbookProducts} onQuickView={setQuickViewProduct} />
               
               {/* CTA to add all to cart - MOBILE */}
@@ -194,10 +194,10 @@ export default function LookDetailPage() {
           
           {/* 3. Sản phẩm tương tự (NEW SECTION) */}
           <section className="mt-20">
-            <h2 className="2xl font-bold uppercase tracking-widest mb-8 text-charcoal">Sản Phẩm Tương Tự</h2>
+            <h2 className="text-2xl font-bold uppercase tracking-widest mb-8 text-charcoal text-center">SẢN PHẨM TƯƠNG TỰ</h2>
             
             {/* Category Tabs/Buttons */}
-            <div className="flex flex-wrap gap-3 mb-8">
+            <div className="flex flex-wrap gap-3 mb-8 justify-center">
               <Button
                 variant={activeCategorySlug === 'all' ? 'default' : 'outline'}
                 size="sm"
@@ -241,7 +241,7 @@ export default function LookDetailPage() {
           
           {/* 4. Combo Tương Tự (Similar Lookbooks) */}
           {!isLoadingSimilarLooks && similarLookbooks.length > 0 && (
-            <SimilarLookbooks lookbooks={similarLookbooks} title="Combo Tương Tự Khác" onQuickView={setQuickViewProduct} />
+            <SimilarLookbooks lookbooks={similarLookbooks} title="COMBO TƯƠNG TỰ KHÁC" onQuickView={setQuickViewProduct} />
           )}
         </div>
       </main>

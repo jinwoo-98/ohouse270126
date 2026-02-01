@@ -99,7 +99,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </div>
         </div>
 
-        {/* Info Section */}
+        {/* Info Section - Căn giữa */}
         <div className="p-4 flex flex-col items-center text-center flex-1 pt-4">
           <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">
             {product.name}

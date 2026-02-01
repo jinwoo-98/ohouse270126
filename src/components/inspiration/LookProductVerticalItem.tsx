@@ -44,15 +44,15 @@ export function LookProductVerticalItem({ product, onQuickView }: LookProductVer
         <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
           <button 
             onClick={(e) => { e.stopPropagation(); onQuickView(product); }}
-            className="w-9 h-9 rounded-full flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg"
+            className="h-9 px-4 rounded-xl flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg text-[10px] font-bold uppercase tracking-widest"
             title="Xem nhanh"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-3.5 h-3.5 mr-1.5" /> XEM NHANH
           </button>
         </div>
       </div>
       
-      {/* Info Section (Chỉ hiển thị giá) */}
+      {/* Info Section (Chỉ hiển thị giá) - Căn giữa */}
       <div className="p-3 flex flex-col items-center text-center">
         <p className="text-primary font-bold text-sm leading-none">{formatPrice(product.price)}</p>
       </div>

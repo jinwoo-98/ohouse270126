@@ -54,15 +54,15 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
         </div>
       </Link>
       
-      {/* Info Section (Có tên và chỉ có giá) */}
-      <div className="p-4 flex flex-col flex-1">
+      {/* Info Section - Căn giữa */}
+      <div className="p-4 flex flex-col flex-1 items-center text-center">
         <Link to={`/san-pham/${product.slug || product.id}`}>
           <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 mb-2">
             {product.name}
           </h3>
         </Link>
         
-        <div className="flex items-center justify-between mt-auto pt-2">
+        <div className="flex items-center justify-center mt-auto pt-2">
           <p className="text-primary font-bold text-sm leading-none">{formatPrice(product.price)}</p>
           {/* Loại bỏ nút Thêm vào giỏ */}
         </div>
