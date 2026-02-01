@@ -183,7 +183,7 @@ export default function LookDetailPage() {
                     visibleItems.forEach((item: any) => addToCart({ ...item.products, quantity: 1, image: item.products.image_url }));
                     toast.success(`Đã thêm ${visibleItems.length} sản phẩm vào giỏ hàng.`);
                   }}
-                  className="w-full btn-hero h-12 text-xs font-bold shadow-gold mt-6"
+                  className="w-full btn-hero h-12 text-xs font-bold shadow-gold mt-6 rounded-2xl"
                 >
                   <ShoppingBag className="w-4 h-4 mr-2" /> Thêm tất cả vào giỏ
                 </Button>
@@ -202,7 +202,7 @@ export default function LookDetailPage() {
                   visibleItems.forEach((item: any) => addToCart({ ...item.products, quantity: 1, image: item.products.image_url }));
                   toast.success(`Đã thêm ${visibleItems.length} sản phẩm vào giỏ hàng.`);
                 }}
-                className="w-full btn-hero h-12 text-xs font-bold shadow-gold mt-4"
+                className="w-full btn-hero h-12 text-xs font-bold shadow-gold mt-4 rounded-2xl"
               >
                 <ShoppingBag className="w-4 h-4 mr-2" /> Thêm tất cả vào giỏ
               </Button>
@@ -220,7 +220,7 @@ export default function LookDetailPage() {
                 size="sm"
                 onClick={() => setActiveCategorySlug('all')}
                 className={cn(
-                  "h-10 rounded-full px-6 text-xs font-bold uppercase tracking-widest",
+                  "h-10 rounded-2xl px-6 text-xs font-bold uppercase tracking-widest",
                   activeCategorySlug === 'all' ? "btn-hero shadow-gold" : "border-border/60 hover:bg-secondary/50"
                 )}
               >
@@ -233,7 +233,7 @@ export default function LookDetailPage() {
                   size="sm"
                   onClick={() => setActiveCategorySlug(cat.slug)}
                   className={cn(
-                    "h-10 rounded-full px-6 text-xs font-bold uppercase tracking-widest",
+                    "h-10 rounded-2xl px-6 text-xs font-bold uppercase tracking-widest",
                     activeCategorySlug === cat.slug ? "btn-hero shadow-gold" : "border-border/60 hover:bg-secondary/50"
                   )}
                 >
