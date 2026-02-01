@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { toast } from "sonner";
-import { Loader2, Save, Globe, MapPin, Phone, Mail, Clock, Share2, Truck } from "lucide-react";
+import { Loader2, Save, Globe, MapPin, Phone, Mail, Clock, Share2, Truck, AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
@@ -23,7 +24,7 @@ export default function GeneralSettings() {
     youtube_url: "",
     tiktok_url: "",
     working_hours: "",
-    map_iframe_url: "",
+    // map_iframe_url đã bị loại bỏ khỏi form này
     shipping_policy_summary: ""
   });
 
@@ -45,7 +46,6 @@ export default function GeneralSettings() {
         youtube_url: data.youtube_url || "",
         tiktok_url: data.tiktok_url || "",
         working_hours: data.working_hours || "",
-        map_iframe_url: data.map_iframe_url || "",
         shipping_policy_summary: data.shipping_policy_summary || ""
       });
     }
@@ -159,23 +159,19 @@ export default function GeneralSettings() {
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center gap-2"><MapPin className="w-3 h-3" /> Địa chỉ trụ sở / Showroom chính</Label>
+              <Label className="flex items-center gap-2"><MapPin className="w-3 h-3" /> Địa chỉ trụ sở / Showroom chính (Hiển thị Footer)</Label>
               <Input 
                 value={settings.address} 
                 onChange={(e) => setSettings({...settings, address: e.target.value})} 
                 className="h-12"
               />
             </div>
-
-            <div className="space-y-2">
-              <Label>Mã nhúng bản đồ (Google Maps Iframe URL)</Label>
-              <Textarea 
-                value={settings.map_iframe_url} 
-                onChange={(e) => setSettings({...settings, map_iframe_url: e.target.value})} 
-                placeholder='<iframe src="https://www.google.com/maps/embed?..." ...></iframe>'
-                className="font-mono text-xs min-h-[100px]"
-              />
-              <p className="text-[10px] text-muted-foreground italic">Vào Google Maps {"->"} Chia sẻ {"->"} Nhúng bản đồ {"->"} Sao chép mã HTML.</p>
+            
+            <div className="p-4 bg-secondary/30 rounded-xl text-sm text-muted-foreground flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 mt-1 shrink-0" />
+              <p>
+                Để quản lý danh sách Showroom chi tiết (bao gồm bản đồ nhúng), vui lòng truy cập mục <Link to="/admin/showrooms" className="text-primary font-bold underline">Quản lý Showroom</Link>.
+              </p>
             </div>
           </TabsContent>
 

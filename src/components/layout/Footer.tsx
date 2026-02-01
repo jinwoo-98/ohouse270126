@@ -7,13 +7,37 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCategories } from "@/hooks/useCategories";
+import { useEffect } from "react";
+
+interface SiteSettings {
+  phone: string;
+  email: string;
+  address: string;
+  facebook_url: string;
+  youtube_url: string;
+  tiktok_url: string;
+  zalo_url: string;
+}
 
 export function Footer() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
   const { data: categoriesData, isLoading: isLoadingCategories } = useCategories();
 
   const footerLinks = categoriesData?.footerLinks || { products: [], support: [], about: [] };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    const { data } = await supabase
+      .from('site_settings')
+      .select('phone, email, address, facebook_url, youtube_url, tiktok_url, zalo_url')
+      .single();
+    setSettings(data as SiteSettings || null);
+  };
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,15 +97,21 @@ export function Footer() {
               OHOUSE - Thương hiệu nội thất cao cấp hàng đầu Việt Nam. Mang đến không gian sống sang trọng, hiện đại và tinh tế cho hàng triệu gia đình.
             </p>
             <div className="space-y-4">
-              <a href="tel:1900888999" className="flex items-center gap-4 text-taupe hover:text-primary transition-colors">
-                <div className="p-2 bg-white/5 rounded-lg"><Phone className="w-4 h-4" /></div> <span>1900 888 999</span>
-              </a>
-              <a href="mailto:info@ohouse.vn" className="flex items-center gap-4 text-taupe hover:text-primary transition-colors">
-                <div className="p-2 bg-white/5 rounded-lg"><Mail className="w-4 h-4" /></div> <span>info@ohouse.vn</span>
-              </a>
-              <div className="flex items-start gap-4 text-taupe">
-                <div className="p-2 bg-white/5 rounded-lg shrink-0"><MapPin className="w-4 h-4" /></div> <span>123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh</span>
-              </div>
+              {settings?.phone && (
+                <a href={`tel:${settings.phone}`} className="flex items-center gap-4 text-taupe hover:text-primary transition-colors">
+                  <div className="p-2 bg-white/5 rounded-lg"><Phone className="w-4 h-4" /></div> <span>{settings.phone}</span>
+                </a>
+              )}
+              {settings?.email && (
+                <a href={`mailto:${settings.email}`} className="flex items-center gap-4 text-taupe hover:text-primary transition-colors">
+                  <div className="p-2 bg-white/5 rounded-lg"><Mail className="w-4 h-4" /></div> <span>{settings.email}</span>
+                </a>
+              )}
+              {settings?.address && (
+                <div className="flex items-start gap-4 text-taupe">
+                  <div className="p-2 bg-white/5 rounded-lg shrink-0"><MapPin className="w-4 h-4" /></div> <span>{settings.address}</span>
+                </div>
+              )}
             </div>
           </div>
           <div>
@@ -130,9 +160,9 @@ export function Footer() {
             </AccordionItem>
           </Accordion>
           <div className="flex items-center gap-6 justify-center pt-6">
-            <Facebook className="w-5 h-5 text-taupe hover:text-primary cursor-pointer" />
-            <Instagram className="w-5 h-5 text-taupe hover:text-primary cursor-pointer" />
-            <Youtube className="w-5 h-5 text-taupe hover:text-primary cursor-pointer" />
+            {settings?.facebook_url && <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer"><Facebook className="w-5 h-5 text-taupe hover:text-primary cursor-pointer" /></a>}
+            {settings?.tiktok_url && <a href={settings.tiktok_url} target="_blank" rel="noopener noreferrer"><Instagram className="w-5 h-5 text-taupe hover:text-primary cursor-pointer" /></a>}
+            {settings?.youtube_url && <a href={settings.youtube_url} target="_blank" rel="noopener noreferrer"><Youtube className="w-5 h-5 text-taupe hover:text-primary cursor-pointer" /></a>}
           </div>
         </div>
       </div>
