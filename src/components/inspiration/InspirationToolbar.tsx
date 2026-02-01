@@ -12,7 +12,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 // --- Sub-components (Copied and adapted from InspirationPage) ---
 
 // Component con cho các bộ lọc phụ (Style, Material, Color)
-function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { title: string, options: string[], selected: string, onSelect: (value: string) => void, filterKey: string }) {
+function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { title: string, options: string[], selected: string[], onSelect: (value: string) => void, filterKey: string }) {
   
   if (options.length === 0) return null;
 
@@ -23,21 +23,21 @@ function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { 
         <label className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
           <Checkbox 
             id={`${filterKey}-all`} 
-            checked={selected === "all"} 
+            checked={selected.includes("all")} 
             onCheckedChange={() => onSelect("all")} 
             className="data-[state=checked]:bg-primary" 
           />
-          <span className={cn("text-sm font-medium", selected === "all" ? "text-primary font-bold" : "text-foreground/80")}>Tất Cả</span>
+          <span className={cn("text-sm font-medium", selected.includes("all") ? "text-primary font-bold" : "text-foreground/80")}>Tất Cả</span>
         </label>
         {options.map((opt) => (
           <label key={opt} className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
             <Checkbox 
               id={`${filterKey}-${opt}`} 
-              checked={selected === opt} 
+              checked={selected.includes(opt)} 
               onCheckedChange={() => onSelect(opt)} 
               className="data-[state=checked]:bg-primary" 
             />
-            <span className={cn("text-sm font-medium", selected === opt ? "text-primary font-bold" : "text-foreground/80")}>{opt}</span>
+            <span className={cn("text-sm font-medium", selected.includes(opt) ? "text-primary font-bold" : "text-foreground/80")}>{opt}</span>
           </label>
         ))}
       </div>
@@ -56,8 +56,8 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
         <Button 
           variant="outline" 
           className={cn(
-            // Mobile optimization: flex-1, h-14, text-center, allow 2 lines
-            "flex-1 min-w-0 h-14 px-2 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col",
+            // Mobile optimization: flex-1, h-12 (từ h-14), text-xs (từ text-[10px])
+            "flex-1 min-w-0 h-12 px-2 text-xs font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col",
             // Desktop styles
             "sm:h-11 sm:px-6 sm:text-xs sm:tracking-widest sm:flex-none sm:flex-row sm:gap-1",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
@@ -98,8 +98,8 @@ function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilt
         <Button 
           variant="outline" 
           className={cn(
-            // Mobile optimization: flex-1, h-14, text-center, allow 2 lines
-            "flex-1 min-w-0 h-14 px-2 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col",
+            // Mobile optimization: flex-1, h-12 (từ h-14), text-xs (từ text-[10px])
+            "flex-1 min-w-0 h-12 px-2 text-xs font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col",
             // Desktop styles
             "sm:h-11 sm:px-6 sm:text-xs sm:tracking-widest sm:flex-none sm:flex-row sm:gap-1",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
