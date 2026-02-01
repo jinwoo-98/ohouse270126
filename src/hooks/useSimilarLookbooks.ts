@@ -1,13 +1,30 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image_url: string;
+  slug: string;
+  category_id: string;
+  is_sale: boolean;
+  original_price: number;
+}
+
 interface Lookbook {
   id: string;
   title: string;
   image_url: string;
   category_id: string;
-  // Cập nhật cấu trúc để khớp với select('shop_look_items(products(id))')
-  shop_look_items: any[]; // Sử dụng any[] để tránh lỗi phức tạp khi ép kiểu
+  // Cập nhật cấu trúc để khớp với select('shop_look_items(*)')
+  shop_look_items: {
+    id: string;
+    x_position: number;
+    y_position: number;
+    target_image_url: string;
+    products: Product; // Đảm bảo products được fetch
+  }[];
 }
 
 interface UseSimilarLookbooksResult {
@@ -36,15 +53,18 @@ export function useSimilarLookbooks(currentLookId: string, categorySlug: string)
             title, 
             image_url, 
             category_id,
-            shop_look_items(products(id))
-          `)
+            shop_look_items(
+              *,
+              products(*)
+            )
+          `) // Lấy tất cả các trường của shop_look_items và products
           .eq('category_id', categorySlug)
           .eq('is_active', true)
           .neq('id', currentLookId) // Loại trừ Lookbook hiện tại
           .limit(4);
 
         if (error) throw error;
-        // Ép kiểu dữ liệu trả về thành unknown trước khi chuyển sang Lookbook[]
+        // Ép kiểu dữ liệu trả về thành Lookbook[]
         setSimilarLookbooks(data as unknown as Lookbook[] || []);
       } catch (error) {
         console.error("Error fetching similar lookbooks:", error);
