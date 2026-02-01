@@ -61,7 +61,7 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
         <Button 
           variant="outline" 
           className={cn(
-            "h-11 px-6 rounded-full text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50",
+            "h-11 px-6 rounded-2xl text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
@@ -100,7 +100,7 @@ function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilt
         <Button 
           variant="outline" 
           className={cn(
-            "h-11 px-6 rounded-full text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50",
+            "h-11 px-6 rounded-2xl text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
@@ -162,7 +162,7 @@ export default function InspirationPage() {
         <section className="py-12 md:py-16">
           <div className="container-luxury">
             
-            {/* Filter Row - Tối giản */}
+            {/* Filter Row - 4 Buttons */}
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-10">
               
               {/* 1. Không Gian (Category) */}
