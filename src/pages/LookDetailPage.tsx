@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { LookProductHorizontalScroll } from "@/components/inspiration/LookProductHorizontalScroll"; // NEW IMPORT
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -140,9 +141,9 @@ export default function LookDetailPage() {
               </ProductGallery>
             </div>
 
-            {/* RIGHT: Product List (1/3 width) */}
+            {/* RIGHT: Product List (1/3 width) - DESKTOP ONLY */}
             {visibleItems.length > 0 && (
-              <div className="lg:col-span-1 min-w-0 w-full">
+              <div className="hidden lg:block lg:col-span-1 min-w-0 w-full">
                 <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest">Sản phẩm trong không gian</h2>
                 
                 {/* Compact Vertical List with ScrollArea */}
@@ -195,6 +196,24 @@ export default function LookDetailPage() {
               </div>
             )}
           </div>
+          
+          {/* NEW: Product List - MOBILE ONLY (Horizontal Scroll) */}
+          {visibleItems.length > 0 && (
+            <div className="lg:hidden mt-8">
+              <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest">Sản phẩm trong không gian</h2>
+              <LookProductHorizontalScroll products={visibleItems.map(item => item.products)} onQuickView={setQuickViewProduct} />
+              
+              <Button 
+                onClick={() => {
+                  visibleItems.forEach((item: any) => addToCart({ ...item.products, quantity: 1, image: item.products.image_url }));
+                  toast.success(`Đã thêm ${visibleItems.length} sản phẩm vào giỏ hàng.`);
+                }}
+                className="w-full btn-hero h-12 text-xs font-bold shadow-gold mt-4"
+              >
+                <ShoppingBag className="w-4 h-4 mr-2" /> Thêm tất cả vào giỏ
+              </Button>
+            </div>
+          )}
         </div>
       </main>
       <Footer />
