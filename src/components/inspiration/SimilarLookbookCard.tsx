@@ -105,7 +105,18 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
         </div>
       </Link>
       
-      {/* Đã loại bỏ phần thông tin dưới ảnh */}
+      {/* Info Section - Căn giữa */}
+      <div className="p-4 flex flex-col flex-1 items-center text-center pt-4">
+        <Link to={`/y-tuong/${look.id}`}>
+          <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">
+            {look.title}
+          </h3>
+        </Link>
+        
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-auto">
+          <p className="text-sm md:text-base font-bold text-primary">{formatPrice(lookAsProduct.price)}</p>
+        </div>
+      </div>
     </motion.div>
   );
 }

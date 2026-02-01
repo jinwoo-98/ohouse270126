@@ -25,7 +25,7 @@ export function SimilarLookbooks({ lookbooks, title = "Combo Tương Tự", onQu
 
   return (
     <section className="mt-20 mb-16">
-      <h2 className="text-2xl font-bold uppercase tracking-widest mb-8 text-charcoal">{title}</h2>
+      <h2 className="text-2xl font-bold uppercase tracking-widest mb-8 text-charcoal text-center">{title}</h2>
       
       <Carousel
         opts={{
