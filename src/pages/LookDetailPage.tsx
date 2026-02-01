@@ -21,8 +21,8 @@ import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalS
 import { useSimilarLookbooks } from "@/hooks/useSimilarLookbooks";
 import { SimilarLookbooks } from "@/components/inspiration/SimilarLookbooks";
 import { LookbookCTAFilters } from "@/components/inspiration/LookbookCTAFilters";
-import { LookProductList } from "@/components/inspiration/LookProductList"; // CORRECTED IMPORT
-import { LookProductVerticalList } from "@/components/inspiration/LookProductFullList"; // Renamed import
+import { LookProductList } from "@/components/inspiration/LookProductList"; // Danh sách dọc tối giản (Sidebar)
+import { LookProductVerticalList } from "@/components/inspiration/LookProductFullList"; // Danh sách lưới thẻ đầy đủ (Sản phẩm tương tự)
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -226,7 +226,7 @@ export default function LookDetailPage() {
               ))}
             </div>
             
-            {/* Similar Products List - Dạng dọc mới */}
+            {/* Similar Products List - Dạng lưới thẻ đầy đủ */}
             {isLoadingSimilar ? (
               <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
             ) : similarProducts.length === 0 ? (
