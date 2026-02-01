@@ -14,8 +14,8 @@ export function LookProductVerticalList({ products, title = "Sản phẩm tươn
     <section className="mb-16">
       <h2 className="text-xl font-bold uppercase tracking-widest mb-8 text-charcoal">{title}</h2>
       
-      {/* Grid 2 cột cho danh sách dọc */}
-      <div className="grid grid-cols-2 gap-4 md:gap-6">
+      {/* Grid 2 cột trên mobile/tablet, 4 cột trên desktop lớn (lg) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         {products.map((product) => (
           <LookProductFullItem 
             key={product.id} 
