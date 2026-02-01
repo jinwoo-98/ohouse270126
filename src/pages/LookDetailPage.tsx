@@ -15,7 +15,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LookProductHorizontalScroll } from "@/components/inspiration/LookProductHorizontalScroll";
-import { LookProductVerticalItem } from "@/components/inspiration/LookProductVerticalItem"; // NEW IMPORT
+import { LookProductVerticalItem } from "@/components/inspiration/LookProductVerticalItem";
+import { useLookbookSimilarProducts } from "@/hooks/useLookbookSimilarProducts"; // NEW IMPORT
+import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll"; // Sử dụng lại component cuộn ngang
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -60,6 +62,17 @@ export default function LookDetailPage() {
     // Hiển thị tất cả sản phẩm có trong look, không lọc theo ảnh
     return look.shop_look_items.filter((item: any) => item.products);
   }, [look]);
+  
+  const lookbookProducts = useMemo(() => visibleItems.map((item: any) => item.products).filter(Boolean), [visibleItems]);
+
+  // NEW: Hook để lấy sản phẩm tương tự
+  const { 
+    similarProducts, 
+    categories, 
+    isLoading: isLoadingSimilar, 
+    setActiveCategorySlug, 
+    activeCategorySlug 
+  } = useLookbookSimilarProducts(lookbookProducts);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
@@ -182,7 +195,7 @@ export default function LookDetailPage() {
           {visibleItems.length > 0 && (
             <div className="lg:hidden mt-8">
               <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest">Sản phẩm trong không gian</h2>
-              <LookProductHorizontalScroll products={visibleItems.map(item => item.products)} onQuickView={setQuickViewProduct} />
+              <LookProductHorizontalScroll products={lookbookProducts} onQuickView={setQuickViewProduct} />
               
               <Button 
                 onClick={() => {
@@ -195,6 +208,53 @@ export default function LookDetailPage() {
               </Button>
             </div>
           )}
+          
+          {/* 3. Sản phẩm tương tự (NEW SECTION) */}
+          <section className="mt-20">
+            <h2 className="text-2xl font-bold uppercase tracking-widest mb-8 text-charcoal">Sản Phẩm Tương Tự</h2>
+            
+            {/* Category Tabs/Buttons */}
+            <div className="flex flex-wrap gap-3 mb-8">
+              <Button
+                variant={activeCategorySlug === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setActiveCategorySlug('all')}
+                className={cn(
+                  "h-10 rounded-full px-6 text-xs font-bold uppercase tracking-widest",
+                  activeCategorySlug === 'all' ? "btn-hero shadow-gold" : "border-border/60 hover:bg-secondary/50"
+                )}
+              >
+                Tất Cả ({lookbookProducts.length})
+              </Button>
+              {categories.map(cat => (
+                <Button
+                  key={cat.slug}
+                  variant={activeCategorySlug === cat.slug ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActiveCategorySlug(cat.slug)}
+                  className={cn(
+                    "h-10 rounded-full px-6 text-xs font-bold uppercase tracking-widest",
+                    activeCategorySlug === cat.slug ? "btn-hero shadow-gold" : "border-border/60 hover:bg-secondary/50"
+                  )}
+                >
+                  {cat.name}
+                </Button>
+              ))}
+            </div>
+            
+            {/* Similar Products List */}
+            {isLoadingSimilar ? (
+              <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+            ) : similarProducts.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground italic">Không tìm thấy sản phẩm tương tự trong danh mục này.</div>
+            ) : (
+              <ProductHorizontalScroll 
+                products={similarProducts} 
+                title="" // Bỏ tiêu đề vì đã có tiêu đề chính
+                onQuickView={setQuickViewProduct} 
+              />
+            )}
+          </section>
         </div>
       </main>
       <Footer />
