@@ -14,7 +14,8 @@ import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LookProductHorizontalScroll } from "@/components/inspiration/LookProductHorizontalScroll"; // NEW IMPORT
+import { LookProductHorizontalScroll } from "@/components/inspiration/LookProductHorizontalScroll";
+import { LookProductVerticalItem } from "@/components/inspiration/LookProductVerticalItem"; // NEW IMPORT
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -151,33 +152,13 @@ export default function LookDetailPage() {
                   <div className="space-y-4">
                     {visibleItems.map((item: any, index: number) => {
                       const product = item.products;
-                      const isFavorite = isInWishlist(product.id);
                       
                       return (
-                        <motion.div 
+                        <LookProductVerticalItem 
                           key={item.id} 
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                          className="group flex items-center gap-4 p-3 rounded-xl bg-card border border-border/40 hover:shadow-subtle transition-all"
-                        >
-                          <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-secondary/30">
-                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <Link to={`/san-pham/${product.slug}`} className="text-sm font-bold line-clamp-2 hover:text-primary transition-colors">
-                              {product.name}
-                            </Link>
-                            <p className="text-primary font-bold text-xs mt-1">{formatPrice(product.price)}</p>
-                          </div>
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); setQuickViewProduct(product); }}
-                            className="p-2 rounded-full text-muted-foreground hover:bg-secondary/50 shrink-0"
-                            title="Xem nhanh"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </motion.div>
+                          product={product} 
+                          onQuickView={setQuickViewProduct} 
+                        />
                       );
                     })}
                   </div>

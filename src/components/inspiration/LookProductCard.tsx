@@ -35,8 +35,6 @@ export function LookProductCard({ product, onQuickView }: LookProductCardProps) 
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
           />
         </div>
-
-        {/* Overlay đã bị loại bỏ */}
       </div>
 
       {/* Info Section (Tối giản: Chỉ còn giá) */}
