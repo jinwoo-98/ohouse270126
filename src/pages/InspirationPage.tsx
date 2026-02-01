@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2, LayoutGrid, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, Loader2, LayoutGrid, ChevronDown, ChevronUp, Home, Palette, Layers, Zap } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -14,20 +14,17 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-// Component con cho các bộ lọc phụ (Style, Material)
+// Component con cho các bộ lọc phụ (Style, Material, Color)
 function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { title: string, options: string[], selected: string, onSelect: (value: string) => void, filterKey: string }) {
-  const [isOpen, setIsOpen] = useState(true);
   
   if (options.length === 0) return null;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full border-b border-border/40">
-      <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
-        <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] text-charcoal group-hover:text-primary transition-colors">{title}</h4>
-        {isOpen ? <ChevronUp className="w-3 h-3 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 text-muted-foreground" />}
-      </CollapsibleTrigger>
-      <CollapsibleContent className="pt-2 pb-4 space-y-2 animate-accordion-down">
+    <div className="w-full space-y-2">
+      <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{title}</h4>
+      <div className="space-y-1">
         <label className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
           <Checkbox 
             id={`${filterKey}-all`} 
@@ -48,8 +45,67 @@ function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { 
             <span className={cn("text-sm font-medium", selected === opt ? "text-primary font-bold" : "text-foreground/80")}>{opt}</span>
           </label>
         ))}
-      </CollapsibleContent>
-    </Collapsible>
+      </div>
+    </div>
+  );
+}
+
+// Component cho bộ lọc chính (Không gian)
+function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
+  const currentCategory = filterOptions.categories.find((c: any) => c.slug === filters.selectedCategorySlug);
+  
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="h-11 px-6 rounded-xl text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50">
+          <Home className="w-4 h-4" />
+          {currentCategory?.name || "Không Gian"}
+          <ChevronDown className="w-4 h-4 ml-1 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-4 rounded-2xl shadow-elevated border-none z-30" align="start">
+        <div className="space-y-1">
+          {filterOptions.categories.map((cat: any) => (
+            <button
+              key={cat.slug}
+              onClick={() => updateFilter('selectedCategorySlug', cat.slug)}
+              className={cn(
+                "w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors",
+                filters.selectedCategorySlug === cat.slug ? "bg-primary text-white font-bold" : "hover:bg-secondary/50"
+              )}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// Component cho bộ lọc phụ (Style, Material, Color)
+function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilter }: any) {
+  const currentSelection = selected === "all" ? "Tất Cả" : selected;
+  
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="h-11 px-6 rounded-xl text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50">
+          <Icon className="w-4 h-4" />
+          {title}: <span className="font-normal text-primary ml-1 truncate max-w-[80px]">{currentSelection}</span>
+          <ChevronDown className="w-4 h-4 ml-1 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-4 rounded-2xl shadow-elevated border-none z-30" align="start">
+        <FilterCollapsible 
+          title={title} 
+          options={options} 
+          selected={selected} 
+          onSelect={(val) => updateFilter(filterKey, val)} 
+          filterKey={filterKey}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -91,67 +147,61 @@ export default function InspirationPage() {
         <section className="py-12 md:py-16">
           <div className="container-luxury">
             
-            {/* Filter Row */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 p-4 bg-card rounded-2xl shadow-subtle border border-border/40">
-              <div className="flex items-center gap-3 shrink-0">
-                <LayoutGrid className="w-5 h-5 text-primary" />
-                <span className="text-sm font-bold uppercase tracking-widest text-charcoal">Bộ Lọc Không Gian</span>
-              </div>
+            {/* Filter Row - 4 Buttons */}
+            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-10 p-4 bg-card rounded-2xl shadow-subtle border border-border/40">
               
-              <div className="flex flex-wrap md:flex-nowrap gap-3 flex-1">
-                {/* Filter 1: Category (Phòng) - Sử dụng Select */}
-                <Select 
-                  value={filters.selectedCategorySlug} 
-                  onValueChange={(val) => updateFilter('selectedCategorySlug', val)}
+              {/* 1. Không Gian (Category) */}
+              <SpaceFilter 
+                filterOptions={filterOptions} 
+                filters={filters} 
+                updateFilter={updateFilter} 
+              />
+              
+              {/* 2. Phong Cách (Style) */}
+              <SubFilter
+                title="Phong Cách"
+                icon={Layers}
+                options={filterOptions.styles}
+                selected={filters.selectedStyle}
+                filterKey="selectedStyle"
+                updateFilter={updateFilter}
+              />
+              
+              {/* 3. Chất Liệu (Material) */}
+              <SubFilter
+                title="Chất Liệu"
+                icon={Zap}
+                options={filterOptions.materials}
+                selected={filters.selectedMaterial}
+                filterKey="selectedMaterial"
+                updateFilter={updateFilter}
+              />
+              
+              {/* 4. Màu Sắc (Color) */}
+              <SubFilter
+                title="Màu Sắc"
+                icon={Palette}
+                options={filterOptions.colors}
+                selected={filters.selectedColor}
+                filterKey="selectedColor"
+                updateFilter={updateFilter}
+              />
+              
+              {/* Clear Filter Button */}
+              {(filters.selectedCategorySlug !== 'all' || filters.selectedStyle !== 'all' || filters.selectedMaterial !== 'all' || filters.selectedColor !== 'all') && (
+                <Button 
+                  variant="ghost" 
+                  onClick={() => {
+                    updateFilter('selectedCategorySlug', 'all');
+                    updateFilter('selectedStyle', 'all');
+                    updateFilter('selectedMaterial', 'all');
+                    updateFilter('selectedColor', 'all');
+                  }}
+                  className="h-11 px-4 text-xs font-bold uppercase tracking-widest text-destructive hover:bg-destructive/10"
                 >
-                  <SelectTrigger className="w-full md:w-48 h-11 rounded-xl bg-secondary/50 border-border/60 text-xs font-bold uppercase tracking-widest">
-                    <SelectValue placeholder="Chọn không gian" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    {filterOptions.categories.map(cat => (
-                      <SelectItem key={cat.slug} value={cat.slug} className="text-sm">
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                {/* Filter 2: Style (Phong cách) - Sử dụng Select */}
-                <Select 
-                  value={filters.selectedStyle} 
-                  onValueChange={(val) => updateFilter('selectedStyle', val)}
-                >
-                  <SelectTrigger className="w-full md:w-48 h-11 rounded-xl bg-secondary/50 border-border/60 text-xs font-bold uppercase tracking-widest">
-                    <SelectValue placeholder="Chọn phong cách" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="all" className="text-sm">Tất Cả Phong Cách</SelectItem>
-                    {filterOptions.styles.map(style => (
-                      <SelectItem key={style} value={style} className="text-sm">
-                        {style}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                {/* Filter 3: Material (Chất liệu) - Sử dụng Select */}
-                <Select 
-                  value={filters.selectedMaterial} 
-                  onValueChange={(val) => updateFilter('selectedMaterial', val)}
-                >
-                  <SelectTrigger className="w-full md:w-48 h-11 rounded-xl bg-secondary/50 border-border/60 text-xs font-bold uppercase tracking-widest">
-                    <SelectValue placeholder="Chọn chất liệu" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="all" className="text-sm">Tất Cả Chất Liệu</SelectItem>
-                    {filterOptions.materials.map(material => (
-                      <SelectItem key={material} value={material} className="text-sm">
-                        {material}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  Xóa lọc
+                </Button>
+              )}
             </div>
             
             {/* Lookbook Grid */}
