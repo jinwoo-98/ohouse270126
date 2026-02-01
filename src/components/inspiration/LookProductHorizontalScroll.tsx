@@ -8,7 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { ProductCarouselItem } from "../product/ProductCarouselItem"; // Import component mới
+import { LookProductVerticalItem } from "./LookProductVerticalItem"; // Sử dụng thẻ tối giản
 
 interface LookProductHorizontalScrollProps {
   products: any[];
@@ -31,7 +31,7 @@ export function LookProductHorizontalScroll({ products, onQuickView }: LookProdu
         <CarouselContent className="-ml-4">
           {products.map((product, index) => (
             <CarouselItem key={product.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4">
-              <ProductCarouselItem product={product} onQuickView={onQuickView} />
+              <LookProductVerticalItem product={product} onQuickView={onQuickView} />
             </CarouselItem>
           ))}
         </CarouselContent>

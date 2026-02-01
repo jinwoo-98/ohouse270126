@@ -35,7 +35,7 @@ export function ProductHorizontalScroll({ products, title = "Sản phẩm liên 
         <CarouselContent className="-ml-4">
           {products.map((product, index) => (
             <CarouselItem key={product.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
-              {/* Sử dụng ProductCarouselItem */}
+              {/* Sử dụng ProductCarouselItem (thẻ thông thường) */}
               <ProductCarouselItem product={product} onQuickView={onQuickView} />
             </CarouselItem>
           ))}
