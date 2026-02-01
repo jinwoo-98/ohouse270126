@@ -3,11 +3,10 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LookbookList } from "@/components/admin/content/LookbookList";
 import { Input } from "@/components/ui/input"; // Import Input
+import { useState } from "react"; // Import useState
 
 export default function LookbookManagerPage() {
-  // State cho ô tìm kiếm (cần được quản lý ở đây để truyền xuống LookbookList)
-  // Tuy nhiên, LookbookList đã có state tìm kiếm riêng, nên ta chỉ cần tạo giao diện.
-  // Giả định LookbookList sẽ tự quản lý state tìm kiếm nội bộ.
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <div className="max-w-6xl mx-auto pb-20 space-y-8">
@@ -28,7 +27,8 @@ export default function LookbookManagerPage() {
           <Input 
             placeholder="Tìm kiếm Lookbook..." 
             className="pl-10 h-11 bg-white rounded-xl"
-            // Lưu ý: State tìm kiếm sẽ được quản lý trong LookbookList
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         
@@ -44,7 +44,8 @@ export default function LookbookManagerPage() {
         </div>
       </div>
       
-      <LookbookList />
+      {/* Truyền searchTerm xuống LookbookList để lọc */}
+      <LookbookList searchTerm={searchTerm} />
     </div>
   );
 }

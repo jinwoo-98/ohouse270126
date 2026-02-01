@@ -11,11 +11,14 @@ import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-export function LookbookList() {
+interface LookbookListProps {
+  searchTerm: string;
+}
+
+export function LookbookList({ searchTerm }: LookbookListProps) {
   const [looks, setLooks] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,10 +51,15 @@ export function LookbookList() {
     }
   };
 
-  const filteredLooks = looks.filter(l => 
-    l.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    l.category_id?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Sử dụng useMemo để lọc dựa trên searchTerm từ prop
+  const filteredLooks = useMemo(() => {
+    if (!searchTerm) return looks;
+    const lowerCaseSearch = searchTerm.toLowerCase();
+    return looks.filter(l => 
+      l.title?.toLowerCase().includes(lowerCaseSearch) ||
+      l.category_id?.toLowerCase().includes(lowerCaseSearch)
+    );
+  }, [looks, searchTerm]);
 
   // Lấy danh mục cha chính (menu_location = 'main')
   const mainCategories = useMemo(() => 
@@ -90,21 +98,6 @@ export function LookbookList() {
 
   return (
     <div className="space-y-6 mt-6">
-      <div className="flex justify-between items-center">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Tìm kiếm Lookbook..." 
-            className="pl-10 h-11 bg-white rounded-xl"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <Button asChild className="btn-hero h-11 shadow-gold">
-          <Link to="/admin/content/looks/new"><Plus className="w-4 h-4 mr-2" /> Thêm Lookbook</Link>
-        </Button>
-      </div>
-      
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
       ) : categoriesWithLooks.length === 0 ? (
