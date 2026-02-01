@@ -56,7 +56,10 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
         <Button 
           variant="outline" 
           className={cn(
-            "h-10 px-2 md:h-11 md:px-6 rounded-2xl text-[9px] md:text-xs font-bold uppercase tracking-widest gap-1 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
+            // Mobile optimization: h-9, px-1.5, text-[8px], no tracking-widest
+            "h-9 px-1.5 text-[8px] font-bold uppercase gap-1 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
+            // Desktop styles
+            "sm:h-11 sm:px-6 sm:text-xs sm:tracking-widest",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
@@ -95,7 +98,10 @@ function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilt
         <Button 
           variant="outline" 
           className={cn(
-            "h-10 px-2 md:h-11 md:px-6 rounded-2xl text-[9px] md:text-xs font-bold uppercase tracking-widest gap-1 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
+            // Mobile optimization: h-9, px-1.5, text-[8px], no tracking-widest
+            "h-9 px-1.5 text-[8px] font-bold uppercase gap-1 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
+            // Desktop styles
+            "sm:h-11 sm:px-6 sm:text-xs sm:tracking-widest",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
@@ -154,7 +160,8 @@ export function InspirationToolbar({ lookCount, filterOptions, filters, updateFi
           </div>
 
           {/* Right: Filters (4 buttons) */}
-          <div className="flex flex-wrap justify-between md:justify-end gap-2 md:gap-3 w-full md:w-auto">
+          {/* Sử dụng gap-1 và flex-1 để chia đều 4 nút trên mobile */}
+          <div className="flex justify-between md:justify-end gap-1 md:gap-3 w-full md:w-auto">
             
             {/* 1. Không Gian (Category) */}
             <SpaceFilter 
