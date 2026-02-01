@@ -24,7 +24,7 @@ export function ShowroomCard({ showroom, index }: ShowroomCardProps) {
             <img src={showroom.image_url} alt={showroom.name} className="w-full h-full object-cover" />
           ) : showroom.map_iframe_url ? (
             <div 
-              className="w-full h-full"
+              className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-none" // Force iframe to fill container
               dangerouslySetInnerHTML={{ __html: showroom.map_iframe_url }}
             />
           ) : (
