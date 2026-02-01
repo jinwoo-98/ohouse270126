@@ -26,7 +26,7 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
   const lookAsProduct = {
     id: look.id,
     name: look.title,
-    price: productsInLook[0]?.price || 0, // Lấy giá của sản phẩm đầu tiên làm giá đại diện
+    price: productsInLook[0]?.price || 0, // Giữ lại giá đại diện cho mục đích Wishlist
     image: look.image_url,
     slug: `y-tuong/${look.id}`,
   };
@@ -40,38 +40,46 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
       viewport={{ once: true }}
-      className="group flex flex-col bg-transparent rounded-2xl overflow-hidden h-full"
+      // Cấu trúc thẻ Lookbook: Ảnh + Info (không có giá)
+      className="group flex flex-col gap-5" 
     >
-      {/* Toàn bộ khối ảnh là Link */}
-      <Link to={`/y-tuong/${look.id}`} className="block relative aspect-square overflow-hidden bg-secondary/15 shrink-0 rounded-2xl shadow-subtle group-hover:shadow-medium transition-all duration-500">
+      {/* Image Section */}
+      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
+        <Link to={`/y-tuong/${look.id}`} className="block relative w-full h-full">
+          
+          {/* Image */}
+          <img 
+            src={look.image_url} 
+            alt={look.title} 
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/30 to-transparent" />
+          
+          {/* Nút Yêu thích (Phải trên) */}
+          <button 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              e.preventDefault();
+              toggleWishlist(lookAsProduct); 
+            }}
+            className={cn(
+              "absolute top-3 right-3 z-20 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-medium backdrop-blur-sm",
+              isFavorite 
+                ? "bg-primary text-white" 
+                : "bg-white/80 text-charcoal hover:bg-primary hover:text-white"
+            )}
+            title="Thêm vào yêu thích"
+          >
+            <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
+          </button>
+          
+          {/* Product Count Badge (Trái dưới) */}
+          <div className="absolute bottom-3 left-3 bg-charcoal/80 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest z-10">
+            {productCount} SP
+          </div>
+        </Link>
         
-        {/* Image */}
-        <img 
-          src={look.image_url} 
-          alt={look.title} 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/30 to-transparent" />
-        
-        {/* Nút Yêu thích (Phải trên) */}
-        <button 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            e.preventDefault();
-            toggleWishlist(lookAsProduct); 
-          }}
-          className={cn(
-            "absolute top-3 right-3 z-20 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-medium backdrop-blur-sm",
-            isFavorite 
-              ? "bg-primary text-white" 
-              : "bg-white/80 text-charcoal hover:bg-primary hover:text-white"
-          )}
-          title="Thêm vào yêu thích"
-        >
-          <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
-        </button>
-        
-        {/* Hotspots */}
+        {/* Hotspots (Vẫn cần để QuickView hoạt động) */}
         <TooltipProvider>
           {look.shop_look_items
             .filter((item: any) => item.target_image_url === look.image_url && item.products)
@@ -79,7 +87,7 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
             <Tooltip key={item.id} delayDuration={0}>
               <TooltipTrigger asChild>
                 <button
-                  className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot"
+                  className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot pointer-events-auto"
                   style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                   onClick={(e) => { 
                     e.stopPropagation(); 
@@ -98,24 +106,14 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
             </Tooltip>
           ))}
         </TooltipProvider>
-        
-        {/* Product Count Badge (Trái dưới) */}
-        <div className="absolute bottom-3 left-3 bg-charcoal/80 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest z-10">
-          {productCount} SP
-        </div>
-      </Link>
+      </div>
       
-      {/* Info Section - Căn giữa */}
-      <div className="p-4 flex flex-col flex-1 items-center text-center pt-4">
+      {/* Info Section (Tiêu đề và số lượng sản phẩm) */}
+      <div className="px-3 text-center">
         <Link to={`/y-tuong/${look.id}`}>
-          <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">
-            {look.title}
-          </h3>
+          <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
         </Link>
-        
-        <div className="flex flex-wrap items-center justify-center gap-2 mt-auto">
-          <p className="text-sm md:text-base font-bold text-primary">{formatPrice(lookAsProduct.price)}</p>
-        </div>
+        <p className="text-xs text-muted-foreground mt-1">{productCount} sản phẩm phối hợp</p>
       </div>
     </motion.div>
   );

@@ -20,7 +20,6 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
     .map((item: any) => item.products);
 
   // Tạo một "sản phẩm đại diện" cho Lookbook để thêm vào Wishlist
-  // Chúng ta sẽ sử dụng ID của Lookbook làm ID sản phẩm, và thông tin cơ bản của Lookbook
   const lookAsProduct = {
     id: look.id,
     name: look.title,
@@ -30,6 +29,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
   };
   
   const isFavorite = isInWishlist(lookAsProduct.id);
+  const productCount = productsInLook.length;
 
   return (
     <motion.div
@@ -42,32 +42,37 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
       className="group flex flex-col gap-5"
     >
       <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
-        <Link to={`/y-tuong/${look.id}`}>
+        <Link to={`/y-tuong/${look.id}`} className="block relative w-full h-full">
           <img 
             src={look.image_url} 
             alt={look.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
+          
+          {/* Nút Yêu thích */}
+          <button 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              e.preventDefault();
+              toggleWishlist(lookAsProduct); 
+            }}
+            className={cn(
+              "absolute top-4 right-4 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-medium backdrop-blur-sm",
+              isFavorite 
+                ? "bg-primary text-white" 
+                : "bg-white/80 text-charcoal hover:bg-primary hover:text-white"
+            )}
+            title="Thêm vào yêu thích"
+          >
+            <Heart className={cn("w-5 h-5", isFavorite && "fill-current")} />
+          </button>
+          
+          {/* Product Count Badge (Trái dưới) */}
+          <div className="absolute bottom-3 left-3 bg-charcoal/80 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest z-10">
+            {productCount} SP
+          </div>
         </Link>
-        
-        {/* Nút Yêu thích */}
-        <button 
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            e.preventDefault();
-            toggleWishlist(lookAsProduct); 
-          }}
-          className={cn(
-            "absolute top-4 right-4 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-medium backdrop-blur-sm",
-            isFavorite 
-              ? "bg-primary text-white" 
-              : "bg-white/80 text-charcoal hover:bg-primary hover:text-white"
-          )}
-          title="Thêm vào yêu thích"
-        >
-          <Heart className={cn("w-5 h-5", isFavorite && "fill-current")} />
-        </button>
 
         <TooltipProvider>
           {look.shop_look_items
@@ -76,7 +81,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
             <Tooltip key={item.id} delayDuration={0}>
               <TooltipTrigger asChild>
                 <button
-                  className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot"
+                  className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot pointer-events-auto"
                   style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                   onClick={(e) => { 
                     e.stopPropagation(); 
@@ -99,8 +104,10 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
         </TooltipProvider>
       </div>
       <div className="px-3 text-center">
-        <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
-        <p className="text-xs text-muted-foreground mt-1">{look.shop_look_items?.length || 0} sản phẩm phối hợp</p>
+        <Link to={`/y-tuong/${look.id}`}>
+          <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
+        </Link>
+        <p className="text-xs text-muted-foreground mt-1">{productCount} sản phẩm phối hợp</p>
       </div>
     </motion.div>
   );
