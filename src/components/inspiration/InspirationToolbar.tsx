@@ -56,15 +56,15 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
         <Button 
           variant="outline" 
           className={cn(
-            // Mobile optimization: h-9, px-1.5, text-[8px], no tracking-widest
-            "h-9 px-1.5 text-[8px] font-bold uppercase gap-1 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
+            // Mobile optimization
+            "h-10 px-3 text-[10px] font-bold uppercase tracking-normal gap-1 border-border/60 hover:bg-secondary/50",
             // Desktop styles
             "sm:h-11 sm:px-6 sm:text-xs sm:tracking-widest",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
           <Home className="w-4 h-4 hidden sm:block" />
-          <span className="truncate">{isFiltered ? currentCategory?.name : "Không Gian"}</span>
+          <span>{isFiltered ? currentCategory?.name : "Không Gian"}</span>
           <ChevronDown className="w-3 h-3 ml-1 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -98,15 +98,15 @@ function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilt
         <Button 
           variant="outline" 
           className={cn(
-            // Mobile optimization: h-9, px-1.5, text-[8px], no tracking-widest
-            "h-9 px-1.5 text-[8px] font-bold uppercase gap-1 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
+            // Mobile optimization
+            "h-10 px-3 text-[10px] font-bold uppercase tracking-normal gap-1 border-border/60 hover:bg-secondary/50",
             // Desktop styles
             "sm:h-11 sm:px-6 sm:text-xs sm:tracking-widest",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
           <Icon className="w-4 h-4 hidden sm:block" />
-          <span className="truncate">{title}</span>
+          <span>{title}</span>
           <ChevronDown className="w-3 h-3 ml-1 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -160,8 +160,7 @@ export function InspirationToolbar({ lookCount, filterOptions, filters, updateFi
           </div>
 
           {/* Right: Filters (4 buttons) */}
-          {/* Sử dụng gap-1 và flex-1 để chia đều 4 nút trên mobile */}
-          <div className="flex justify-between md:justify-end gap-1 md:gap-3 w-full md:w-auto">
+          <div className="flex justify-between md:justify-end gap-2 md:gap-3 w-full md:w-auto">
             
             {/* 1. Không Gian (Category) */}
             <SpaceFilter 
