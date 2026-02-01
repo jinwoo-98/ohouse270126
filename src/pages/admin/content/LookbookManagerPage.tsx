@@ -1,9 +1,14 @@
-import { Sparkles, ListFilter, Plus, ArrowLeft } from "lucide-react";
+import { Sparkles, ListFilter, Plus, ArrowLeft, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LookbookList } from "@/components/admin/content/LookbookList";
+import { Input } from "@/components/ui/input"; // Import Input
 
 export default function LookbookManagerPage() {
+  // State cho ô tìm kiếm (cần được quản lý ở đây để truyền xuống LookbookList)
+  // Tuy nhiên, LookbookList đã có state tìm kiếm riêng, nên ta chỉ cần tạo giao diện.
+  // Giả định LookbookList sẽ tự quản lý state tìm kiếm nội bộ.
+
   return (
     <div className="max-w-6xl mx-auto pb-20 space-y-8">
       <div className="flex items-center gap-4">
@@ -16,17 +21,27 @@ export default function LookbookManagerPage() {
         </div>
       </div>
       
-      <div className="flex justify-end gap-3">
-        {/* Giữ lại nút Quản lý Tùy chọn Bộ lọc */}
-        <Button asChild variant="outline" className="h-10 px-6 text-[10px] font-bold uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5">
-          <Link to="/admin/content/looks/filters">
-            <ListFilter className="w-4 h-4 mr-2" /> Quản lý Tùy chọn Bộ lọc
-          </Link>
-        </Button>
-        {/* Giữ lại nút Thêm Lookbook */}
-        <Button asChild className="btn-hero h-10 shadow-gold">
-          <Link to="/admin/content/looks/new"><Plus className="w-4 h-4 mr-2" /> Thêm Lookbook</Link>
-        </Button>
+      {/* Bố cục mới: Tìm kiếm | Quản lý Bộ lọc | Thêm Lookbook */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="relative flex-1 w-full md:max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input 
+            placeholder="Tìm kiếm Lookbook..." 
+            className="pl-10 h-11 bg-white rounded-xl"
+            // Lưu ý: State tìm kiếm sẽ được quản lý trong LookbookList
+          />
+        </div>
+        
+        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+          <Button asChild variant="outline" className="h-10 px-6 text-[10px] font-bold uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5">
+            <Link to="/admin/content/looks/filters">
+              <ListFilter className="w-4 h-4 mr-2" /> Quản lý Tùy chọn Bộ lọc
+            </Link>
+          </Button>
+          <Button asChild className="btn-hero h-10 shadow-gold">
+            <Link to="/admin/content/looks/new"><Plus className="w-4 h-4 mr-2" /> Thêm Lookbook</Link>
+          </Button>
+        </div>
       </div>
       
       <LookbookList />
