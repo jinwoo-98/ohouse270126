@@ -20,12 +20,19 @@ interface Step {
   desc: string;
 }
 
+interface Option {
+  label: string;
+  value: string;
+}
+
 export default function DesignServicePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [pageContent, setPageContent] = useState<string | null>(null);
-  const [config, setConfig] = useState<{ hero_image_url: string | null, steps: Step[] }>({
+  const [config, setConfig] = useState<{ hero_image_url: string | null, steps: Step[], room_options: Option[], budget_options: Option[] }>({
     hero_image_url: null,
     steps: [],
+    room_options: [],
+    budget_options: [],
   });
   const [isConfigLoading, setIsConfigLoading] = useState(true);
   
@@ -67,6 +74,8 @@ export default function DesignServicePage() {
         setConfig({
           hero_image_url: data.hero_image_url,
           steps: data.steps || [],
+          room_options: data.room_options || [],
+          budget_options: data.budget_options || [],
         });
       }
     } catch (e) {
@@ -203,11 +212,9 @@ export default function DesignServicePage() {
                       <SelectValue placeholder="Chọn không gian" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="living">Phòng Khách</SelectItem>
-                      <SelectItem value="bedroom">Phòng Ngủ</SelectItem>
-                      <SelectItem value="dining">Phòng Ăn</SelectItem>
-                      <SelectItem value="office">Văn Phòng</SelectItem>
-                      <SelectItem value="full">Trọn Gói Căn Hộ</SelectItem>
+                      {config.room_options.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -218,10 +225,9 @@ export default function DesignServicePage() {
                       <SelectValue placeholder="Chọn ngân sách" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="50">Dưới 50 triệu</SelectItem>
-                      <SelectItem value="100">50 - 100 triệu</SelectItem>
-                      <SelectItem value="200">100 - 200 triệu</SelectItem>
-                      <SelectItem value="500">Trên 200 triệu</SelectItem>
+                      {config.budget_options.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
