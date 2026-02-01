@@ -10,17 +10,25 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import heroLivingRoom from "@/assets/hero-living-room.jpg";
+// import heroLivingRoom from "@/assets/hero-living-room.jpg"; // Removed hardcoded image
 
-const steps = [
-  { icon: Zap, title: "Bước 1: Đăng Ký", desc: "Điền thông tin và yêu cầu thiết kế của bạn." },
-  { icon: LayoutGrid, title: "Bước 2: Tư Vấn", desc: "Kiến trúc sư liên hệ, khảo sát và lên ý tưởng sơ bộ." },
-  { icon: CheckCircle, title: "Bước 3: Hoàn Thiện", desc: "Nhận bản vẽ 3D miễn phí và báo giá chi tiết." },
-];
+const iconMap: Record<string, any> = { Zap, LayoutGrid, CheckCircle };
+
+interface Step {
+  icon_name: string;
+  title: string;
+  desc: string;
+}
 
 export default function DesignServicePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [pageContent, setPageContent] = useState<string | null>(null);
+  const [config, setConfig] = useState<{ hero_image_url: string | null, steps: Step[] }>({
+    hero_image_url: null,
+    steps: [],
+  });
+  const [isConfigLoading, setIsConfigLoading] = useState(true);
+  
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -32,6 +40,7 @@ export default function DesignServicePage() {
 
   useEffect(() => {
     fetchPageContent();
+    fetchDesignConfig();
   }, []);
 
   const fetchPageContent = async () => {
@@ -43,6 +52,27 @@ export default function DesignServicePage() {
     
     if (data?.content) {
       setPageContent(data.content);
+    }
+  };
+  
+  const fetchDesignConfig = async () => {
+    setIsConfigLoading(true);
+    try {
+      const { data } = await supabase
+        .from('design_service_config')
+        .select('*')
+        .single();
+        
+      if (data) {
+        setConfig({
+          hero_image_url: data.hero_image_url,
+          steps: data.steps || [],
+        });
+      }
+    } catch (e) {
+      console.error("Error fetching design config:", e);
+    } finally {
+      setIsConfigLoading(false);
     }
   };
 
@@ -76,6 +106,10 @@ export default function DesignServicePage() {
       setIsLoading(false);
     }
   };
+  
+  if (isConfigLoading) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -83,7 +117,13 @@ export default function DesignServicePage() {
       
       <main className="flex-1">
         <section className="relative h-[50vh] overflow-hidden">
-          <img src={heroLivingRoom} alt="Dịch vụ thiết kế miễn phí" className="w-full h-full object-cover" />
+          {config.hero_image_url ? (
+            <img src={config.hero_image_url} alt="Dịch vụ thiết kế miễn phí" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-secondary/50 flex items-center justify-center">
+              <LayoutGrid className="w-16 h-16 text-muted-foreground/30" />
+            </div>
+          )}
           <div className="absolute inset-0 bg-charcoal/70 flex items-center justify-center">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -107,24 +147,27 @@ export default function DesignServicePage() {
 
         <section className="py-16 md:py-24">
           <div className="container-luxury">
-            <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Quy Trình 3 Bước Đơn Giản</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Quy Trình {config.steps.length} Bước Đơn Giản</h2>
             <div className="grid md:grid-cols-3 gap-8">
-              {steps.map((step, index) => (
-                <motion.div
-                  key={step.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="text-center p-6 bg-secondary/50 rounded-lg shadow-subtle"
-                >
-                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <step.icon className="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">{step.title}</h3>
-                  <p className="text-muted-foreground">{step.desc}</p>
-                </motion.div>
-              ))}
+              {config.steps.map((step, index) => {
+                const Icon = iconMap[step.icon_name] || Zap;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="text-center p-6 bg-secondary/50 rounded-lg shadow-subtle"
+                  >
+                    <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Icon className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">{step.title}</h3>
+                    <p className="text-muted-foreground">{step.desc}</p>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>

@@ -34,7 +34,7 @@ import OrderSuccessPage from "./pages/OrderSuccessPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import CooperationPage from "./pages/CooperationPage";
 import LookDetailPage from "./pages/LookDetailPage";
-import ShowroomPage from "./pages/ShowroomPage"; // Import ShowroomPage
+import ShowroomPage from "./pages/ShowroomPage";
 
 // Admin Pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -61,8 +61,9 @@ import TeamManager from "./pages/admin/TeamManager";
 import CustomerHub from "./pages/admin/CustomerHub"; 
 import CooperationRequestManager from "./pages/admin/CooperationRequestManager";
 import TrackingManager from "./pages/admin/TrackingManager";
-import ShowroomManager from "./pages/admin/ShowroomManager"; // Import mới
-import ShowroomForm from "./pages/admin/ShowroomForm"; // Import mới
+import ShowroomManager from "./pages/admin/ShowroomManager";
+import ShowroomForm from "./pages/admin/ShowroomForm";
+import DesignServiceConfig from "./pages/admin/DesignServiceConfig"; // NEW IMPORT
 
 // Homepage Sub-pages
 import SlidePage from "./pages/admin/homepage/SlidePage.tsx";
@@ -118,7 +119,7 @@ const App = () => (
                 </Route>
 
                 <Route path="/dang-nhap" element={<AccountPage />} />
-                <Route path="/showroom" element={<ShowroomPage />} /> {/* Sử dụng ShowroomPage mới */}
+                <Route path="/showroom" element={<ShowroomPage />} />
                 <Route path="/cam-hung" element={<InspirationPage />} />
                 <Route path="/y-tuong/:id" element={<LookDetailPage />} />
                 <Route path="/thiet-ke" element={<DesignServicePage />} />
@@ -151,6 +152,7 @@ const App = () => (
                   <Route path="content/looks/new" element={<LookbookForm />} />
                   <Route path="content/looks/edit/:id" element={<LookbookForm />} />
                   <Route path="content/looks/filters" element={<LookbookFilterPage />} />
+                  <Route path="design-config" element={<DesignServiceConfig />} /> {/* NEW ROUTE */}
                   <Route path="cooperation-requests" element={<CooperationRequestManager />} />
                   
                   {/* Sales & Product Management */}

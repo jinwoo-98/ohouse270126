@@ -30,7 +30,8 @@ import {
   Handshake,
   Sparkles,
   Code,
-  MapPin // Import MapPin icon
+  MapPin,
+  Zap // Import Zap icon for Design Service Config
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,8 +65,8 @@ const menuGroups = [
     items: [
       { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
       { id: 'looks', title: "Lookbook", icon: Sparkles, href: "/admin/content/looks" },
-      // Đã xóa: { id: 'lookbook-filters', title: "Bộ lọc Lookbook", icon: ListFilter, href: "/admin/content/looks/filters" },
-      { id: 'showrooms', title: "Showroom", icon: MapPin, href: "/admin/showrooms" }, // Mục mới
+      { id: 'design-config', title: "Thiết kế (Config)", icon: Zap, href: "/admin/design-config" }, // NEW ITEM
+      { id: 'showrooms', title: "Showroom", icon: MapPin, href: "/admin/showrooms" },
       { id: 'pages', title: "Trang nội dung", icon: Files, href: "/admin/pages" },
       { id: 'news', title: "Tin tức", icon: Newspaper, href: "/admin/news" },
       { id: 'projects', title: "Dự án", icon: Briefcase, href: "/admin/projects" },
