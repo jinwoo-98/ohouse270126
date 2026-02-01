@@ -23,10 +23,24 @@ export function ShowroomCard({ showroom, index }: ShowroomCardProps) {
           {showroom.image_url ? (
             <img src={showroom.image_url} alt={showroom.name} className="w-full h-full object-cover" />
           ) : showroom.map_iframe_url ? (
-            <div 
-              className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-none" // Force iframe to fill container
-              dangerouslySetInnerHTML={{ __html: showroom.map_iframe_url }}
-            />
+            // Check if the content looks like an iframe (starts with '<iframe')
+            showroom.map_iframe_url.trim().toLowerCase().startsWith('<iframe') ? (
+              <div 
+                className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-none"
+                dangerouslySetInnerHTML={{ __html: showroom.map_iframe_url }}
+              />
+            ) : (
+              // Fallback: Treat it as a simple URL and make it clickable
+              <a 
+                href={showroom.map_iframe_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full h-full flex flex-col items-center justify-center text-center p-4 text-primary hover:underline text-sm font-bold"
+              >
+                <MapPin className="w-8 h-8 mb-2" />
+                Mở bản đồ (Lỗi định dạng mã nhúng)
+              </a>
+            )
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground/50">
               <MapPin className="w-8 h-8" />
