@@ -61,13 +61,13 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
         <Button 
           variant="outline" 
           className={cn(
-            "h-11 px-6 rounded-2xl text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50",
+            "h-10 px-3 md:h-11 md:px-6 rounded-2xl text-[10px] md:text-xs font-bold uppercase tracking-widest gap-1 md:gap-2 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
-          <Home className="w-4 h-4" />
-          {isFiltered ? currentCategory?.name : "Không Gian"}
-          <ChevronDown className="w-4 h-4 ml-1 opacity-50" />
+          <Home className="w-3 h-3 sm:w-4 sm:h-4 hidden sm:block" />
+          <span className="truncate">{isFiltered ? currentCategory?.name : "Không Gian"}</span>
+          <ChevronDown className="w-3 h-3 ml-1 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-4 rounded-2xl shadow-elevated border-none z-30" align="start">
@@ -100,13 +100,13 @@ function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilt
         <Button 
           variant="outline" 
           className={cn(
-            "h-11 px-6 rounded-2xl text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50",
+            "h-10 px-3 md:h-11 md:px-6 rounded-2xl text-[10px] md:text-xs font-bold uppercase tracking-widest gap-1 md:gap-2 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
-          <Icon className="w-4 h-4" />
-          {title}
-          <ChevronDown className="w-4 h-4 ml-1 opacity-50" />
+          <Icon className="w-3 h-3 sm:w-4 sm:h-4 hidden sm:block" />
+          <span className="truncate">{title}</span>
+          <ChevronDown className="w-3 h-3 ml-1 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-4 rounded-2xl shadow-elevated border-none z-30" align="start">
@@ -162,7 +162,7 @@ export default function InspirationPage() {
         <section className="py-12 md:py-16">
           <div className="container-luxury">
             
-            {/* Filter Row - 4 Buttons */}
+            {/* Filter Row - 4 Buttons (Responsive) */}
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-10">
               
               {/* 1. Không Gian (Category) */}
