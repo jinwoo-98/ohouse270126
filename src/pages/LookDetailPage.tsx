@@ -161,7 +161,7 @@ export default function LookDetailPage() {
                 <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest">Sản phẩm trong không gian</h2>
                 
                 {/* Compact Vertical List with ScrollArea */}
-                <ScrollArea className="h-[70vh] max-h-[70vh] pr-4">
+                <ScrollArea className="max-h-[calc(100vh-200px)] pr-4">
                   <div className="grid grid-cols-2 gap-4"> {/* Sử dụng grid 2 cột để tối ưu khoảng trống */}
                     {visibleItems.map((item: any, index: number) => {
                       const product = item.products;
