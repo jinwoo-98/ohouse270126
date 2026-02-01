@@ -40,11 +40,15 @@ export function LookProductVerticalItem({ product, onQuickView }: LookProductVer
           <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
         </button>
 
-        {/* Nút Xem Nhanh trên ảnh (Overlay) */}
-        <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-          <span className="bg-white text-charcoal p-2 rounded-full shadow-lg">
-            <Eye className="w-5 h-5" />
-          </span>
+        {/* Nút Xem Nhanh (Bottom Left - Vị trí thống nhất) */}
+        <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+          <button 
+            onClick={(e) => { e.stopPropagation(); onQuickView(product); }}
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg"
+            title="Xem nhanh"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
         </div>
       </div>
       

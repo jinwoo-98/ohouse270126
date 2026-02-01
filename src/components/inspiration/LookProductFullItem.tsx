@@ -13,15 +13,9 @@ interface LookProductFullItemProps {
 }
 
 export function LookProductFullItem({ product, onQuickView }: LookProductFullItemProps) {
-  const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const isFavorite = isInWishlist(product.id);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    addToCart({ ...product, quantity: 1, image: product.image_url });
-  };
-  
   return (
     <div 
       className="group flex flex-col bg-card rounded-xl overflow-hidden border border-border/40 hover:shadow-subtle transition-all cursor-pointer"
@@ -48,18 +42,19 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
           <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
         </button>
 
-        {/* Nút Xem Nhanh trên ảnh (Overlay) */}
-        <div className="absolute inset-0 bg-charcoal/0 group-hover:bg-charcoal/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+        {/* Nút Xem Nhanh (Bottom Left - Vị trí thống nhất) */}
+        <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
           <button 
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView(product); }}
-            className="bg-white text-charcoal p-2 rounded-full shadow-lg"
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg"
+            title="Xem nhanh"
           >
-            <Eye className="w-5 h-5" />
+            <Eye className="w-4 h-4" />
           </button>
         </div>
       </Link>
       
-      {/* Info Section (Có tên và nút thêm giỏ) */}
+      {/* Info Section (Có tên và chỉ có giá) */}
       <div className="p-4 flex flex-col flex-1">
         <Link to={`/san-pham/${product.slug || product.id}`}>
           <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 mb-2">
@@ -69,13 +64,7 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
         
         <div className="flex items-center justify-between mt-auto pt-2">
           <p className="text-primary font-bold text-sm leading-none">{formatPrice(product.price)}</p>
-          <Button 
-            size="sm" 
-            className="h-8 w-8 rounded-full p-0 bg-charcoal text-white hover:bg-primary transition-colors"
-            onClick={handleAddToCart}
-          >
-            <ShoppingBag className="w-4 h-4" />
-          </Button>
+          {/* Loại bỏ nút Thêm vào giỏ */}
         </div>
       </div>
     </div>

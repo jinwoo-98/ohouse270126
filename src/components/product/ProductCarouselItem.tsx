@@ -48,21 +48,34 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
           )}
         </div>
 
-        {/* Quick View Button (Desktop only) */}
-        {!isMobile && (
-          <div className="absolute inset-x-3 bottom-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-            <button 
-              onClick={(e) => { 
-                e.preventDefault();
-                e.stopPropagation(); 
-                onQuickView(product); 
-              }}
-              className="w-full bg-charcoal/90 backdrop-blur-md text-white py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-white/10 hover:bg-primary transition-all shadow-lg"
-            >
-              XEM NHANH
-            </button>
-          </div>
-        )}
+        {/* Nút Yêu thích (Top Right) */}
+        <button 
+          onClick={(e) => { 
+            e.preventDefault();
+            e.stopPropagation(); 
+            toggleWishlist({ ...product, slug: product.slug }); 
+          }}
+          className={cn(
+            "absolute top-3 right-3 z-20 w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-medium backdrop-blur-sm",
+            isFavorite 
+              ? "bg-primary text-white" 
+              : "bg-white/80 text-charcoal hover:bg-primary hover:text-white"
+          )}
+          title="Yêu thích"
+        >
+          <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
+        </button>
+
+        {/* Nút Xem Nhanh (Bottom Left - Vị trí thống nhất) */}
+        <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+          <button 
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView(product); }}
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg"
+            title="Xem nhanh"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+        </div>
       </Link>
 
       {/* Info Section */}
@@ -84,21 +97,6 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
           </div>
           
           <div className="flex items-center gap-1">
-            <button 
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                toggleWishlist({ ...product, slug: product.slug }); 
-              }}
-              className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center transition-all",
-                isFavorite 
-                  ? "bg-primary/5 text-primary" 
-                  : "bg-secondary/50 text-charcoal hover:bg-primary/10 hover:text-primary"
-              )}
-              title="Yêu thích"
-            >
-              <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
-            </button>
             <button 
               onClick={handleAddToCart}
               className="w-8 h-8 rounded-full flex items-center justify-center bg-charcoal text-white hover:bg-primary transition-colors"
