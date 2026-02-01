@@ -17,11 +17,13 @@ export default function LookbookManagerPage() {
       </div>
       
       <div className="flex justify-end gap-3">
+        {/* Giữ lại nút Quản lý Tùy chọn Bộ lọc */}
         <Button asChild variant="outline" className="h-10 px-6 text-[10px] font-bold uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5">
           <Link to="/admin/content/looks/filters">
             <ListFilter className="w-4 h-4 mr-2" /> Quản lý Tùy chọn Bộ lọc
           </Link>
         </Button>
+        {/* Giữ lại nút Thêm Lookbook */}
         <Button asChild className="btn-hero h-10 shadow-gold">
           <Link to="/admin/content/looks/new"><Plus className="w-4 h-4 mr-2" /> Thêm Lookbook</Link>
         </Button>
