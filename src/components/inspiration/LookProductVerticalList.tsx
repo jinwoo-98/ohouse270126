@@ -1,4 +1,4 @@
-import { LookProductVerticalItem } from "./LookProductVerticalItem";
+import { LookProductFullItem } from "./LookProductFullItem"; // Import thẻ đầy đủ
 import { cn } from "@/lib/utils";
 
 interface LookProductVerticalListProps {
@@ -17,7 +17,7 @@ export function LookProductVerticalList({ products, title = "Sản phẩm tươn
       {/* Grid 2 cột cho danh sách dọc */}
       <div className="grid grid-cols-2 gap-4 md:gap-6">
         {products.map((product) => (
-          <LookProductVerticalItem 
+          <LookProductFullItem 
             key={product.id} 
             product={product} 
             onQuickView={onQuickView} 
