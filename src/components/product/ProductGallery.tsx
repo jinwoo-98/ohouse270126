@@ -149,13 +149,13 @@ export function ProductGallery({ mainImage, galleryImages, productName, hotspots
           <>
             <button 
               onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-              className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 items-center justify-center group shadow-medium"
+              className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 flex items-center justify-center group shadow-medium"
             >
               <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); paginate(1); }}
-              className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 items-center justify-center group shadow-medium"
+              className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 flex items-center justify-center group shadow-medium"
             >
               <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
             </button>
@@ -216,13 +216,13 @@ export function ProductGallery({ mainImage, galleryImages, productName, hotspots
               <>
                 <button 
                   onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-[210] items-center justify-center group shadow-medium"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-[210] flex items-center justify-center group shadow-medium"
                 >
                   <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); paginate(1); }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-[210] items-center justify-center group shadow-medium"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-[210] flex items-center justify-center group shadow-medium"
                 >
                   <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
