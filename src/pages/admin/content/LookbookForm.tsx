@@ -37,9 +37,9 @@ export default function LookbookForm() {
     is_active: true,
     homepage_image_url: "",
     // NEW FIELDS
-    style: "",
-    material: "",
-    color: "",
+    style: "none", // Default to 'none' instead of ''
+    material: "none", // Default to 'none' instead of ''
+    color: "none", // Default to 'none' instead of ''
   });
 
   useEffect(() => {
@@ -90,9 +90,9 @@ export default function LookbookForm() {
       gallery_urls: lookData.gallery_urls || [],
       is_active: lookData.is_active,
       homepage_image_url: lookData.homepage_image_url || "",
-      style: lookData.style || "",
-      material: lookData.material || "",
-      color: lookData.color || "",
+      style: lookData.style || "none", // Use 'none' fallback
+      material: lookData.material || "none", // Use 'none' fallback
+      color: lookData.color || "none", // Use 'none' fallback
     });
     setLookItems(lookData.shop_look_items || []);
     setActiveEditingImage(lookData.image_url);
@@ -102,6 +102,11 @@ export default function LookbookForm() {
     e.preventDefault();
     setSaving(true);
     
+    // Convert 'none' back to null/empty string for DB storage
+    const styleValue = formData.style === 'none' ? null : formData.style;
+    const materialValue = formData.material === 'none' ? null : formData.material;
+    const colorValue = formData.color === 'none' ? null : formData.color;
+
     const lookPayload = { 
       title: formData.title, 
       category_id: formData.category_id, 
@@ -109,9 +114,9 @@ export default function LookbookForm() {
       gallery_urls: formData.gallery_urls || [],
       is_active: formData.is_active,
       homepage_image_url: formData.homepage_image_url,
-      style: formData.style,
-      material: formData.material,
-      color: formData.color,
+      style: styleValue,
+      material: materialValue,
+      color: colorValue,
     };
 
     if (!lookPayload.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
@@ -253,7 +258,7 @@ export default function LookbookForm() {
                 <Select value={formData.style} onValueChange={val => setFormData({...formData, style: val})}>
                   <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Chọn phong cách..." /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">-- Không chọn --</SelectItem>
+                    <SelectItem value="none">-- Không chọn --</SelectItem>
                     {groupedFilters.style.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -265,7 +270,7 @@ export default function LookbookForm() {
                 <Select value={formData.material} onValueChange={val => setFormData({...formData, material: val})}>
                   <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Chọn chất liệu..." /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">-- Không chọn --</SelectItem>
+                    <SelectItem value="none">-- Không chọn --</SelectItem>
                     {groupedFilters.material.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -277,7 +282,7 @@ export default function LookbookForm() {
                 <Select value={formData.color} onValueChange={val => setFormData({...formData, color: val})}>
                   <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Chọn màu sắc..." /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">-- Không chọn --</SelectItem>
+                    <SelectItem value="none">-- Không chọn --</SelectItem>
                     {groupedFilters.color.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                   </SelectContent>
                 </Select>
