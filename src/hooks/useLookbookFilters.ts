@@ -19,6 +19,9 @@ export function useLookbookFilters() {
   const [allLooks, setAllLooks] = useState<any[]>([]);
   const [isLoadingLooks, setIsLoadingLooks] = useState(true);
   
+  // NEW STATE: Store fetched filter options
+  const [fetchedFilterOptions, setFetchedFilterOptions] = useState<any[]>([]);
+  
   const [filters, setFilters] = useState<LookbookFilterState>({
     selectedCategorySlug: "all",
     selectedStyle: "all",
@@ -26,35 +29,45 @@ export function useLookbookFilters() {
     selectedColor: "all",
   });
 
-  // 1. Fetch all active Lookbooks
+  // 1. Fetch all active Lookbooks AND Filter Options
   useEffect(() => {
-    const fetchLooks = async () => {
+    const fetchLooksAndFilters = async () => {
       setIsLoadingLooks(true);
       try {
-        // Fetch lookbooks including the new filter fields
-        const { data, error } = await supabase
-          .from('shop_looks')
-          .select(`
-            *, 
-            shop_look_items(
+        const [looksRes, filtersRes] = await Promise.all([
+          supabase
+            .from('shop_looks')
+            .select(`
               *, 
-              products(
-                id, name, price, image_url, slug, category_id, is_sale, original_price
+              shop_look_items(
+                *, 
+                products(
+                  id, name, price, image_url, slug, category_id, is_sale, original_price
+                )
               )
-            )
-          `)
-          .eq('is_active', true)
-          .order('display_order');
+            `)
+            .eq('is_active', true)
+            .order('display_order'),
+          // Fetch filter options from the new table
+          supabase
+            .from('lookbook_filters')
+            .select('*')
+            .order('type')
+            .order('value')
+        ]);
         
-        if (error) throw error;
-        setAllLooks(data || []);
+        if (looksRes.error) throw looksRes.error;
+        if (filtersRes.error) throw filtersRes.error;
+        
+        setAllLooks(looksRes.data || []);
+        setFetchedFilterOptions(filtersRes.data || []); // Set fetched options
       } catch (e) {
-        console.error("Error fetching lookbooks:", e);
+        console.error("Error fetching lookbooks or filters:", e);
       } finally {
         setIsLoadingLooks(false);
       }
     };
-    fetchLooks();
+    fetchLooksAndFilters();
   }, []);
 
   // 2. Determine available filter options (Categories, Styles, Materials, Colors)
@@ -66,12 +79,8 @@ export function useLookbookFilters() {
       colors: [],
     };
 
-    const uniqueStyles = new Set<string>();
-    const uniqueMaterials = new Set<string>();
-    const uniqueColors = new Set<string>();
-
     if (categoriesData) {
-      // Categories (Phòng)
+      // Categories (Phòng) - Filter categories that actually have looks assigned
       const lookCategories = new Set(allLooks.map(l => l.category_id).filter(Boolean));
       const availableCategories = categoriesData.mainCategories
         .filter(c => c.dropdownKey && lookCategories.has(c.dropdownKey))
@@ -79,21 +88,22 @@ export function useLookbookFilters() {
       options.categories = [...options.categories, ...availableCategories];
     }
 
-    // Styles, Materials, and Colors (Lấy trực tiếp từ Lookbook)
-    allLooks.forEach(look => {
-      if (look.style) uniqueStyles.add(look.style.trim());
-      if (look.material) uniqueMaterials.add(look.material.trim());
-      if (look.color) uniqueColors.add(look.color.trim());
+    // Styles, Materials, and Colors (Lấy từ bảng lookbook_filters)
+    fetchedFilterOptions.forEach(f => {
+      if (f.type === 'style') options.styles.push(f.value);
+      if (f.type === 'material') options.materials.push(f.value);
+      if (f.type === 'color') options.colors.push(f.value);
     });
-
-    options.styles = Array.from(uniqueStyles).filter(s => s && s.trim() !== '').sort();
-    options.materials = Array.from(uniqueMaterials).filter(m => m && m.trim() !== '').sort();
-    options.colors = Array.from(uniqueColors).filter(c => c && c.trim() !== '').sort();
+    
+    // Sort the options fetched from the table
+    options.styles.sort();
+    options.materials.sort();
+    options.colors.sort();
 
     return options;
-  }, [allLooks, categoriesData]);
+  }, [allLooks, categoriesData, fetchedFilterOptions]); // Depend on fetchedFilterOptions
 
-  // 3. Filtered Looks
+  // 3. Filtered Looks (remains the same)
   const filteredLooks = useMemo(() => {
     return allLooks.filter(look => {
       // Filter by Category (Phòng)

@@ -25,6 +25,9 @@ export default function LookbookForm() {
   const [lookItems, setLookItems] = useState<any[]>([]);
   const [productSearch, setProductSearch] = useState("");
   const [activeEditingImage, setActiveEditingImage] = useState<string | null>(null);
+  
+  // NEW STATE: Lookbook Filters
+  const [lookbookFilters, setLookbookFilters] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -45,13 +48,15 @@ export default function LookbookForm() {
 
   const fetchInitialData = async () => {
     setLoading(true);
-    const [pRes, cRes] = await Promise.all([
+    const [pRes, cRes, fRes] = await Promise.all([
       supabase.from('products').select('id, name, image_url, slug'),
-      supabase.from('categories').select('id, name, slug, parent_id, menu_location').order('name')
+      supabase.from('categories').select('id, name, slug, parent_id, menu_location').order('name'),
+      supabase.from('lookbook_filters').select('*').order('type').order('value')
     ]);
     
     setProducts(pRes.data || []);
     setCategories(cRes.data || []);
+    setLookbookFilters(fRes.data || []);
     
     if (isEdit) {
       await fetchLookData(id!);
@@ -177,6 +182,15 @@ export default function LookbookForm() {
   const parentCategories = categories.filter(c => !c.parent_id && c.menu_location === 'main');
   const allEditingImages = [formData.image_url, ...(formData.gallery_urls || [])].filter(Boolean);
   const lookItemsForActiveImage = lookItems.filter(i => i.target_image_url === activeEditingImage);
+  
+  // Group filters for easy rendering
+  const groupedFilters = useMemo(() => {
+    return {
+      style: lookbookFilters.filter(f => f.type === 'style').map(f => f.value),
+      material: lookbookFilters.filter(f => f.type === 'material').map(f => f.value),
+      color: lookbookFilters.filter(f => f.type === 'color').map(f => f.value),
+    };
+  }, [lookbookFilters]);
 
   if (loading) {
     return <div className="flex items-center justify-center h-screen"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
@@ -229,22 +243,50 @@ export default function LookbookForm() {
               </div>
             </div>
             
-            {/* NEW FILTER FIELDS */}
+            {/* NEW FILTER FIELDS - USING SELECTS */}
             <div className="space-y-4 bg-white p-6 rounded-3xl border shadow-sm">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><ListFilter className="w-4 h-4" /> Bộ lọc Lookbook</h3>
+              
+              {/* Style Select */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Layers className="w-3 h-3" /> Phong cách</Label>
-                <Input value={formData.style} onChange={e => setFormData({...formData, style: e.target.value})} placeholder="VD: Hiện đại, Bắc Âu..." className="h-11 rounded-xl" />
+                <Select value={formData.style} onValueChange={val => setFormData({...formData, style: val})}>
+                  <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Chọn phong cách..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">-- Không chọn --</SelectItem>
+                    {groupedFilters.style.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
+              
+              {/* Material Select */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Zap className="w-3 h-3" /> Chất liệu</Label>
-                <Input value={formData.material} onChange={e => setFormData({...formData, material: e.target.value})} placeholder="VD: Gỗ óc chó, Da thật..." className="h-11 rounded-xl" />
+                <Select value={formData.material} onValueChange={val => setFormData({...formData, material: val})}>
+                  <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Chọn chất liệu..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">-- Không chọn --</SelectItem>
+                    {groupedFilters.material.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
+              
+              {/* Color Select */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Palette className="w-3 h-3" /> Màu sắc chủ đạo</Label>
-                <Input value={formData.color} onChange={e => setFormData({...formData, color: e.target.value})} placeholder="VD: Trắng, Xám, Vàng đồng..." className="h-11 rounded-xl" />
+                <Select value={formData.color} onValueChange={val => setFormData({...formData, color: val})}>
+                  <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Chọn màu sắc..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">-- Không chọn --</SelectItem>
+                    {groupedFilters.color.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
-              <p className="text-[10px] text-muted-foreground italic">Các trường này dùng để lọc Lookbook trên trang Cảm hứng.</p>
+              
+              <p className="text-[10px] text-muted-foreground italic">
+                Các trường này dùng để lọc Lookbook trên trang Cảm hứng. 
+                <Link to="/admin/content/looks/filters" className="text-primary underline ml-1">Quản lý tùy chọn tại đây</Link>.
+              </p>
             </div>
             {/* END NEW FILTER FIELDS */}
 
