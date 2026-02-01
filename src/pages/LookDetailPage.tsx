@@ -20,8 +20,10 @@ import { useLookbookSimilarProducts } from "@/hooks/useLookbookSimilarProducts";
 import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll";
 import { useSimilarLookbooks } from "@/hooks/useSimilarLookbooks";
 import { SimilarLookbooks } from "@/components/inspiration/SimilarLookbooks";
-import { LookProductList } from "@/components/inspiration/LookProductList";
-import { LookProductVerticalList } from "@/components/inspiration/LookProductVerticalList"; // NEW IMPORT
+import { LookProductVerticalList } from "@/components/inspiration/LookProductVerticalList";
+import { LookbookCTAFilters } from "@/components/inspiration/LookbookCTAFilters";
+// Đã sửa lỗi: Đổi tên import để khớp với tên export
+import { LookProductVerticalList as LookProductList } from "@/components/inspiration/LookProductVerticalList"; 
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -244,6 +246,9 @@ export default function LookDetailPage() {
             <SimilarLookbooks lookbooks={similarLookbooks} title="COMBO TƯƠNG TỰ KHÁC" onQuickView={setQuickViewProduct} />
           )}
         </div>
+        
+        {/* 5. CTA Filters (NEW SECTION) */}
+        <LookbookCTAFilters />
       </main>
       <Footer />
       <QuickViewSheet product={quickViewProduct} isOpen={!!quickViewProduct} onClose={() => setQuickViewProduct(null)} />
