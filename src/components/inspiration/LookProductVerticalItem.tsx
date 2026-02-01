@@ -33,12 +33,12 @@ export function LookProductVerticalItem({ product, onQuickView, className, image
         
         {/* Nút Xem Nhanh (Overlay) */}
         <div className="absolute inset-0 bg-charcoal/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <Eye className="w-6 h-6 text-white" />
+          <Eye className="w-5 h-5 text-white" />
         </div>
       </div>
       
       {/* Info Section: Chỉ hiển thị Giá */}
-      <div className={cn("p-3 flex flex-col items-center text-center", infoClassName)}>
+      <div className={cn("p-2 flex flex-col items-center text-center", infoClassName)}>
         <p className="text-primary font-bold text-sm leading-none">{formatPrice(product.price)}</p>
       </div>
     </div>
