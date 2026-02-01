@@ -105,12 +105,7 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
         </div>
       </Link>
       
-      {/* Info Section (Đã loại bỏ tiêu đề và nút khám phá) */}
-      <div className="p-4 text-center">
-        <h3 className="text-sm font-bold text-charcoal line-clamp-2 leading-snug h-10">
-          {look.title}
-        </h3>
-      </div>
+      {/* Đã loại bỏ phần thông tin dưới ảnh */}
     </motion.div>
   );
 }

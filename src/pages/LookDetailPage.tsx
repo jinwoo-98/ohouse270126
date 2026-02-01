@@ -19,7 +19,8 @@ import { LookProductVerticalItem } from "@/components/inspiration/LookProductVer
 import { useLookbookSimilarProducts } from "@/hooks/useLookbookSimilarProducts";
 import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll";
 import { useSimilarLookbooks } from "@/hooks/useSimilarLookbooks";
-import { SimilarLookbooks } from "@/components/inspiration/SimilarLookbooks"; // NEW IMPORT
+import { SimilarLookbooks } from "@/components/inspiration/SimilarLookbooks";
+import { LookProductList } from "@/components/inspiration/LookProductList"; // NEW IMPORT
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -166,35 +167,7 @@ export default function LookDetailPage() {
             {/* RIGHT: Product List (1/3 width) - DESKTOP ONLY */}
             {visibleItems.length > 0 && (
               <div className="hidden lg:block lg:col-span-1 min-w-0 w-full">
-                <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest">Sản phẩm trong không gian</h2>
-                
-                {/* Compact Vertical List with ScrollArea */}
-                <ScrollArea className="max-h-[calc(100vh-200px)] pr-4">
-                  <div className="grid grid-cols-2 gap-4"> {/* Sử dụng grid 2 cột để tối ưu khoảng trống */}
-                    {visibleItems.map((item: any, index: number) => {
-                      const product = item.products;
-                      
-                      return (
-                        <LookProductVerticalItem 
-                          key={item.id} 
-                          product={product} 
-                          onQuickView={setQuickViewProduct} 
-                        />
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-                
-                {/* CTA to add all to cart - DESKTOP */}
-                <Button 
-                  onClick={() => {
-                    visibleItems.forEach((item: any) => addToCart({ ...item.products, quantity: 1, image: item.products.image_url }));
-                    toast.success(`Đã thêm ${visibleItems.length} sản phẩm vào giỏ hàng.`);
-                  }}
-                  className="w-full btn-hero h-12 text-xs font-bold shadow-gold mt-6 rounded-2xl"
-                >
-                  <ShoppingBag className="w-4 h-4 mr-2" /> Thêm tất cả vào giỏ
-                </Button>
+                <LookProductList products={lookbookProducts} onQuickView={setQuickViewProduct} />
               </div>
             )}
           </div>
