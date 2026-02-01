@@ -53,13 +53,20 @@ function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { 
 // Component cho bộ lọc chính (Không gian)
 function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
   const currentCategory = filterOptions.categories.find((c: any) => c.slug === filters.selectedCategorySlug);
+  const isFiltered = filters.selectedCategorySlug !== "all";
   
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="h-11 px-6 rounded-xl text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50">
+        <Button 
+          variant="outline" 
+          className={cn(
+            "h-11 px-6 rounded-full text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50",
+            isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
+          )}
+        >
           <Home className="w-4 h-4" />
-          {currentCategory?.name || "Không Gian"}
+          {isFiltered ? currentCategory?.name : "Không Gian"}
           <ChevronDown className="w-4 h-4 ml-1 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -85,14 +92,20 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
 
 // Component cho bộ lọc phụ (Style, Material, Color)
 function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilter }: any) {
-  const currentSelection = selected === "all" ? "Tất Cả" : selected;
+  const isFiltered = selected !== "all";
   
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="h-11 px-6 rounded-xl text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50">
+        <Button 
+          variant="outline" 
+          className={cn(
+            "h-11 px-6 rounded-full text-xs font-bold uppercase tracking-widest gap-2 border-border/60 hover:bg-secondary/50",
+            isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
+          )}
+        >
           <Icon className="w-4 h-4" />
-          {title}: <span className="font-normal text-primary ml-1 truncate max-w-[80px]">{currentSelection}</span>
+          {title}
           <ChevronDown className="w-4 h-4 ml-1 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -121,6 +134,8 @@ export default function InspirationPage() {
   
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
 
+  const isAnyFilterActive = filters.selectedCategorySlug !== 'all' || filters.selectedStyle !== 'all' || filters.selectedMaterial !== 'all' || filters.selectedColor !== 'all';
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -147,8 +162,8 @@ export default function InspirationPage() {
         <section className="py-12 md:py-16">
           <div className="container-luxury">
             
-            {/* Filter Row - 4 Buttons */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-10 p-4 bg-card rounded-2xl shadow-subtle border border-border/40">
+            {/* Filter Row - Tối giản */}
+            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-10">
               
               {/* 1. Không Gian (Category) */}
               <SpaceFilter 
@@ -188,7 +203,7 @@ export default function InspirationPage() {
               />
               
               {/* Clear Filter Button */}
-              {(filters.selectedCategorySlug !== 'all' || filters.selectedStyle !== 'all' || filters.selectedMaterial !== 'all' || filters.selectedColor !== 'all') && (
+              {isAnyFilterActive && (
                 <Button 
                   variant="ghost" 
                   onClick={() => {
