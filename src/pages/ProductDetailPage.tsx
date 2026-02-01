@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ChevronRight, Loader2, Truck, RotateCcw, ShieldCheck, CreditCard } from "lucide-react";
 import { Header } from "@/components/layout/Header";
@@ -43,10 +43,19 @@ export default function ProductDetailPage() {
     product?.bought_together_ids || []
   );
   
+  // Collect IDs of products already displayed in other sections
+  const excludedIds = useMemo(() => {
+    const ids = new Set<string>();
+    perfectMatch.forEach(p => ids.add(p.id));
+    boughtTogether.forEach(p => ids.add(p.id));
+    return Array.from(ids);
+  }, [perfectMatch, boughtTogether]);
+
   // Hook for similar products
   const { similarProducts, isLoadingSimilar } = useSimilarProducts(
     product?.category_id,
-    product?.id
+    product?.id,
+    excludedIds // Pass excluded IDs here
   );
 
   useEffect(() => {

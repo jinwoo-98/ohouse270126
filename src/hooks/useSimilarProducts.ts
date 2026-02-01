@@ -18,7 +18,7 @@ interface UseSimilarProductsResult {
   isLoadingSimilar: boolean;
 }
 
-export function useSimilarProducts(categoryId: string, currentProductId: string): UseSimilarProductsResult {
+export function useSimilarProducts(categoryId: string, currentProductId: string, excludedIds: string[] = []): UseSimilarProductsResult {
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [isLoadingSimilar, setIsLoadingSimilar] = useState(true);
 
@@ -31,25 +31,37 @@ export function useSimilarProducts(categoryId: string, currentProductId: string)
     const fetchSimilar = async () => {
       setIsLoadingSimilar(true);
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('products')
           .select('id, name, price, image_url, slug, category_id, is_sale, original_price')
           .eq('category_id', categoryId)
-          .neq('id', currentProductId)
           .limit(8);
+
+        // 1. Combine current product ID and explicitly excluded IDs
+        const allExcludedIds = [currentProductId, ...excludedIds].filter(Boolean);
+        
+        if (allExcludedIds.length > 0) {
+            // 2. Exclude all IDs already displayed in other sections or the current product itself
+            query = query.not('id', 'in', `(${allExcludedIds.join(',')})`);
+        }
+        
+        // 3. Order by fake_sold for better relevance
+        query = query.order('fake_sold', { ascending: false });
+
+        const { data, error } = await query;
 
         if (error) throw error;
         setSimilarProducts(data || []);
       } catch (error) {
         console.error("Error fetching similar products:", error);
-        // toast.error("Lỗi tải sản phẩm tương tự."); // Suppress toast for background fetch
       } finally {
         setIsLoadingSimilar(false);
       }
     };
 
+    // Re-fetch whenever categoryId, currentProductId, or the list of excludedIds changes
     fetchSimilar();
-  }, [categoryId, currentProductId]);
+  }, [categoryId, currentProductId, excludedIds.join(',')]);
 
   return { similarProducts, isLoadingSimilar };
 }
