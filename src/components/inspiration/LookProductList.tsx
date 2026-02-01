@@ -40,7 +40,7 @@ export function LookProductList({ products, onQuickView }: LookProductListProps)
             key={product.id} 
             product={product} 
             onQuickView={onQuickView} 
-            // Thay đổi layout để hiển thị dọc trong sidebar
+            // Kích hoạt layout tối giản (flex-row)
             className="flex-row items-center p-3 rounded-xl border border-border/40 hover:shadow-subtle"
             imageClassName="w-16 h-16 rounded-lg"
             infoClassName="flex-1"
