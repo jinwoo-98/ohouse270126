@@ -70,6 +70,20 @@ export default function LookDetailPage() {
   
   const lookbookProducts = useMemo(() => visibleItems.map((item: any) => item.products).filter(Boolean), [visibleItems]);
 
+  // Chuyển đổi look.shop_look_items thành định dạng Hotspot mới
+  const lookHotspots = useMemo(() => {
+    if (!look?.shop_look_items) return [];
+    return look.shop_look_items
+      .filter((item: any) => item.products)
+      .map((item: any) => ({
+        id: item.id,
+        x_position: item.x_position,
+        y_position: item.y_position,
+        target_image_url: item.target_image_url,
+        product: item.products,
+      }));
+  }, [look]);
+
   // Hook để lấy sản phẩm tương tự
   const { 
     similarProducts, 
@@ -127,41 +141,15 @@ export default function LookDetailPage() {
                 mainImage={look.image_url} 
                 galleryImages={look.gallery_urls} 
                 productName={look.title} 
+                hotspots={lookHotspots} // TRUYỀN HOTSPOTS VÀO ĐÂY
+                onHotspotClick={setQuickViewProduct} // TRUYỀN HÀM XỬ LÝ CLICK
               >
+                {/* Children prop chỉ còn nhiệm vụ cập nhật currentImage */}
                 {(currentImageUrl) => {
                   useEffect(() => {
                     setCurrentImage(currentImageUrl);
                   }, [currentImageUrl]);
-
-                  return (
-                    <TooltipProvider>
-                      {look.shop_look_items
-                        .filter((item: any) => item.target_image_url === currentImageUrl)
-                        .map((item: any) => {
-                          const product = item.products;
-                          if (!product) return null;
-
-                          return (
-                            <Tooltip key={item.id} delayDuration={0}>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); setQuickViewProduct(product); }}
-                                  className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-10 group/dot pointer-events-auto"
-                                  style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                                >
-                                  <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
-                                  <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 shadow-elevated rounded-xl">
-                                <p className="font-bold text-xs uppercase tracking-wider">{product.name}</p>
-                                <p className="text-primary font-bold text-xs mt-1">{formatPrice(product.price)}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          );
-                      })}
-                    </TooltipProvider>
-                  );
+                  return null; // Không cần render gì thêm ở đây vì ProductGallery đã tự render hotspot
                 }}
               </ProductGallery>
             </div>
