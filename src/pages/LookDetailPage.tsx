@@ -20,10 +20,9 @@ import { useLookbookSimilarProducts } from "@/hooks/useLookbookSimilarProducts";
 import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll";
 import { useSimilarLookbooks } from "@/hooks/useSimilarLookbooks";
 import { SimilarLookbooks } from "@/components/inspiration/SimilarLookbooks";
-import { LookProductVerticalList } from "@/components/inspiration/LookProductVerticalList";
 import { LookbookCTAFilters } from "@/components/inspiration/LookbookCTAFilters";
-// Đã sửa lỗi: Đổi tên import để khớp với tên export
-import { LookProductVerticalList as LookProductList } from "@/components/inspiration/LookProductVerticalList"; 
+import { LookProductList } from "@/components/inspiration/LookProductList"; // CORRECTED IMPORT
+import { LookProductVerticalList } from "@/components/inspiration/LookProductFullList"; // Renamed import
 
 export default function LookDetailPage() {
   const { id } = useParams();
