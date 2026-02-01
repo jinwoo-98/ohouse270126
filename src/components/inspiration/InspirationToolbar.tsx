@@ -56,8 +56,8 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
         <Button 
           variant="outline" 
           className={cn(
-            // Mobile optimization: flex-1, h-9 (từ h-12), text-[10px]
-            "flex-1 min-w-0 h-9 px-2 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col",
+            // Mobile optimization: flex-1, h-9, text-[10px], px-1, py-0
+            "flex-1 min-w-0 h-9 px-1 py-0 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col",
             // Desktop styles
             "sm:h-11 sm:px-6 sm:text-xs sm:tracking-widest sm:flex-none sm:flex-row sm:gap-1",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
@@ -98,8 +98,8 @@ function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilt
         <Button 
           variant="outline" 
           className={cn(
-            // Mobile optimization: flex-1, h-9 (từ h-12), text-[10px]
-            "flex-1 min-w-0 h-9 px-2 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col",
+            // Mobile optimization: flex-1, h-9, text-[10px], px-1, py-0
+            "flex-1 min-w-0 h-9 px-1 py-0 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col",
             // Desktop styles
             "sm:h-11 sm:px-6 sm:text-xs sm:tracking-widest sm:flex-none sm:flex-row sm:gap-1",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
