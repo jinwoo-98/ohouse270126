@@ -71,8 +71,13 @@ export function useLookbookSimilarProducts(lookbookProducts: Product[]): UseLook
         .limit(12);
 
       // Lấy ID của các sản phẩm trong Lookbook để loại trừ
-      const lookbookProductIds = lookbookProducts.map(p => p.id);
-      query = query.not('id', 'in', `(${lookbookProductIds.join(',')})`);
+      const lookbookProductIds = lookbookProducts.map(p => p.id).filter(Boolean);
+      
+      // Loại trừ các sản phẩm đã có trong Lookbook
+      if (lookbookProductIds.length > 0) {
+        // Sử dụng .not('id', 'in', '(...)' )
+        query = query.not('id', 'in', `(${lookbookProductIds.join(',')})`);
+      }
 
       if (activeCategorySlug === 'all') {
         // Lấy sản phẩm tương tự từ TẤT CẢ các danh mục có trong Lookbook
