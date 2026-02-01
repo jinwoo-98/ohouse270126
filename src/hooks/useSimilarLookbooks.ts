@@ -7,7 +7,7 @@ interface Lookbook {
   image_url: string;
   category_id: string;
   // Cập nhật cấu trúc để khớp với select('shop_look_items(products(id))')
-  shop_look_items: { products: { id: string } | null }[];
+  shop_look_items: any[]; // Sử dụng any[] để tránh lỗi phức tạp khi ép kiểu
 }
 
 interface UseSimilarLookbooksResult {
@@ -44,8 +44,8 @@ export function useSimilarLookbooks(currentLookId: string, categorySlug: string)
           .limit(4);
 
         if (error) throw error;
-        // Ép kiểu dữ liệu trả về để khớp với interface đã cập nhật
-        setSimilarLookbooks(data as Lookbook[] || []);
+        // Ép kiểu dữ liệu trả về thành unknown trước khi chuyển sang Lookbook[]
+        setSimilarLookbooks(data as unknown as Lookbook[] || []);
       } catch (error) {
         console.error("Error fetching similar lookbooks:", error);
       } finally {

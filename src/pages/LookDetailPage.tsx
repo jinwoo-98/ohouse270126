@@ -18,7 +18,7 @@ import { LookProductHorizontalScroll } from "@/components/inspiration/LookProduc
 import { LookProductVerticalItem } from "@/components/inspiration/LookProductVerticalItem";
 import { useLookbookSimilarProducts } from "@/hooks/useLookbookSimilarProducts";
 import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll";
-import { useSimilarLookbooks } from "@/hooks/useSimilarLookbooks"; // NEW IMPORT
+import { useSimilarLookbooks } from "@/hooks/useSimilarLookbooks";
 import { SimilarLookbooks } from "@/components/inspiration/SimilarLookbooks"; // NEW IMPORT
 
 export default function LookDetailPage() {
@@ -220,7 +220,7 @@ export default function LookDetailPage() {
           
           {/* 3. Sản phẩm tương tự (NEW SECTION) */}
           <section className="mt-20">
-            <h2 className="text-2xl font-bold uppercase tracking-widest mb-8 text-charcoal">Sản Phẩm Tương Tự</h2>
+            <h2 className="2xl font-bold uppercase tracking-widest mb-8 text-charcoal">Sản Phẩm Tương Tự</h2>
             
             {/* Category Tabs/Buttons */}
             <div className="flex flex-wrap gap-3 mb-8">
@@ -267,7 +267,7 @@ export default function LookDetailPage() {
           
           {/* 4. Combo Tương Tự (Similar Lookbooks) */}
           {!isLoadingSimilarLooks && similarLookbooks.length > 0 && (
-            <SimilarLookbooks lookbooks={similarLookbooks} title="Combo Tương Tự Khác" />
+            <SimilarLookbooks lookbooks={similarLookbooks} title="Combo Tương Tự Khác" onQuickView={setQuickViewProduct} />
           )}
         </div>
       </main>
