@@ -61,7 +61,7 @@ export function LookbookCTAFilters() {
             <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-border/60 shadow-sm">
               <Home className="w-4 h-4 text-primary shrink-0" />
               <Select value={selectedFilters.category} onValueChange={(val) => handleFilterChange('category', val)}>
-                <SelectTrigger className="w-32 h-8 border-none bg-transparent text-sm font-bold focus:ring-0">
+                <SelectTrigger className="w-auto min-w-[120px] h-8 border-none bg-transparent text-sm font-bold focus:ring-0">
                   <SelectValue placeholder="Phòng" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-elevated">
@@ -79,7 +79,7 @@ export function LookbookCTAFilters() {
             <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-border/60 shadow-sm">
               <Layers className="w-4 h-4 text-primary shrink-0" />
               <Select value={selectedFilters.style} onValueChange={(val) => handleFilterChange('style', val)}>
-                <SelectTrigger className="w-32 h-8 border-none bg-transparent text-sm font-bold focus:ring-0">
+                <SelectTrigger className="w-auto min-w-[120px] h-8 border-none bg-transparent text-sm font-bold focus:ring-0">
                   <SelectValue placeholder="Phong cách" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-elevated">
@@ -97,7 +97,7 @@ export function LookbookCTAFilters() {
             <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-border/60 shadow-sm">
               <Palette className="w-4 h-4 text-primary shrink-0" />
               <Select value={selectedFilters.color} onValueChange={(val) => handleFilterChange('color', val)}>
-                <SelectTrigger className="w-32 h-8 border-none bg-transparent text-sm font-bold focus:ring-0">
+                <SelectTrigger className="w-auto min-w-[120px] h-8 border-none bg-transparent text-sm font-bold focus:ring-0">
                   <SelectValue placeholder="Màu sắc" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-elevated">

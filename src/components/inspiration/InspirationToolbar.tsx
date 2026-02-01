@@ -56,15 +56,15 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
         <Button 
           variant="outline" 
           className={cn(
-            // Mobile optimization: flex-1, h-9, text-[10px], px-1, py-0
-            "flex-1 min-w-0 h-9 px-1 py-0 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col",
+            // Loại bỏ flex-1, min-w-0, px-1, py-0 trên mobile
+            "h-9 px-3 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col w-auto",
             // Desktop styles
-            "sm:h-11 sm:px-6 sm:text-xs sm:tracking-widest sm:flex-none sm:flex-row sm:gap-1",
+            "sm:h-11 sm:px-4 sm:text-xs sm:tracking-widest sm:flex-none sm:flex-row sm:gap-1",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
           <Home className="w-4 h-4 hidden sm:block shrink-0" />
-          <span className="leading-tight line-clamp-2">{isFiltered ? currentCategory?.name : "Không Gian"}</span>
+          <span className="leading-tight whitespace-nowrap">{isFiltered ? currentCategory?.name : "Không Gian"}</span>
           <ChevronDown className="w-3 h-3 ml-1 opacity-50 shrink-0 hidden sm:block" />
         </Button>
       </PopoverTrigger>
@@ -98,15 +98,15 @@ function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilt
         <Button 
           variant="outline" 
           className={cn(
-            // Mobile optimization: flex-1, h-9, text-[10px], px-1, py-0
-            "flex-1 min-w-0 h-9 px-1 py-0 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col",
+            // Loại bỏ flex-1, min-w-0, px-1, py-0 trên mobile
+            "h-9 px-3 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col w-auto",
             // Desktop styles
-            "sm:h-11 sm:px-6 sm:text-xs sm:tracking-widest sm:flex-none sm:flex-row sm:gap-1",
+            "sm:h-11 sm:px-4 sm:text-xs sm:tracking-widest sm:flex-none sm:flex-row sm:gap-1",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
           <Icon className="w-4 h-4 hidden sm:block shrink-0" />
-          <span className="leading-tight line-clamp-2">{title}</span>
+          <span className="leading-tight whitespace-nowrap">{title}</span>
           <ChevronDown className="w-3 h-3 ml-1 opacity-50 shrink-0 hidden sm:block" />
         </Button>
       </PopoverTrigger>
@@ -160,7 +160,7 @@ export function InspirationToolbar({ lookCount, filterOptions, filters, updateFi
           </div>
 
           {/* Right: Filters (4 buttons) */}
-          <div className="flex justify-between md:justify-end gap-2 md:gap-3 w-full md:w-auto">
+          <div className="flex justify-between md:justify-end gap-2 md:gap-3 w-full md:w-auto overflow-x-auto pb-1 no-scrollbar">
             
             {/* 1. Không Gian (Category) */}
             <SpaceFilter 
