@@ -1,58 +1,69 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, LayoutGrid, ChevronDown, ChevronUp } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import heroLivingRoom from "@/assets/hero-living-room.jpg";
 import { InspirationLookCard } from "@/components/inspiration/InspirationLookCard";
-import { supabase } from "@/integrations/supabase/client";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
-import { useCategories } from "@/hooks/useCategories";
+import { useLookbookFilters } from "@/hooks/useLookbookFilters";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
+// Component con cho các bộ lọc phụ (Style, Material)
+function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { title: string, options: string[], selected: string, onSelect: (value: string) => void, filterKey: string }) {
+  const [isOpen, setIsOpen] = useState(true);
+  
+  if (options.length === 0) return null;
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full border-b border-border/40">
+      <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
+        <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] text-charcoal group-hover:text-primary transition-colors">{title}</h4>
+        {isOpen ? <ChevronUp className="w-3 h-3 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 text-muted-foreground" />}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-2 pb-4 space-y-2 animate-accordion-down">
+        <label className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
+          <Checkbox 
+            id={`${filterKey}-all`} 
+            checked={selected === "all"} 
+            onCheckedChange={() => onSelect("all")} 
+            className="data-[state=checked]:bg-primary" 
+          />
+          <span className={cn("text-sm font-medium", selected === "all" ? "text-primary font-bold" : "text-foreground/80")}>Tất Cả</span>
+        </label>
+        {options.map((opt) => (
+          <label key={opt} className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
+            <Checkbox 
+              id={`${filterKey}-${opt}`} 
+              checked={selected === opt} 
+              onCheckedChange={() => onSelect(opt)} 
+              className="data-[state=checked]:bg-primary" 
+            />
+            <span className={cn("text-sm font-medium", selected === opt ? "text-primary font-bold" : "text-foreground/80")}>{opt}</span>
+          </label>
+        ))}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 
 export default function InspirationPage() {
-  const [activeTab, setActiveTab] = useState("all");
-  const [looks, setLooks] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+  const { 
+    filteredLooks, 
+    filterOptions, 
+    filters, 
+    updateFilter, 
+    isLoading 
+  } = useLookbookFilters();
   
-  const { data: categoriesData } = useCategories();
-
-  useEffect(() => {
-    fetchLooks();
-  }, []);
-
-  const fetchLooks = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('shop_looks')
-        .select('*, shop_look_items(*, products(*))')
-        .eq('is_active', true)
-        .order('display_order');
-      
-      if (error) throw error;
-      setLooks(data || []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterTabs = useMemo(() => {
-    if (!categoriesData || !looks) return [];
-    const lookCategories = new Set(looks.map(l => l.category_id));
-    const tabs = categoriesData.mainCategories
-      .filter(c => c.dropdownKey && lookCategories.has(c.dropdownKey))
-      .map(c => ({ name: c.name, slug: c.dropdownKey! }));
-    return [{ name: "Tất Cả", slug: "all" }, ...tabs];
-  }, [categoriesData, looks]);
-
-  const filteredLooks = activeTab === "all" 
-    ? looks 
-    : looks.filter(look => look.category_id === activeTab);
+  const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -79,25 +90,77 @@ export default function InspirationPage() {
         {/* Lookbook Grid */}
         <section className="py-12 md:py-16">
           <div className="container-luxury">
-            {/* Filter Tabs */}
-            <div className="flex flex-wrap justify-center gap-2 mb-10">
-              {filterTabs.map((tab) => (
-                <button
-                  key={tab.slug}
-                  onClick={() => setActiveTab(tab.slug)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    activeTab === tab.slug
-                      ? "bg-charcoal text-cream"
-                      : "bg-secondary text-foreground hover:bg-muted"
-                  }`}
+            
+            {/* Filter Row */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10 p-4 bg-card rounded-2xl shadow-subtle border border-border/40">
+              <div className="flex items-center gap-3 shrink-0">
+                <LayoutGrid className="w-5 h-5 text-primary" />
+                <span className="text-sm font-bold uppercase tracking-widest text-charcoal">Bộ Lọc Không Gian</span>
+              </div>
+              
+              <div className="flex flex-wrap md:flex-nowrap gap-3 flex-1">
+                {/* Filter 1: Category (Phòng) - Sử dụng Select */}
+                <Select 
+                  value={filters.selectedCategorySlug} 
+                  onValueChange={(val) => updateFilter('selectedCategorySlug', val)}
                 >
-                  {tab.name}
-                </button>
-              ))}
+                  <SelectTrigger className="w-full md:w-48 h-11 rounded-xl bg-secondary/50 border-border/60 text-xs font-bold uppercase tracking-widest">
+                    <SelectValue placeholder="Chọn không gian" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {filterOptions.categories.map(cat => (
+                      <SelectItem key={cat.slug} value={cat.slug} className="text-sm">
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                {/* Filter 2: Style (Phong cách) - Sử dụng Select */}
+                <Select 
+                  value={filters.selectedStyle} 
+                  onValueChange={(val) => updateFilter('selectedStyle', val)}
+                >
+                  <SelectTrigger className="w-full md:w-48 h-11 rounded-xl bg-secondary/50 border-border/60 text-xs font-bold uppercase tracking-widest">
+                    <SelectValue placeholder="Chọn phong cách" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="all" className="text-sm">Tất Cả Phong Cách</SelectItem>
+                    {filterOptions.styles.map(style => (
+                      <SelectItem key={style} value={style} className="text-sm">
+                        {style}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                {/* Filter 3: Material (Chất liệu) - Sử dụng Select */}
+                <Select 
+                  value={filters.selectedMaterial} 
+                  onValueChange={(val) => updateFilter('selectedMaterial', val)}
+                >
+                  <SelectTrigger className="w-full md:w-48 h-11 rounded-xl bg-secondary/50 border-border/60 text-xs font-bold uppercase tracking-widest">
+                    <SelectValue placeholder="Chọn chất liệu" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="all" className="text-sm">Tất Cả Chất Liệu</SelectItem>
+                    {filterOptions.materials.map(material => (
+                      <SelectItem key={material} value={material} className="text-sm">
+                        {material}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-
-            {loading ? (
+            
+            {/* Lookbook Grid */}
+            {isLoading ? (
               <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>
+            ) : filteredLooks.length === 0 ? (
+              <div className="text-center py-20 bg-secondary/20 rounded-3xl text-muted-foreground italic">
+                Không tìm thấy Lookbook nào phù hợp với bộ lọc.
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {filteredLooks.map((look, index) => (
