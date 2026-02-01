@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, Heart } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, cn } from "@/lib/utils";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 interface InspirationLookCardProps {
   look: any;
@@ -11,6 +12,25 @@ interface InspirationLookCardProps {
 }
 
 export function InspirationLookCard({ look, index, onQuickView }: InspirationLookCardProps) {
+  const { toggleWishlist, isInWishlist } = useWishlist();
+
+  // Lấy danh sách sản phẩm trong lookbook
+  const productsInLook = look.shop_look_items
+    .filter((item: any) => item.products)
+    .map((item: any) => item.products);
+
+  // Tạo một "sản phẩm đại diện" cho Lookbook để thêm vào Wishlist
+  // Chúng ta sẽ sử dụng ID của Lookbook làm ID sản phẩm, và thông tin cơ bản của Lookbook
+  const lookAsProduct = {
+    id: look.id,
+    name: look.title,
+    price: productsInLook[0]?.price || 0, // Lấy giá của sản phẩm đầu tiên làm giá đại diện
+    image: look.image_url,
+    slug: `y-tuong/${look.id}`,
+  };
+  
+  const isFavorite = isInWishlist(lookAsProduct.id);
+
   return (
     <motion.div
       key={look.id}
@@ -31,6 +51,24 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
         </Link>
         
+        {/* Nút Yêu thích */}
+        <button 
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            e.preventDefault();
+            toggleWishlist(lookAsProduct); 
+          }}
+          className={cn(
+            "absolute top-4 right-4 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-medium backdrop-blur-sm",
+            isFavorite 
+              ? "bg-primary text-white" 
+              : "bg-white/80 text-charcoal hover:bg-primary hover:text-white"
+          )}
+          title="Thêm vào yêu thích"
+        >
+          <Heart className={cn("w-5 h-5", isFavorite && "fill-current")} />
+        </button>
+
         <TooltipProvider>
           {look.shop_look_items
             .filter((item: any) => item.target_image_url === look.image_url && item.products)
@@ -42,6 +80,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
                   style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                   onClick={(e) => { 
                     e.stopPropagation(); 
+                    e.preventDefault(); // Ngăn chặn chuyển trang khi click hotspot
                     if (item.products) onQuickView(item.products);
                   }}
                 >
