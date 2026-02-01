@@ -30,8 +30,8 @@ export function LookProductHorizontalScroll({ products, onQuickView }: LookProdu
       >
         <CarouselContent className="-ml-4">
           {products.map((product, index) => (
-            <CarouselItem key={product.id} className="pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4">
-              <LookProductVerticalItem product={product} onQuickView={onQuickView} />
+            <CarouselItem key={product.id} className="pl-4 basis-1/3 sm:basis-1/4 md:basis-1/5">
+              <LookProductVerticalItem product={product} onQuickView={onQuickView} className="rounded-2xl" imageClassName="rounded-t-2xl" />
             </CarouselItem>
           ))}
         </CarouselContent>

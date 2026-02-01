@@ -23,7 +23,7 @@ export function LookProductList({ products, onQuickView }: LookProductListProps)
   const hasMore = products.length > MAX_VISIBLE_ITEMS;
 
   const handleAddAllToCart = () => {
-    products.forEach((product: any) => addToCart({ ...product, quantity: 1, image: product.image_url }));
+    products.forEach((product: any) => addToCart({ ...product, quantity: 1, image: product.products.image_url }));
     toast.success(`Đã thêm ${products.length} sản phẩm vào giỏ hàng.`);
   };
 
@@ -31,10 +31,10 @@ export function LookProductList({ products, onQuickView }: LookProductListProps)
     <div className="lg:col-span-1 min-w-0 w-full">
       <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest">Sản phẩm trong không gian</h2>
       
-      {/* Grid 2 cột trên mọi kích thước màn hình (trừ mobile nhỏ) */}
+      {/* Grid 2 cột trên desktop */}
       <div className={cn(
         "grid gap-4 transition-all duration-500",
-        "grid-cols-2 lg:grid-cols-2", // Luôn là 2 cột
+        "grid-cols-2", // Luôn là 2 cột
         !showAll && hasMore ? "max-h-[400px] overflow-hidden" : "max-h-none"
       )}>
         {visibleProducts.map((product: any) => (

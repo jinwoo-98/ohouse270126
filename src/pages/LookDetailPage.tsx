@@ -166,15 +166,21 @@ export default function LookDetailPage() {
               </ProductGallery>
             </div>
 
-            {/* RIGHT: Product List (1/2 width) - DESKTOP & MOBILE */}
+            {/* RIGHT: Product List (1/2 width) - DESKTOP ONLY */}
             {visibleItems.length > 0 && (
-              <div className="lg:col-span-1 min-w-0 w-full">
+              <div className="lg:col-span-1 min-w-0 w-full hidden lg:block">
                 <LookProductList products={lookbookProducts} onQuickView={setQuickViewProduct} />
               </div>
             )}
           </div>
           
-          {/* NEW: Product List - MOBILE ONLY (Horizontal Scroll) - ĐÃ XÓA KHỎI ĐÂY VÌ ĐÃ CHUYỂN LÊN TRÊN */}
+          {/* NEW: Product List - MOBILE ONLY (Horizontal Scroll) */}
+          {visibleItems.length > 0 && (
+            <div className="mt-12 lg:hidden">
+              <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest container-luxury px-0">Sản phẩm trong không gian</h2>
+              <LookProductHorizontalScroll products={lookbookProducts} onQuickView={setQuickViewProduct} />
+            </div>
+          )}
           
           {/* 3. Sản phẩm tương tự (NEW SECTION) */}
           <section className="mt-20">
