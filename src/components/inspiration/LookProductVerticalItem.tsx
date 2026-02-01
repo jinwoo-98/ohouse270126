@@ -48,13 +48,8 @@ export function LookProductVerticalItem({ product, onQuickView }: LookProductVer
         </div>
       </div>
       
-      {/* Info Section */}
+      {/* Info Section (Chỉ hiển thị giá) */}
       <div className="p-3 flex flex-col items-center text-center">
-        <Link to={`/san-pham/${product.slug || product.id}`} onClick={(e) => e.stopPropagation()}>
-          <h3 className="text-xs font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-8 mb-1">
-            {product.name}
-          </h3>
-        </Link>
         <p className="text-primary font-bold text-sm leading-none">{formatPrice(product.price)}</p>
       </div>
     </div>
