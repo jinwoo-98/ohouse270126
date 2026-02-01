@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, ShoppingBag, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
@@ -14,14 +14,21 @@ interface LookProductFullItemProps {
 
 export function LookProductFullItem({ product, onQuickView }: LookProductFullItemProps) {
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const navigate = useNavigate();
   const isFavorite = isInWishlist(product.id);
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(`/san-pham/${product.slug || product.id}`);
+  };
 
   return (
     <div 
       className="group flex flex-col bg-card rounded-xl overflow-hidden border border-border/40 hover:shadow-subtle transition-all cursor-pointer"
+      onClick={handleCardClick} // Click vào toàn bộ thẻ sẽ điều hướng
     >
       {/* Image Section */}
-      <Link to={`/san-pham/${product.slug || product.id}`} className="relative aspect-square overflow-hidden bg-secondary/30 shrink-0">
+      <div className="relative aspect-square overflow-hidden bg-secondary/30 shrink-0">
         <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
         
         {/* Nút Yêu thích (Top Right) */}
@@ -52,19 +59,17 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
             <Eye className="w-3.5 h-3.5 mr-1.5" /> XEM NHANH
           </button>
         </div>
-      </Link>
+      </div>
       
       {/* Info Section - Căn giữa, đồng bộ khoảng cách với ProductCard */}
       <div className="p-4 flex flex-col flex-1 items-center text-center pt-4">
-        <Link to={`/san-pham/${product.slug || product.id}`}>
-          <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">
-            {product.name}
-          </h3>
-        </Link>
+        {/* Loại bỏ Link bọc H3 để tránh xung đột click */}
+        <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">
+          {product.name}
+        </h3>
         
         <div className="flex flex-wrap items-center justify-center gap-2 mt-auto">
           <p className="text-sm md:text-base font-bold text-primary">{formatPrice(product.price)}</p>
-          {/* Thêm giá gốc nếu có để đồng bộ cấu trúc */}
           {product.original_price && (
             <span className="text-[10px] md:text-xs text-muted-foreground line-through opacity-50">
               {formatPrice(product.original_price)}

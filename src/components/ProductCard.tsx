@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Heart, ShoppingBag, Eye } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
@@ -27,8 +27,16 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const isFavorite = isInWishlist(product.id);
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Luôn mở QuickView Sheet khi click vào thẻ sản phẩm trên mọi thiết bị
-    setIsQuickViewOpen(true);
+    e.preventDefault();
+    const targetSlug = product.slug || product.id;
+    
+    if (isMobile) {
+      // Mobile: Mở QuickView
+      setIsQuickViewOpen(true);
+    } else {
+      // Desktop: Chuyển hướng đến trang chi tiết
+      navigate(`/san-pham/${targetSlug}`);
+    }
   };
 
   return (
@@ -99,11 +107,14 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </div>
         </div>
 
-        {/* Info Section - Căn giữa */}
+        {/* Info Section */}
         <div className="p-4 flex flex-col items-center text-center flex-1 pt-4">
-          <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">
-            {product.name}
-          </h3>
+          {/* Link này chỉ để đảm bảo SEO và hover style, click chính được xử lý ở div cha */}
+          <Link to={`/san-pham/${product.slug || product.id}`} onClick={(e) => e.preventDefault()}>
+            <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">
+              {product.name}
+            </h3>
+          </Link>
 
           <div className="flex flex-wrap items-center justify-center gap-2 mt-auto">
             <span className="text-sm md:text-base font-bold text-primary">{formatPrice(product.price)}</span>
