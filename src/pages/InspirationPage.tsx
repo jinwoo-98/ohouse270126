@@ -9,119 +9,8 @@ import heroLivingRoom from "@/assets/hero-living-room.jpg";
 import { InspirationLookCard } from "@/components/inspiration/InspirationLookCard";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { useLookbookFilters } from "@/hooks/useLookbookFilters";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { InspirationToolbar } from "@/components/inspiration/InspirationToolbar"; // Import mới
 import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-// Component con cho các bộ lọc phụ (Style, Material, Color)
-function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { title: string, options: string[], selected: string[], onSelect: (value: string) => void, filterKey: string }) {
-  
-  if (options.length === 0) return null;
-
-  return (
-    <div className="w-full space-y-2">
-      <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{title}</h4>
-      <div className="space-y-1">
-        <label className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
-          <Checkbox 
-            id={`${filterKey}-all`} 
-            checked={selected.includes("all")} 
-            onCheckedChange={() => onSelect("all")} 
-            className="data-[state=checked]:bg-primary" 
-          />
-          <span className={cn("text-sm font-medium", selected.includes("all") ? "text-primary font-bold" : "text-foreground/80")}>Tất Cả</span>
-        </label>
-        {options.map((opt) => (
-          <label key={opt} className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
-            <Checkbox 
-              id={`${filterKey}-${opt}`} 
-              checked={selected.includes(opt)} 
-              onCheckedChange={() => onSelect(opt)} 
-              className="data-[state=checked]:bg-primary" 
-            />
-            <span className={cn("text-sm font-medium", selected.includes(opt) ? "text-primary font-bold" : "text-foreground/80")}>{opt}</span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Component cho bộ lọc chính (Không gian)
-function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
-  const currentCategory = filterOptions.categories.find((c: any) => c.slug === filters.selectedCategorySlug);
-  const isFiltered = filters.selectedCategorySlug !== "all";
-  
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
-          className={cn(
-            "h-10 px-2 md:h-11 md:px-6 rounded-2xl text-[9px] md:text-xs font-bold uppercase tracking-widest gap-1 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
-            isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
-          )}
-        >
-          <Home className="w-4 h-4 hidden sm:block" />
-          <span className="truncate">{isFiltered ? currentCategory?.name : "Không Gian"}</span>
-          <ChevronDown className="w-3 h-3 ml-1 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-64 p-4 rounded-2xl shadow-elevated border-none z-30" align="start">
-        <div className="space-y-1">
-          {filterOptions.categories.map((cat: any) => (
-            <button
-              key={cat.slug}
-              onClick={() => updateFilter('selectedCategorySlug', cat.slug)}
-              className={cn(
-                "w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors",
-                filters.selectedCategorySlug === cat.slug ? "bg-primary text-white font-bold" : "hover:bg-secondary/50"
-              )}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-// Component cho bộ lọc phụ (Style, Material, Color)
-function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilter }: any) {
-  const isFiltered = selected !== "all";
-  
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
-          className={cn(
-            "h-10 px-2 md:h-11 md:px-6 rounded-2xl text-[9px] md:text-xs font-bold uppercase tracking-widest gap-1 border-border/60 hover:bg-secondary/50 flex-1 min-w-0",
-            isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
-          )}
-        >
-          <Icon className="w-4 h-4 hidden sm:block" />
-          <span className="truncate">{title}</span>
-          <ChevronDown className="w-3 h-3 ml-1 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-64 p-4 rounded-2xl shadow-elevated border-none z-30" align="start">
-        <FilterCollapsible 
-          title={title} 
-          options={options} 
-          selected={selected} 
-          onSelect={(val) => updateFilter(filterKey, val)} 
-          filterKey={filterKey}
-        />
-      </PopoverContent>
-    </Popover>
-  );
-}
-
 
 export default function InspirationPage() {
   const { 
@@ -134,7 +23,12 @@ export default function InspirationPage() {
   
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
 
-  const isAnyFilterActive = filters.selectedCategorySlug !== 'all' || filters.selectedStyle !== 'all' || filters.selectedMaterial !== 'all' || filters.selectedColor !== 'all';
+  const handleResetFilters = () => {
+    updateFilter('selectedCategorySlug', 'all');
+    updateFilter('selectedStyle', 'all');
+    updateFilter('selectedMaterial', 'all');
+    updateFilter('selectedColor', 'all');
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -157,67 +51,19 @@ export default function InspirationPage() {
             </motion.div>
           </div>
         </section>
+        
+        {/* Toolbar (Sticky) */}
+        <InspirationToolbar 
+          lookCount={filteredLooks.length}
+          filterOptions={filterOptions}
+          filters={filters}
+          updateFilter={updateFilter}
+          onResetFilters={handleResetFilters}
+        />
 
         {/* Lookbook Grid */}
         <section className="py-12 md:py-16">
           <div className="container-luxury">
-            
-            {/* Filter Row - 4 Buttons (Responsive) */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-10">
-              
-              {/* 1. Không Gian (Category) */}
-              <SpaceFilter 
-                filterOptions={filterOptions} 
-                filters={filters} 
-                updateFilter={updateFilter} 
-              />
-              
-              {/* 2. Phong Cách (Style) */}
-              <SubFilter
-                title="Phong Cách"
-                icon={Layers}
-                options={filterOptions.styles}
-                selected={filters.selectedStyle}
-                filterKey="selectedStyle"
-                updateFilter={updateFilter}
-              />
-              
-              {/* 3. Chất Liệu (Material) */}
-              <SubFilter
-                title="Chất Liệu"
-                icon={Zap}
-                options={filterOptions.materials}
-                selected={filters.selectedMaterial}
-                filterKey="selectedMaterial"
-                updateFilter={updateFilter}
-              />
-              
-              {/* 4. Màu Sắc (Color) */}
-              <SubFilter
-                title="Màu Sắc"
-                icon={Palette}
-                options={filterOptions.colors}
-                selected={filters.selectedColor}
-                filterKey="selectedColor"
-                updateFilter={updateFilter}
-              />
-              
-              {/* Clear Filter Button */}
-              {isAnyFilterActive && (
-                <Button 
-                  variant="ghost" 
-                  onClick={() => {
-                    updateFilter('selectedCategorySlug', 'all');
-                    updateFilter('selectedStyle', 'all');
-                    updateFilter('selectedMaterial', 'all');
-                    updateFilter('selectedColor', 'all');
-                  }}
-                  className="h-11 px-4 text-xs font-bold uppercase tracking-widest text-destructive hover:bg-destructive/10"
-                >
-                  Xóa lọc
-                </Button>
-              )}
-            </div>
             
             {/* Lookbook Grid */}
             {isLoading ? (
