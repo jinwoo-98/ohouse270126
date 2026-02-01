@@ -37,6 +37,19 @@ export function LookbookCTAFilters() {
     Object.values(selectedFilters).some(v => v !== 'all'),
     [selectedFilters]
   );
+  
+  const getSelectedLabel = (key: keyof typeof selectedFilters, options: any[]) => {
+    const selectedValue = selectedFilters[key];
+    if (selectedValue === 'all') {
+      switch (key) {
+        case 'category': return 'Phòng';
+        case 'style': return 'Phong cách';
+        case 'color': return 'Màu sắc';
+        default: return 'Chọn';
+      }
+    }
+    return options.find((o: any) => o.slug === selectedValue || o === selectedValue)?.name || selectedValue;
+  };
 
   if (isLoading) {
     return <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -62,7 +75,7 @@ export function LookbookCTAFilters() {
               <Home className="w-4 h-4 text-primary shrink-0" />
               <Select value={selectedFilters.category} onValueChange={(val) => handleFilterChange('category', val)}>
                 <SelectTrigger className="w-auto min-w-[120px] h-8 border-none bg-transparent text-sm font-bold focus:ring-0">
-                  <SelectValue placeholder="Phòng" />
+                  <SelectValue>{getSelectedLabel('category', filterOptions.categories)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-elevated">
                   <SelectItem value="all">Phòng (Tất cả)</SelectItem>
@@ -80,7 +93,7 @@ export function LookbookCTAFilters() {
               <Layers className="w-4 h-4 text-primary shrink-0" />
               <Select value={selectedFilters.style} onValueChange={(val) => handleFilterChange('style', val)}>
                 <SelectTrigger className="w-auto min-w-[120px] h-8 border-none bg-transparent text-sm font-bold focus:ring-0">
-                  <SelectValue placeholder="Phong cách" />
+                  <SelectValue>{getSelectedLabel('style', filterOptions.styles)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-elevated">
                   <SelectItem value="all">Phong cách (Tất cả)</SelectItem>
@@ -98,7 +111,7 @@ export function LookbookCTAFilters() {
               <Palette className="w-4 h-4 text-primary shrink-0" />
               <Select value={selectedFilters.color} onValueChange={(val) => handleFilterChange('color', val)}>
                 <SelectTrigger className="w-auto min-w-[120px] h-8 border-none bg-transparent text-sm font-bold focus:ring-0">
-                  <SelectValue placeholder="Màu sắc" />
+                  <SelectValue>{getSelectedLabel('color', filterOptions.colors)}</SelectValue>
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-elevated">
                   <SelectItem value="all">Màu sắc (Tất cả)</SelectItem>

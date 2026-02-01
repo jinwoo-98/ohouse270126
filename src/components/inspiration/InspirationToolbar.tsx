@@ -20,15 +20,7 @@ function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { 
     <div className="w-full space-y-2">
       <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{title}</h4>
       <div className="space-y-1">
-        <label className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
-          <Checkbox 
-            id={`${filterKey}-all`} 
-            checked={selected.includes("all")} 
-            onCheckedChange={() => onSelect("all")} 
-            className="data-[state=checked]:bg-primary" 
-          />
-          <span className={cn("text-sm font-medium", selected.includes("all") ? "text-primary font-bold" : "text-foreground/80")}>Tất Cả</span>
-        </label>
+        {/* Tùy chọn "Tất Cả" được xử lý trong component cha (SubFilter) */}
         {options.map((opt) => (
           <label key={opt} className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
             <Checkbox 
@@ -56,9 +48,7 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
         <Button 
           variant="outline" 
           className={cn(
-            // Loại bỏ flex-1, min-w-0, px-1, py-0 trên mobile
             "h-9 px-3 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col w-auto",
-            // Desktop styles
             "sm:h-11 sm:px-4 sm:text-xs sm:tracking-widest sm:flex-none sm:flex-row sm:gap-1",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
@@ -92,30 +82,53 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
 function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilter }: any) {
   const isFiltered = selected !== "all";
   
+  // Lấy giá trị đang chọn để hiển thị trên nút
+  const selectedValue = isFiltered ? selected : title;
+
+  const handleSelect = (value: string) => {
+    // Nếu chọn 'all', reset filterKey về 'all'
+    if (value === 'all') {
+      updateFilter(filterKey, 'all');
+    } else {
+      // Nếu chọn một giá trị cụ thể, cập nhật filterKey
+      updateFilter(filterKey, value);
+    }
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button 
           variant="outline" 
           className={cn(
-            // Loại bỏ flex-1, min-w-0, px-1, py-0 trên mobile
             "h-9 px-3 text-[10px] font-bold uppercase tracking-normal border-border/60 hover:bg-secondary/50 justify-center text-center flex-col w-auto",
-            // Desktop styles
             "sm:h-11 sm:px-4 sm:text-xs sm:tracking-widest sm:flex-none sm:flex-row sm:gap-1",
             isFiltered && "bg-primary text-white border-primary hover:bg-primary/90"
           )}
         >
           <Icon className="w-4 h-4 hidden sm:block shrink-0" />
-          <span className="leading-tight whitespace-nowrap">{title}</span>
+          <span className="leading-tight whitespace-nowrap">{selectedValue}</span>
           <ChevronDown className="w-3 h-3 ml-1 opacity-50 shrink-0 hidden sm:block" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-4 rounded-2xl shadow-elevated border-none z-30" align="start">
+        <div className="space-y-1">
+          {/* Tùy chọn Tất Cả */}
+          <button
+            onClick={() => handleSelect('all')}
+            className={cn(
+              "w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors",
+              !isFiltered ? "bg-primary text-white font-bold" : "hover:bg-secondary/50"
+            )}
+          >
+            {title} (Tất Cả)
+          </button>
+        </div>
         <FilterCollapsible 
           title={title} 
           options={options} 
-          selected={selected} 
-          onSelect={(val) => updateFilter(filterKey, val)} 
+          selected={isFiltered ? [selected] : []} // Chỉ truyền giá trị đang chọn nếu không phải 'all'
+          onSelect={handleSelect} 
           filterKey={filterKey}
         />
       </PopoverContent>
