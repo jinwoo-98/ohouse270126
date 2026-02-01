@@ -16,8 +16,10 @@ import { ProductGallery } from "@/components/product/ProductGallery";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LookProductHorizontalScroll } from "@/components/inspiration/LookProductHorizontalScroll";
 import { LookProductVerticalItem } from "@/components/inspiration/LookProductVerticalItem";
-import { useLookbookSimilarProducts } from "@/hooks/useLookbookSimilarProducts"; // NEW IMPORT
-import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll"; // Sử dụng lại component cuộn ngang
+import { useLookbookSimilarProducts } from "@/hooks/useLookbookSimilarProducts";
+import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll";
+import { useSimilarLookbooks } from "@/hooks/useSimilarLookbooks"; // NEW IMPORT
+import { SimilarLookbooks } from "@/components/inspiration/SimilarLookbooks"; // NEW IMPORT
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -65,7 +67,7 @@ export default function LookDetailPage() {
   
   const lookbookProducts = useMemo(() => visibleItems.map((item: any) => item.products).filter(Boolean), [visibleItems]);
 
-  // NEW: Hook để lấy sản phẩm tương tự
+  // Hook để lấy sản phẩm tương tự
   const { 
     similarProducts, 
     categories, 
@@ -73,6 +75,12 @@ export default function LookDetailPage() {
     setActiveCategorySlug, 
     activeCategorySlug 
   } = useLookbookSimilarProducts(lookbookProducts);
+  
+  // NEW: Hook để lấy Lookbook tương tự
+  const { similarLookbooks, isLoadingSimilarLooks } = useSimilarLookbooks(
+    look?.id, 
+    look?.category_id
+  );
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
@@ -256,6 +264,11 @@ export default function LookDetailPage() {
               />
             )}
           </section>
+          
+          {/* 4. Combo Tương Tự (Similar Lookbooks) */}
+          {!isLoadingSimilarLooks && similarLookbooks.length > 0 && (
+            <SimilarLookbooks lookbooks={similarLookbooks} title="Combo Tương Tự Khác" />
+          )}
         </div>
       </main>
       <Footer />
