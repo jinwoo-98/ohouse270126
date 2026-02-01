@@ -177,7 +177,7 @@ export default function LookDetailPage() {
                   </div>
                 </ScrollArea>
                 
-                {/* CTA to add all to cart */}
+                {/* CTA to add all to cart - DESKTOP */}
                 <Button 
                   onClick={() => {
                     visibleItems.forEach((item: any) => addToCart({ ...item.products, quantity: 1, image: item.products.image_url }));
@@ -197,6 +197,7 @@ export default function LookDetailPage() {
               <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest">Sản phẩm trong không gian</h2>
               <LookProductHorizontalScroll products={lookbookProducts} onQuickView={setQuickViewProduct} />
               
+              {/* CTA to add all to cart - MOBILE */}
               <Button 
                 onClick={() => {
                   visibleItems.forEach((item: any) => addToCart({ ...item.products, quantity: 1, image: item.products.image_url }));
