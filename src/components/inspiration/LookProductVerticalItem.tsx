@@ -31,9 +31,9 @@ export function LookProductVerticalItem({ product, onQuickView, className, image
       )}>
         <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
         
-        {/* Nút Xem Nhanh (Overlay) */}
+        {/* Lớp phủ hover (chỉ còn lớp mờ) */}
         <div className="absolute inset-0 bg-charcoal/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <Eye className="w-5 h-5 text-white" />
+          {/* Loại bỏ nút Xem Nhanh */}
         </div>
       </div>
       
