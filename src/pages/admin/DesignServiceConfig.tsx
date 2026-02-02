@@ -23,9 +23,18 @@ interface Step {
 }
 
 interface Option {
+  id: string; // Added ID for DND
   label: string;
   value: string;
 }
+
+// Helper to ensure options have unique IDs for DND
+const ensureIds = (options: any[]): Option[] => {
+  return options.map(opt => ({
+    ...opt,
+    id: opt.id || Date.now().toString() + Math.random().toString(36).substring(2, 9),
+  }));
+};
 
 export default function DesignServiceConfig() {
   const [loading, setLoading] = useState(true);
@@ -61,8 +70,9 @@ export default function DesignServiceConfig() {
         setFormData({
           hero_image_url: data.hero_image_url || "",
           steps: data.steps || formData.steps,
-          room_options: data.room_options || [],
-          budget_options: data.budget_options || [],
+          // Ensure IDs are present for DND
+          room_options: ensureIds(data.room_options || []),
+          budget_options: ensureIds(data.budget_options || []),
         });
       }
     } catch (e: any) {
@@ -75,11 +85,14 @@ export default function DesignServiceConfig() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Remove temporary DND IDs before saving to DB
+      const cleanOptions = (options: Option[]) => options.map(({ id, ...rest }) => rest);
+
       const payload = {
         hero_image_url: formData.hero_image_url,
         steps: formData.steps,
-        room_options: formData.room_options,
-        budget_options: formData.budget_options,
+        room_options: cleanOptions(formData.room_options),
+        budget_options: cleanOptions(formData.budget_options),
         updated_at: new Date().toISOString(),
       };
 

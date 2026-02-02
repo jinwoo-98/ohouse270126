@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { LayoutGrid, Zap, CheckCircle, Send, ArrowRight, Loader2 } from "lucide-react";
+import { LayoutGrid, Zap, CheckCircle, Send, ArrowRight, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-// import heroLivingRoom from "@/assets/hero-living-room.jpg"; // Removed hardcoded image
+import { cn } from "@/lib/utils";
 
 const iconMap: Record<string, any> = { Zap, LayoutGrid, CheckCircle };
 
@@ -40,7 +41,7 @@ export default function DesignServicePage() {
     name: "",
     phone: "",
     email: "",
-    room: "",
+    room: [] as string[], // Changed to array for multi-select
     budget: "",
     message: ""
   });
@@ -85,14 +86,32 @@ export default function DesignServicePage() {
     }
   };
 
+  const handleRoomToggle = (roomValue: string) => {
+    setFormData(prev => {
+      const currentRooms = prev.room;
+      if (currentRooms.includes(roomValue)) {
+        return { ...prev, room: currentRooms.filter(v => v !== roomValue) };
+      } else {
+        return { ...prev, room: [...currentRooms, roomValue] };
+      }
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone) {
-      toast.error("Vui lòng nhập họ tên và số điện thoại.");
+    if (!formData.name || !formData.phone || formData.room.length === 0) {
+      toast.error("Vui lòng nhập họ tên, số điện thoại và chọn ít nhất một không gian.");
       return;
     }
 
     setIsLoading(true);
+    
+    // Format room selection for DB insertion
+    const roomString = formData.room.map(val => {
+      const option = config.room_options.find(o => o.value === val);
+      return option ? option.label : val;
+    }).join(", ");
+
     try {
       const { error } = await supabase
         .from('design_requests')
@@ -100,7 +119,7 @@ export default function DesignServicePage() {
           name: formData.name,
           phone: formData.phone,
           email: formData.email,
-          room_type: formData.room,
+          room_type: roomString, // Save as string of selected rooms
           budget: formData.budget,
           message: formData.message
         });
@@ -108,7 +127,7 @@ export default function DesignServicePage() {
       if (error) throw error;
       
       toast.success("Đăng ký thành công! Kiến trúc sư của OHOUSE sẽ liên hệ với bạn sớm nhất.");
-      setFormData({ name: "", phone: "", email: "", room: "", budget: "", message: "" });
+      setFormData({ name: "", phone: "", email: "", room: [], budget: "", message: "" });
     } catch (error: any) {
       toast.error("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
     } finally {
@@ -206,18 +225,22 @@ export default function DesignServicePage() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="room">Không gian cần thiết kế</Label>
-                  <Select onValueChange={val => setFormData({...formData, room: val})} value={formData.room}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn không gian" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {config.room_options.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="room">Không gian cần thiết kế *</Label>
+                  <div className="p-4 border rounded-xl bg-secondary/30 space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                    {config.room_options.map(opt => (
+                      <label key={opt.value} className="flex items-center gap-3 cursor-pointer">
+                        <Checkbox 
+                          checked={formData.room.includes(opt.value)} 
+                          onCheckedChange={() => handleRoomToggle(opt.value)}
+                          className="data-[state=checked]:bg-primary"
+                        />
+                        <span className={cn("text-sm font-medium", formData.room.includes(opt.value) && "font-bold text-charcoal")}>{opt.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground italic">Bạn có thể chọn nhiều không gian.</p>
                 </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="budget">Ngân sách dự kiến</Label>
                   <Select onValueChange={val => setFormData({...formData, budget: val})} value={formData.budget}>
