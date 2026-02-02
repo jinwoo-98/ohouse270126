@@ -20,30 +20,37 @@ interface OptionManagerProps {
   onChange: (options: Option[]) => void;
 }
 
+// Simple slugification function
+const slugify = (text: string) => {
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+};
+
 export function OptionManager({ title, options, onChange }: OptionManagerProps) {
   const [newLabel, setNewLabel] = useState("");
-  const [newValue, setNewValue] = useState("");
 
   const handleAddOption = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newLabel.trim() || !newValue.trim()) {
-      toast.error("Vui lòng nhập cả Tên hiển thị và Giá trị.");
+    const trimmedLabel = newLabel.trim();
+    if (!trimmedLabel) {
+      toast.error("Vui lòng nhập Tên hiển thị.");
       return;
     }
-    if (options.some(o => o.value === newValue.trim())) {
-      toast.error("Giá trị (Value) đã tồn tại.");
+    
+    const generatedValue = slugify(trimmedLabel);
+
+    if (options.some(o => o.value === generatedValue)) {
+      toast.error("Giá trị tự động tạo đã tồn tại. Vui lòng đổi tên hiển thị.");
       return;
     }
 
     const newOption: Option = {
       id: Date.now().toString(), // Generate unique ID for DND
-      label: newLabel.trim(),
-      value: newValue.trim(),
+      label: trimmedLabel,
+      value: generatedValue,
     };
 
     onChange([...options, newOption]);
     setNewLabel("");
-    setNewValue("");
   };
 
   const handleRemoveOption = (idToRemove: string) => {
@@ -69,7 +76,7 @@ export function OptionManager({ title, options, onChange }: OptionManagerProps) 
       
       <div className="p-4 bg-secondary/20 rounded-xl border border-border/50 space-y-4">
         <form onSubmit={handleAddOption} className="grid grid-cols-3 gap-3">
-          <div className="col-span-3 space-y-1">
+          <div className="col-span-2 space-y-1">
             <Label className="text-[10px] uppercase font-bold text-muted-foreground">Tên hiển thị (Label)</Label>
             <Input 
               placeholder="VD: Phòng Khách" 
@@ -78,19 +85,11 @@ export function OptionManager({ title, options, onChange }: OptionManagerProps) 
               className="h-10 rounded-lg"
             />
           </div>
-          <div className="col-span-2 space-y-1">
-            <Label className="text-[10px] uppercase font-bold text-muted-foreground">Giá trị (Value)</Label>
-            <Input 
-              placeholder="VD: living" 
-              value={newValue} 
-              onChange={e => setNewValue(e.target.value)} 
-              className="h-10 rounded-lg font-mono text-xs"
-            />
-          </div>
           <div className="col-span-1 flex items-end">
             <Button type="submit" size="icon" className="h-10 w-full rounded-lg"><Plus className="w-4 h-4" /></Button>
           </div>
         </form>
+        <p className="text-[10px] text-muted-foreground italic">Giá trị (Value) sẽ được tự động tạo từ tên hiển thị.</p>
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
