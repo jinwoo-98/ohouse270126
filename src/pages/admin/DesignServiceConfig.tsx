@@ -36,18 +36,21 @@ const ensureIds = (options: any[]): Option[] => {
   }));
 };
 
+// Define the new 4-step default configuration
+const DEFAULT_STEPS: Step[] = [
+  { title: "Bước 1: Đăng Ký & Tiếp Nhận", desc: "Điền thông tin và yêu cầu thiết kế của bạn. Chuyên viên OHOUSE tiếp nhận.", icon_name: "Zap" },
+  { title: "Bước 2: Tư Vấn & Báo Giá Sơ Bộ", desc: "KTS tư vấn, lên ý tưởng sơ bộ và báo giá ước tính theo ngân sách.", icon_name: "DollarSign" },
+  { title: "Bước 3: Thiết Kế 3D Chi Tiết", desc: "Tiến hành thiết kế 3D, bản vẽ kỹ thuật chi tiết sau khi chốt ngân sách.", icon_name: "DraftingCompass" },
+  { title: "Bước 4: Hoàn Thiện & Thi Công", desc: "Bàn giao hồ sơ thiết kế và tiến hành thi công (nếu có yêu cầu).", icon_name: "CheckCircle" },
+];
+
 export default function DesignServiceConfig() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [configId, setConfigId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     hero_image_url: "",
-    steps: [
-      { title: "Bước 1: Đăng Ký & Tiếp Nhận", desc: "Điền thông tin và yêu cầu thiết kế của bạn. Chuyên viên OHOUSE tiếp nhận.", icon_name: "Zap" },
-      { title: "Bước 2: Tư Vấn & Báo Giá Sơ Bộ", desc: "KTS tư vấn, lên ý tưởng sơ bộ và báo giá ước tính theo ngân sách.", icon_name: "DollarSign" },
-      { title: "Bước 3: Thiết Kế 3D Chi Tiết", desc: "Tiến hành thiết kế 3D, bản vẽ kỹ thuật chi tiết sau khi chốt ngân sách.", icon_name: "DraftingCompass" },
-      { title: "Bước 4: Hoàn Thiện & Thi Công", desc: "Bàn giao hồ sơ thiết kế và tiến hành thi công (nếu có yêu cầu).", icon_name: "CheckCircle" },
-    ] as Step[],
+    steps: DEFAULT_STEPS as Step[],
     room_options: [] as Option[],
     budget_options: [] as Option[],
   });
@@ -70,11 +73,20 @@ export default function DesignServiceConfig() {
         setConfigId(data.id);
         setFormData({
           hero_image_url: data.hero_image_url || "",
-          steps: data.steps || formData.steps,
+          // Use data if available, otherwise use the new default steps
+          steps: data.steps || DEFAULT_STEPS,
           // Ensure IDs are present for DND
           room_options: ensureIds(data.room_options || []),
           budget_options: ensureIds(data.budget_options || []),
         });
+      } else {
+         // If no data exists (after deletion), use the new default steps
+         setFormData(prev => ({
+            ...prev,
+            steps: DEFAULT_STEPS,
+            room_options: ensureIds(prev.room_options),
+            budget_options: ensureIds(prev.budget_options),
+         }));
       }
     } catch (e: any) {
       toast.error("Lỗi tải cấu hình: " + e.message);
