@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"; // Import Collapsible
 
 const iconMap: Record<string, any> = { Zap, LayoutGrid, CheckCircle, DollarSign, DraftingCompass };
 
@@ -45,6 +46,8 @@ export default function DesignServicePage() {
     budget: "",
     message: ""
   });
+  
+  const [isRoomCollapsibleOpen, setIsRoomCollapsibleOpen] = useState(false); // State cho Collapsible
 
   useEffect(() => {
     fetchPageContent();
@@ -92,7 +95,7 @@ export default function DesignServicePage() {
       if (currentRooms.includes(roomValue)) {
         return { ...prev, room: currentRooms.filter(v => v !== roomValue) };
       } else {
-        return { ...prev, room: [...currentRooms, roomValue] };
+        return { ...currentRooms.length === 0 ? prev : prev, room: [...currentRooms, roomValue] };
       }
     });
   };
@@ -138,6 +141,11 @@ export default function DesignServicePage() {
   if (isConfigLoading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
   }
+
+  const selectedRoomLabels = formData.room.map(val => {
+    const option = config.room_options.find(o => o.value === val);
+    return option ? option.label : val;
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -226,18 +234,30 @@ export default function DesignServicePage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="room">Không gian cần thiết kế *</Label>
-                  <div className="p-4 border rounded-xl bg-secondary/30 space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
-                    {config.room_options.map(opt => (
-                      <label key={opt.value} className="flex items-center gap-3 cursor-pointer">
-                        <Checkbox 
-                          checked={formData.room.includes(opt.value)} 
-                          onCheckedChange={() => handleRoomToggle(opt.value)}
-                          className="data-[state=checked]:bg-primary"
-                        />
-                        <span className={cn("text-sm font-medium", formData.room.includes(opt.value) && "font-bold text-charcoal")}>{opt.label}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <Collapsible open={isRoomCollapsibleOpen} onOpenChange={setIsRoomCollapsibleOpen}>
+                    <CollapsibleTrigger asChild>
+                      <div className="flex items-center justify-between w-full h-12 px-4 border border-input rounded-xl bg-background cursor-pointer hover:bg-secondary/50 transition-colors">
+                        <span className={cn("text-sm", formData.room.length > 0 ? "font-bold text-charcoal" : "text-muted-foreground")}>
+                          {formData.room.length > 0 ? `${formData.room.length} không gian đã chọn` : "Bấm để chọn không gian..."}
+                        </span>
+                        {isRoomCollapsibleOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="animate-accordion-down">
+                      <div className="p-4 border border-input rounded-xl bg-secondary/30 space-y-2 max-h-40 overflow-y-auto custom-scrollbar mt-2">
+                        {config.room_options.map(opt => (
+                          <label key={opt.value} className="flex items-center gap-3 cursor-pointer">
+                            <Checkbox 
+                              checked={formData.room.includes(opt.value)} 
+                              onCheckedChange={() => handleRoomToggle(opt.value)}
+                              className="data-[state=checked]:bg-primary"
+                            />
+                            <span className={cn("text-sm font-medium", formData.room.includes(opt.value) && "font-bold text-charcoal")}>{opt.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                   <p className="text-[10px] text-muted-foreground italic">Bạn có thể chọn nhiều không gian.</p>
                 </div>
                 
