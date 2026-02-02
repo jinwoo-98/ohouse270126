@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { LayoutGrid, Zap, CheckCircle, Send, ArrowRight, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { LayoutGrid, Zap, CheckCircle, Send, ArrowRight, Loader2, ChevronDown, ChevronUp, DollarSign, DraftingCompass } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-const iconMap: Record<string, any> = { Zap, LayoutGrid, CheckCircle };
+const iconMap: Record<string, any> = { Zap, LayoutGrid, CheckCircle, DollarSign, DraftingCompass };
 
 interface Step {
   icon_name: string;
@@ -175,8 +175,8 @@ export default function DesignServicePage() {
 
         <section className="py-16 md:py-24">
           <div className="container-luxury">
-            <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Quy Trình {config.steps.length} Bước Đơn Giản</h2>
-            <div className="grid md:grid-cols-3 gap-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Quy Trình {config.steps.length} Bước Chuyên Nghiệp</h2>
+            <div className="grid md:grid-cols-4 gap-8">
               {config.steps.map((step, index) => {
                 const Icon = iconMap[step.icon_name] || Zap;
                 return (

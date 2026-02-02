@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
-  Zap, LayoutGrid, CheckCircle, Plus, Trash2, Loader2, Save, Image as ImageIcon, AlertCircle, ArrowLeft, ListFilter
+  Zap, LayoutGrid, CheckCircle, Plus, Trash2, Loader2, Save, Image as ImageIcon, AlertCircle, ArrowLeft, ListFilter, DollarSign, DraftingCompass
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OptionManager } from "@/components/admin/OptionManager";
 
-const iconMap: Record<string, any> = { Zap, LayoutGrid, CheckCircle };
+const iconMap: Record<string, any> = { Zap, LayoutGrid, CheckCircle, DollarSign, DraftingCompass };
 const iconOptions = Object.keys(iconMap);
 
 interface Step {
@@ -43,9 +43,10 @@ export default function DesignServiceConfig() {
   const [formData, setFormData] = useState({
     hero_image_url: "",
     steps: [
-      { title: "Bước 1: Đăng Ký", desc: "Điền thông tin và yêu cầu thiết kế của bạn.", icon_name: "Zap" },
-      { title: "Bước 2: Tư Vấn", desc: "Kiến trúc sư liên hệ, khảo sát và lên ý tưởng sơ bộ.", icon_name: "LayoutGrid" },
-      { title: "Bước 3: Hoàn Thiện", desc: "Nhận bản vẽ 3D miễn phí và báo giá chi tiết.", icon_name: "CheckCircle" },
+      { title: "Bước 1: Đăng Ký & Tiếp Nhận", desc: "Điền thông tin và yêu cầu thiết kế của bạn. Chuyên viên OHOUSE tiếp nhận.", icon_name: "Zap" },
+      { title: "Bước 2: Tư Vấn & Báo Giá Sơ Bộ", desc: "KTS tư vấn, lên ý tưởng sơ bộ và báo giá ước tính theo ngân sách.", icon_name: "DollarSign" },
+      { title: "Bước 3: Thiết Kế 3D Chi Tiết", desc: "Tiến hành thiết kế 3D, bản vẽ kỹ thuật chi tiết sau khi chốt ngân sách.", icon_name: "DraftingCompass" },
+      { title: "Bước 4: Hoàn Thiện & Thi Công", desc: "Bàn giao hồ sơ thiết kế và tiến hành thi công (nếu có yêu cầu).", icon_name: "CheckCircle" },
     ] as Step[],
     room_options: [] as Option[],
     budget_options: [] as Option[],
@@ -156,7 +157,7 @@ export default function DesignServiceConfig() {
             {/* Steps Section */}
             <div className="space-y-6">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                <Zap className="w-4 h-4" /> Quy Trình 3 Bước
+                <Zap className="w-4 h-4" /> Quy Trình {formData.steps.length} Bước
               </h3>
               
               <div className="space-y-8">
