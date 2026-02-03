@@ -142,10 +142,10 @@ export function ShopTheLook() {
             <button
               key={cat.dropdownKey}
               onClick={() => setActiveCategorySlug(cat.dropdownKey!)}
-              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap ${
+              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl border transition-all whitespace-nowrap ${
                 cat.dropdownKey === activeCategorySlug 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
-                  : 'bg-white border-border text-muted-foreground hover:border-charcoal' // Đã xóa rounded-lg để sử dụng rounded-full từ lớp cơ sở
+                  : 'bg-white border-border text-muted-foreground hover:border-charcoal'
               }`}
             >
               {cat.name}
