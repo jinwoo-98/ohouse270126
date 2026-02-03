@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { AuthDialog } from "@/components/AuthDialog";
 import { OrderTrackingDialog } from "@/components/OrderTrackingDialog";
@@ -9,6 +9,7 @@ import { HeaderDesktopNav } from "./header/HeaderDesktopNav";
 import { HeaderMobileMenu } from "./header/HeaderMobileMenu";
 import { HeaderAccountDrawer } from "./header/HeaderAccountDrawer";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -16,6 +17,10 @@ export function Header() {
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  
+  // State để theo dõi trạng thái dính
+  const [isFixed, setIsFixed] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     async function fetchLogo() {
@@ -24,14 +29,38 @@ export function Header() {
     }
     fetchLogo();
   }, []);
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      if (headerRef.current) {
+        // Chiều cao của Top Banner (Dòng 1)
+        const topBannerHeight = headerRef.current.querySelector('.top-banner-container')?.clientHeight || 0;
+        
+        // Nếu cuộn qua chiều cao của Top Banner, bật chế độ Fixed
+        if (window.scrollY > topBannerHeight) {
+          setIsFixed(true);
+        } else {
+          setIsFixed(false);
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="w-full overflow-x-clip z-50">
+    <header ref={headerRef} className="w-full overflow-x-clip z-50">
       {/* Dòng 1: Top Banner (Cuộn lên) */}
-      <HeaderTopBanner />
+      <div className="top-banner-container">
+        <HeaderTopBanner />
+      </div>
 
       {/* Dòng 2 & Menu Desktop: Cố định khi cuộn */}
-      <div className="sticky top-0 z-[100] bg-card shadow-sm w-full">
+      <div className={cn(
+        "w-full bg-card shadow-sm transition-all duration-300",
+        isFixed ? "fixed top-0 z-[100] shadow-lg" : "relative"
+      )}>
         <div className="container-luxury">
           <div className="flex items-center justify-between h-12 md:h-14 gap-4">
             <HeaderSearch onOpenMobileMenu={() => setIsMobileMenuOpen(true)} />
@@ -58,6 +87,9 @@ export function Header() {
         {/* Dòng 3 & 4: Menu Desktop (Cũng cần dính) */}
         <HeaderDesktopNav />
       </div>
+      
+      {/* Thêm một div placeholder để tránh nội dung bị nhảy khi Dòng 2 chuyển sang fixed */}
+      {isFixed && <div className="h-12 md:h-14" />}
 
       <HeaderMobileMenu 
         isOpen={isMobileMenuOpen} 
