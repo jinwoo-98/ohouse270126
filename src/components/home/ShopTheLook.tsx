@@ -137,13 +137,13 @@ export function ShopTheLook() {
           </p>
         </motion.div>
 
-        {/* Thay đổi: flex-wrap để xuống dòng, loại bỏ overflow-x-auto và padding ngang thừa */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8 md:mb-10">
+        {/* Thay đổi: Sử dụng flex và overflow-x-auto, thêm lớp ẩn thanh cuộn */}
+        <div className="flex justify-center md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0">
           {categoriesWithLooks.map((cat) => (
             <button
               key={cat.dropdownKey}
               onClick={() => setActiveCategorySlug(cat.dropdownKey!)}
-              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl border transition-all whitespace-nowrap ${
+              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl border transition-all whitespace-nowrap shrink-0 ${
                 cat.dropdownKey === activeCategorySlug 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                   : 'bg-white border-border text-muted-foreground hover:border-charcoal'
