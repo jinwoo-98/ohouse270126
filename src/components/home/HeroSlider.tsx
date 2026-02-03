@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,7 @@ export function HeroSlider() {
   return (
     <section className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-charcoal">
       <motion.div
-        className="flex h-full w-full cursor-grab active:cursor-grabbing"
+        className="flex h-full w-full cursor-grab active:cursor-grabbing overflow-hidden" // Thêm overflow-hidden ở đây
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.5}
