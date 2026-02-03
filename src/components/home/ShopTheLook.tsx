@@ -109,7 +109,7 @@ export function ShopTheLook() {
     }
   };
 
-  if (loading) return <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+  if (loading) return <div className="py-10 md:py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   if (allLooks.length === 0) return null;
   
   const hasMultipleLooks = currentCategoryLooks.length > 1;
@@ -122,7 +122,7 @@ export function ShopTheLook() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center mb-10 md:mb-14"
+          className="text-center mb-8 md:mb-14"
         >
           {config?.subtitle && (
             <span className="font-bold uppercase tracking-[0.3em] text-[10px] mb-4 block" style={{ color: config.subtitle_color }}>
@@ -137,7 +137,8 @@ export function ShopTheLook() {
           </p>
         </motion.div>
 
-        <div className="flex justify-center gap-2 mb-10 overflow-x-auto pb-2 no-scrollbar px-4">
+        {/* Thay đổi: flex-wrap để xuống dòng, loại bỏ overflow-x-auto và padding ngang thừa */}
+        <div className="flex flex-wrap justify-center gap-2 mb-8 md:mb-10">
           {categoriesWithLooks.map((cat) => (
             <button
               key={cat.dropdownKey}
