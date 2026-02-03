@@ -95,7 +95,7 @@ export default function DesignServicePage() {
       if (currentRooms.includes(roomValue)) {
         return { ...prev, room: currentRooms.filter(v => v !== roomValue) };
       } else {
-        return { ...currentRooms.length === 0 ? prev : prev, room: [...currentRooms, roomValue] };
+        return { ...prev, room: [...currentRooms, roomValue] };
       }
     });
   };
@@ -152,32 +152,41 @@ export default function DesignServicePage() {
       <Header />
       
       <main className="flex-1">
-        <section className="relative h-[50vh] overflow-hidden">
-          {config.hero_image_url ? (
-            <img src={config.hero_image_url} alt="Dịch vụ thiết kế miễn phí" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-secondary/50 flex items-center justify-center">
-              <LayoutGrid className="w-16 h-16 text-muted-foreground/30" />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-charcoal/70 flex items-center justify-center">
+        {/* Text/Title Block */}
+        <section className="pt-24 pb-12 bg-background">
+          <div className="container-luxury max-w-4xl mx-auto text-center">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center text-cream px-4"
+              className="px-4"
             >
-              <h1 className="text-3xl md:text-5xl font-bold mb-4 text-primary">Thiết Kế Nội Thất Miễn Phí</h1>
-              <div className="text-lg md:text-xl text-cream/80 max-w-2xl mx-auto">
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 text-charcoal">Thiết Kế Nội Thất Miễn Phí</h1>
+              <div className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
                 {pageContent ? (
                   <div 
                     dangerouslySetInnerHTML={{ __html: pageContent }} 
-                    className="prose prose-lg prose-invert max-w-none text-cream/80 prose-p:text-cream/80 prose-ul:text-cream/80 prose-li:text-cream/80"
+                    className="prose prose-lg max-w-none text-muted-foreground prose-p:text-muted-foreground prose-ul:text-muted-foreground prose-li:text-muted-foreground"
                   />
                 ) : (
                   <p>Biến không gian sống trong mơ thành hiện thực với dịch vụ tư vấn 3D miễn phí từ OHOUSE</p>
                 )}
               </div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Image Block */}
+        <section className="pb-16">
+          <div className="container-luxury">
+            <div className="relative aspect-video overflow-hidden rounded-2xl shadow-xl">
+              {config.hero_image_url ? (
+                <img src={config.hero_image_url} alt="Dịch vụ thiết kế miễn phí" className="w-full h-full object-cover img-zoom" />
+              ) : (
+                <div className="w-full h-full bg-secondary/50 flex items-center justify-center">
+                  <LayoutGrid className="w-16 h-16 text-muted-foreground/30" />
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
