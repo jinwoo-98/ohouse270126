@@ -35,13 +35,15 @@ export function HeaderActions({ onOpenTracking, onOpenAuth, onOpenAccountDrawer 
 
   return (
     <div className="flex-1 flex items-center justify-end gap-1 lg:max-w-[250px]">
-      <button className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex" onClick={onOpenTracking}>
-        <Package className="w-5 h-5" />
+      {/* Tra cứu đơn hàng: Tăng kích thước trên mobile */}
+      <button className="p-3 hover:bg-secondary rounded-lg transition-colors hidden sm:flex" onClick={onOpenTracking}>
+        <Package className="w-6 h-6" />
       </button>
 
       <div className="flex">
-        <button className="lg:hidden p-2.5 hover:bg-secondary rounded-lg transition-colors" onClick={onOpenAccountDrawer}>
-          <User className="w-5 h-5" />
+        {/* Nút mở Drawer Tài khoản: Tăng kích thước trên mobile */}
+        <button className="lg:hidden p-3 hover:bg-secondary rounded-lg transition-colors" onClick={onOpenAccountDrawer}>
+          <User className="w-6 h-6" />
         </button>
 
         <div className="hidden lg:block">
@@ -101,15 +103,17 @@ export function HeaderActions({ onOpenTracking, onOpenAuth, onOpenAccountDrawer 
         </div>
       </div>
 
-      <Link to="/lien-he" className="p-2.5 hover:bg-secondary rounded-lg transition-colors hidden sm:flex">
-        <Headset className="w-5 h-5" />
+      {/* Liên hệ: Tăng kích thước trên mobile */}
+      <Link to="/lien-he" className="p-3 hover:bg-secondary rounded-lg transition-colors hidden sm:flex">
+        <Headset className="w-6 h-6" />
       </Link>
 
+      {/* Giỏ hàng: Tăng kích thước trên mobile */}
       <Link 
         to="/gio-hang" 
-        className="p-2.5 -mr-2.5 hover:bg-secondary rounded-lg transition-colors relative"
+        className="p-3 -mr-3 hover:bg-secondary rounded-lg transition-colors relative"
       >
-        <ShoppingBag className="w-5 h-5" />
+        <ShoppingBag className="w-6 h-6" />
         {cartCount > 0 && (
           <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center font-bold px-1 border-2 border-card">
             {cartCount}

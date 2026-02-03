@@ -26,7 +26,7 @@ export function Header() {
   }, []);
 
   return (
-    <header className="relative z-50 bg-card shadow-sm w-full overflow-x-clip">
+    <header className="sticky top-0 z-50 bg-card shadow-sm w-full overflow-x-clip">
       <HeaderTopBanner />
 
       <div className="bg-card w-full">

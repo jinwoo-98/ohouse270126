@@ -43,16 +43,16 @@ export function HeaderSearch({ onOpenMobileMenu }: HeaderSearchProps) {
     <div className="flex-1 flex items-center lg:max-w-[250px] relative" ref={searchContainerRef}>
       <div className="flex items-center lg:hidden gap-1">
         <button 
-          className="p-2.5 -ml-2.5 hover:bg-secondary rounded-lg transition-colors" 
+          className="p-3 -ml-3 hover:bg-secondary rounded-lg transition-colors" 
           onClick={onOpenMobileMenu}
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-6 h-6" />
         </button>
         <button 
-          className="md:hidden p-2.5 hover:bg-secondary rounded-lg transition-colors" 
+          className="md:hidden p-3 hover:bg-secondary rounded-lg transition-colors" 
           onClick={onOpenMobileMenu}
         >
-          <Search className="w-5 h-5" />
+          <Search className="w-6 h-6" />
         </button>
       </div>
       
