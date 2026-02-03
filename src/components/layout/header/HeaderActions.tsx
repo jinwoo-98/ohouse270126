@@ -34,15 +34,15 @@ export function HeaderActions({ onOpenTracking, onOpenAuth, onOpenAccountDrawer 
   };
 
   return (
-    <div className="flex-1 flex items-center justify-end gap-2 lg:max-w-[250px]">
+    <div className="flex-1 flex items-center justify-end gap-1 lg:gap-2 lg:max-w-[250px]">
       {/* Tra cứu đơn hàng: Tăng kích thước trên mobile */}
-      <button className="p-3 hover:bg-secondary rounded-lg transition-colors hidden sm:flex" onClick={onOpenTracking}>
+      <button className="p-2 hover:bg-secondary rounded-lg transition-colors hidden sm:flex" onClick={onOpenTracking}>
         <Package className="w-6 h-6" />
       </button>
 
       <div className="flex">
         {/* Nút mở Drawer Tài khoản: Tăng kích thước trên mobile */}
-        <button className="lg:hidden p-3 hover:bg-secondary rounded-lg transition-colors" onClick={onOpenAccountDrawer}>
+        <button className="lg:hidden p-2 hover:bg-secondary rounded-lg transition-colors" onClick={onOpenAccountDrawer}>
           <User className="w-6 h-6" />
         </button>
 
@@ -104,14 +104,14 @@ export function HeaderActions({ onOpenTracking, onOpenAuth, onOpenAccountDrawer 
       </div>
 
       {/* Liên hệ: Tăng kích thước trên mobile */}
-      <Link to="/lien-he" className="p-3 hover:bg-secondary rounded-lg transition-colors hidden sm:flex">
+      <Link to="/lien-he" className="p-2 hover:bg-secondary rounded-lg transition-colors hidden sm:flex">
         <Headset className="w-6 h-6" />
       </Link>
 
       {/* Giỏ hàng: Tăng kích thước trên mobile */}
       <Link 
         to="/gio-hang" 
-        className="p-3 hover:bg-secondary rounded-lg transition-colors relative"
+        className="p-2 hover:bg-secondary rounded-lg transition-colors relative"
       >
         <ShoppingBag className="w-6 h-6" />
         {cartCount > 0 && (
