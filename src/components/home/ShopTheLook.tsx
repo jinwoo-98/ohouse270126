@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { motion, PanInfo } from "framer-motion";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { Plus, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,6 +100,7 @@ export function ShopTheLook() {
     if (currentCategoryLooks.length <= 1) return;
     
     const swipe = swipePower(offset.x, velocity.x);
+    // Giảm ngưỡng kéo trên mobile để dễ vuốt hơn
     const threshold = window.innerWidth < 768 ? 500 : swipeConfidenceThreshold;
 
     if (swipe < -threshold) {
@@ -155,11 +156,15 @@ export function ShopTheLook() {
         </div>
 
         <div className="relative rounded-2xl overflow-hidden bg-transparent shadow-elevated border border-border/40">
-          <div className="bg-background relative aspect-video">
+          <div className="bg-background relative aspect-video overflow-hidden"> {/* Thêm overflow-hidden cho khung nhìn */}
             <motion.div
               className="flex h-full w-full cursor-grab active:cursor-grabbing"
               drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
+              // Drag constraints: Giới hạn kéo bằng tổng chiều rộng của tất cả các slide
+              dragConstraints={{ 
+                left: -((currentCategoryLooks.length - 1) * window.innerWidth), 
+                right: 0 
+              }}
               dragElastic={0.5}
               onDragEnd={handleDragEnd}
               animate={{ x: `-${currentLookIndex * 100}%` }}
@@ -175,7 +180,8 @@ export function ShopTheLook() {
                       draggable="false"
                     />
                   </Link>
-                  <div className="absolute inset-0 bg-black/5">
+                  {/* Lớp phủ Hotspot: Đặt pointer-events-none để không chặn sự kiện kéo */}
+                  <div className="absolute inset-0 bg-black/5 pointer-events-none">
                     <TooltipProvider>
                       {look.shop_look_items
                         .filter((item: any) => item.target_image_url === look.image_url)
@@ -187,7 +193,8 @@ export function ShopTheLook() {
                                   e.stopPropagation();
                                   if (item.products) setQuickViewProduct(item.products); 
                               }}
-                              className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-30 group/dot touch-manipulation"
+                              // Bật lại pointer-events-auto cho nút hotspot
+                              className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-30 group/dot touch-manipulation pointer-events-auto"
                               style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                             >
                               <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden"></span>
@@ -203,7 +210,7 @@ export function ShopTheLook() {
                         </Tooltip>
                       ))}
                     </TooltipProvider>
-                    <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block">
+                    <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block pointer-events-auto">
                       <Button asChild size="sm" className="btn-hero h-9 text-[10px] shadow-gold">
                         <Link to={`/y-tuong/${look.id}`}>
                           Xem Chi Tiết <ChevronRight className="w-3 h-3 ml-1" />
@@ -239,7 +246,7 @@ export function ShopTheLook() {
                 <button
                   key={idx}
                   onClick={() => setCurrentLookIndex(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentLookIndex ? "bg-primary w-8 md:w-12" : "bg-muted-foreground/30 w-2 md:w-3 hover:bg-primary/60"}`}
+                  className={`h-1.5 rounded-full transition-all duration-500 pointer-events-auto ${idx === currentLookIndex ? "bg-primary w-8 md:w-12" : "bg-muted-foreground/30 w-2 md:w-3 hover:bg-primary/60"}`}
                 />
               ))}
             </div>
