@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,26 @@ const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
+const variants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    zIndex: 0,
+    x: direction < 0 ? "100%" : "-100%",
+    opacity: 0,
+  }),
+};
+
 export function HeroSlider() {
   const [slides, setSlides] = useState<any[]>([]);
-  const [imageIndex, setImageIndex] = useState(0);
+  const [[page, direction], setPage] = useState([0, 0]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,17 +51,12 @@ export function HeroSlider() {
     }
   };
 
+  const imageIndex = page % (slides.length || 1);
   const current = slides[imageIndex];
 
   const paginate = (newDirection: number) => {
     if (slides.length <= 1) return;
-    let newIndex = imageIndex + newDirection;
-    if (newIndex < 0) {
-      newIndex = slides.length - 1;
-    } else if (newIndex >= slides.length) {
-      newIndex = 0;
-    }
-    setImageIndex(newIndex);
+    setPage([page + newDirection, newDirection]);
   };
 
   useEffect(() => {
@@ -54,15 +66,13 @@ export function HeroSlider() {
       }, 6000);
       return () => clearInterval(timer);
     }
-  }, [slides.length, imageIndex]);
+  }, [slides.length, page]);
 
   const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
     const swipe = swipePower(offset.x, velocity.x);
-    const threshold = window.innerWidth < 768 ? 500 : swipeConfidenceThreshold;
-
-    if (swipe < -threshold) {
+    if (swipe < -swipeConfidenceThreshold) {
       paginate(1);
-    } else if (swipe > threshold) {
+    } else if (swipe > swipeConfidenceThreshold) {
       paginate(-1);
     }
   };
@@ -72,31 +82,31 @@ export function HeroSlider() {
   if (!current) return null;
 
   return (
-    <section className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-charcoal">
-      <motion.div
-        className="flex h-full w-full cursor-grab active:cursor-grabbing overflow-hidden" // Thêm overflow-hidden ở đây
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.5}
-        onDragEnd={handleDragEnd}
-        animate={{ x: `-${imageIndex * 100}%` }}
-        transition={{ type: "spring", stiffness: 400, damping: 40 }}
-      >
-        {slides.map((slide) => (
-          <div key={slide.id} className="relative h-full w-full flex-shrink-0">
-            <motion.img
-              initial={{ scale: 1.1 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 6, ease: "linear" }}
-              src={slide.image_url}
-              alt={slide.title}
-              className="w-full h-full object-cover pointer-events-none"
-              draggable="false"
-            />
-            <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-          </div>
-        ))}
-      </motion.div>
+    <section className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-charcoal cursor-grab active:cursor-grabbing">
+      <AnimatePresence initial={false} custom={direction}>
+        <motion.img
+          key={page}
+          src={slides[imageIndex]?.image_url}
+          alt={slides[imageIndex]?.title}
+          custom={direction}
+          variants={variants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{
+            x: { type: "spring", stiffness: 300, damping: 30 },
+            opacity: { duration: 0.2 },
+          }}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={1}
+          onDragEnd={handleDragEnd}
+          className="absolute h-full w-full object-cover"
+          draggable="false"
+        />
+      </AnimatePresence>
+      
+      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
       <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
         <div className="container-luxury w-full">
@@ -171,11 +181,11 @@ export function HeroSlider() {
             <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </button>
           
-          <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20 pointer-events-none">
+          <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20">
             {slides.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setImageIndex(index)}
+                onClick={() => setPage([index, index > imageIndex ? 1 : -1])}
                 className={`h-1.5 rounded-full transition-all duration-500 pointer-events-auto ${index === imageIndex ? "bg-primary w-8 md:w-12" : "bg-white/30 w-2 md:w-3 hover:bg-white/60"}`}
               />
             ))}

@@ -34,7 +34,7 @@ export function HeaderActions({ onOpenTracking, onOpenAuth, onOpenAccountDrawer 
   };
 
   return (
-    <div className="flex-1 flex items-center justify-end gap-1 lg:max-w-[250px]">
+    <div className="flex-1 flex items-center justify-end gap-2 lg:max-w-[250px]">
       {/* Tra cứu đơn hàng: Tăng kích thước trên mobile */}
       <button className="p-3 hover:bg-secondary rounded-lg transition-colors hidden sm:flex" onClick={onOpenTracking}>
         <Package className="w-6 h-6" />
@@ -111,7 +111,7 @@ export function HeaderActions({ onOpenTracking, onOpenAuth, onOpenAccountDrawer 
       {/* Giỏ hàng: Tăng kích thước trên mobile */}
       <Link 
         to="/gio-hang" 
-        className="p-3 -mr-3 hover:bg-secondary rounded-lg transition-colors relative"
+        className="p-3 hover:bg-secondary rounded-lg transition-colors relative"
       >
         <ShoppingBag className="w-6 h-6" />
         {cartCount > 0 && (
