@@ -31,7 +31,7 @@ export function Header() {
       <HeaderTopBanner />
 
       {/* Dòng 2 & Menu Desktop: Cố định khi cuộn */}
-      <div className="sticky top-0 z-50 bg-card shadow-sm w-full">
+      <div className="sticky top-0 z-[100] bg-card shadow-sm w-full">
         <div className="container-luxury">
           <div className="flex items-center justify-between h-12 md:h-14 gap-4">
             <HeaderSearch onOpenMobileMenu={() => setIsMobileMenuOpen(true)} />
