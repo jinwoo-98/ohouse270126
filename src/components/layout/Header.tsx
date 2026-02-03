@@ -26,10 +26,12 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-card shadow-sm w-full overflow-x-clip">
+    <header className="w-full overflow-x-clip z-50">
+      {/* Dòng 1: Top Banner (Cuộn lên) */}
       <HeaderTopBanner />
 
-      <div className="bg-card w-full">
+      {/* Dòng 2 & Menu Desktop: Cố định khi cuộn */}
+      <div className="sticky top-0 z-50 bg-card shadow-sm w-full">
         <div className="container-luxury">
           <div className="flex items-center justify-between h-12 md:h-14 gap-4">
             <HeaderSearch onOpenMobileMenu={() => setIsMobileMenuOpen(true)} />
@@ -52,9 +54,10 @@ export function Header() {
             />
           </div>
         </div>
+        
+        {/* Dòng 3 & 4: Menu Desktop (Cũng cần dính) */}
+        <HeaderDesktopNav />
       </div>
-
-      <HeaderDesktopNav />
 
       <HeaderMobileMenu 
         isOpen={isMobileMenuOpen} 
