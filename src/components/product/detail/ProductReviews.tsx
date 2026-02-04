@@ -187,10 +187,10 @@ export function ProductReviews({
                   value={verifyInfo} 
                   onChange={(e) => setVerifyInfo(e.target.value)} 
                   placeholder="SĐT hoặc Email..."
-                  className="h-12 bg-white/5 border-white/10 text-cream"
+                  className="h-12 bg-white/5 border-white/10 text-cream rounded-xl"
                   required
                 />
-                <Button type="submit" className="w-full btn-hero h-12 shadow-gold" disabled={isVerifying}>
+                <Button type="submit" className="w-full btn-hero h-12 shadow-gold rounded-xl" disabled={isVerifying}>
                   {isVerifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "XÁC THỰC ĐƠN HÀNG"}
                 </Button>
               </form>
@@ -220,12 +220,12 @@ export function ProductReviews({
                 <Textarea 
                   placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..." 
                   rows={4} 
-                  className="bg-white/5 text-cream border-white/10" 
+                  className="bg-white/5 text-cream border-white/10 rounded-xl" 
                   value={newReview.comment} 
                   onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })} 
                   required
                 />
-                <Button type="submit" className="w-full btn-hero h-12 shadow-gold" disabled={isSubmitting}>
+                <Button type="submit" className="w-full btn-hero h-12 shadow-gold rounded-xl" disabled={isSubmitting}>
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "GỬI ĐÁNH GIÁ THỰC TẾ"}
                 </Button>
               </form>
