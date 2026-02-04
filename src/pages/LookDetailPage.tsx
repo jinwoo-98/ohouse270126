@@ -50,13 +50,19 @@ export default function LookDetailPage() {
         .eq('slug', slug) // Lấy bằng slug
         .single();
 
-      if (error || !data) {
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 là lỗi không tìm thấy
+
+      if (!data) {
         toast.error("Không tìm thấy không gian thiết kế này.");
         navigate("/cam-hung");
         return;
       }
       setLook(data);
       setCurrentImage(data.image_url); // Đặt ảnh chính làm ảnh mặc định
+    } catch (e) {
+      console.error("Error fetching lookbook:", e);
+      toast.error("Lỗi tải trang chi tiết Lookbook.");
+      navigate("/cam-hung");
     } finally {
       setLoading(false);
     }
