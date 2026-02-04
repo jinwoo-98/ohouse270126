@@ -37,6 +37,7 @@ export default function LookDetailPage() {
 
   useEffect(() => {
     if (slug) {
+      console.log("Attempting to fetch lookbook with slug:", slug); // Added log for debugging
       fetchLook();
     }
   }, [slug]);
