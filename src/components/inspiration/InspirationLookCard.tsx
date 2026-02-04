@@ -14,18 +14,16 @@ interface InspirationLookCardProps {
 export function InspirationLookCard({ look, index, onQuickView }: InspirationLookCardProps) {
   const { toggleWishlist, isInWishlist } = useWishlist();
 
-  // Lấy danh sách sản phẩm trong lookbook
   const productsInLook = look.shop_look_items
     .filter((item: any) => item.products)
     .map((item: any) => item.products);
 
-  // Tạo một "sản phẩm đại diện" cho Lookbook để thêm vào Wishlist
   const lookAsProduct = {
     id: look.id,
     name: look.title,
-    price: productsInLook[0]?.price || 0, // Lấy giá của sản phẩm đầu tiên làm giá đại diện
+    price: productsInLook[0]?.price || 0,
     image: look.image_url,
-    slug: look.slug, // SỬ DỤNG SLUG
+    slug: look.slug,
   };
   
   const isFavorite = isInWishlist(lookAsProduct.id);
@@ -42,7 +40,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
       className="group flex flex-col gap-5"
     >
       <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
-        <Link to={`/y-tuong/${look.slug}`} className="block relative w-full h-full"> {/* CẬP NHẬT LINK */}
+        <Link to={`/y-tuong/${look.slug || look.id}`} className="block relative w-full h-full">
           <img 
             src={look.image_url} 
             alt={look.title}
@@ -50,7 +48,6 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
           />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
           
-          {/* Nút Yêu thích */}
           <button 
             onClick={(e) => { 
               e.stopPropagation(); 
@@ -68,7 +65,6 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
             <Heart className={cn("w-5 h-5", isFavorite && "fill-current")} />
           </button>
           
-          {/* Product Count Badge (Trái dưới) */}
           <div className="absolute bottom-3 left-3 bg-charcoal/80 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest z-10">
             {productCount} SP
           </div>
@@ -85,13 +81,11 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
                   style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                   onClick={(e) => { 
                     e.stopPropagation(); 
-                    e.preventDefault(); // Ngăn chặn chuyển trang khi click hotspot
+                    e.preventDefault();
                     if (item.products) onQuickView(item.products);
                   }}
                 >
-                  {/* Vòng tròn ngoài (Ping effect) */}
                   <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
-                  {/* Vòng tròn trong (Hotspot chính) */}
                   <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                 </button>
               </TooltipTrigger>
@@ -104,7 +98,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
         </TooltipProvider>
       </div>
       <div className="px-3 text-center">
-        <Link to={`/y-tuong/${look.slug}`}> {/* CẬP NHẬT LINK */}
+        <Link to={`/y-tuong/${look.slug || look.id}`}>
           <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
         </Link>
         <p className="text-xs text-muted-foreground mt-1">{productCount} sản phẩm phối hợp</p>

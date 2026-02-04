@@ -17,18 +17,16 @@ interface SimilarLookbookCardProps {
 export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookbookCardProps) {
   const { toggleWishlist, isInWishlist } = useWishlist();
 
-  // Lấy danh sách sản phẩm trong lookbook
   const productsInLook = look.shop_look_items
     .filter((item: any) => item.products)
     .map((item: any) => item.products);
 
-  // Tạo một "sản phẩm đại diện" cho Lookbook để thêm vào Wishlist
   const lookAsProduct = {
     id: look.id,
     name: look.title,
-    price: productsInLook[0]?.price || 0, // Giữ lại giá đại diện cho mục đích Wishlist
+    price: productsInLook[0]?.price || 0,
     image: look.image_url,
-    slug: look.slug, // SỬ DỤNG SLUG
+    slug: look.slug,
   };
   
   const isFavorite = isInWishlist(lookAsProduct.id);
@@ -40,14 +38,10 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
       viewport={{ once: true }}
-      // Cấu trúc thẻ Lookbook: Ảnh + Info (không có giá)
       className="group flex flex-col gap-5" 
     >
-      {/* Image Section */}
       <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
-        <Link to={`/y-tuong/${look.slug}`} className="block relative w-full h-full"> {/* CẬP NHẬT LINK */}
-          
-          {/* Image */}
+        <Link to={`/y-tuong/${look.slug || look.id}`} className="block relative w-full h-full">
           <img 
             src={look.image_url} 
             alt={look.title} 
@@ -55,7 +49,6 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
           />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/30 to-transparent" />
           
-          {/* Nút Yêu thích (Phải trên) */}
           <button 
             onClick={(e) => { 
               e.stopPropagation(); 
@@ -73,13 +66,11 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
             <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
           </button>
           
-          {/* Product Count Badge (Trái dưới) */}
           <div className="absolute bottom-3 left-3 bg-charcoal/80 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest z-10">
             {productCount} SP
           </div>
         </Link>
         
-        {/* Hotspots (Vẫn cần để QuickView hoạt động) */}
         <TooltipProvider>
           {look.shop_look_items
             .filter((item: any) => item.target_image_url === look.image_url && item.products)
@@ -108,9 +99,8 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
         </TooltipProvider>
       </div>
       
-      {/* Info Section (Tiêu đề và số lượng sản phẩm) */}
       <div className="px-3 text-center">
-        <Link to={`/y-tuong/${look.slug}`}> {/* CẬP NHẬT LINK */}
+        <Link to={`/y-tuong/${look.slug || look.id}`}>
           <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
         </Link>
         <p className="text-xs text-muted-foreground mt-1">{productCount} sản phẩm phối hợp</p>

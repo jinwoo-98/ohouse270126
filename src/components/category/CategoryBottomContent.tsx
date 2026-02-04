@@ -18,7 +18,7 @@ interface CategoryBottomContentProps {
   categorySlug?: string;
   seoContent?: string;
   isParentCategory?: boolean;
-  parentSlug?: string; // Thêm parentSlug
+  parentSlug?: string;
 }
 
 export function CategoryBottomContent({ categoryId, categorySlug, seoContent, isParentCategory, parentSlug }: CategoryBottomContentProps) {
@@ -48,12 +48,10 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
   const fetchLooks = async () => {
     let slugsToQuery: string[] = [];
     
-    // 1. Luôn lấy Lookbook gán trực tiếp cho danh mục hiện tại
     if (categorySlug) {
       slugsToQuery.push(categorySlug);
     }
 
-    // 2. Nếu đây là danh mục con, lấy thêm Lookbook của danh mục cha
     if (!isParentCategory && parentSlug) {
       slugsToQuery.push(parentSlug);
     }
@@ -73,7 +71,6 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
       .eq('is_active', true)
       .limit(4);
       
-    // Lọc trùng lặp nếu Lookbook được gán cho cả cha và con (ưu tiên Lookbook của con)
     const uniqueLooks = data?.filter((look, index, self) => 
       index === self.findIndex((l) => l.id === look.id)
     ) || [];
@@ -83,7 +80,6 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
 
   return (
     <div className="space-y-16 mt-16 pb-12">
-      {/* 1. Trending Keywords */}
       {keywords.length > 0 && (
         <section className="py-8">
           <div className="flex flex-col md:flex-row items-center gap-6">
@@ -108,7 +104,6 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
         </section>
       )}
 
-      {/* 2. Shop The Look (Design Inspiration) */}
       {shopLooks.length > 0 && (
         <section>
           <div className="flex items-center gap-3 mb-10">
@@ -130,12 +125,11 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                   className="relative aspect-video rounded-[32px] overflow-hidden cursor-pointer shadow-medium group-hover:shadow-elevated transition-all duration-500"
                   onClick={() => setSelectedLook(look)}
                 >
-                  <Link to={`/y-tuong/${look.slug}`} className="absolute inset-0 z-10"> {/* CẬP NHẬT LINK */}
+                  <Link to={`/y-tuong/${look.slug || look.id}`} className="absolute inset-0 z-10">
                     <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
                   </Link>
                   
-                  {/* Active Dots on Image - FIXED LOGIC */}
                   <TooltipProvider>
                     {look.shop_look_items
                       .filter((item: any) => item.target_image_url === look.image_url && item.products)
@@ -150,9 +144,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                               if (item.products) setQuickViewProduct(item.products);
                             }}
                           >
-                            {/* Vòng tròn ngoài (Ping effect) */}
                             <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
-                            {/* Vòng tròn trong (Hotspot chính) */}
                             <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                           </button>
                         </TooltipTrigger>
@@ -169,7 +161,6 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
 
                 <div className="flex items-start justify-between p-4">
                   <div className="flex-1 min-w-0 pr-4">
-                    {/* Ẩn tiêu đề Lookbook ở đây */}
                     <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight line-clamp-2">
                       {look.title}
                     </h3>
@@ -178,9 +169,9 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                   <Button 
                     variant="outline" 
                     className="rounded-xl px-4 h-10 text-[9px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm shrink-0"
-                    asChild // Thêm asChild để bọc Link
+                    asChild
                   >
-                    <Link to={`/y-tuong/${look.slug}`}> {/* CẬP NHẬT LINK */}
+                    <Link to={`/y-tuong/${look.slug || look.id}`}>
                       XEM NGAY +
                     </Link>
                   </Button>
@@ -191,7 +182,6 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
         </section>
       )}
 
-      {/* 3. SEO Content */}
       {seoContent && (
         <section className="py-12 border-t border-border/40">
           <div 
@@ -201,7 +191,6 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
         </section>
       )}
 
-      {/* Look Detail Sheet - Listings */}
       <Sheet open={!!selectedLook} onOpenChange={(open) => !open && setSelectedLook(null)}>
         <SheetContent side="right" className="w-full sm:max-w-[500px] p-0 flex flex-col z-[150] border-none shadow-elevated">
           {selectedLook && (
@@ -265,7 +254,6 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
         </SheetContent>
       </Sheet>
 
-      {/* Quick View Handler */}
       <QuickViewSheet 
         product={quickViewProduct} 
         isOpen={!!quickViewProduct} 

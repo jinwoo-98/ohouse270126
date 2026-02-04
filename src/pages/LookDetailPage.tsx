@@ -25,7 +25,7 @@ import { LookProductList } from "@/components/inspiration/LookProductList"; // D
 import { LookProductVerticalList } from "@/components/inspiration/LookProductFullList"; // Danh sách lưới thẻ đầy đủ (Sản phẩm tương tự)
 
 export default function LookDetailPage() {
-  const { slug } = useParams(); // Đổi từ id sang slug
+  const { slug } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -33,11 +33,10 @@ export default function LookDetailPage() {
   const [look, setLook] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
-  const [currentImage, setCurrentImage] = useState<string>(""); // State để theo dõi ảnh đang hiển thị
+  const [currentImage, setCurrentImage] = useState<string>("");
 
   useEffect(() => {
     if (slug) {
-      console.log("Attempting to fetch lookbook with slug:", slug); // Added log for debugging
       fetchLook();
     }
   }, [slug]);
@@ -48,10 +47,10 @@ export default function LookDetailPage() {
       const { data, error } = await supabase
         .from('shop_looks')
         .select('*, shop_look_items(*, products(*))')
-        .eq('slug', slug) // Lấy bằng slug
+        .or(`slug.eq.${slug},id.eq.${slug}`) // **FIX: Query by slug OR id**
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 là lỗi không tìm thấy
+      if (error && error.code !== 'PGRST116') throw error;
 
       if (!data) {
         toast.error("Không tìm thấy không gian thiết kế này.");
@@ -59,7 +58,7 @@ export default function LookDetailPage() {
         return;
       }
       setLook(data);
-      setCurrentImage(data.image_url); // Đặt ảnh chính làm ảnh mặc định
+      setCurrentImage(data.image_url);
     } catch (e) {
       console.error("Error fetching lookbook:", e);
       toast.error("Lỗi tải trang chi tiết Lookbook.");
@@ -71,13 +70,11 @@ export default function LookDetailPage() {
 
   const visibleItems = useMemo(() => {
     if (!look) return [];
-    // Hiển thị tất cả sản phẩm có trong look, không lọc theo ảnh
     return look.shop_look_items.filter((item: any) => item.products);
   }, [look]);
   
   const lookbookProducts = useMemo(() => visibleItems.map((item: any) => item.products).filter(Boolean), [visibleItems]);
 
-  // Chuyển đổi look.shop_look_items thành định dạng Hotspot mới
   const lookHotspots = useMemo(() => {
     if (!look?.shop_look_items) return [];
     return look.shop_look_items
@@ -91,7 +88,6 @@ export default function LookDetailPage() {
       }));
   }, [look]);
 
-  // Hook để lấy sản phẩm tương tự
   const { 
     similarProducts, 
     categories, 
@@ -100,7 +96,6 @@ export default function LookDetailPage() {
     activeCategorySlug 
   } = useLookbookSimilarProducts(lookbookProducts);
   
-  // NEW: Hook để lấy Lookbook tương tự
   const { similarLookbooks, isLoadingSimilarLooks } = useSimilarLookbooks(
     look?.id, 
     look?.category_id
@@ -127,7 +122,6 @@ export default function LookDetailPage() {
         </div>
 
         <div className="container-luxury py-8 md:py-12">
-          {/* 1. Title and Description Section (Full Width) - CĂN GIỮA */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -139,30 +133,24 @@ export default function LookDetailPage() {
             </p>
           </motion.div>
 
-          {/* 2. Main Content Grid (Gallery + Product List) */}
-          {/* Thay đổi grid-cols-2 thành grid-cols-3 và giảm gap */}
           <div className="grid lg:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto">
-            
-            {/* LEFT: Gallery (Chiếm 2/3) */}
             <div className="lg:col-span-2 min-w-0 w-full overflow-hidden">
               <ProductGallery 
                 mainImage={look.image_url} 
                 galleryImages={look.gallery_urls} 
                 productName={look.title} 
-                hotspots={lookHotspots} // TRUYỀN HOTSPOTS VÀO ĐÂY
-                onHotspotClick={setQuickViewProduct} // TRUYỀN HÀM XỬ LÝ CLICK
+                hotspots={lookHotspots}
+                onHotspotClick={setQuickViewProduct}
               >
-                {/* Children prop chỉ còn nhiệm vụ cập nhật currentImage */}
                 {(currentImageUrl) => {
                   useEffect(() => {
                     setCurrentImage(currentImageUrl);
                   }, [currentImageUrl]);
-                  return null; // Không cần render gì thêm ở đây vì ProductGallery đã tự render hotspot
+                  return null;
                 }}
               </ProductGallery>
             </div>
 
-            {/* RIGHT: Product List (1/3 width) - DESKTOP ONLY */}
             {visibleItems.length > 0 && (
               <div className="lg:col-span-1 min-w-0 w-full hidden lg:block">
                 <LookProductList products={lookbookProducts} onQuickView={setQuickViewProduct} />
@@ -170,7 +158,6 @@ export default function LookDetailPage() {
             )}
           </div>
           
-          {/* NEW: Product List - MOBILE ONLY (Horizontal Scroll) */}
           {visibleItems.length > 0 && (
             <div className="mt-12 lg:hidden">
               <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest container-luxury px-0">Sản phẩm trong không gian</h2>
@@ -178,11 +165,9 @@ export default function LookDetailPage() {
             </div>
           )}
           
-          {/* 3. Sản phẩm tương tự (NEW SECTION) */}
           <section className="mt-20">
             <h2 className="text-2xl font-bold uppercase tracking-widest mb-8 text-charcoal text-center">SẢN PHẨM TƯƠNG TỰ</h2>
             
-            {/* Category Tabs/Buttons */}
             <div className="flex flex-wrap gap-3 mb-8 justify-center">
               <Button
                 variant={activeCategorySlug === 'all' ? 'default' : 'outline'}
@@ -211,7 +196,6 @@ export default function LookDetailPage() {
               ))}
             </div>
             
-            {/* Similar Products List - Dạng lưới thẻ đầy đủ */}
             {isLoadingSimilar ? (
               <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
             ) : similarProducts.length === 0 ? (
@@ -219,19 +203,17 @@ export default function LookDetailPage() {
             ) : (
               <LookProductVerticalList 
                 products={similarProducts} 
-                title="" // Bỏ tiêu đề vì đã có tiêu đề chính
+                title=""
                 onQuickView={setQuickViewProduct} 
               />
             )}
           </section>
           
-          {/* 4. Combo Tương Tự (Similar Lookbooks) */}
           {!isLoadingSimilarLooks && similarLookbooks.length > 0 && (
             <SimilarLookbooks lookbooks={similarLookbooks} title="COMBO TƯƠNG TỰ KHÁC" onQuickView={setQuickViewProduct} />
           )}
         </div>
         
-        {/* 5. CTA Filters (NEW SECTION) */}
         <LookbookCTAFilters />
       </main>
       <Footer />

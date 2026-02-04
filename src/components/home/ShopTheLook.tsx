@@ -100,7 +100,6 @@ export function ShopTheLook() {
     if (currentCategoryLooks.length <= 1) return;
     
     const swipe = swipePower(offset.x, velocity.x);
-    // Giảm ngưỡng kéo trên mobile để dễ vuốt hơn
     const threshold = window.innerWidth < 768 ? 500 : swipeConfidenceThreshold;
 
     if (swipe < -threshold) {
@@ -138,7 +137,6 @@ export function ShopTheLook() {
           </p>
         </motion.div>
 
-        {/* Thay đổi: Sử dụng flex và overflow-x-auto, thêm lớp ẩn thanh cuộn */}
         <div className="flex justify-center md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0">
           {categoriesWithLooks.map((cat) => (
             <button
@@ -156,11 +154,10 @@ export function ShopTheLook() {
         </div>
 
         <div className="relative rounded-2xl overflow-hidden bg-transparent shadow-elevated border border-border/40">
-          <div className="bg-background relative aspect-video overflow-hidden"> {/* Thêm overflow-hidden cho khung nhìn */}
+          <div className="bg-background relative aspect-video overflow-hidden">
             <motion.div
               className="flex h-full w-full cursor-grab active:cursor-grabbing"
               drag="x"
-              // Drag constraints: Giới hạn kéo bằng tổng chiều rộng của tất cả các slide
               dragConstraints={{ 
                 left: -((currentCategoryLooks.length - 1) * window.innerWidth), 
                 right: 0 
@@ -172,7 +169,7 @@ export function ShopTheLook() {
             >
               {currentCategoryLooks.map((look) => (
                 <div key={look.id} className="relative h-full w-full flex-shrink-0 group">
-                  <Link to={`/y-tuong/${look.slug}`} className="absolute inset-0 z-10"> {/* CẬP NHẬT LINK */}
+                  <Link to={`/y-tuong/${look.slug || look.id}`} className="absolute inset-0 z-10">
                     <img
                       src={look.homepage_image_url || look.image_url}
                       alt={look.title}
@@ -180,7 +177,6 @@ export function ShopTheLook() {
                       draggable="false"
                     />
                   </Link>
-                  {/* Lớp phủ Hotspot: Đặt pointer-events-none để không chặn sự kiện kéo */}
                   <div className="absolute inset-0 bg-black/5 pointer-events-none">
                     <TooltipProvider>
                       {look.shop_look_items
@@ -193,7 +189,6 @@ export function ShopTheLook() {
                                   e.stopPropagation();
                                   if (item.products) setQuickViewProduct(item.products); 
                               }}
-                              // Bật lại pointer-events-auto cho nút hotspot
                               className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-30 group/dot touch-manipulation pointer-events-auto"
                               style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                             >
@@ -212,7 +207,7 @@ export function ShopTheLook() {
                     </TooltipProvider>
                     <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block pointer-events-auto">
                       <Button asChild size="sm" className="btn-hero h-9 text-[10px] shadow-gold">
-                        <Link to={`/y-tuong/${look.slug}`}> {/* CẬP NHẬT LINK */}
+                        <Link to={`/y-tuong/${look.slug || look.id}`}>
                           Xem Chi Tiết <ChevronRight className="w-3 h-3 ml-1" />
                         </Link>
                       </Button>
