@@ -78,7 +78,6 @@ export default function LookbookForm() {
       
       if (isEdit) {
         await fetchLookData(id!);
-        // Nếu đang edit, coi như slug đã được thiết lập thủ công
         setIsSlugManuallyChanged(true);
       } else {
         const defaultCat = cRes.data?.find(c => !c.parent_id && c.menu_location === 'main');
@@ -94,7 +93,6 @@ export default function LookbookForm() {
   };
 
   const fetchLookData = async (lookId: string) => {
-    // Dùng select * thay vì liệt kê cột để tránh lỗi nếu cột slug chưa tồn tại
     const { data: lookData, error } = await supabase
       .from('shop_looks')
       .select('*, shop_look_items(*)')
@@ -136,26 +134,20 @@ export default function LookbookForm() {
       finalSlug = generateSlug(formData.title);
     }
 
-    // Kiểm tra trùng lặp slug (Chỉ thực hiện nếu hệ thống đã có cột slug)
-    // Chúng ta bọc trong try-catch để nếu lỗi cột không tồn tại thì bỏ qua bước check này
-    try {
-      const { data: duplicate, error: checkError } = await supabase
-        .from('shop_looks')
-        .select('id')
-        .eq('slug', finalSlug)
-        .neq('id', id || '')
-        .maybeSingle();
+    const { data: duplicate } = await supabase
+      .from('shop_looks')
+      .select('id')
+      .eq('slug', finalSlug)
+      .neq('id', id || '00000000-0000-0000-0000-000000000000')
+      .maybeSingle();
 
-      if (!checkError && duplicate) {
-        toast.error(`Lỗi: Đường dẫn "${finalSlug}" đã được sử dụng. Vui lòng đổi tên.`);
-        setSaving(false);
-        return;
-      }
-    } catch (ignore) {
-      // Bỏ qua lỗi check trùng nếu DB chưa có cột slug
+    if (duplicate) {
+      toast.error(`Lỗi: Đường dẫn "${finalSlug}" đã được sử dụng. Vui lòng đổi tên hoặc đường dẫn.`);
+      setSaving(false);
+      return;
     }
 
-    const payload: any = {
+    const payload = {
       title: formData.title,
       slug: finalSlug,
       category_id: formData.category_id,
@@ -169,46 +161,23 @@ export default function LookbookForm() {
     };
 
     let lookId = id;
+    let lookError = null;
 
-    try {
-      // 1. Cố gắng lưu BÌNH THƯỜNG (có slug)
-      if (isEdit) {
-        const { error } = await supabase.from('shop_looks').update(payload).eq('id', id);
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase.from('shop_looks').insert(payload).select().single();
-        if (error) throw error;
-        lookId = data.id;
-      }
-    } catch (mainError: any) {
-      // 2. Nếu lỗi liên quan đến cột SLUG hoặc schema cache -> Thử lưu KHÔNG CÓ SLUG
-      if (mainError.message?.includes('slug') || mainError.code === 'PGRST204' || mainError.code === '42703') {
-        console.warn("Lỗi cột slug, đang thử lưu không có slug...");
-        const { slug, ...payloadNoSlug } = payload;
-        
-        try {
-          if (isEdit) {
-            const { error: retryError } = await supabase.from('shop_looks').update(payloadNoSlug).eq('id', id);
-            if (retryError) throw retryError;
-          } else {
-            const { data, error: retryError } = await supabase.from('shop_looks').insert(payloadNoSlug).select().single();
-            if (retryError) throw retryError;
-            lookId = data.id;
-          }
-          toast.warning("Đã lưu Lookbook (Link ngắn chưa hoạt động do lỗi hệ thống).");
-        } catch (retryFatal) {
-          toast.error("Lỗi lưu dữ liệu: " + (retryFatal as any).message);
-          setSaving(false);
-          return;
-        }
-      } else {
-        toast.error("Lỗi hệ thống: " + mainError.message);
-        setSaving(false);
-        return;
-      }
+    if (isEdit) {
+      const { error } = await supabase.from('shop_looks').update(payload).eq('id', id);
+      lookError = error;
+    } else {
+      const { data, error } = await supabase.from('shop_looks').insert(payload).select().single();
+      if (data) lookId = data.id;
+      lookError = error;
     }
 
-    // 3. Lưu Look Items (Phần này không ảnh hưởng bởi lỗi slug)
+    if (lookError) {
+      toast.error("Lỗi lưu Lookbook: " + lookError.message);
+      setSaving(false);
+      return;
+    }
+
     try {
       if (lookId) {
         await supabase.from('shop_look_items').delete().eq('look_id', lookId);
@@ -251,7 +220,7 @@ export default function LookbookForm() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" className="rounded-xl" asChild><Link to="/admin/content/looks"><ArrowLeft className="w-4 h-4" /></Link></Button>
-          <h1 className="2xl font-bold">{isEdit ? "Chỉnh sửa Lookbook" : "Tạo Lookbook mới"}</h1>
+          <h1 className="text-2xl font-bold">{isEdit ? "Chỉnh sửa Lookbook" : "Tạo Lookbook mới"}</h1>
         </div>
         <Button type="submit" form="lookbook-form" disabled={saving} className="btn-hero px-10 rounded-xl shadow-gold">
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Lưu Lookbook
