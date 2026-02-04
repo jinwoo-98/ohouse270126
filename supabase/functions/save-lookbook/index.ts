@@ -21,10 +21,13 @@ serve(async (req) => {
   }
 
   try {
+    // Lấy Authorization header một cách an toàn
+    const authHeader = req.headers.get('Authorization');
+    
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      { global: { headers: { Authorization: authHeader } } }
     );
 
     const body = await req.json();
@@ -44,7 +47,7 @@ serve(async (req) => {
     const finalSlug = lookPayload.slug || slugifiedTitle;
     
     // 2. Prepare Lookbook Payload
-    const finalLookPayload = {
+    const finalLookPayload: any = {
       ...lookPayload,
       slug: finalSlug,
       updated_at: new Date().toISOString(),
@@ -108,7 +111,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error(`[${functionName}] General Error:`, error);
-    return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), {
+    return new Response(JSON.stringify({ error: (error as Error).message || "Internal Server Error" }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
