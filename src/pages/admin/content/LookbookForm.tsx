@@ -107,7 +107,6 @@ export default function LookbookForm() {
     if (!formData.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
     if (!formData.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
 
-    // LOẠI BỎ HOÀN TOÀN TRƯỜNG 'slug' KHỎI PAYLOAD
     const { slug, ...payload } = {
       ...formData,
       style: formData.style === 'none' ? null : formData.style,
@@ -116,22 +115,26 @@ export default function LookbookForm() {
     };
 
     let lookId = id;
+    let lookResult = null;
     let lookError = null;
 
     if (isEdit) {
-      const { error } = await supabase.from('shop_looks').update(payload).eq('id', id);
+      const { data, error } = await supabase.from('shop_looks').update(payload).eq('id', id).select().single();
+      lookResult = data;
       lookError = error;
     } else {
       const { data, error } = await supabase.from('shop_looks').insert(payload).select().single();
-      if (data) lookId = data.id;
+      lookResult = data;
       lookError = error;
     }
 
-    if (lookError) {
-      toast.error("Lỗi lưu Lookbook: " + lookError.message);
+    if (lookError || !lookResult) {
+      toast.error("Lỗi lưu Lookbook: " + lookError?.message);
       setSaving(false);
       return;
     }
+    
+    lookId = lookResult.id;
 
     try {
       if (lookId) {
