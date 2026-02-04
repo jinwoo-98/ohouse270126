@@ -30,8 +30,8 @@ export function ProductCard({ product, className }: ProductCardProps) {
     e.preventDefault();
     const targetSlug = product.slug || product.id;
     
+    // Trên Mobile, click vào thẻ sẽ mở QuickView
     if (isMobile) {
-      // Mobile: Mở QuickView
       setIsQuickViewOpen(true);
     } else {
       // Desktop: Chuyển hướng đến trang chi tiết
@@ -95,16 +95,18 @@ export function ProductCard({ product, className }: ProductCardProps) {
             </button>
           </div>
           
-          {/* Nút Xem Nhanh (Bottom Left - Vị trí thống nhất) */}
-          <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-            <button 
-              onClick={(e) => { e.stopPropagation(); setIsQuickViewOpen(true); }}
-              className="h-9 px-4 rounded-xl flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg text-[10px] font-bold uppercase tracking-widest"
-              title="Xem nhanh"
-            >
-              <Eye className="w-3.5 h-3.5 mr-1.5" /> XEM NHANH
-            </button>
-          </div>
+          {/* Nút Xem Nhanh (Bottom Left - ẨN TRÊN MOBILE) */}
+          {!isMobile && (
+            <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsQuickViewOpen(true); }}
+                className="h-9 px-4 rounded-xl flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg text-[10px] font-bold uppercase tracking-widest"
+                title="Xem nhanh"
+              >
+                <Eye className="w-3.5 h-3.5 mr-1.5" /> XEM NHANH
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Info Section */}

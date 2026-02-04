@@ -25,13 +25,27 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
     e.stopPropagation();
     addToCart({ ...product, quantity: 1, image: product.image_url });
   };
+  
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isMobile) {
+      // Trên Mobile, click vào thẻ sẽ mở QuickView
+      onQuickView(product);
+    } else {
+      // Desktop: Chuyển hướng đến trang chi tiết
+      window.location.href = `/san-pham/${product.slug || product.id}`;
+    }
+  };
 
   return (
     <div 
       className="group flex flex-col bg-card rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-medium h-full border border-border/40 cursor-pointer"
+      onClick={handleCardClick} // Xử lý click chung
     >
       {/* Image Section */}
-      <Link to={`/san-pham/${product.slug || product.id}`} className="relative aspect-square overflow-hidden bg-secondary/15 shrink-0 rounded-t-2xl">
+      <Link to={`/san-pham/${product.slug || product.id}`} onClick={(e) => isMobile && e.preventDefault()} className="relative aspect-square overflow-hidden bg-secondary/15 shrink-0 rounded-t-2xl">
         <img 
           src={product.image_url} 
           alt={product.name} 
@@ -66,16 +80,18 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
           <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
         </button>
 
-        {/* Nút Xem Nhanh (Bottom Left - Vị trí thống nhất) */}
-        <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-          <button 
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView(product); }}
-            className="w-9 h-9 rounded-full flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg"
-            title="Xem nhanh"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
-        </div>
+        {/* Nút Xem Nhanh (Bottom Left - ẨN TRÊN MOBILE) */}
+        {!isMobile && (
+          <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+            <button 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView(product); }}
+              className="w-9 h-9 rounded-full flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg"
+              title="Xem nhanh"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </Link>
 
       {/* Info Section */}

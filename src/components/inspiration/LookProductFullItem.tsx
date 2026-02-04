@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { formatPrice, cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LookProductFullItemProps {
   product: any;
@@ -13,19 +14,27 @@ interface LookProductFullItemProps {
 }
 
 export function LookProductFullItem({ product, onQuickView }: LookProductFullItemProps) {
+  const isMobile = useIsMobile();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
   const isFavorite = isInWishlist(product.id);
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    navigate(`/san-pham/${product.slug || product.id}`);
+    
+    if (isMobile) {
+      // Mobile: Mở QuickView
+      onQuickView(product);
+    } else {
+      // Desktop: Chuyển hướng
+      navigate(`/san-pham/${product.slug || product.id}`);
+    }
   };
 
   return (
     <div 
       className="group flex flex-col bg-card rounded-xl overflow-hidden border border-border/40 hover:shadow-subtle transition-all cursor-pointer"
-      onClick={handleCardClick} // Click vào toàn bộ thẻ sẽ điều hướng
+      onClick={handleCardClick} // Click vào toàn bộ thẻ sẽ xử lý hành vi
     >
       {/* Image Section */}
       <div className="relative aspect-square overflow-hidden bg-secondary/30 shrink-0">
@@ -49,24 +58,28 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
           <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
         </button>
 
-        {/* Nút Xem Nhanh (Bottom Left - Vị trí thống nhất) */}
-        <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-          <button 
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView(product); }}
-            className="h-9 px-4 rounded-xl flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg text-[10px] font-bold uppercase tracking-widest"
-            title="Xem nhanh"
-          >
-            <Eye className="w-3.5 h-3.5 mr-1.5" /> XEM NHANH
-          </button>
-        </div>
+        {/* Nút Xem Nhanh (Bottom Left - ẨN TRÊN MOBILE) */}
+        {!isMobile && (
+          <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+            <button 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView(product); }}
+              className="h-9 px-4 rounded-xl flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg text-[10px] font-bold uppercase tracking-widest"
+              title="Xem nhanh"
+            >
+              <Eye className="w-3.5 h-3.5 mr-1.5" /> XEM NHANH
+            </button>
+          </div>
+        )}
       </div>
       
       {/* Info Section - Căn giữa, đồng bộ khoảng cách với ProductCard */}
       <div className="p-4 flex flex-col flex-1 items-center text-center pt-4">
-        {/* Loại bỏ Link bọc H3 để tránh xung đột click */}
-        <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">
-          {product.name}
-        </h3>
+        {/* Link này chỉ để đảm bảo SEO và hover style, click chính được xử lý ở div cha */}
+        <Link to={`/san-pham/${product.slug || product.id}`} onClick={(e) => e.preventDefault()}>
+          <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">
+            {product.name}
+          </h3>
+        </Link>
         
         <div className="flex flex-wrap items-center justify-center gap-2 mt-auto">
           <p className="text-sm md:text-base font-bold text-primary">{formatPrice(product.price)}</p>
