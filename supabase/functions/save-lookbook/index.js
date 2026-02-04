@@ -1,5 +1,4 @@
-// @ts-nocheck
-/// <reference lib="deno.ns" />
+// Edge Function for Supabase deployment.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
@@ -9,7 +8,7 @@ const corsHeaders = {
 };
 
 // Simple slugification function
-const slugify = (text: string) => {
+const slugify = (text) => {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
 };
 
@@ -47,7 +46,7 @@ serve(async (req) => {
     const finalSlug = lookPayload.slug || slugifiedTitle;
     
     // 2. Prepare Lookbook Payload
-    const finalLookPayload: any = {
+    const finalLookPayload = {
       ...lookPayload,
       slug: finalSlug,
       updated_at: new Date().toISOString(),
@@ -86,7 +85,7 @@ serve(async (req) => {
 
     // Insert new items
     if (lookItems && lookItems.length > 0) {
-      const itemsToInsert = lookItems.map((item: any) => ({
+      const itemsToInsert = lookItems.map((item) => ({
         look_id: lookId,
         product_id: item.product_id,
         x_position: item.x_position,
@@ -111,7 +110,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error(`[${functionName}] General Error:`, error);
-    return new Response(JSON.stringify({ error: (error as Error).message || "Internal Server Error" }), {
+    return new Response(JSON.stringify({ error: (error && error.message) || "Internal Server Error" }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
