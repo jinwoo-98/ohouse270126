@@ -17,6 +17,7 @@ interface Lookbook {
   title: string;
   image_url: string;
   category_id: string;
+  slug: string; // THÊM SLUG
   // Cập nhật cấu trúc để khớp với select('shop_look_items(*)')
   shop_look_items: {
     id: string;
@@ -53,6 +54,7 @@ export function useSimilarLookbooks(currentLookId: string, categorySlug: string)
             title, 
             image_url, 
             category_id,
+            slug,
             shop_look_items(
               *,
               products(*)

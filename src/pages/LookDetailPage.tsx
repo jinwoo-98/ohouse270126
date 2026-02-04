@@ -25,7 +25,7 @@ import { LookProductList } from "@/components/inspiration/LookProductList"; // D
 import { LookProductVerticalList } from "@/components/inspiration/LookProductFullList"; // Danh sách lưới thẻ đầy đủ (Sản phẩm tương tự)
 
 export default function LookDetailPage() {
-  const { id } = useParams();
+  const { slug } = useParams(); // Đổi từ id sang slug
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -36,10 +36,10 @@ export default function LookDetailPage() {
   const [currentImage, setCurrentImage] = useState<string>(""); // State để theo dõi ảnh đang hiển thị
 
   useEffect(() => {
-    if (id) {
+    if (slug) {
       fetchLook();
     }
-  }, [id]);
+  }, [slug]);
 
   const fetchLook = async () => {
     setLoading(true);
@@ -47,7 +47,7 @@ export default function LookDetailPage() {
       const { data, error } = await supabase
         .from('shop_looks')
         .select('*, shop_look_items(*, products(*))')
-        .eq('id', id)
+        .eq('slug', slug) // Lấy bằng slug
         .single();
 
       if (error || !data) {

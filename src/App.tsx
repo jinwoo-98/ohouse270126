@@ -121,7 +121,7 @@ const App = () => (
                 <Route path="/dang-nhap" element={<AccountPage />} />
                 <Route path="/showroom" element={<ShowroomPage />} />
                 <Route path="/cam-hung" element={<InspirationPage />} />
-                <Route path="/y-tuong/:id" element={<LookDetailPage />} />
+                <Route path="/y-tuong/:slug" element={<LookDetailPage />} /> {/* ĐÃ CẬP NHẬT */}
                 <Route path="/thiet-ke" element={<DesignServicePage />} />
                 <Route path="/ve-chung-toi" element={<ContentPage />} />
                 <Route path="/tuyen-dung" element={<ContentPage />} />

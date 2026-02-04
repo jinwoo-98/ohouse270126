@@ -130,7 +130,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                   className="relative aspect-video rounded-[32px] overflow-hidden cursor-pointer shadow-medium group-hover:shadow-elevated transition-all duration-500"
                   onClick={() => setSelectedLook(look)}
                 >
-                  <Link to={`/y-tuong/${look.id}`} className="absolute inset-0 z-10">
+                  <Link to={`/y-tuong/${look.slug}`} className="absolute inset-0 z-10"> {/* CẬP NHẬT LINK */}
                     <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
                   </Link>
@@ -143,7 +143,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                       <Tooltip key={i} delayDuration={0}>
                         <TooltipTrigger asChild>
                           <button
-                            className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot"
+                            className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot pointer-events-auto"
                             style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                             onClick={(e) => { 
                               e.stopPropagation(); 
@@ -180,7 +180,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                     className="rounded-xl px-4 h-10 text-[9px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm shrink-0"
                     asChild // Thêm asChild để bọc Link
                   >
-                    <Link to={`/y-tuong/${look.id}`}>
+                    <Link to={`/y-tuong/${look.slug}`}> {/* CẬP NHẬT LINK */}
                       XEM NGAY +
                     </Link>
                   </Button>

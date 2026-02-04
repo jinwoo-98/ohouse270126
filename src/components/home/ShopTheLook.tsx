@@ -172,7 +172,7 @@ export function ShopTheLook() {
             >
               {currentCategoryLooks.map((look) => (
                 <div key={look.id} className="relative h-full w-full flex-shrink-0 group">
-                  <Link to={`/y-tuong/${look.id}`} className="absolute inset-0 z-10">
+                  <Link to={`/y-tuong/${look.slug}`} className="absolute inset-0 z-10"> {/* CẬP NHẬT LINK */}
                     <img
                       src={look.homepage_image_url || look.image_url}
                       alt={look.title}
@@ -212,7 +212,7 @@ export function ShopTheLook() {
                     </TooltipProvider>
                     <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block pointer-events-auto">
                       <Button asChild size="sm" className="btn-hero h-9 text-[10px] shadow-gold">
-                        <Link to={`/y-tuong/${look.id}`}>
+                        <Link to={`/y-tuong/${look.slug}`}> {/* CẬP NHẬT LINK */}
                           Xem Chi Tiết <ChevronRight className="w-3 h-3 ml-1" />
                         </Link>
                       </Button>

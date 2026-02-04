@@ -57,7 +57,8 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
     const lowerCaseSearch = searchTerm.toLowerCase();
     return looks.filter(l => 
       l.title?.toLowerCase().includes(lowerCaseSearch) ||
-      l.category_id?.toLowerCase().includes(lowerCaseSearch)
+      l.category_id?.toLowerCase().includes(lowerCaseSearch) ||
+      l.slug?.toLowerCase().includes(lowerCaseSearch) // Lọc theo slug
     );
   }, [looks, searchTerm]);
 
@@ -130,6 +131,7 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
                         </div>
                         <div className="p-4 text-center flex flex-col items-center">
                           <h3 className="font-bold text-sm line-clamp-1">{look.title}</h3>
+                          <code className="text-[10px] text-muted-foreground block mt-1 font-mono">/{look.slug}</code>
                           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                             <LinkIcon className="w-3 h-3" /> {look.shop_look_items?.length || 0} sản phẩm
                           </p>

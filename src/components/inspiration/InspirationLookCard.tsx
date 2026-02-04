@@ -25,7 +25,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
     name: look.title,
     price: productsInLook[0]?.price || 0, // Lấy giá của sản phẩm đầu tiên làm giá đại diện
     image: look.image_url,
-    slug: `y-tuong/${look.id}`,
+    slug: look.slug, // SỬ DỤNG SLUG
   };
   
   const isFavorite = isInWishlist(lookAsProduct.id);
@@ -42,7 +42,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
       className="group flex flex-col gap-5"
     >
       <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
-        <Link to={`/y-tuong/${look.id}`} className="block relative w-full h-full">
+        <Link to={`/y-tuong/${look.slug}`} className="block relative w-full h-full"> {/* CẬP NHẬT LINK */}
           <img 
             src={look.image_url} 
             alt={look.title}
@@ -104,7 +104,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
         </TooltipProvider>
       </div>
       <div className="px-3 text-center">
-        <Link to={`/y-tuong/${look.id}`}>
+        <Link to={`/y-tuong/${look.slug}`}> {/* CẬP NHẬT LINK */}
           <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
         </Link>
         <p className="text-xs text-muted-foreground mt-1">{productCount} sản phẩm phối hợp</p>

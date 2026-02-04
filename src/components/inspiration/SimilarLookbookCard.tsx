@@ -28,7 +28,7 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
     name: look.title,
     price: productsInLook[0]?.price || 0, // Giữ lại giá đại diện cho mục đích Wishlist
     image: look.image_url,
-    slug: `y-tuong/${look.id}`,
+    slug: look.slug, // SỬ DỤNG SLUG
   };
   
   const isFavorite = isInWishlist(lookAsProduct.id);
@@ -45,7 +45,7 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
     >
       {/* Image Section */}
       <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
-        <Link to={`/y-tuong/${look.id}`} className="block relative w-full h-full">
+        <Link to={`/y-tuong/${look.slug}`} className="block relative w-full h-full"> {/* CẬP NHẬT LINK */}
           
           {/* Image */}
           <img 
@@ -110,7 +110,7 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
       
       {/* Info Section (Tiêu đề và số lượng sản phẩm) */}
       <div className="px-3 text-center">
-        <Link to={`/y-tuong/${look.id}`}>
+        <Link to={`/y-tuong/${look.slug}`}> {/* CẬP NHẬT LINK */}
           <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
         </Link>
         <p className="text-xs text-muted-foreground mt-1">{productCount} sản phẩm phối hợp</p>

@@ -31,6 +31,7 @@ export default function LookbookForm() {
 
   const [formData, setFormData] = useState({
     title: "",
+    slug: "", // THÊM SLUG
     category_id: "",
     image_url: "",
     gallery_urls: [] as string[],
@@ -85,6 +86,7 @@ export default function LookbookForm() {
 
     setFormData({
       title: lookData.title,
+      slug: lookData.slug || "", // LẤY SLUG
       category_id: lookData.category_id,
       image_url: lookData.image_url,
       gallery_urls: lookData.gallery_urls || [],
@@ -102,6 +104,10 @@ export default function LookbookForm() {
     e.preventDefault();
     setSaving(true);
     
+    // Generate slug if missing
+    const slugifiedTitle = formData.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    const finalSlug = formData.slug || slugifiedTitle;
+
     // Convert 'none' back to null/empty string for DB storage
     const styleValue = formData.style === 'none' ? null : formData.style;
     const materialValue = formData.material === 'none' ? null : formData.material;
@@ -109,6 +115,7 @@ export default function LookbookForm() {
 
     const lookPayload = { 
       title: formData.title, 
+      slug: finalSlug, // THÊM SLUG VÀO PAYLOAD
       category_id: formData.category_id, 
       image_url: formData.image_url, 
       gallery_urls: formData.gallery_urls || [],
@@ -224,6 +231,18 @@ export default function LookbookForm() {
                 <Input name="title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required placeholder="VD: Phòng khách Bắc Âu" className="h-11 rounded-xl" />
               </div>
               
+              <div className="space-y-2">
+                <Label>Đường dẫn (Slug)</Label>
+                <Input 
+                  name="slug" 
+                  value={formData.slug} 
+                  onChange={e => setFormData({...formData, slug: e.target.value})} 
+                  placeholder="phong-khach-bac-au" 
+                  className="h-11 rounded-xl font-mono text-xs" 
+                />
+                <p className="text-[10px] text-muted-foreground italic">* Để trống để hệ thống tự động tạo từ tên Lookbook.</p>
+              </div>
+
               <div className="space-y-2">
                 <Label>Hiển thị tại danh mục</Label>
                 <Select value={formData.category_id} onValueChange={(val) => setFormData({...formData, category_id: val})}>
