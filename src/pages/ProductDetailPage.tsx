@@ -218,7 +218,7 @@ export default function ProductDetailPage() {
 
               {perfectMatch.length > 0 && (
                 <div id="inspiration">
-                  <ProductInspiration product={product} comboProducts={perfectMatch} />
+                  <ProductInspiration product={product} comboProducts={perfectMatch} onQuickView={setQuickViewProduct} />
                 </div>
               )}
 
