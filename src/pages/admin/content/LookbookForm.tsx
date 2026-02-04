@@ -11,19 +11,6 @@ import { LookbookFilterSection } from "@/components/admin/content/lookbook-form/
 import { LookbookMediaSection } from "@/components/admin/content/lookbook-form/LookbookMediaSection";
 import { LookbookHotspotManager } from "@/components/admin/content/lookbook-form/LookbookHotspotManager";
 
-// Hàm tiện ích tạo slug tiếng Việt
-const generateSlug = (str: string) => {
-  if (!str) return "";
-  return str
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[đĐ]/g, "d")
-    .replace(/[^a-z0-9\s-]/g, "") // Bỏ ký tự đặc biệt
-    .replace(/[\s+]/g, "-") // Thay khoảng trắng bằng dấu gạch ngang
-    .replace(/-+/g, "-"); // Xóa gạch ngang kép
-};
-
 export default function LookbookForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -37,7 +24,6 @@ export default function LookbookForm() {
   const [activeEditingImage, setActiveEditingImage] = useState<string | null>(null);
   
   const [lookbookFilters, setLookbookFilters] = useState<any[]>([]);
-  const [isSlugManuallyChanged, setIsSlugManuallyChanged] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -51,13 +37,6 @@ export default function LookbookForm() {
     material: "none",
     color: "none",
   });
-
-  // Tự động tạo slug khi title thay đổi (chỉ khi tạo mới và chưa chỉnh sửa thủ công)
-  useEffect(() => {
-    if (!isEdit && !isSlugManuallyChanged && formData.title) {
-      setFormData(prev => ({ ...prev, slug: generateSlug(formData.title) }));
-    }
-  }, [formData.title, isEdit, isSlugManuallyChanged]);
 
   useEffect(() => {
     fetchInitialData();
@@ -78,7 +57,6 @@ export default function LookbookForm() {
       
       if (isEdit) {
         await fetchLookData(id!);
-        setIsSlugManuallyChanged(true);
       } else {
         const defaultCat = cRes.data?.find(c => !c.parent_id && c.menu_location === 'main');
         if (defaultCat) {
@@ -129,32 +107,9 @@ export default function LookbookForm() {
     if (!formData.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
     if (!formData.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
 
-    let finalSlug = formData.slug.trim();
-    if (!finalSlug) {
-      finalSlug = generateSlug(formData.title);
-    }
-    
-    const { data: duplicate } = await supabase
-      .from('shop_looks')
-      .select('id')
-      .eq('slug', finalSlug)
-      .neq('id', id || '00000000-0000-0000-0000-000000000000')
-      .maybeSingle();
-
-    if (duplicate) {
-      toast.error(`Lỗi: Đường dẫn "${finalSlug}" đã được sử dụng. Vui lòng đổi tên hoặc đường dẫn.`);
-      setSaving(false);
-      return;
-    }
-
-    const payload = {
-      title: formData.title,
-      slug: finalSlug,
-      category_id: formData.category_id,
-      image_url: formData.image_url,
-      gallery_urls: formData.gallery_urls || [],
-      is_active: formData.is_active,
-      homepage_image_url: formData.homepage_image_url,
+    // LOẠI BỎ HOÀN TOÀN TRƯỜNG 'slug' KHỎI PAYLOAD
+    const { slug, ...payload } = {
+      ...formData,
       style: formData.style === 'none' ? null : formData.style,
       material: formData.material === 'none' ? null : formData.material,
       color: formData.color === 'none' ? null : formData.color,
@@ -234,7 +189,6 @@ export default function LookbookForm() {
               formData={formData} 
               setFormData={setFormData} 
               categories={categories} 
-              setIsSlugManuallyChanged={setIsSlugManuallyChanged}
             />
             
             <LookbookFilterSection 

@@ -8,10 +8,9 @@ interface LookbookBasicInfoSectionProps {
   formData: any;
   setFormData: (data: any) => void;
   categories: any[];
-  setIsSlugManuallyChanged: (isChanged: boolean) => void;
 }
 
-export function LookbookBasicInfoSection({ formData, setFormData, categories, setIsSlugManuallyChanged }: LookbookBasicInfoSectionProps) {
+export function LookbookBasicInfoSection({ formData, setFormData, categories }: LookbookBasicInfoSectionProps) {
   const parentCategories = categories.filter(c => !c.parent_id && c.menu_location === 'main');
 
   return (
@@ -26,14 +25,11 @@ export function LookbookBasicInfoSection({ formData, setFormData, categories, se
         <Label>Đường dẫn (Slug)</Label>
         <Input 
           value={formData.slug} 
-          onChange={e => {
-            setFormData({...formData, slug: e.target.value});
-            setIsSlugManuallyChanged(true);
-          }} 
-          placeholder="phong-khach-bac-au" 
-          className="h-11 rounded-xl font-mono text-xs" 
+          placeholder="Tự động tạo từ tên..." 
+          className="h-11 rounded-xl font-mono text-xs bg-secondary/50" 
+          disabled // Vô hiệu hóa ô nhập
         />
-        <p className="text-[10px] text-muted-foreground italic">* Để trống để hệ thống tự động tạo (kèm mã ngẫu nhiên để tránh trùng).</p>
+        <p className="text-[10px] text-muted-foreground italic">* Đường dẫn sẽ được hệ thống tự động tạo và cập nhật.</p>
       </div>
 
       <div className="space-y-2">
