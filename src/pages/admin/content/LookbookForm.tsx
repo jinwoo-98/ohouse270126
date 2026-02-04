@@ -11,6 +11,10 @@ import { LookbookFilterSection } from "@/components/admin/content/lookbook-form/
 import { LookbookMediaSection } from "@/components/admin/content/lookbook-form/LookbookMediaSection";
 import { LookbookHotspotManager } from "@/components/admin/content/lookbook-form/LookbookHotspotManager";
 
+const slugify = (text: string) => {
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+};
+
 export default function LookbookForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -107,8 +111,12 @@ export default function LookbookForm() {
     if (!formData.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
     if (!formData.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
 
-    const { slug, ...payload } = {
+    // Generate slug if it's new or empty
+    const finalSlug = formData.slug || slugify(formData.title) + '-' + Date.now().toString().slice(-5);
+
+    const payload = {
       ...formData,
+      slug: finalSlug,
       style: formData.style === 'none' ? null : formData.style,
       material: formData.material === 'none' ? null : formData.material,
       color: formData.color === 'none' ? null : formData.color,
