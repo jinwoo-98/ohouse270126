@@ -44,13 +44,26 @@ export default function LookDetailPage() {
   const fetchLook = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Thử tìm bằng slug trước
+      let { data, error } = await supabase
         .from('shop_looks')
         .select('*, shop_look_items(*, products(*))')
-        .or(`slug.eq.${slug},id.eq.${slug}`) // **FIX: Query by slug OR id**
+        .eq('slug', slug)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      // Nếu không tìm thấy bằng slug, thử tìm bằng ID
+      if (!data || (error && error.code === 'PGRST116')) {
+        const { data: dataById, error: errorById } = await supabase
+          .from('shop_looks')
+          .select('*, shop_look_items(*, products(*))')
+          .eq('id', slug) // Giả định slug có thể là ID
+          .single();
+        
+        if (errorById && errorById.code !== 'PGRST116') throw errorById;
+        data = dataById;
+      } else if (error) {
+        throw error;
+      }
 
       if (!data) {
         toast.error("Không tìm thấy không gian thiết kế này.");
