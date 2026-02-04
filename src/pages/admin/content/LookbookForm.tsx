@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -69,6 +68,7 @@ export default function LookbookForm() {
   };
 
   const fetchLookData = async (lookId: string) => {
+    // Sử dụng select * để lấy mọi trường, bao gồm slug
     const { data: lookData, error } = await supabase
       .from('shop_looks')
       .select('*, shop_look_items(*)')
@@ -101,19 +101,18 @@ export default function LookbookForm() {
     e.preventDefault();
     setSaving(true);
     
-    // 1. Validate
     if (!formData.title) { toast.error("Vui lòng nhập tên Lookbook"); setSaving(false); return; }
     if (!formData.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
     if (!formData.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
 
     try {
-      // 2. Prepare Data
+      // Generate slug manually if empty
       const slugifiedTitle = formData.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
-      const finalSlug = formData.slug || slugifiedTitle;
+      const finalSlug = formData.slug ? formData.slug : slugifiedTitle;
 
       const lookPayload: any = {
         title: formData.title,
-        slug: finalSlug,
+        slug: finalSlug, // Ensure slug is sent
         category_id: formData.category_id,
         image_url: formData.image_url,
         gallery_urls: formData.gallery_urls || [],
@@ -125,7 +124,6 @@ export default function LookbookForm() {
         updated_at: new Date().toISOString(),
       };
 
-      // 3. Upsert Lookbook (Parent)
       let lookId = id;
       
       if (isEdit) {
@@ -146,8 +144,7 @@ export default function LookbookForm() {
 
       if (!lookId) throw new Error("Không lấy được ID Lookbook");
 
-      // 4. Sync Look Items (Children)
-      // Xóa các items cũ
+      // Sync Items
       const { error: deleteError } = await supabase
         .from('shop_look_items')
         .delete()
@@ -155,7 +152,6 @@ export default function LookbookForm() {
       
       if (deleteError) throw deleteError;
 
-      // Thêm items mới
       if (lookItems.length > 0) {
         const itemsToInsert = lookItems.map((item) => ({
           look_id: lookId,
@@ -176,7 +172,12 @@ export default function LookbookForm() {
       navigate("/admin/content/looks");
     } catch (e: any) {
       console.error("Save Error:", e);
-      toast.error("Lỗi lưu dữ liệu: " + (e.message || "Vui lòng thử lại."));
+      // Hiển thị lỗi chi tiết
+      if (e.message?.includes("slug")) {
+        toast.error("Lỗi liên quan đến đường dẫn (Slug). Vui lòng thử lại sau giây lát khi hệ thống cập nhật.");
+      } else {
+        toast.error("Lỗi lưu dữ liệu: " + e.message);
+      }
     } finally {
       setSaving(false);
     }
