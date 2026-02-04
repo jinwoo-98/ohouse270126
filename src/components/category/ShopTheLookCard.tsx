@@ -11,7 +11,7 @@ interface ShopTheLookCardProps {
 export function ShopTheLookCard({ look, onQuickView }: ShopTheLookCardProps) {
   return (
     <div className="col-span-2 group relative aspect-video md:aspect-[2/1] rounded-2xl overflow-hidden shadow-subtle hover:shadow-medium transition-all duration-500">
-      <Link to={`/y-tuong/${look.slug}`} className="absolute inset-0 z-10"> {/* CẬP NHẬT LINK */}
+      <Link to={`/cam-hung/${look.slug || look.id}`} className="absolute inset-0 z-10"> {/* CẬP NHẬT LINK */}
         <img 
           src={look.image_url} 
           alt={look.title}

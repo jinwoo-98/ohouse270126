@@ -41,7 +41,7 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
       className="group flex flex-col gap-5" 
     >
       <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
-        <Link to={`/y-tuong/${look.slug || look.id}`} className="block relative w-full h-full">
+        <Link to={`/cam-hung/${look.slug || look.id}`} className="block relative w-full h-full">
           <img 
             src={look.image_url} 
             alt={look.title} 
@@ -100,7 +100,7 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
       </div>
       
       <div className="px-3 text-center">
-        <Link to={`/y-tuong/${look.slug || look.id}`}>
+        <Link to={`/cam-hung/${look.slug || look.id}`}>
           <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
         </Link>
         <p className="text-xs text-muted-foreground mt-1">{productCount} sản phẩm phối hợp</p>
