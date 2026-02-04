@@ -17,14 +17,13 @@ interface Lookbook {
   title: string;
   image_url: string;
   category_id: string;
-  slug: string; // THÊM SLUG
-  // Cập nhật cấu trúc để khớp với select('shop_look_items(*)')
+  slug: string;
   shop_look_items: {
     id: string;
     x_position: number;
     y_position: number;
     target_image_url: string;
-    products: Product; // Đảm bảo products được fetch
+    products: Product;
   }[];
 }
 
@@ -32,12 +31,6 @@ interface UseSimilarLookbooksResult {
   similarLookbooks: Lookbook[];
   isLoadingSimilarLooks: boolean;
 }
-
-// Helper function to generate slug
-const slugify = (text: string) => {
-  if (!text) return '';
-  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
-};
 
 export function useSimilarLookbooks(currentLookId: string, categorySlug: string): UseSimilarLookbooksResult {
   const [similarLookbooks, setSimilarLookbooks] = useState<Lookbook[]>([]);
@@ -52,7 +45,6 @@ export function useSimilarLookbooks(currentLookId: string, categorySlug: string)
     const fetchSimilar = async () => {
       setIsLoadingSimilarLooks(true);
       try {
-        // Tìm các Lookbook khác trong cùng category_id
         const { data, error } = await supabase
           .from('shop_looks')
           .select(`
@@ -65,22 +57,15 @@ export function useSimilarLookbooks(currentLookId: string, categorySlug: string)
               *,
               products(*)
             )
-          `) // Lấy tất cả các trường của shop_look_items và products
+          `)
           .eq('category_id', categorySlug)
           .eq('is_active', true)
-          .neq('id', currentLookId) // Loại trừ Lookbook hiện tại
+          .neq('id', currentLookId)
           .limit(4);
 
         if (error) throw error;
         
-        // **FIX: Ensure slug exists for every look**
-        const processedData = (data || []).map(look => ({
-          ...look,
-          slug: look.slug || slugify(look.title)
-        }));
-
-        // Ép kiểu dữ liệu trả về thành Lookbook[]
-        setSimilarLookbooks(processedData as unknown as Lookbook[] || []);
+        setSimilarLookbooks((data as unknown as Lookbook[]) || []);
       } catch (error) {
         console.error("Error fetching similar lookbooks:", error);
       } finally {
