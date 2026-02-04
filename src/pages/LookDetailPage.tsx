@@ -46,50 +46,48 @@ export default function LookDetailPage() {
     `;
 
     try {
-      // BƯỚC 1: Thử tìm bằng SLUG
-      try {
-        const { data, error } = await supabase
-          .from('shop_looks')
-          .select(selectQuery)
-          .eq('slug', slug)
-          .single();
-
-        if (!error && data) {
-          setLook(data);
-          setCurrentImage(data.image_url);
-          setLoading(false);
-          return; // Tìm thấy thành công, thoát luôn
-        }
-        
-        // Nếu lỗi không phải do kết nối mạng mà do không tìm thấy dòng (PGRST116) hoặc lỗi cột, ta thử bước 2
-        if (error && error.code !== 'PGRST116' && error.code !== '42703') { // 42703: undefined_column
-           console.warn("Lỗi tìm kiếm theo slug:", error);
-        }
-      } catch (slugError) {
-        console.warn("Lỗi khi query slug:", slugError);
-      }
-
-      // BƯỚC 2: Fallback tìm bằng ID (nếu chuỗi slug có dạng UUID)
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug || '');
+      let lookData = null;
+      let error = null;
       
-      if (isUUID) {
-        const { data: dataById, error: errorById } = await supabase
-          .from('shop_looks')
-          .select(selectQuery)
-          .eq('id', slug)
-          .single();
+      // BƯỚC 1: Thử tìm bằng SLUG
+      const { data: dataBySlug, error: errorBySlug } = await supabase
+        .from('shop_looks')
+        .select(selectQuery)
+        .eq('slug', slug)
+        .single();
+
+      if (dataBySlug) {
+        lookData = dataBySlug;
+      } else {
+        // BƯỚC 2: Fallback tìm bằng ID (nếu chuỗi slug có dạng UUID)
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug || '');
         
-        if (!errorById && dataById) {
-          setLook(dataById);
-          setCurrentImage(dataById.image_url);
-          setLoading(false);
-          return;
+        if (isUUID) {
+          const { data: dataById, error: errorById } = await supabase
+            .from('shop_looks')
+            .select(selectQuery)
+            .eq('id', slug)
+            .single();
+          
+          if (dataById) {
+            lookData = dataById;
+          } else {
+            error = errorById;
+          }
+        } else {
+          error = errorBySlug;
         }
       }
 
-      // Nếu cả 2 cách đều thất bại
-      toast.error("Không tìm thấy không gian thiết kế này.");
-      navigate("/cam-hung");
+      if (!lookData) {
+        if (error) console.error("Lookbook fetch error:", error);
+        toast.error("Không tìm thấy không gian thiết kế này.");
+        navigate("/cam-hung");
+        return;
+      }
+
+      setLook(lookData);
+      setCurrentImage(lookData.image_url);
 
     } catch (e) {
       console.error("Critical Error fetching lookbook:", e);
