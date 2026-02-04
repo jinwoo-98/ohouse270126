@@ -10,8 +10,10 @@ import { HeaderMobileMenu } from "./header/HeaderMobileMenu";
 import { HeaderAccountDrawer } from "./header/HeaderAccountDrawer";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile"; // Import useIsMobile
 
 export function Header() {
+  const isMobile = useIsMobile(); // Sử dụng hook
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
@@ -49,6 +51,13 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Logic áp dụng fixed: Chỉ fixed khi isFixed=true VÀ (là mobile HOẶC không phải mobile nhưng đang ở chế độ fixed cũ)
+  // Để đơn giản hóa, chúng ta chỉ fixed trên mobile khi cuộn, còn desktop thì luôn cuộn theo.
+  const shouldBeFixed = isFixed && isMobile;
+  
+  // Chiều cao của thanh header chính (Dòng 2 + Menu Desktop)
+  const mainHeaderHeight = isFixed ? (isMobile ? 48 : 100) : 0; // Giả định chiều cao 48px trên mobile khi fixed
+
   return (
     <header ref={headerRef} className="w-full overflow-x-clip z-50">
       {/* Dòng 1: Top Banner (Cuộn lên) */}
@@ -59,7 +68,9 @@ export function Header() {
       {/* Dòng 2 & Menu Desktop: Cố định khi cuộn */}
       <div className={cn(
         "w-full bg-card shadow-sm transition-all duration-300",
-        isFixed ? "fixed top-0 z-[100] shadow-lg" : "relative"
+        // Trên desktop (lg trở lên), không bao giờ fixed.
+        // Trên mobile (dưới lg), fixed khi shouldBeFixed = true.
+        shouldBeFixed ? "fixed top-0 z-[100] shadow-lg" : "relative lg:shadow-sm"
       )}>
         <div className="container-luxury">
           <div className="flex items-center justify-between h-12 md:h-14 gap-4">
@@ -89,7 +100,7 @@ export function Header() {
       </div>
       
       {/* Thêm một div placeholder để tránh nội dung bị nhảy khi Dòng 2 chuyển sang fixed */}
-      {isFixed && <div className="h-12 md:h-14" />}
+      {shouldBeFixed && <div className="h-12" />} {/* Chỉ cần h-12 (48px) trên mobile */}
 
       <HeaderMobileMenu 
         isOpen={isMobileMenuOpen} 
