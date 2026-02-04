@@ -26,6 +26,7 @@ export default function LookbookForm() {
   const [activeEditingImage, setActiveEditingImage] = useState<string | null>(null);
   
   const [lookbookFilters, setLookbookFilters] = useState<any[]>([]);
+  const [initialSlug, setInitialSlug] = useState(""); // Lưu slug ban đầu
 
   const [formData, setFormData] = useState({
     title: "",
@@ -68,6 +69,7 @@ export default function LookbookForm() {
   };
 
   const fetchLookData = async (lookId: string) => {
+    // Sử dụng select * để lấy mọi trường, bao gồm slug
     const { data: lookData, error } = await supabase
       .from('shop_looks')
       .select('*, shop_look_items(*)')
@@ -92,6 +94,7 @@ export default function LookbookForm() {
       material: lookData.material || "none",
       color: lookData.color || "none",
     });
+    setInitialSlug(lookData.slug || ""); // Lưu slug ban đầu
     setLookItems(lookData.shop_look_items || []);
     setActiveEditingImage(lookData.image_url);
   };
@@ -118,14 +121,14 @@ export default function LookbookForm() {
 
     try {
       // 1. Generate Slug
-      // Nếu người dùng không nhập slug, tự động tạo từ title + 4 ký tự ngẫu nhiên để tránh trùng
-      const randomSuffix = Math.random().toString(36).substring(2, 6);
       const slugifiedTitle = formData.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
       
-      // Nếu đang edit và slug không đổi, giữ nguyên. Nếu mới hoặc user xóa slug, tạo mới kèm suffix.
-      const finalSlug = formData.slug 
-        ? formData.slug 
-        : (isEdit ? slugifiedTitle : `${slugifiedTitle}-${randomSuffix}`);
+      let finalSlug = formData.slug;
+      if (!finalSlug) {
+        // Nếu không có slug, tạo slug từ title + 4 ký tự ngẫu nhiên (chỉ khi tạo mới)
+        const randomSuffix = Math.random().toString(36).substring(2, 6);
+        finalSlug = `${slugifiedTitle}-${randomSuffix}`;
+      }
 
       const basePayload: any = {
         title: formData.title,
@@ -141,59 +144,67 @@ export default function LookbookForm() {
       };
 
       let lookId = id;
-
-      try {
-        // Thử lưu với Slug
-        lookId = await saveLookbook({ ...basePayload, slug: finalSlug }, id);
-      } catch (err: any) {
-        // Xử lý lỗi cụ thể
-        if (err.code === '23505') { // Duplicate key
-          toast.error("Đường dẫn (Slug) này đã tồn tại. Vui lòng đổi tiêu đề hoặc nhập slug khác.");
-          setSaving(false);
-          return;
-        } else if (err.message?.includes("column \"slug\" of relation \"shop_looks\" does not exist")) {
-          // Fallback: Nếu cột chưa có (do cache), lưu không có slug
-          console.warn("Slug column missing, saving without slug...");
-          lookId = await saveLookbook(basePayload, id);
-          toast.warning("Lưu thành công nhưng chưa tạo được đường dẫn thân thiện (Slug) do hệ thống đang cập nhật.");
-        } else {
-          throw err; // Ném lỗi khác ra ngoài
+      
+      if (isEdit) {
+        // Khi chỉnh sửa: Chỉ gửi slug nếu nó đã thay đổi so với ban đầu
+        if (finalSlug !== initialSlug) {
+          basePayload.slug = finalSlug;
         }
+        
+        const { error: updateError } = await supabase
+          .from('shop_looks')
+          .update(basePayload)
+          .eq('id', id);
+        if (updateError) throw updateError;
+      } else {
+        // Khi tạo mới: Luôn gửi slug
+        basePayload.slug = finalSlug;
+        const { data: newLook, error: insertError } = await supabase
+          .from('shop_looks')
+          .insert(basePayload)
+          .select()
+          .single();
+        if (insertError) throw insertError;
+        lookId = newLook.id;
       }
 
-      // 2. Sync Look Items (Children)
-      if (lookId) {
-        // Xóa cũ
-        const { error: deleteError } = await supabase
-          .from('shop_look_items')
-          .delete()
-          .eq('look_id', lookId);
-        
-        if (deleteError) throw deleteError;
+      if (!lookId) throw new Error("Không lấy được ID Lookbook");
 
-        // Thêm mới
-        if (lookItems.length > 0) {
-          const itemsToInsert = lookItems.map((item) => ({
-            look_id: lookId,
-            product_id: item.product_id,
-            x_position: item.x_position,
-            y_position: item.y_position,
-            target_image_url: item.target_image_url,
-          }));
+      // 2. Sync Items
+      const { error: deleteError } = await supabase
+        .from('shop_look_items')
+        .delete()
+        .eq('look_id', lookId);
+      
+      if (deleteError) throw deleteError;
+
+      if (lookItems.length > 0) {
+        const itemsToInsert = lookItems.map((item) => ({
+          look_id: lookId,
+          product_id: item.product_id,
+          x_position: item.x_position,
+          y_position: item.y_position,
+          target_image_url: item.target_image_url,
+        }));
+        
+        const { error: itemsError } = await supabase
+          .from('shop_look_items')
+          .insert(itemsToInsert);
           
-          const { error: itemsError } = await supabase
-            .from('shop_look_items')
-            .insert(itemsToInsert);
-            
-          if (itemsError) throw itemsError;
-        }
+        if (itemsError) throw itemsError;
       }
 
       toast.success("Đã lưu Lookbook thành công!");
       navigate("/admin/content/looks");
     } catch (e: any) {
       console.error("Critical Save Error:", e);
-      toast.error("Lỗi không xác định: " + (e.message || e.details || "Vui lòng thử lại"));
+      if (e.code === '23505') {
+        toast.error("Lỗi trùng lặp đường dẫn (Slug). Vui lòng đổi tên hoặc nhập slug khác.");
+      } else if (e.message?.includes("column \"slug\" of relation \"shop_looks\" does not exist")) {
+        toast.error("Lỗi hệ thống: Cột 'slug' chưa được nhận diện. Vui lòng thử lại sau 1 phút.");
+      } else {
+        toast.error("Lỗi không xác định: " + (e.message || e.details || "Vui lòng thử lại"));
+      }
     } finally {
       setSaving(false);
     }
@@ -277,10 +288,10 @@ export default function LookbookForm() {
                   name="slug" 
                   value={formData.slug} 
                   onChange={e => setFormData({...formData, slug: e.target.value})} 
-                  placeholder="tu-dong-tao-neu-de-trong" 
+                  placeholder="phong-khach-bac-au" 
                   className="h-11 rounded-xl font-mono text-xs" 
                 />
-                <p className="text-[10px] text-muted-foreground italic">* Để trống để hệ thống tự động tạo (kèm mã ngẫu nhiên để tránh trùng).</p>
+                <p className="text-[10px] text-muted-foreground italic">* Để trống để hệ thống tự động tạo từ tên Lookbook.</p>
               </div>
 
               <div className="space-y-2">
