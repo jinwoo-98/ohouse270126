@@ -112,7 +112,8 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
             )}
           </div>
           
-          <div className="flex items-center gap-1">
+          {/* ẨN NÚT THÊM VÀO GIỎ HÀNG TRÊN MOBILE */}
+          <div className={cn("flex items-center gap-1", isMobile && "hidden")}>
             <button 
               onClick={handleAddToCart}
               className="w-8 h-8 rounded-full flex items-center justify-center bg-charcoal text-white hover:bg-primary transition-colors"
