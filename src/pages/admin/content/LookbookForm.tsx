@@ -109,8 +109,9 @@ export default function LookbookForm() {
     const colorValue = formData.color === 'none' ? null : formData.color;
 
     const lookPayload = { 
+      id: id, // Bắt buộc phải có ID nếu là edit
       title: formData.title, 
-      slug: finalSlug,
+      slug: finalSlug, // Gửi slug lên DB
       category_id: formData.category_id, 
       image_url: formData.image_url, 
       gallery_urls: formData.gallery_urls || [],
@@ -125,22 +126,19 @@ export default function LookbookForm() {
     if (!lookPayload.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
 
     try {
-      let lookId = id;
+      // Sử dụng upsert để đơn giản hóa logic insert/update
+      const { data, error } = await supabase
+        .from('shop_looks')
+        .upsert(lookPayload)
+        .select()
+        .single();
+
+      if (error) throw error;
+      if (!data) throw new Error("Không thể lưu Lookbook, dữ liệu trả về trống.");
       
-      if (isEdit) {
-        const { error } = await supabase.from('shop_looks').update(lookPayload).eq('id', lookId);
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase.from('shop_looks').insert(lookPayload).select().single();
-        if (error) throw error;
-        if (!data) throw new Error("Không thể tạo Lookbook, dữ liệu trả về trống.");
-        lookId = data.id;
-      }
+      const lookId = data.id;
 
-      if (!lookId) {
-        throw new Error("Không xác định được ID của Lookbook.");
-      }
-
+      // Sync Look Items
       await supabase.from('shop_look_items').delete().eq('look_id', lookId);
 
       if (lookItems.length > 0) {
@@ -313,7 +311,7 @@ export default function LookbookForm() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
+            <div className="space-y-4 bg-white p-6 rounded-3xl border shadow-sm">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Sản phẩm gắn thẻ</h3>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
