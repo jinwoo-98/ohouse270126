@@ -36,7 +36,6 @@ export default function LookDetailPage() {
   const fetchLook = async () => {
     setLoading(true);
     
-    // Query string chuẩn
     const selectQuery = `
       *, 
       shop_look_items(
@@ -54,7 +53,7 @@ export default function LookDetailPage() {
         .from('shop_looks')
         .select(selectQuery)
         .eq('slug', slug)
-        .single();
+        .maybeSingle();
 
       if (dataBySlug) {
         lookData = dataBySlug;
