@@ -52,6 +52,7 @@ export default function LookbookForm() {
     color: "none",
   });
 
+  // Tự động tạo slug khi title thay đổi (chỉ khi tạo mới và chưa chỉnh sửa thủ công)
   useEffect(() => {
     if (!isEdit && !isSlugManuallyChanged && formData.title) {
       setFormData(prev => ({ ...prev, slug: generateSlug(formData.title) }));
@@ -77,6 +78,7 @@ export default function LookbookForm() {
       
       if (isEdit) {
         await fetchLookData(id!);
+        // Nếu đang edit, coi như slug đã được thiết lập thủ công
         setIsSlugManuallyChanged(true);
       } else {
         const defaultCat = cRes.data?.find(c => !c.parent_id && c.menu_location === 'main');
@@ -234,11 +236,16 @@ export default function LookbookForm() {
     if (typeof newData === 'function') {
       setFormData(prev => {
         const val = newData(prev);
-        if (val.slug !== prev.slug) setIsSlugManuallyChanged(true);
+        // Nếu slug thay đổi và không phải do tự động tạo từ title (chỉ kiểm tra khi đang edit hoặc đã có title)
+        if (val.slug !== prev.slug && (isEdit || prev.title)) {
+          setIsSlugManuallyChanged(true);
+        }
         return val;
       });
     } else {
-      if (newData.slug !== formData.slug) setIsSlugManuallyChanged(true);
+      if (newData.slug !== formData.slug && (isEdit || formData.title)) {
+        setIsSlugManuallyChanged(true);
+      }
       setFormData(newData);
     }
   };
