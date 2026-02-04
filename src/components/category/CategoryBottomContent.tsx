@@ -21,6 +21,12 @@ interface CategoryBottomContentProps {
   parentSlug?: string;
 }
 
+// Helper function to generate slug
+const slugify = (text: string) => {
+  if (!text) return '';
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+};
+
 export function CategoryBottomContent({ categoryId, categorySlug, seoContent, isParentCategory, parentSlug }: CategoryBottomContentProps) {
   const { addToCart } = useCart();
   const [keywords, setKeywords] = useState<any[]>([]);
@@ -71,9 +77,11 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
       .eq('is_active', true)
       .limit(4);
       
-    const uniqueLooks = data?.filter((look, index, self) => 
-      index === self.findIndex((l) => l.id === look.id)
-    ) || [];
+    const uniqueLooks = (data || [])
+      .map(look => ({ ...look, slug: look.slug || slugify(look.title) })) // **FIX: Ensure slug**
+      .filter((look, index, self) => 
+        index === self.findIndex((l) => l.id === look.id)
+      );
     
     setShopLooks(uniqueLooks);
   };
@@ -125,7 +133,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                   className="relative aspect-video rounded-[32px] overflow-hidden cursor-pointer shadow-medium group-hover:shadow-elevated transition-all duration-500"
                   onClick={() => setSelectedLook(look)}
                 >
-                  <Link to={`/y-tuong/${look.slug || look.id}`} className="absolute inset-0 z-10">
+                  <Link to={`/cam-hung/${look.slug}`} className="absolute inset-0 z-10">
                     <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
                   </Link>
@@ -171,7 +179,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
                     className="rounded-xl px-4 h-10 text-[9px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm shrink-0"
                     asChild
                   >
-                    <Link to={`/y-tuong/${look.slug || look.id}`}>
+                    <Link to={`/cam-hung/${look.slug}`}>
                       XEM NGAY +
                     </Link>
                   </Button>

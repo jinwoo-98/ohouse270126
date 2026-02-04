@@ -19,6 +19,12 @@ const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
+// Helper function to generate slug
+const slugify = (text: string) => {
+  if (!text) return '';
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+};
+
 export function ShopTheLook() {
   const [allLooks, setAllLooks] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
@@ -58,7 +64,14 @@ export function ShopTheLook() {
         .order('display_order');
 
       if (error) throw error;
-      setAllLooks(data || []);
+      
+      // **FIX: Ensure slug exists for every look**
+      const processedLooks = (data || []).map(look => ({
+        ...look,
+        slug: look.slug || slugify(look.title)
+      }));
+      setAllLooks(processedLooks);
+
     } catch (e) {
       console.error(e);
     } finally {
@@ -169,7 +182,7 @@ export function ShopTheLook() {
             >
               {currentCategoryLooks.map((look) => (
                 <div key={look.id} className="relative h-full w-full flex-shrink-0 group">
-                  <Link to={`/cam-hung/${look.slug || look.id}`} className="absolute inset-0 z-10">
+                  <Link to={`/cam-hung/${look.slug}`} className="absolute inset-0 z-10">
                     <img
                       src={look.homepage_image_url || look.image_url}
                       alt={look.title}
@@ -207,7 +220,7 @@ export function ShopTheLook() {
                     </TooltipProvider>
                     <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block pointer-events-auto">
                       <Button asChild size="sm" className="btn-hero h-9 text-[10px] shadow-gold">
-                        <Link to={`/cam-hung/${look.slug || look.id}`}>
+                        <Link to={`/cam-hung/${look.slug}`}>
                           Xem Chi Tiết <ChevronRight className="w-3 h-3 ml-1" />
                         </Link>
                       </Button>

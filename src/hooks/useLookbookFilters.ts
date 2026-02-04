@@ -14,6 +14,12 @@ interface FilterOption {
   slug: string;
 }
 
+// Helper function to generate slug
+const slugify = (text: string) => {
+  if (!text) return '';
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+};
+
 export function useLookbookFilters() {
   const { data: categoriesData, isLoading: isLoadingCategories } = useCategories();
   const [allLooks, setAllLooks] = useState<any[]>([]);
@@ -59,7 +65,12 @@ export function useLookbookFilters() {
         if (looksRes.error) throw looksRes.error;
         if (filtersRes.error) throw filtersRes.error;
         
-        setAllLooks(looksRes.data || []);
+        // **FIX: Ensure slug exists for every look**
+        const processedLooks = (looksRes.data || []).map(look => ({
+          ...look,
+          slug: look.slug || slugify(look.title)
+        }));
+        setAllLooks(processedLooks);
         setFetchedFilterOptions(filtersRes.data || []); // Set fetched options
       } catch (e) {
         console.error("Error fetching lookbooks or filters:", e);

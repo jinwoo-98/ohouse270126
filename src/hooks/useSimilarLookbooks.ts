@@ -33,6 +33,12 @@ interface UseSimilarLookbooksResult {
   isLoadingSimilarLooks: boolean;
 }
 
+// Helper function to generate slug
+const slugify = (text: string) => {
+  if (!text) return '';
+  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+};
+
 export function useSimilarLookbooks(currentLookId: string, categorySlug: string): UseSimilarLookbooksResult {
   const [similarLookbooks, setSimilarLookbooks] = useState<Lookbook[]>([]);
   const [isLoadingSimilarLooks, setIsLoadingSimilarLooks] = useState(true);
@@ -66,8 +72,15 @@ export function useSimilarLookbooks(currentLookId: string, categorySlug: string)
           .limit(4);
 
         if (error) throw error;
+        
+        // **FIX: Ensure slug exists for every look**
+        const processedData = (data || []).map(look => ({
+          ...look,
+          slug: look.slug || slugify(look.title)
+        }));
+
         // Ép kiểu dữ liệu trả về thành Lookbook[]
-        setSimilarLookbooks(data as unknown as Lookbook[] || []);
+        setSimilarLookbooks(processedData as unknown as Lookbook[] || []);
       } catch (error) {
         console.error("Error fetching similar lookbooks:", error);
       } finally {
