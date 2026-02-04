@@ -11,10 +11,6 @@ import { LookbookFilterSection } from "@/components/admin/content/lookbook-form/
 import { LookbookMediaSection } from "@/components/admin/content/lookbook-form/LookbookMediaSection";
 import { LookbookHotspotManager } from "@/components/admin/content/lookbook-form/LookbookHotspotManager";
 
-const slugify = (text: string) => {
-  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
-};
-
 export default function LookbookForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -111,12 +107,15 @@ export default function LookbookForm() {
     if (!formData.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
     if (!formData.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
 
-    // Generate slug if it's new or empty
-    const finalSlug = formData.slug || slugify(formData.title) + '-' + Date.now().toString().slice(-5);
-
+    // IMPORTANT: We do NOT send 'slug' here. The DB trigger will handle it.
+    // This avoids the "schema cache" error if the API doesn't know about the slug column.
     const payload = {
-      ...formData,
-      slug: finalSlug,
+      title: formData.title,
+      category_id: formData.category_id,
+      image_url: formData.image_url,
+      gallery_urls: formData.gallery_urls,
+      is_active: formData.is_active,
+      homepage_image_url: formData.homepage_image_url,
       style: formData.style === 'none' ? null : formData.style,
       material: formData.material === 'none' ? null : formData.material,
       color: formData.color === 'none' ? null : formData.color,
