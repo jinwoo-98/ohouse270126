@@ -39,8 +39,8 @@ export function FloatingActions() {
 
   return (
     <>
-      {/* AI & Navigation Buttons (Bottom Right) */}
-      <div className="fixed bottom-8 right-6 md:right-8 z-[100] flex flex-col gap-3">
+      {/* AI & Navigation Buttons (Bottom Right) - Đặt ở bottom-24 để tránh thanh StickyActionToolbar */}
+      <div className="fixed bottom-24 right-6 md:right-8 z-[100] flex flex-col gap-3">
         {/* AI Chat Trigger */}
         <motion.button
           initial={{ opacity: 0, scale: 0.5 }}
