@@ -24,7 +24,7 @@ export default function LookbookForm() {
   const [activeEditingImage, setActiveEditingImage] = useState<string | null>(null);
   
   const [lookbookFilters, setLookbookFilters] = useState<any[]>([]);
-  const [initialSlug, setInitialSlug] = useState(""); // Lưu slug ban đầu
+  const [initialSlug, setInitialSlug] = useState(""); 
 
   const [formData, setFormData] = useState({
     title: "",
@@ -45,25 +45,30 @@ export default function LookbookForm() {
 
   const fetchInitialData = async () => {
     setLoading(true);
-    const [pRes, cRes, fRes] = await Promise.all([
-      supabase.from('products').select('id, name, image_url, slug'),
-      supabase.from('categories').select('id, name, slug, parent_id, menu_location').order('name'),
-      supabase.from('lookbook_filters').select('*').order('type').order('value')
-    ]);
-    
-    setProducts(pRes.data || []);
-    setCategories(cRes.data || []);
-    setLookbookFilters(fRes.data || []);
-    
-    if (isEdit) {
-      await fetchLookData(id!);
-    } else {
-      const defaultCat = cRes.data?.find(c => !c.parent_id && c.menu_location === 'main');
-      if (defaultCat) {
-        setFormData(prev => ({ ...prev, category_id: defaultCat.slug }));
+    try {
+      const [pRes, cRes, fRes] = await Promise.all([
+        supabase.from('products').select('id, name, image_url, slug'),
+        supabase.from('categories').select('id, name, slug, parent_id, menu_location').order('name'),
+        supabase.from('lookbook_filters').select('*').order('type').order('value')
+      ]);
+      
+      setProducts(pRes.data || []);
+      setCategories(cRes.data || []);
+      setLookbookFilters(fRes.data || []);
+      
+      if (isEdit) {
+        await fetchLookData(id!);
+      } else {
+        const defaultCat = cRes.data?.find(c => !c.parent_id && c.menu_location === 'main');
+        if (defaultCat) {
+          setFormData(prev => ({ ...prev, category_id: defaultCat.slug }));
+        }
       }
+    } catch (e) {
+      console.error("Error loading initial data:", e);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fetchLookData = async (lookId: string) => {
@@ -91,12 +96,13 @@ export default function LookbookForm() {
       material: lookData.material || "none",
       color: lookData.color || "none",
     });
-    setInitialSlug(lookData.slug || ""); // Lưu slug ban đầu
+    setInitialSlug(lookData.slug || ""); 
     setLookItems(lookData.shop_look_items || []);
     setActiveEditingImage(lookData.image_url);
   };
 
-  const saveLookbook = async (payload: any, lookId?: string) => {
+  // Hàm save wrapper để xử lý retry
+  const executeSave = async (payload: any, lookId?: string) => {
     if (lookId) {
       const { error } = await supabase.from('shop_looks').update(payload).eq('id', lookId);
       if (error) throw error;
@@ -117,7 +123,7 @@ export default function LookbookForm() {
     if (!formData.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
 
     try {
-      // 1. Generate Slug
+      // 1. Generate Slug Logic
       const slugifiedTitle = formData.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
       
       let finalSlug = formData.slug;
@@ -126,6 +132,7 @@ export default function LookbookForm() {
         finalSlug = `${slugifiedTitle}-${randomSuffix}`;
       }
 
+      // Base Payload (Chưa có slug)
       const basePayload: any = {
         title: formData.title,
         category_id: formData.category_id,
@@ -141,40 +148,37 @@ export default function LookbookForm() {
 
       let lookId = id;
 
+      // --- LOGIC LƯU THÔNG MINH ---
       try {
-        if (isEdit) {
-          // Khi chỉnh sửa: Chỉ gửi slug nếu nó đã thay đổi so với ban đầu
-          if (finalSlug !== initialSlug) {
-            basePayload.slug = finalSlug;
-          }
-          
-          const { error: updateError } = await supabase
-            .from('shop_looks')
-            .update(basePayload)
-            .eq('id', id);
-          if (updateError) throw updateError;
-        } else {
-          // Khi tạo mới: Luôn gửi slug
-          basePayload.slug = finalSlug;
-          const { data: newLook, error: insertError } = await supabase
-            .from('shop_looks')
-            .insert(basePayload)
-            .select()
-            .single();
-          if (insertError) throw insertError;
-          lookId = newLook.id;
+        // Lần 1: Thử lưu ĐẦY ĐỦ (kèm slug)
+        // Chỉ gửi slug nếu nó khác ban đầu (khi edit) hoặc là tạo mới
+        const payloadWithSlug = { ...basePayload };
+        if (!isEdit || finalSlug !== initialSlug) {
+          payloadWithSlug.slug = finalSlug;
         }
+        
+        lookId = await executeSave(payloadWithSlug, id);
+
       } catch (err: any) {
-        if (err.code === '23505') { 
-          toast.error("Lỗi trùng lặp đường dẫn (Slug). Vui lòng đổi tên hoặc nhập slug khác.");
-          setSaving(false);
-          return;
-        } else if (err.message?.includes("column \"slug\" of relation \"shop_looks\" does not exist")) {
-          toast.error("Lỗi hệ thống: Cột 'slug' chưa được nhận diện. Vui lòng thử lại sau 1 phút.");
+        // Kiểm tra lỗi Schema Cache hoặc lỗi cột Slug
+        const errorMessage = err.message?.toLowerCase() || "";
+        if (
+          errorMessage.includes("schema cache") || 
+          errorMessage.includes("column \"slug\"") ||
+          errorMessage.includes("could not find the 'slug' column")
+        ) {
+          console.warn("Schema cache mismatch detected. Retrying without slug...");
+          
+          // Lần 2: Thử lưu KHÔNG CÓ SLUG (Fallback)
+          lookId = await executeSave(basePayload, id);
+          
+          toast.info("Đã lưu Lookbook thành công (Lưu ý: Đường dẫn Slug chưa được cập nhật do hệ thống đang đồng bộ dữ liệu).");
+        } else if (err.code === '23505') { 
+          toast.error("Đường dẫn (Slug) này đã tồn tại. Vui lòng đổi tên hoặc nhập slug khác.");
           setSaving(false);
           return;
         } else {
-          throw err;
+          throw err; // Lỗi khác thì ném ra ngoài
         }
       }
 
@@ -182,11 +186,7 @@ export default function LookbookForm() {
 
       // 2. Sync Look Items (Children)
       if (lookId) {
-        const { error: deleteError } = await supabase
-          .from('shop_look_items')
-          .delete()
-          .eq('look_id', lookId);
-        
+        const { error: deleteError } = await supabase.from('shop_look_items').delete().eq('look_id', lookId);
         if (deleteError) throw deleteError;
 
         if (lookItems.length > 0) {
@@ -198,10 +198,7 @@ export default function LookbookForm() {
             target_image_url: item.target_image_url,
           }));
           
-          const { error: itemsError } = await supabase
-            .from('shop_look_items')
-            .insert(itemsToInsert);
-            
+          const { error: itemsError } = await supabase.from('shop_look_items').insert(itemsToInsert);
           if (itemsError) throw itemsError;
         }
       }
@@ -210,7 +207,7 @@ export default function LookbookForm() {
       navigate("/admin/content/looks");
     } catch (e: any) {
       console.error("Critical Save Error:", e);
-      toast.error("Lỗi không xác định: " + (e.message || e.details || "Vui lòng thử lại"));
+      toast.error("Lỗi hệ thống: " + (e.message || "Vui lòng thử lại sau."));
     } finally {
       setSaving(false);
     }
