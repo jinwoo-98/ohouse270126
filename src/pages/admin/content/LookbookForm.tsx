@@ -101,17 +101,14 @@ export default function LookbookForm() {
     e.preventDefault();
     setSaving(true);
     
-    const slugifiedTitle = formData.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
-    const finalSlug = formData.slug || slugifiedTitle;
-
     const styleValue = formData.style === 'none' ? null : formData.style;
     const materialValue = formData.material === 'none' ? null : formData.material;
     const colorValue = formData.color === 'none' ? null : formData.color;
 
     const lookPayload = { 
-      id: id, // Bắt buộc phải có ID nếu là edit
+      id: id,
       title: formData.title, 
-      slug: finalSlug, // Gửi slug lên DB
+      slug: formData.slug, // Gửi slug thô, Edge Function sẽ xử lý tạo slug nếu trống
       category_id: formData.category_id, 
       image_url: formData.image_url, 
       gallery_urls: formData.gallery_urls || [],
@@ -126,36 +123,22 @@ export default function LookbookForm() {
     if (!lookPayload.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
 
     try {
-      // Sử dụng upsert để đơn giản hóa logic insert/update
-      const { data, error } = await supabase
-        .from('shop_looks')
-        .upsert(lookPayload)
-        .select()
-        .single();
+      // Gọi Edge Function để xử lý việc lưu
+      const { data, error } = await supabase.functions.invoke('save-lookbook', {
+        body: {
+          lookPayload,
+          lookItems
+        }
+      });
 
       if (error) throw error;
-      if (!data) throw new Error("Không thể lưu Lookbook, dữ liệu trả về trống.");
-      
-      const lookId = data.id;
-
-      // Sync Look Items
-      await supabase.from('shop_look_items').delete().eq('look_id', lookId);
-
-      if (lookItems.length > 0) {
-        const { error: itemError } = await supabase.from('shop_look_items').insert(lookItems.map(i => ({ 
-          look_id: lookId, 
-          product_id: i.product_id, 
-          x_position: i.x_position, 
-          y_position: i.y_position,
-          target_image_url: i.target_image_url
-        })));
-        if (itemError) throw itemError;
-      }
+      if (data.error) throw new Error(data.error);
       
       toast.success("Đã lưu Lookbook thành công!");
       navigate("/admin/content/looks");
     } catch (e: any) { 
-      toast.error("Lỗi lưu dữ liệu: " + e.message); 
+      console.error("Edge Function Error:", e);
+      toast.error("Lỗi lưu dữ liệu: " + (e.message || "Lỗi không xác định từ server.")); 
     } finally {
       setSaving(false);
     }
