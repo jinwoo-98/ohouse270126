@@ -62,6 +62,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
       .from('shop_looks')
       .select(`
         *,
+        slug,
         shop_look_items (
           *,
           products:product_id (*)
