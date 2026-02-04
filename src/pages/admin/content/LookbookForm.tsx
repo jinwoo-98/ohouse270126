@@ -132,7 +132,8 @@ export default function LookbookForm() {
         finalSlug = `${slugifiedTitle}-${randomSuffix}`;
       }
 
-      // Base Payload (Chưa có slug)
+      // Base Payload
+      // QUAN TRỌNG: Đã loại bỏ updated_at khỏi payload để tránh lỗi schema cache
       const basePayload: any = {
         title: formData.title,
         category_id: formData.category_id,
@@ -143,7 +144,6 @@ export default function LookbookForm() {
         style: formData.style === 'none' ? null : formData.style,
         material: formData.material === 'none' ? null : formData.material,
         color: formData.color === 'none' ? null : formData.color,
-        updated_at: new Date().toISOString(),
       };
 
       let lookId = id;
