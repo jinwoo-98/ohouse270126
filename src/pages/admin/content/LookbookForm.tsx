@@ -101,44 +101,82 @@ export default function LookbookForm() {
     e.preventDefault();
     setSaving(true);
     
-    const styleValue = formData.style === 'none' ? null : formData.style;
-    const materialValue = formData.material === 'none' ? null : formData.material;
-    const colorValue = formData.color === 'none' ? null : formData.color;
-
-    const lookPayload = { 
-      id: id,
-      title: formData.title, 
-      slug: formData.slug, // Gửi slug thô, Edge Function sẽ xử lý tạo slug nếu trống
-      category_id: formData.category_id, 
-      image_url: formData.image_url, 
-      gallery_urls: formData.gallery_urls || [],
-      is_active: formData.is_active,
-      homepage_image_url: formData.homepage_image_url,
-      style: styleValue,
-      material: materialValue,
-      color: colorValue,
-    };
-
-    if (!lookPayload.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
-    if (!lookPayload.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
+    // 1. Validate
+    if (!formData.title) { toast.error("Vui lòng nhập tên Lookbook"); setSaving(false); return; }
+    if (!formData.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
+    if (!formData.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
 
     try {
-      // Gọi Edge Function để xử lý việc lưu
-      const { data, error } = await supabase.functions.invoke('save-lookbook', {
-        body: {
-          lookPayload,
-          lookItems
-        }
-      });
+      // 2. Prepare Data
+      const slugifiedTitle = formData.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
+      const finalSlug = formData.slug || slugifiedTitle;
 
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      const lookPayload: any = {
+        title: formData.title,
+        slug: finalSlug,
+        category_id: formData.category_id,
+        image_url: formData.image_url,
+        gallery_urls: formData.gallery_urls || [],
+        is_active: formData.is_active,
+        homepage_image_url: formData.homepage_image_url,
+        style: formData.style === 'none' ? null : formData.style,
+        material: formData.material === 'none' ? null : formData.material,
+        color: formData.color === 'none' ? null : formData.color,
+        updated_at: new Date().toISOString(),
+      };
+
+      // 3. Upsert Lookbook (Parent)
+      let lookId = id;
       
+      if (isEdit) {
+        const { error: updateError } = await supabase
+          .from('shop_looks')
+          .update(lookPayload)
+          .eq('id', id);
+        if (updateError) throw updateError;
+      } else {
+        const { data: newLook, error: insertError } = await supabase
+          .from('shop_looks')
+          .insert(lookPayload)
+          .select()
+          .single();
+        if (insertError) throw insertError;
+        lookId = newLook.id;
+      }
+
+      if (!lookId) throw new Error("Không lấy được ID Lookbook");
+
+      // 4. Sync Look Items (Children)
+      // Xóa các items cũ
+      const { error: deleteError } = await supabase
+        .from('shop_look_items')
+        .delete()
+        .eq('look_id', lookId);
+      
+      if (deleteError) throw deleteError;
+
+      // Thêm items mới
+      if (lookItems.length > 0) {
+        const itemsToInsert = lookItems.map((item) => ({
+          look_id: lookId,
+          product_id: item.product_id,
+          x_position: item.x_position,
+          y_position: item.y_position,
+          target_image_url: item.target_image_url,
+        }));
+        
+        const { error: itemsError } = await supabase
+          .from('shop_look_items')
+          .insert(itemsToInsert);
+          
+        if (itemsError) throw itemsError;
+      }
+
       toast.success("Đã lưu Lookbook thành công!");
       navigate("/admin/content/looks");
-    } catch (e: any) { 
-      console.error("Edge Function Error:", e);
-      toast.error("Lỗi lưu dữ liệu: " + (e.message || "Lỗi không xác định từ server.")); 
+    } catch (e: any) {
+      console.error("Save Error:", e);
+      toast.error("Lỗi lưu dữ liệu: " + (e.message || "Vui lòng thử lại."));
     } finally {
       setSaving(false);
     }
