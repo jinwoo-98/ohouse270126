@@ -26,21 +26,19 @@ export default function LookbookForm() {
   const [productSearch, setProductSearch] = useState("");
   const [activeEditingImage, setActiveEditingImage] = useState<string | null>(null);
   
-  // NEW STATE: Lookbook Filters
   const [lookbookFilters, setLookbookFilters] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     title: "",
-    slug: "", // THÊM SLUG
+    slug: "",
     category_id: "",
     image_url: "",
     gallery_urls: [] as string[],
     is_active: true,
     homepage_image_url: "",
-    // NEW FIELDS
-    style: "none", // Default to 'none' instead of ''
-    material: "none", // Default to 'none' instead of ''
-    color: "none", // Default to 'none' instead of ''
+    style: "none",
+    material: "none",
+    color: "none",
   });
 
   useEffect(() => {
@@ -62,7 +60,6 @@ export default function LookbookForm() {
     if (isEdit) {
       await fetchLookData(id!);
     } else {
-      // Set default category for new look
       const defaultCat = cRes.data?.find(c => !c.parent_id && c.menu_location === 'main');
       if (defaultCat) {
         setFormData(prev => ({ ...prev, category_id: defaultCat.slug }));
@@ -86,15 +83,15 @@ export default function LookbookForm() {
 
     setFormData({
       title: lookData.title,
-      slug: lookData.slug || "", // LẤY SLUG
+      slug: lookData.slug || "",
       category_id: lookData.category_id,
       image_url: lookData.image_url,
       gallery_urls: lookData.gallery_urls || [],
       is_active: lookData.is_active,
       homepage_image_url: lookData.homepage_image_url || "",
-      style: lookData.style || "none", // Use 'none' fallback
-      material: lookData.material || "none", // Use 'none' fallback
-      color: lookData.color || "none", // Use 'none' fallback
+      style: lookData.style || "none",
+      material: lookData.material || "none",
+      color: lookData.color || "none",
     });
     setLookItems(lookData.shop_look_items || []);
     setActiveEditingImage(lookData.image_url);
@@ -104,18 +101,16 @@ export default function LookbookForm() {
     e.preventDefault();
     setSaving(true);
     
-    // Generate slug if missing
     const slugifiedTitle = formData.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
     const finalSlug = formData.slug || slugifiedTitle;
 
-    // Convert 'none' back to null/empty string for DB storage
     const styleValue = formData.style === 'none' ? null : formData.style;
     const materialValue = formData.material === 'none' ? null : formData.material;
     const colorValue = formData.color === 'none' ? null : formData.color;
 
     const lookPayload = { 
       title: formData.title, 
-      slug: finalSlug, // THÊM SLUG VÀO PAYLOAD
+      slug: finalSlug,
       category_id: formData.category_id, 
       image_url: formData.image_url, 
       gallery_urls: formData.gallery_urls || [],
@@ -131,23 +126,34 @@ export default function LookbookForm() {
 
     try {
       let lookId = id;
+      
       if (isEdit) {
-        await supabase.from('shop_looks').update(lookPayload).eq('id', lookId);
-        await supabase.from('shop_look_items').delete().eq('look_id', lookId);
+        const { error } = await supabase.from('shop_looks').update(lookPayload).eq('id', lookId);
+        if (error) throw error;
       } else {
-        const { data } = await supabase.from('shop_looks').insert(lookPayload).select().single();
+        const { data, error } = await supabase.from('shop_looks').insert(lookPayload).select().single();
+        if (error) throw error;
+        if (!data) throw new Error("Không thể tạo Lookbook, dữ liệu trả về trống.");
         lookId = data.id;
       }
 
+      if (!lookId) {
+        throw new Error("Không xác định được ID của Lookbook.");
+      }
+
+      await supabase.from('shop_look_items').delete().eq('look_id', lookId);
+
       if (lookItems.length > 0) {
-        await supabase.from('shop_look_items').insert(lookItems.map(i => ({ 
+        const { error: itemError } = await supabase.from('shop_look_items').insert(lookItems.map(i => ({ 
           look_id: lookId, 
           product_id: i.product_id, 
           x_position: i.x_position, 
           y_position: i.y_position,
           target_image_url: i.target_image_url
         })));
+        if (itemError) throw itemError;
       }
+      
       toast.success("Đã lưu Lookbook thành công!");
       navigate("/admin/content/looks");
     } catch (e: any) { 
@@ -195,7 +201,6 @@ export default function LookbookForm() {
   const allEditingImages = [formData.image_url, ...(formData.gallery_urls || [])].filter(Boolean);
   const lookItemsForActiveImage = lookItems.filter(i => i.target_image_url === activeEditingImage);
   
-  // Group filters for easy rendering
   const groupedFilters = useMemo(() => {
     return {
       style: lookbookFilters.filter(f => f.type === 'style').map(f => f.value),
@@ -222,7 +227,6 @@ export default function LookbookForm() {
 
       <form id="lookbook-form" onSubmit={handleSave} className="space-y-6">
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Cột 1: Thông tin cơ bản & Sản phẩm */}
           <div className="lg:col-span-1 space-y-6">
             <div className="space-y-4 bg-white p-6 rounded-3xl border shadow-sm">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Sparkles className="w-4 h-4" /> Thông tin cơ bản</h3>
@@ -267,11 +271,9 @@ export default function LookbookForm() {
               </div>
             </div>
             
-            {/* NEW FILTER FIELDS - USING SELECTS */}
             <div className="space-y-4 bg-white p-6 rounded-3xl border shadow-sm">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><ListFilter className="w-4 h-4" /> Bộ lọc Lookbook</h3>
               
-              {/* Style Select */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Layers className="w-3 h-3" /> Phong cách</Label>
                 <Select value={formData.style} onValueChange={val => setFormData({...formData, style: val})}>
@@ -283,7 +285,6 @@ export default function LookbookForm() {
                 </Select>
               </div>
               
-              {/* Material Select */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Zap className="w-3 h-3" /> Chất liệu</Label>
                 <Select value={formData.material} onValueChange={val => setFormData({...formData, material: val})}>
@@ -295,7 +296,6 @@ export default function LookbookForm() {
                 </Select>
               </div>
               
-              {/* Color Select */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2"><Palette className="w-3 h-3" /> Màu sắc chủ đạo</Label>
                 <Select value={formData.color} onValueChange={val => setFormData({...formData, color: val})}>
@@ -312,7 +312,6 @@ export default function LookbookForm() {
                 <Link to="/admin/content/looks/filters" className="text-primary underline ml-1">Quản lý tùy chọn tại đây</Link>.
               </p>
             </div>
-            {/* END NEW FILTER FIELDS */}
 
             <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Sản phẩm gắn thẻ</h3>
@@ -376,7 +375,6 @@ export default function LookbookForm() {
             </div>
           </div>
 
-          {/* Cột 2: Ảnh & Hotspot Preview */}
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Ảnh & Hotspot</h3>
@@ -412,7 +410,6 @@ export default function LookbookForm() {
               </div>
             </div>
 
-            {/* Ảnh chính & phụ */}
             <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
               <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Quản lý ảnh</h3>
               <div className="space-y-2">
