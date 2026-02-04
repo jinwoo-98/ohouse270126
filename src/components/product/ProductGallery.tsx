@@ -101,7 +101,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, hotspots
 
   return (
     <div className="w-full max-w-full space-y-4 select-none">
-      <div className="relative w-full aspect-[4/3] bg-white rounded-2xl md:rounded-[32px] overflow-hidden border border-border/40 shadow-subtle group">
+      <div className="relative w-full aspect-square bg-white rounded-2xl md:rounded-[32px] overflow-hidden border border-border/40 shadow-subtle group">
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={page}
