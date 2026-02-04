@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { cn, formatPrice } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface StickyActionToolbarProps {
   product: any;
 }
 
 export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
+  const isMobile = useIsMobile();
   const [isVisible, setIsVisible] = useState(false);
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -26,6 +28,7 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
 
   useEffect(() => {
     const handleScroll = () => {
+      // Show when scrolled past 600px (past the main product info area)
       setIsVisible(window.scrollY > 600);
     };
     window.addEventListener("scroll", handleScroll);
@@ -57,8 +60,15 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
 
   return (
     <div className={cn(
-      "fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-border/40 z-[100] transition-all duration-500 transform shadow-elevated",
-      isVisible ? "translate-y-0" : "-translate-y-full"
+      "fixed left-0 right-0 bg-white/95 backdrop-blur-xl z-[100] transition-all duration-500 transform shadow-elevated",
+      
+      // Desktop (md and up) - Stick to Top
+      !isMobile && "top-0 border-b border-t-0",
+      !isMobile && (isVisible ? "translate-y-0" : "-translate-y-full"),
+      
+      // Mobile (less than md) - Stick to Bottom
+      isMobile && "bottom-0 border-t border-b-0",
+      isMobile && (isVisible ? "translate-y-0" : "translate-y-full")
     )}>
       <div className="container-luxury h-16 md:h-20 flex items-center justify-between gap-4">
         {/* Desktop Nav */}
