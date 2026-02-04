@@ -25,7 +25,7 @@ export function LookProductVerticalItem({ product, onQuickView, className, image
       onClick={() => onQuickView(product)} // Hành vi chính: Mở QuickView
     >
       {/* Image Section */}
-      <div className={cn(
+      <Link to={`/san-pham/${product.slug || product.id}`} onClick={(e) => e.stopPropagation()} className={cn(
         "relative aspect-square overflow-hidden bg-secondary/30 shrink-0", 
         imageClassName
       )}>
@@ -35,7 +35,7 @@ export function LookProductVerticalItem({ product, onQuickView, className, image
         <div className="absolute inset-0 bg-charcoal/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           {/* Loại bỏ nút Xem Nhanh */}
         </div>
-      </div>
+      </Link>
       
       {/* Info Section: Chỉ hiển thị Giá */}
       <div className={cn("p-2 flex flex-col items-center text-center", infoClassName)}>

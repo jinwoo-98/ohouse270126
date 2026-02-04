@@ -14,6 +14,7 @@ interface Product {
   name: string;
   price: number;
   image: string;
+  slug?: string;
 }
 
 export default function RecentlyViewedPage() {
@@ -76,7 +77,7 @@ export default function RecentlyViewedPage() {
                   transition={{ delay: index * 0.05 }}
                   className="group card-luxury bg-card"
                 >
-                  <Link to={`/san-pham/${product.id}`} className="block relative aspect-square overflow-hidden">
+                  <Link to={`/san-pham/${product.slug || product.id}`} className="block relative aspect-square overflow-hidden">
                     <img 
                       src={product.image} 
                       alt={product.name} 
@@ -84,7 +85,7 @@ export default function RecentlyViewedPage() {
                     />
                   </Link>
                   <div className="p-4">
-                    <Link to={`/san-pham/${product.id}`}>
+                    <Link to={`/san-pham/${product.slug || product.id}`}>
                       <h3 className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors h-10 mb-2">
                         {product.name}
                       </h3>

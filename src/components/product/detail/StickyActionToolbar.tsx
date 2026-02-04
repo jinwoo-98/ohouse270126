@@ -104,7 +104,7 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
 
           <div className="flex items-center gap-2">
             <button 
-              onClick={() => toggleWishlist(product)}
+              onClick={() => toggleWishlist({ ...product, slug: product.slug })}
               className={cn(
                 "p-2.5 md:p-3 rounded-xl border transition-all",
                 isInWishlist(product.id) 

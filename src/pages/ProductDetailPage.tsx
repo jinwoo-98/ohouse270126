@@ -69,7 +69,7 @@ export default function ProductDetailPage() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, slug') // Đảm bảo lấy slug
         .eq('slug', slug)
         .single();
       

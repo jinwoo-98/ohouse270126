@@ -139,7 +139,7 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
           size="icon" 
           variant="outline" 
           className={cn("h-12 w-12 rounded-xl border-border", isInWishlist(product.id) && "text-primary bg-primary/5 border-primary/20")} 
-          onClick={() => toggleWishlist(product)}
+          onClick={() => toggleWishlist({ ...product, slug: product.slug })}
         >
           <Heart className={cn("w-5 h-5", isInWishlist(product.id) && "fill-current")} />
         </Button>

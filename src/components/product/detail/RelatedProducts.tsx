@@ -19,7 +19,7 @@ export function RelatedProducts({ products, title = "Sản phẩm tương tự" 
       <h2 className="text-xl font-bold uppercase tracking-widest mb-8">{title}</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {products.map(p => (
-          <Link key={p.id} to={`/san-pham/${p.id}`} className="group block card-luxury">
+          <Link key={p.id} to={`/san-pham/${p.slug || p.id}`} className="group block card-luxury">
             <div className="aspect-square overflow-hidden bg-secondary/10 relative">
               <img src={p.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               {p.is_sale && <span className="absolute top-2 left-2 bg-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider text-charcoal">Sale</span>}

@@ -36,7 +36,7 @@ export default function ProductManager() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, slug') // Đảm bảo lấy slug
         .order('display_order', { ascending: true })
         .order('created_at', { ascending: false });
 
@@ -162,7 +162,7 @@ export default function ProductManager() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg" asChild title="Xem trên Web">
-                        <Link to={`/san-pham/${product.id}`} target="_blank"><ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary" /></Link>
+                        <Link to={`/san-pham/${product.slug || product.id}`} target="_blank"><ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary" /></Link>
                       </Button>
                       <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-blue-600 hover:bg-blue-50" asChild title="Sửa thông tin">
                         <Link to={`/admin/products/edit/${product.id}`}><Edit className="w-4 h-4" /></Link>
