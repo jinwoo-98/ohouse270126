@@ -120,8 +120,7 @@ export function StickyActionToolbar({ product }: StickyActionToolbarProps) {
               onClick={() => addToCart({ ...product, quantity: 1, image: product.image_url })}
             >
               <ShoppingBag className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 md:mr-2" /> 
-              <span className="hidden xs:inline">THÊM VÀO GIỎ</span>
-              <span className="xs:hidden">MUA NGAY</span>
+              THÊM VÀO GIỎ
             </Button>
           </div>
         </div>
