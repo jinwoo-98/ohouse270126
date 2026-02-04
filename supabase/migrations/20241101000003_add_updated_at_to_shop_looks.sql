@@ -1,10 +1,27 @@
--- 1. Thêm cột updated_at vào bảng shop_looks nếu chưa có
+-- Đảm bảo cột updated_at tồn tại
 ALTER TABLE public.shop_looks 
 ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
--- 2. Cấp quyền cho các role authenticated (người dùng đã đăng nhập) để có thể update cột này
-GRANT ALL ON TABLE public.shop_looks TO authenticated;
-GRANT ALL ON TABLE public.shop_looks TO service_role;
+-- Đảm bảo cột slug tồn tại
+ALTER TABLE public.shop_looks 
+ADD COLUMN IF NOT EXISTS slug TEXT;
 
--- 3. QUAN TRỌNG: Buộc PostgREST tải lại cấu hình để nhận diện cột mới ngay lập tức
-NOTIFY pgrst, 'reload config';
+-- Tạo index cho slug để tìm kiếm nhanh hơn
+CREATE INDEX IF NOT EXISTS shop_looks_slug_idx ON public.shop_looks (slug);
+
+-- Cập nhật trigger để tự động update updated_at
+CREATE OR REPLACE FUNCTION public.handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS on_shop_looks_updated ON public.shop_looks;
+CREATE TRIGGER on_shop_looks_updated
+  BEFORE UPDATE ON public.shop_looks
+  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- Gửi thông báo để reload schema cache của PostgREST (Thủ thuật)
+NOTIFY pgrst, 'reload schema';

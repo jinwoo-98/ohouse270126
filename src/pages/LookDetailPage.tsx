@@ -4,31 +4,23 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Loader2, ChevronRight, Plus, ShoppingBag, Heart, Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2, ChevronRight } from "lucide-react";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
-import { useCart } from "@/contexts/CartContext";
-import { useWishlist } from "@/contexts/WishlistContext";
-import { formatPrice, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ProductGallery } from "@/components/product/ProductGallery";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { LookProductHorizontalScroll } from "@/components/inspiration/LookProductHorizontalScroll";
-import { LookProductVerticalItem } from "@/components/inspiration/LookProductVerticalItem";
+import { LookProductList } from "@/components/inspiration/LookProductList"; 
 import { useLookbookSimilarProducts } from "@/hooks/useLookbookSimilarProducts";
-import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll";
 import { useSimilarLookbooks } from "@/hooks/useSimilarLookbooks";
 import { SimilarLookbooks } from "@/components/inspiration/SimilarLookbooks";
 import { LookbookCTAFilters } from "@/components/inspiration/LookbookCTAFilters";
-import { LookProductList } from "@/components/inspiration/LookProductList"; 
-import { LookProductVerticalList } from "@/components/inspiration/LookProductFullList"; 
+import { LookProductHorizontalScroll } from "@/components/inspiration/LookProductHorizontalScroll";
+import { LookProductVerticalList } from "@/components/inspiration/LookProductFullList";
+import { Button } from "@/components/ui/button";
 
 export default function LookDetailPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
-  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [look, setLook] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -43,47 +35,65 @@ export default function LookDetailPage() {
 
   const fetchLook = async () => {
     setLoading(true);
-    try {
-      // Bỏ 'slug' khỏi select list, dùng * để lấy tất cả
-      const selectQuery = `
+    
+    // Query string chuẩn
+    const selectQuery = `
+      *, 
+      shop_look_items(
         *, 
-        shop_look_items(
-          *, 
-          products(id, name, price, image_url, slug, category_id, is_sale, original_price)
-        )
-      `;
+        products(id, name, price, image_url, slug, category_id, is_sale, original_price)
+      )
+    `;
 
-      // Thử tìm bằng slug trước
-      let { data, error } = await supabase
-        .from('shop_looks')
-        .select(selectQuery)
-        .eq('slug', slug)
-        .single();
+    try {
+      // BƯỚC 1: Thử tìm bằng SLUG
+      try {
+        const { data, error } = await supabase
+          .from('shop_looks')
+          .select(selectQuery)
+          .eq('slug', slug)
+          .single();
 
-      // Nếu không tìm thấy bằng slug, thử tìm bằng ID
-      if (!data || (error && error.code === 'PGRST116')) {
+        if (!error && data) {
+          setLook(data);
+          setCurrentImage(data.image_url);
+          setLoading(false);
+          return; // Tìm thấy thành công, thoát luôn
+        }
+        
+        // Nếu lỗi không phải do kết nối mạng mà do không tìm thấy dòng (PGRST116) hoặc lỗi cột, ta thử bước 2
+        if (error && error.code !== 'PGRST116' && error.code !== '42703') { // 42703: undefined_column
+           console.warn("Lỗi tìm kiếm theo slug:", error);
+        }
+      } catch (slugError) {
+        console.warn("Lỗi khi query slug:", slugError);
+      }
+
+      // BƯỚC 2: Fallback tìm bằng ID (nếu chuỗi slug có dạng UUID)
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug || '');
+      
+      if (isUUID) {
         const { data: dataById, error: errorById } = await supabase
           .from('shop_looks')
           .select(selectQuery)
-          .eq('id', slug) // Giả định slug có thể là ID
+          .eq('id', slug)
           .single();
         
-        if (errorById && errorById.code !== 'PGRST116') throw errorById;
-        data = dataById;
-      } else if (error) {
-        throw error;
+        if (!errorById && dataById) {
+          setLook(dataById);
+          setCurrentImage(dataById.image_url);
+          setLoading(false);
+          return;
+        }
       }
 
-      if (!data) {
-        toast.error("Không tìm thấy không gian thiết kế này.");
-        navigate("/cam-hung");
-        return;
-      }
-      setLook(data);
-      setCurrentImage(data.image_url);
+      // Nếu cả 2 cách đều thất bại
+      toast.error("Không tìm thấy không gian thiết kế này.");
+      navigate("/cam-hung");
+
     } catch (e) {
-      console.error("Error fetching lookbook:", e);
-      toast.error("Lỗi tải trang chi tiết Lookbook.");
+      console.error("Critical Error fetching lookbook:", e);
+      toast.error("Lỗi tải dữ liệu. Vui lòng thử lại sau.");
       navigate("/cam-hung");
     } finally {
       setLoading(false);
