@@ -190,7 +190,9 @@ export function ProductGallery({ mainImage, galleryImages, productName, hotspots
 
       {/* Lightbox Dialog */}
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-none bg-transparent shadow-none flex items-center justify-center z-[200]">
+        <DialogContent 
+          className="max-w-[95vw] max-h-[95vh] p-0 border-none bg-transparent shadow-none flex items-center justify-center z-[200] [&>button]:hidden" // Thêm [&>button]:hidden
+        >
           <div className="relative w-full h-full flex items-center justify-center">
             <button 
               onClick={() => setIsLightboxOpen(false)}
