@@ -134,20 +134,7 @@ export default function LookbookForm() {
       finalSlug = generateSlug(formData.title);
     }
 
-    const { data: duplicate } = await supabase
-      .from('shop_looks')
-      .select('id')
-      .eq('slug', finalSlug)
-      .neq('id', id || '00000000-0000-0000-0000-000000000000')
-      .maybeSingle();
-
-    if (duplicate) {
-      toast.error(`Lỗi: Đường dẫn "${finalSlug}" đã được sử dụng. Vui lòng đổi tên hoặc đường dẫn.`);
-      setSaving(false);
-      return;
-    }
-
-    const payload = {
+    const basePayload = {
       title: formData.title,
       slug: finalSlug,
       category_id: formData.category_id,
@@ -162,22 +149,51 @@ export default function LookbookForm() {
 
     let lookId = id;
     let lookError = null;
+    let slugSavedSuccessfully = true;
 
-    if (isEdit) {
-      const { error } = await supabase.from('shop_looks').update(payload).eq('id', id);
-      lookError = error;
-    } else {
-      const { data, error } = await supabase.from('shop_looks').insert(payload).select().single();
-      if (data) lookId = data.id;
-      lookError = error;
+    try {
+      // 1. Thử lưu payload đầy đủ (bao gồm slug)
+      if (isEdit) {
+        const { error } = await supabase.from('shop_looks').update(basePayload).eq('id', id);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.from('shop_looks').insert(basePayload).select().single();
+        if (error) throw error;
+        lookId = data.id;
+      }
+    } catch (mainError: any) {
+      // 2. Nếu lỗi liên quan đến schema cache (thường là lỗi 42703 hoặc PGRST116/PGRST204)
+      if (mainError.message?.includes('slug') || mainError.code === '42703' || mainError.code === 'PGRST116' || mainError.code === 'PGRST204') {
+        console.warn("Lỗi schema cache/cột slug không tồn tại. Đang thử lưu không có slug...");
+        
+        // Loại bỏ slug khỏi payload
+        const { slug, ...payloadNoSlug } = basePayload;
+        slugSavedSuccessfully = false;
+        
+        try {
+          if (isEdit) {
+            const { error: retryError } = await supabase.from('shop_looks').update(payloadNoSlug).eq('id', id);
+            if (retryError) throw retryError;
+          } else {
+            const { data, error: retryError } = await supabase.from('shop_looks').insert(payloadNoSlug).select().single();
+            if (retryError) throw retryError;
+            lookId = data.id;
+          }
+          toast.warning("Đã lưu Lookbook! (Lỗi đồng bộ schema: Link thân thiện tạm thời dùng ID).");
+        } catch (retryFatal) {
+          toast.error("Lỗi lưu dữ liệu: " + (retryFatal as any).message);
+          setSaving(false);
+          return;
+        }
+      } else {
+        // Lỗi khác
+        toast.error("Lỗi hệ thống: " + mainError.message);
+        setSaving(false);
+        return;
+      }
     }
 
-    if (lookError) {
-      toast.error("Lỗi lưu Lookbook: " + lookError.message);
-      setSaving(false);
-      return;
-    }
-
+    // 3. Lưu Look Items
     try {
       if (lookId) {
         await supabase.from('shop_look_items').delete().eq('look_id', lookId);
@@ -192,7 +208,10 @@ export default function LookbookForm() {
           await supabase.from('shop_look_items').insert(itemsToInsert);
         }
       }
-      toast.success("Đã lưu thành công!");
+      
+      if (slugSavedSuccessfully) {
+        toast.success("Đã lưu thành công!");
+      }
       navigate("/admin/content/looks");
     } catch (itemError: any) {
       toast.error("Lỗi lưu sản phẩm gắn thẻ: " + itemError.message);
