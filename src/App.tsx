@@ -63,7 +63,7 @@ import CooperationRequestManager from "./pages/admin/CooperationRequestManager";
 import TrackingManager from "./pages/admin/TrackingManager";
 import ShowroomManager from "./pages/admin/ShowroomManager";
 import ShowroomForm from "./pages/admin/ShowroomForm";
-import DesignServiceConfig from "./pages/admin/DesignServiceConfig"; // NEW IMPORT
+import DesignServiceConfig from "./pages/admin/DesignServiceConfig";
 
 // Homepage Sub-pages
 import SlidePage from "./pages/admin/homepage/SlidePage.tsx";
@@ -98,10 +98,7 @@ const App = () => (
                 <Route path="/trangchu" element={<Index />} />
                 
                 <Route path="/tim-kiem" element={<SearchPage />} />
-                
-                {/* Đổi route từ :id sang :slug */}
                 <Route path="/san-pham/:slug" element={<ProductDetailPage />} />
-                
                 <Route path="/gio-hang" element={<CartPage />} />
                 <Route path="/yeu-thich" element={<ProfileDashboard />} />
                 <Route path="/lich-su-xem" element={<RecentlyViewedPage />} />
@@ -120,8 +117,14 @@ const App = () => (
 
                 <Route path="/dang-nhap" element={<AccountPage />} />
                 <Route path="/showroom" element={<ShowroomPage />} />
+                
                 <Route path="/cam-hung" element={<InspirationPage />} />
-                <Route path="/cam-hung/:slug" element={<LookDetailPage />} /> {/* ĐÃ CẬP NHẬT */}
+                {/* Route MỚI: Dùng /y-tuong cho trang chi tiết */}
+                <Route path="/y-tuong/:slug" element={<LookDetailPage />} />
+                
+                {/* Giữ route cũ redirect để tránh lỗi link cũ */}
+                <Route path="/cam-hung/:slug" element={<Navigate to="/y-tuong/:slug" replace />} />
+
                 <Route path="/thiet-ke" element={<DesignServicePage />} />
                 <Route path="/ve-chung-toi" element={<ContentPage />} />
                 <Route path="/tuyen-dung" element={<ContentPage />} />
@@ -137,8 +140,6 @@ const App = () => (
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<DashboardOverview />} />
-                  
-                  {/* Homepage Manager (New Structure) */}
                   <Route path="homepage" element={<HomepageSectionManager />} />
                   <Route path="homepage/slides" element={<SlidePage />} />
                   <Route path="homepage/sections" element={<SectionConfigPage />} />
@@ -147,15 +148,13 @@ const App = () => (
                   <Route path="homepage/looks" element={<ShopTheLookPage />} />
                   <Route path="homepage/marketing" element={<MarketingPage />} />
                   
-                  {/* CMS Hub - Merged into main routes */}
                   <Route path="content/looks" element={<LookbookManagerPage />} />
                   <Route path="content/looks/new" element={<LookbookForm />} />
                   <Route path="content/looks/edit/:id" element={<LookbookForm />} />
                   <Route path="content/looks/filters" element={<LookbookFilterPage />} />
-                  <Route path="design-config" element={<DesignServiceConfig />} /> {/* NEW ROUTE */}
+                  <Route path="design-config" element={<DesignServiceConfig />} />
                   <Route path="cooperation-requests" element={<CooperationRequestManager />} />
                   
-                  {/* Sales & Product Management */}
                   <Route path="orders" element={<OrderManager />} />
                   <Route path="products" element={<ProductManager />} />
                   <Route path="products/new" element={<ProductForm />} />
@@ -168,22 +167,17 @@ const App = () => (
                   <Route path="attributes/edit/:id" element={<AttributeForm />} />
                   <Route path="reviews" element={<ReviewManager />} />
                   
-                  {/* Marketing & Customer */}
                   <Route path="customers" element={<CustomerHub />} /> 
                   <Route path="marketing" element={<MarketingTools />} />
                   
-                  {/* System Settings */}
                   <Route path="theme" element={<ThemeSettings />} />
                   <Route path="settings" element={<GeneralSettings />} />
                   <Route path="tracking" element={<TrackingManager />} />
                   <Route path="team" element={<TeamManager />} />
-                  
-                  {/* Showroom Management (New) */}
                   <Route path="showrooms" element={<ShowroomManager />} />
                   <Route path="showrooms/new" element={<ShowroomForm />} />
                   <Route path="showrooms/edit/:id" element={<ShowroomForm />} />
 
-                  {/* Missing CMS Routes */}
                   <Route path="pages" element={<PageManager />} />
                   <Route path="pages/new" element={<PageForm />} />
                   <Route path="pages/edit/:id" element={<PageForm />} />

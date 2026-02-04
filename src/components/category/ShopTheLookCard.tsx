@@ -9,17 +9,17 @@ interface ShopTheLookCardProps {
 }
 
 export function ShopTheLookCard({ look, onQuickView }: ShopTheLookCardProps) {
+  const detailLink = `/y-tuong/${look.slug || look.id}`;
+
   return (
     <div className="col-span-2 group relative aspect-video md:aspect-[2/1] rounded-2xl overflow-hidden shadow-subtle hover:shadow-medium transition-all duration-500">
-      <Link to={`/cam-hung/${look.slug || look.id}`} className="absolute inset-0 z-10"> {/* CẬP NHẬT LINK */}
+      <Link to={detailLink} className="absolute inset-0 z-10">
         <img 
           src={look.image_url} 
           alt={look.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-transparent" />
-        
-        {/* Tiêu đề đã bị ẩn */}
       </Link>
       
       {/* Hotspots Overlay */}
@@ -33,7 +33,7 @@ export function ShopTheLookCard({ look, onQuickView }: ShopTheLookCardProps) {
                 className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot"
                 style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                 onClick={(e) => { 
-                  e.preventDefault(); // Ngăn chặn chuyển trang
+                  e.preventDefault(); 
                   e.stopPropagation(); 
                   if (item.products) onQuickView(item.products);
                 }}

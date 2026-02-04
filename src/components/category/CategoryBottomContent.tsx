@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, Sparkles, ShoppingBag, Plus, X, ChevronRight } from "lucide-react";
+import { TrendingUp, Sparkles, ShoppingBag, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -113,72 +113,75 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {shopLooks.map((look, idx) => (
-              <motion.div 
-                key={look.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="group flex flex-col"
-              >
-                <div 
-                  className="relative aspect-video rounded-[32px] overflow-hidden cursor-pointer shadow-medium group-hover:shadow-elevated transition-all duration-500"
-                  onClick={() => setSelectedLook(look)}
+            {shopLooks.map((look, idx) => {
+              const detailLink = `/y-tuong/${look.slug || look.id}`;
+              return (
+                <motion.div 
+                  key={look.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  viewport={{ once: true }}
+                  className="group flex flex-col"
                 >
-                  <Link to={`/cam-hung/${look.slug || look.id}`} className="absolute inset-0 z-10">
-                    <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
-                  </Link>
-                  
-                  <TooltipProvider>
-                    {look.shop_look_items
-                      .filter((item: any) => item.target_image_url === look.image_url && item.products)
-                      .map((item: any, i: number) => (
-                      <Tooltip key={i} delayDuration={0}>
-                        <TooltipTrigger asChild>
-                          <button
-                            className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot pointer-events-auto"
-                            style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                            onClick={(e) => { 
-                              e.stopPropagation(); 
-                              if (item.products) setQuickViewProduct(item.products);
-                            }}
-                          >
-                            <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
-                            <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
-                          </button>
-                        </TooltipTrigger>
-                        {item.products && (
-                          <TooltipContent className="bg-charcoal text-cream border-none p-3 rounded-xl shadow-elevated">
-                            <p className="font-bold text-[10px] uppercase tracking-wider">{item.products.name}</p>
-                            <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    ))}
-                  </TooltipProvider>
-                </div>
-
-                <div className="flex items-start justify-between p-4">
-                  <div className="flex-1 min-w-0 pr-4">
-                    <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight line-clamp-2">
-                      {look.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-2">{look.shop_look_items?.length || 0} sản phẩm phối hợp</p>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    className="rounded-xl px-4 h-10 text-[9px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm shrink-0"
-                    asChild
+                  <div 
+                    className="relative aspect-video rounded-[32px] overflow-hidden cursor-pointer shadow-medium group-hover:shadow-elevated transition-all duration-500"
+                    onClick={() => setSelectedLook(look)}
                   >
-                    <Link to={`/cam-hung/${look.slug || look.id}`}>
-                      XEM NGAY +
+                    <Link to={detailLink} className="absolute inset-0 z-10">
+                      <img src={look.image_url} alt={look.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
                     </Link>
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
+                    
+                    <TooltipProvider>
+                      {look.shop_look_items
+                        .filter((item: any) => item.target_image_url === look.image_url && item.products)
+                        .map((item: any, i: number) => (
+                        <Tooltip key={i} delayDuration={0}>
+                          <TooltipTrigger asChild>
+                            <button
+                              className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot pointer-events-auto"
+                              style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                if (item.products) setQuickViewProduct(item.products);
+                              }}
+                            >
+                              <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
+                              <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
+                            </button>
+                          </TooltipTrigger>
+                          {item.products && (
+                            <TooltipContent className="bg-charcoal text-cream border-none p-3 rounded-xl shadow-elevated">
+                              <p className="font-bold text-[10px] uppercase tracking-wider">{item.products.name}</p>
+                              <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      ))}
+                    </TooltipProvider>
+                  </div>
+
+                  <div className="flex items-start justify-between p-4">
+                    <div className="flex-1 min-w-0 pr-4">
+                      <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight line-clamp-2">
+                        {look.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-2">{look.shop_look_items?.length || 0} sản phẩm phối hợp</p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="rounded-xl px-4 h-10 text-[9px] font-bold uppercase tracking-widest border-charcoal/20 hover:bg-charcoal hover:text-white shadow-sm shrink-0"
+                      asChild
+                    >
+                      <Link to={detailLink}>
+                        XEM NGAY +
+                      </Link>
+                    </Button>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </section>
       )}
