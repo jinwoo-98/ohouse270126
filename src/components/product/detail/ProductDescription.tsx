@@ -11,6 +11,8 @@ interface ProductDescriptionProps {
 
 export function ProductDescription({ description }: ProductDescriptionProps) {
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const maxLength = 150;
+  const isLongComment = description && description.length > maxLength; // Kiểm tra độ dài nội dung
 
   return (
     <section className="mb-20 scroll-mt-28" id="description">
@@ -57,8 +59,9 @@ export function ProductDescription({ description }: ProductDescriptionProps) {
                 if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: 'smooth' });
               }
             }}
+            // Thay đổi rounded-full thành rounded-2xl
             className={cn(
-              "btn-hero h-14 px-12 rounded-full font-bold shadow-gold group overflow-hidden relative transition-all active:scale-95",
+              "btn-hero h-14 px-12 rounded-2xl font-bold shadow-gold group overflow-hidden relative transition-all active:scale-95",
               isDescExpanded ? "bg-charcoal text-white hover:bg-black" : "bg-primary text-white"
             )}
           >

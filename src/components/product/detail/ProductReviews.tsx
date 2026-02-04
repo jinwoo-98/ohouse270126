@@ -159,7 +159,8 @@ export function ProductReviews({
                         if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: 'smooth' });
                       }
                     }}
-                    className="h-12 px-8 rounded-full border-primary/30 text-primary font-bold text-[11px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-subtle group"
+                    // Thay đổi rounded-full thành rounded-2xl
+                    className="h-12 px-8 rounded-2xl border-primary/30 text-primary font-bold text-[11px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-subtle group"
                   >
                     {showAll ? (
                       <>Thu gọn danh sách <ChevronUp className="w-4 h-4 ml-2" /></>

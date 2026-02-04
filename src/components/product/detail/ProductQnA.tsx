@@ -18,7 +18,11 @@ export function ProductQnA({ productName, onOpenChat }: ProductQnAProps) {
           Bạn cần thêm thông tin về kích thước, chất liệu hay bảo hành của <strong>{productName}</strong>? 
           Trợ lý AI của OHOUSE sẵn sàng giải đáp ngay lập tức.
         </p>
-        <Button onClick={onOpenChat} className="btn-hero h-12 px-8 rounded-full shadow-gold">
+        <Button 
+          onClick={onOpenChat} 
+          // Thay đổi rounded-full thành rounded-2xl
+          className="btn-hero h-12 px-8 rounded-2xl shadow-gold"
+        >
           <MessageCircle className="w-4 h-4 mr-2" /> Chat Ngay Với AI
         </Button>
       </div>
