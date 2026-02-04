@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
 import { Plus, X, Search, Label as LabelIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/ui/label"; // <-- FIX: Import Label component from shadcn/ui
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils"; // <-- FIX: Import cn
+import { cn } from "@/lib/utils";
 
 interface LookItem {
   product_id: string;
