@@ -10,12 +10,11 @@ import { RecentlyViewed, trackProductView } from "@/components/RecentlyViewed";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { AIChatWindow } from "@/components/contact/AIChatWindow";
 import { ProductInfo } from "@/components/product/detail/ProductInfo";
-import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll"; // NEW IMPORT
+import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalScroll";
 import { ProductQnA } from "@/components/product/detail/ProductQnA";
 import { ProductDescription } from "@/components/product/detail/ProductDescription";
 import { ProductReviews } from "@/components/product/detail/ProductReviews";
 import { StickyActionToolbar } from "@/components/product/detail/StickyActionToolbar";
-import { ProductInspiration } from "@/components/product/detail/ProductInspiration";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { useProductRelations } from "@/hooks/useProductRelations";
 import { useSimilarProducts } from "@/hooks/useSimilarProducts";
@@ -216,9 +215,14 @@ export default function ProductDetailPage() {
 
               <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
 
+              {/* Thay thế ProductInspiration bằng ProductHorizontalScroll */}
               {perfectMatch.length > 0 && (
                 <div id="inspiration">
-                  <ProductInspiration product={product} comboProducts={perfectMatch} onQuickView={setQuickViewProduct} />
+                  <ProductHorizontalScroll 
+                    products={perfectMatch} 
+                    title="Bộ Sưu Tập Hoàn Hảo" 
+                    onQuickView={setQuickViewProduct} 
+                  />
                 </div>
               )}
 
