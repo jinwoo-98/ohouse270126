@@ -2,15 +2,16 @@ import { Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch"; // <-- FIX: Import Switch component
+import { Switch } from "@/components/ui/switch";
 
 interface LookbookBasicInfoSectionProps {
   formData: any;
   setFormData: (data: any) => void;
   categories: any[];
+  setIsSlugManuallyChanged: (isChanged: boolean) => void;
 }
 
-export function LookbookBasicInfoSection({ formData, setFormData, categories }: LookbookBasicInfoSectionProps) {
+export function LookbookBasicInfoSection({ formData, setFormData, categories, setIsSlugManuallyChanged }: LookbookBasicInfoSectionProps) {
   const parentCategories = categories.filter(c => !c.parent_id && c.menu_location === 'main');
 
   return (
@@ -25,7 +26,10 @@ export function LookbookBasicInfoSection({ formData, setFormData, categories }: 
         <Label>Đường dẫn (Slug)</Label>
         <Input 
           value={formData.slug} 
-          onChange={e => setFormData({...formData, slug: e.target.value})} 
+          onChange={e => {
+            setFormData({...formData, slug: e.target.value});
+            setIsSlugManuallyChanged(true);
+          }} 
           placeholder="phong-khach-bac-au" 
           className="h-11 rounded-xl font-mono text-xs" 
         />

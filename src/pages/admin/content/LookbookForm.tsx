@@ -232,24 +232,6 @@ export default function LookbookForm() {
     }
   };
 
-  const handleSetFormData = (newData: any) => {
-    if (typeof newData === 'function') {
-      setFormData(prev => {
-        const val = newData(prev);
-        // Nếu slug thay đổi và không phải do tự động tạo từ title (chỉ kiểm tra khi đang edit hoặc đã có title)
-        if (val.slug !== prev.slug && (isEdit || prev.title)) {
-          setIsSlugManuallyChanged(true);
-        }
-        return val;
-      });
-    } else {
-      if (newData.slug !== formData.slug && (isEdit || formData.title)) {
-        setIsSlugManuallyChanged(true);
-      }
-      setFormData(newData);
-    }
-  };
-
   const allEditingImages = [formData.image_url, ...(formData.gallery_urls || [])].filter(Boolean);
   
   const groupedFilters = useMemo(() => {
@@ -281,8 +263,9 @@ export default function LookbookForm() {
           <div className="lg:col-span-1 space-y-6">
             <LookbookBasicInfoSection 
               formData={formData} 
-              setFormData={handleSetFormData} 
+              setFormData={setFormData} 
               categories={categories} 
+              setIsSlugManuallyChanged={setIsSlugManuallyChanged}
             />
             
             <LookbookFilterSection 
