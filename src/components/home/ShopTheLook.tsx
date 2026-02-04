@@ -44,11 +44,11 @@ export function ShopTheLook() {
         .single();
       if (configData) setConfig(configData);
 
+      // Bỏ 'slug' khỏi select list
       const { data, error } = await supabase
         .from('shop_looks')
         .select(`
           *,
-          slug,
           homepage_image_url,
           shop_look_items (
             *,

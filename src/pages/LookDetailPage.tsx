@@ -21,8 +21,8 @@ import { ProductHorizontalScroll } from "@/components/product/ProductHorizontalS
 import { useSimilarLookbooks } from "@/hooks/useSimilarLookbooks";
 import { SimilarLookbooks } from "@/components/inspiration/SimilarLookbooks";
 import { LookbookCTAFilters } from "@/components/inspiration/LookbookCTAFilters";
-import { LookProductList } from "@/components/inspiration/LookProductList"; // Danh sách dọc tối giản (Sidebar)
-import { LookProductVerticalList } from "@/components/inspiration/LookProductFullList"; // Danh sách lưới thẻ đầy đủ (Sản phẩm tương tự)
+import { LookProductList } from "@/components/inspiration/LookProductList"; 
+import { LookProductVerticalList } from "@/components/inspiration/LookProductFullList"; 
 
 export default function LookDetailPage() {
   const { slug } = useParams();
@@ -44,10 +44,9 @@ export default function LookDetailPage() {
   const fetchLook = async () => {
     setLoading(true);
     try {
-      // Định nghĩa truy vấn chi tiết để đảm bảo lấy slug của lookbook và slug của sản phẩm
+      // Bỏ 'slug' khỏi select list, dùng * để lấy tất cả
       const selectQuery = `
         *, 
-        slug,
         shop_look_items(
           *, 
           products(id, name, price, image_url, slug, category_id, is_sale, original_price)

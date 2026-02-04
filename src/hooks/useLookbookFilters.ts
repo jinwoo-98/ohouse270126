@@ -33,11 +33,11 @@ export function useLookbookFilters() {
       setIsLoadingLooks(true);
       try {
         const [looksRes, filtersRes] = await Promise.all([
+          // Bỏ 'slug' khỏi select string
           supabase
             .from('shop_looks')
             .select(`
               *, 
-              slug,
               shop_look_items(
                 *, 
                 products(

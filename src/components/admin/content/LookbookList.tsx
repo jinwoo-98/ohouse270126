@@ -27,8 +27,8 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
 
   const fetchData = async () => {
     setLoading(true);
-    // Lấy lookbook và items, đảm bảo lấy trường slug
-    const { data: l } = await supabase.from('shop_looks').select('*, slug, shop_look_items(*)').order('display_order');
+    // Sử dụng * để lấy tất cả cột, bao gồm slug nếu có
+    const { data: l } = await supabase.from('shop_looks').select('*, shop_look_items(*)').order('display_order');
     // Lấy danh mục
     const { data: c } = await supabase.from('categories').select('id, slug, name, parent_id, menu_location');
     
