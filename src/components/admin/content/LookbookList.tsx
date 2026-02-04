@@ -27,8 +27,8 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
 
   const fetchData = async () => {
     setLoading(true);
-    // Lấy lookbook và items
-    const { data: l } = await supabase.from('shop_looks').select('*, shop_look_items(*)').order('display_order');
+    // Lấy lookbook và items, đảm bảo lấy trường slug
+    const { data: l } = await supabase.from('shop_looks').select('*, slug, shop_look_items(*)').order('display_order');
     // Lấy danh mục
     const { data: c } = await supabase.from('categories').select('id, slug, name, parent_id, menu_location');
     
@@ -131,7 +131,7 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
                         </div>
                         <div className="p-4 text-center flex flex-col items-center">
                           <h3 className="font-bold text-sm line-clamp-1">{look.title}</h3>
-                          <code className="text-[10px] text-muted-foreground block mt-1 font-mono">/{look.slug}</code>
+                          <code className="text-[10px] text-muted-foreground block mt-1 font-mono">/{look.slug || look.id}</code>
                           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                             <LinkIcon className="w-3 h-3" /> {look.shop_look_items?.length || 0} sản phẩm
                           </p>

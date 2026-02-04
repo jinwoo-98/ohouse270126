@@ -48,6 +48,7 @@ export function ShopTheLook() {
         .from('shop_looks')
         .select(`
           *,
+          slug,
           homepage_image_url,
           shop_look_items (
             *,

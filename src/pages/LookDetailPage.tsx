@@ -47,7 +47,7 @@ export default function LookDetailPage() {
       // Thử tìm bằng slug trước
       let { data, error } = await supabase
         .from('shop_looks')
-        .select('*, shop_look_items(*, products(*))')
+        .select('*, slug, shop_look_items(*, products(id, name, price, image_url, slug, category_id, is_sale, original_price))')
         .eq('slug', slug)
         .single();
 
@@ -55,7 +55,7 @@ export default function LookDetailPage() {
       if (!data || (error && error.code === 'PGRST116')) {
         const { data: dataById, error: errorById } = await supabase
           .from('shop_looks')
-          .select('*, shop_look_items(*, products(*))')
+          .select('*, slug, shop_look_items(*, products(id, name, price, image_url, slug, category_id, is_sale, original_price))')
           .eq('id', slug) // Giả định slug có thể là ID
           .single();
         

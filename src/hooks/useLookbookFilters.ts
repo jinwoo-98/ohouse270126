@@ -37,6 +37,7 @@ export function useLookbookFilters() {
             .from('shop_looks')
             .select(`
               *, 
+              slug,
               shop_look_items(
                 *, 
                 products(
