@@ -1,22 +1,11 @@
--- This migration ensures the slug column exists and populates it for existing entries.
+-- This migration re-confirms the slug column and its constraints,
+-- which helps in forcing a schema cache reload on the Supabase API layer.
 
--- 1. Add slug column if it doesn't exist (defensive programming)
+-- 1. Add slug column if it doesn't exist
 ALTER TABLE public.shop_looks
 ADD COLUMN IF NOT EXISTS slug TEXT;
 
--- 2. Add unique constraint if it doesn't exist
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint 
-        WHERE conname = 'shop_looks_slug_key' AND conrelid = 'public.shop_looks'::regclass
-    ) THEN
-        ALTER TABLE public.shop_looks ADD CONSTRAINT shop_looks_slug_key UNIQUE (slug);
-    END IF;
-END;
-$$;
-
--- 3. Create a function to generate slugs (if it doesn't exist)
+-- 2. Create a function to generate slugs (re-affirming its existence)
 CREATE OR REPLACE FUNCTION public.slugify(
   "value" TEXT
 )
@@ -48,19 +37,20 @@ RETURNS TEXT AS $$
   SELECT "value" FROM "trimmed";
 $$ LANGUAGE SQL IMMUTABLE;
 
--- 4. Populate slug for existing rows where slug is NULL
--- We add a random suffix to avoid unique constraint violations if titles are identical
+-- 3. Populate slug for any existing rows where slug is still NULL or empty.
+-- This is a safety net to ensure data integrity.
 UPDATE public.shop_looks
 SET slug = slugify(title) || '-' || substr(md5(random()::text), 0, 5)
 WHERE slug IS NULL OR slug = '';
 
--- 5. Add a NOT NULL constraint now that all slugs are populated
+-- 4. Add unique constraint if it doesn't exist. This is crucial.
 DO $$
 BEGIN
     IF NOT EXISTS (
-        SELECT 1 FROM public.shop_looks WHERE slug IS NULL OR slug = ''
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'shop_looks_slug_key' AND conrelid = 'public.shop_looks'::regclass
     ) THEN
-        ALTER TABLE public.shop_looks ALTER COLUMN slug SET NOT NULL;
+        ALTER TABLE public.shop_looks ADD CONSTRAINT shop_looks_slug_key UNIQUE (slug);
     END IF;
 END;
 $$;
