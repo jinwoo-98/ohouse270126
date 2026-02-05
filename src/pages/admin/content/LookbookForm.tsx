@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { slugify } from "@/lib/utils"; // Import slugify
 
 // Import các components
 import { LookbookBasicInfoSection } from "@/components/admin/content/lookbook-form/LookbookBasicInfoSection";
@@ -37,6 +38,16 @@ export default function LookbookForm() {
     material: "none",
     color: "none",
   });
+
+  // Auto-generate slug when title changes, only if it's a new lookbook or slug is empty
+  useEffect(() => {
+    if (!isEdit || !formData.slug) {
+      const newSlug = slugify(formData.title);
+      if (newSlug !== formData.slug) {
+        setFormData(prev => ({ ...prev, slug: newSlug }));
+      }
+    }
+  }, [formData.title, isEdit]);
 
   useEffect(() => {
     fetchInitialData();
@@ -85,7 +96,7 @@ export default function LookbookForm() {
 
     setFormData({
       title: lookData.title,
-      slug: lookData.slug || "",
+      slug: lookData.slug || slugify(lookData.title), // Ensure slug exists for old data
       category_id: lookData.category_id,
       image_url: lookData.image_url,
       gallery_urls: lookData.gallery_urls || [],
@@ -106,11 +117,11 @@ export default function LookbookForm() {
     if (!formData.title) { toast.error("Vui lòng nhập tên Lookbook"); setSaving(false); return; }
     if (!formData.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
     if (!formData.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
+    if (!formData.slug) { toast.error("Slug không được để trống"); setSaving(false); return; }
 
-    // IMPORTANT: We do NOT send 'slug' here. The DB trigger will handle it.
-    // This avoids the "schema cache" error if the API doesn't know about the slug column.
     const payload = {
       title: formData.title,
+      slug: formData.slug, // Now we explicitly send the slug
       category_id: formData.category_id,
       image_url: formData.image_url,
       gallery_urls: formData.gallery_urls,

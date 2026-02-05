@@ -1,8 +1,10 @@
-import { Sparkles, Eye } from "lucide-react";
+import { Sparkles, Eye, Copy } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface LookbookBasicInfoSectionProps {
   formData: any;
@@ -12,6 +14,11 @@ interface LookbookBasicInfoSectionProps {
 
 export function LookbookBasicInfoSection({ formData, setFormData, categories }: LookbookBasicInfoSectionProps) {
   const parentCategories = categories.filter(c => !c.parent_id && c.menu_location === 'main');
+
+  const handleCopySlug = () => {
+    navigator.clipboard.writeText(formData.slug);
+    toast.success("Đã sao chép slug!");
+  };
 
   return (
     <div className="space-y-6 bg-white p-6 rounded-3xl border shadow-sm">
@@ -24,13 +31,18 @@ export function LookbookBasicInfoSection({ formData, setFormData, categories }: 
       
       <div className="space-y-2">
         <Label>Đường dẫn (Slug)</Label>
-        <Input 
-          value={formData.slug} 
-          placeholder="Tự động tạo từ tên..." 
-          className="h-11 rounded-xl font-mono text-xs bg-secondary/50" 
-          disabled
-        />
-        <p className="text-[10px] text-muted-foreground italic">* Đường dẫn sẽ được hệ thống tự động tạo và cập nhật.</p>
+        <div className="flex items-center gap-2">
+          <Input 
+            value={formData.slug} 
+            onChange={e => setFormData({...formData, slug: e.target.value})}
+            placeholder="Tự động tạo từ tên..." 
+            className="h-11 rounded-xl font-mono text-xs bg-secondary/50" 
+          />
+          <Button type="button" size="icon" variant="outline" onClick={handleCopySlug} className="h-11 w-11 rounded-xl shrink-0">
+            <Copy className="w-4 h-4" />
+          </Button>
+        </div>
+        <p className="text-[10px] text-muted-foreground italic">* Slug được tạo tự động từ tên. Bạn có thể sao chép hoặc chỉnh sửa thủ công.</p>
       </div>
 
       <div className="space-y-2">
