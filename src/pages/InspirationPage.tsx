@@ -24,13 +24,14 @@ export default function InspirationPage() {
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
 
   const handleResetFilters = () => {
-    updateFilter('selectedCategoryId', 'all');
+    updateFilter('selectedCategorySlug', 'all');
     updateFilter('selectedStyle', 'all');
     updateFilter('selectedMaterial', 'all');
     updateFilter('selectedColor', 'all');
   };
   
-  const currentCategory = filterOptions.categories.find((c: any) => c.id === filters.selectedCategoryId);
+  // FIX: Find category by slug, not ID
+  const currentCategory = filterOptions.categories.find((c: any) => c.slug === filters.selectedCategorySlug);
   const pageTitle = currentCategory?.name || "Tất Cả Không Gian";
 
   return (

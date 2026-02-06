@@ -39,8 +39,9 @@ function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { 
 
 // Component cho bộ lọc chính (Không gian)
 function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
-  const currentCategory = filterOptions.categories.find((c: any) => c.id === filters.selectedCategoryId);
-  const isFiltered = filters.selectedCategoryId !== "all";
+  // FIX: Find category by slug
+  const currentCategory = filterOptions.categories.find((c: any) => c.slug === filters.selectedCategorySlug);
+  const isFiltered = filters.selectedCategorySlug !== "all";
   
   return (
     <Popover>
@@ -63,10 +64,12 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
           {filterOptions.categories.map((cat: any) => (
             <button
               key={cat.id}
-              onClick={() => updateFilter('selectedCategoryId', cat.id)}
+              // FIX: Update filter with slug
+              onClick={() => updateFilter('selectedCategorySlug', cat.slug)}
               className={cn(
                 "w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors",
-                filters.selectedCategoryId === cat.id ? "bg-primary text-white font-bold" : "hover:bg-secondary/50"
+                // FIX: Compare with slug
+                filters.selectedCategorySlug === cat.slug ? "bg-primary text-white font-bold" : "hover:bg-secondary/50"
               )}
             >
               {cat.name}
@@ -148,7 +151,7 @@ interface InspirationToolbarProps {
 
 export function InspirationToolbar({ lookCount, filterOptions, filters, updateFilter, onResetFilters }: InspirationToolbarProps) {
   const isMobile = useIsMobile();
-  const isAnyFilterActive = filters.selectedCategoryId !== 'all' || filters.selectedStyle !== 'all' || filters.selectedMaterial !== 'all' || filters.selectedColor !== 'all';
+  const isAnyFilterActive = filters.selectedCategorySlug !== 'all' || filters.selectedStyle !== 'all' || filters.selectedMaterial !== 'all' || filters.selectedColor !== 'all';
 
   return (
     <div className="bg-background/95 backdrop-blur-md shadow-medium py-3 border-b border-border/40">

@@ -4,7 +4,8 @@ import { useCategories } from "./useCategories";
 import { useSearchParams } from "react-router-dom";
 
 interface LookbookFilterState {
-  selectedCategoryId: string;
+  // FIX: Rename to clarify it stores a slug
+  selectedCategorySlug: string;
   selectedStyle: string;
   selectedMaterial: string;
   selectedColor: string;
@@ -25,7 +26,7 @@ export function useLookbookFilters() {
   const [fetchedFilterOptions, setFetchedFilterOptions] = useState<any[]>([]);
   
   const [filters, setFilters] = useState<LookbookFilterState>({
-    selectedCategoryId: "all",
+    selectedCategorySlug: "all",
     selectedStyle: "all",
     selectedMaterial: "all",
     selectedColor: "all",
@@ -37,19 +38,14 @@ export function useLookbookFilters() {
     const style = searchParams.get('style');
     const color = searchParams.get('color');
     
-    let categoryId = "all";
-    if (categorySlug && categoriesData?.allCategories) {
-      const foundCat = categoriesData.allCategories.find((c: any) => c.slug === categorySlug);
-      if (foundCat) categoryId = foundCat.id;
-    }
-
+    // FIX: Directly use the slug from URL, no need to find ID
     setFilters({
-      selectedCategoryId: categoryId,
+      selectedCategorySlug: categorySlug || "all",
       selectedStyle: style || "all",
       selectedMaterial: "all", // Material filter not in URL for now
       selectedColor: color || "all",
     });
-  }, [searchParams, categoriesData?.allCategories]);
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchLooksAndFilters = async () => {
@@ -100,10 +96,12 @@ export function useLookbookFilters() {
     };
 
     if (categoriesData?.allCategories && allLooks.length > 0) {
-      const lookCategoryIds = new Set(allLooks.map(l => l.category_id).filter(Boolean));
+      // This is a set of slugs, which is correct
+      const lookCategorySlugs = new Set(allLooks.map(l => l.category_id).filter(Boolean));
       
+      // FIX: Filter categories by checking if their slug is in the set
       const availableCategories = categoriesData.allCategories
-        .filter((c: any) => lookCategoryIds.has(c.id))
+        .filter((c: any) => lookCategorySlugs.has(c.slug))
         .map((c: any) => ({ name: c.name, id: c.id, slug: c.slug }));
 
       options.categories = [...options.categories, ...availableCategories];
@@ -124,7 +122,8 @@ export function useLookbookFilters() {
 
   const filteredLooks = useMemo(() => {
     return allLooks.filter(look => {
-      if (filters.selectedCategoryId !== "all" && look.category_id !== filters.selectedCategoryId) {
+      // FIX: Compare slug with slug
+      if (filters.selectedCategorySlug !== "all" && look.category_id !== filters.selectedCategorySlug) {
         return false;
       }
       if (filters.selectedStyle !== "all" && look.style !== filters.selectedStyle) {

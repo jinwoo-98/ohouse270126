@@ -66,7 +66,8 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
   const looksByCategorySlug = useMemo(() => {
     const grouped: Record<string, any[]> = {};
     filteredLooks.forEach(look => {
-      const cat = categories.find(c => c.id === look.category_id);
+      // FIX: Find category by slug, not ID
+      const cat = categories.find(c => c.slug === look.category_id);
       if (!cat) return;
 
       let parentSlug = null;

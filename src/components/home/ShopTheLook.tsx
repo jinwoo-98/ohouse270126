@@ -24,7 +24,8 @@ export function ShopTheLook() {
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  const [activeCategoryId, setActiveCategoryId] = useState<string>("");
+  // FIX: State now stores slug, not ID
+  const [activeCategorySlug, setActiveCategorySlug] = useState<string>("");
   const [currentLookIndex, setCurrentLookIndex] = useState(0); 
   
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
@@ -72,25 +73,29 @@ export function ShopTheLook() {
   const categoriesWithLooks = useMemo(() => {
     if (!categoriesData?.allCategories || allLooks.length === 0) return [];
     
-    const lookCategoryIds = new Set(allLooks.map(l => l.category_id));
+    // This is a set of slugs, which is correct
+    const lookCategorySlugs = new Set(allLooks.map(l => l.category_id).filter(Boolean));
     
+    // FIX: Filter categories by checking if their slug is in the set
     return categoriesData.allCategories
-      .filter(c => lookCategoryIds.has(c.id))
-      .filter((value, index, self) => self.findIndex(v => v.id === value.id) === index);
+      .filter((c: any) => lookCategorySlugs.has(c.slug))
+      .filter((value: any, index: number, self: any[]) => self.findIndex((v: any) => v.id === value.id) === index);
       
   }, [allLooks, categoriesData]);
 
   useEffect(() => {
-    if (allLooks.length > 0 && categoriesWithLooks.length > 0 && !activeCategoryId) {
-      setActiveCategoryId(categoriesWithLooks[0].id!);
+    if (allLooks.length > 0 && categoriesWithLooks.length > 0 && !activeCategorySlug) {
+      // FIX: Set the active category by its slug
+      setActiveCategorySlug(categoriesWithLooks[0].slug!);
     }
-  }, [allLooks, categoriesWithLooks, activeCategoryId]);
+  }, [allLooks, categoriesWithLooks, activeCategorySlug]);
   
-  const currentCategoryLooks = useMemo(() => allLooks.filter(l => l.category_id === activeCategoryId), [allLooks, activeCategoryId]);
+  // FIX: Filter looks by the active category slug
+  const currentCategoryLooks = useMemo(() => allLooks.filter(l => l.category_id === activeCategorySlug), [allLooks, activeCategorySlug]);
   
   useEffect(() => {
     setCurrentLookIndex(0);
-  }, [activeCategoryId]);
+  }, [activeCategorySlug]);
 
   const paginateLook = (newDirection: number) => {
     if (currentCategoryLooks.length <= 1) return;
@@ -148,9 +153,11 @@ export function ShopTheLook() {
           {categoriesWithLooks.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setActiveCategoryId(cat.id!)}
+              // FIX: Set active category by slug
+              onClick={() => setActiveCategorySlug(cat.slug!)}
               className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl border transition-all whitespace-nowrap shrink-0 ${
-                cat.id === activeCategoryId 
+                // FIX: Compare with active slug
+                cat.slug === activeCategorySlug 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                   : 'bg-white border-border text-muted-foreground hover:border-charcoal'
               }`}
