@@ -38,6 +38,7 @@ export default function LookDetailPage() {
     
     const selectQuery = `
       *, 
+      slug,
       shop_look_items(
         *, 
         products(id, name, price, image_url, slug, category_id, is_sale, original_price)
@@ -45,40 +46,14 @@ export default function LookDetailPage() {
     `;
 
     try {
-      let lookData = null;
-      let error = null;
-      
-      // BƯỚC 1: Thử tìm bằng SLUG
-      const { data: dataBySlug, error: errorBySlug } = await supabase
+      // REFACTORED QUERY: Use .or() to search by slug OR id in a single, robust query.
+      const { data: lookData, error } = await supabase
         .from('shop_looks')
         .select(selectQuery)
-        .eq('slug', slug)
-        .maybeSingle();
+        .or(`slug.eq.${slug},id.eq.${slug}`) // Key change here
+        .single();
 
-      if (dataBySlug) {
-        lookData = dataBySlug;
-      } else {
-        // BƯỚC 2: Fallback tìm bằng ID (nếu chuỗi slug có dạng UUID)
-        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug || '');
-        
-        if (isUUID) {
-          const { data: dataById, error: errorById } = await supabase
-            .from('shop_looks')
-            .select(selectQuery)
-            .eq('id', slug)
-            .single();
-          
-          if (dataById) {
-            lookData = dataById;
-          } else {
-            error = errorById;
-          }
-        } else {
-          error = errorBySlug;
-        }
-      }
-
-      if (!lookData) {
+      if (error || !lookData) {
         if (error) console.error("Lookbook fetch error:", error);
         toast.error("Không tìm thấy không gian thiết kế này.");
         navigate("/cam-hung");
