@@ -239,8 +239,8 @@ export default function CategoryPage() {
               
               {!isLoading && (
                 <CategoryBottomContent 
-                  categoryId={currentCategory?.id} 
-                  parentCategoryId={parentCategory?.id}
+                  categoryId={currentCategory?.slug} 
+                  parentCategoryId={parentCategory?.slug}
                   seoContent={currentCategory?.seo_content} 
                   isParentCategory={isParent} 
                 />

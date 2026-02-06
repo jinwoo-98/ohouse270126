@@ -53,9 +53,9 @@ export function LookbookBasicInfoSection({ formData, setFormData, categories }: 
             {parentCategories.map(parent => (
               <SelectGroup key={parent.id}>
                 <SelectLabel className="font-bold text-primary">{parent.name}</SelectLabel>
-                <SelectItem value={parent.id}>-- Trang chính {parent.name}</SelectItem>
+                <SelectItem value={parent.slug}>-- Trang chính {parent.name}</SelectItem>
                 {categories.filter(c => c.parent_id === parent.id).map(child => (
-                  <SelectItem key={child.id} value={child.id}>&nbsp;&nbsp;&nbsp;{child.name}</SelectItem>
+                  <SelectItem key={child.id} value={child.slug}>&nbsp;&nbsp;&nbsp;{child.name}</SelectItem>
                 ))}
               </SelectGroup>
             ))}
