@@ -24,7 +24,6 @@ export function ShopTheLook() {
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  // FIX: State now stores slug, not ID
   const [activeCategorySlug, setActiveCategorySlug] = useState<string>("");
   const [currentLookIndex, setCurrentLookIndex] = useState(0); 
   
@@ -73,10 +72,8 @@ export function ShopTheLook() {
   const categoriesWithLooks = useMemo(() => {
     if (!categoriesData?.allCategories || allLooks.length === 0) return [];
     
-    // This is a set of slugs, which is correct
     const lookCategorySlugs = new Set(allLooks.map(l => l.category_id).filter(Boolean));
     
-    // FIX: Filter categories by checking if their slug is in the set
     return categoriesData.allCategories
       .filter((c: any) => lookCategorySlugs.has(c.slug))
       .filter((value: any, index: number, self: any[]) => self.findIndex((v: any) => v.id === value.id) === index);
@@ -85,12 +82,10 @@ export function ShopTheLook() {
 
   useEffect(() => {
     if (allLooks.length > 0 && categoriesWithLooks.length > 0 && !activeCategorySlug) {
-      // FIX: Set the active category by its slug
       setActiveCategorySlug(categoriesWithLooks[0].slug!);
     }
   }, [allLooks, categoriesWithLooks, activeCategorySlug]);
   
-  // FIX: Filter looks by the active category slug
   const currentCategoryLooks = useMemo(() => allLooks.filter(l => l.category_id === activeCategorySlug), [allLooks, activeCategorySlug]);
   
   useEffect(() => {
@@ -153,10 +148,8 @@ export function ShopTheLook() {
           {categoriesWithLooks.map((cat) => (
             <button
               key={cat.id}
-              // FIX: Set active category by slug
               onClick={() => setActiveCategorySlug(cat.slug!)}
               className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl border transition-all whitespace-nowrap shrink-0 ${
-                // FIX: Compare with active slug
                 cat.slug === activeCategorySlug 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                   : 'bg-white border-border text-muted-foreground hover:border-charcoal'

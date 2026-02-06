@@ -4,7 +4,6 @@ import { useCategories } from "./useCategories";
 import { useSearchParams } from "react-router-dom";
 
 interface LookbookFilterState {
-  // FIX: Rename to clarify it stores a slug
   selectedCategorySlug: string;
   selectedStyle: string;
   selectedMaterial: string;
@@ -38,7 +37,6 @@ export function useLookbookFilters() {
     const style = searchParams.get('style');
     const color = searchParams.get('color');
     
-    // FIX: Directly use the slug from URL, no need to find ID
     setFilters({
       selectedCategorySlug: categorySlug || "all",
       selectedStyle: style || "all",
@@ -96,10 +94,8 @@ export function useLookbookFilters() {
     };
 
     if (categoriesData?.allCategories && allLooks.length > 0) {
-      // This is a set of slugs, which is correct
       const lookCategorySlugs = new Set(allLooks.map(l => l.category_id).filter(Boolean));
       
-      // FIX: Filter categories by checking if their slug is in the set
       const availableCategories = categoriesData.allCategories
         .filter((c: any) => lookCategorySlugs.has(c.slug))
         .map((c: any) => ({ name: c.name, id: c.id, slug: c.slug }));
@@ -122,7 +118,6 @@ export function useLookbookFilters() {
 
   const filteredLooks = useMemo(() => {
     return allLooks.filter(look => {
-      // FIX: Compare slug with slug
       if (filters.selectedCategorySlug !== "all" && look.category_id !== filters.selectedCategorySlug) {
         return false;
       }
