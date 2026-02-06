@@ -24,7 +24,7 @@ export function ShopTheLook() {
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  const [activeCategorySlug, setActiveCategorySlug] = useState<string>("");
+  const [activeCategoryId, setActiveCategoryId] = useState<string>("");
   const [currentLookIndex, setCurrentLookIndex] = useState(0); 
   
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
@@ -70,32 +70,27 @@ export function ShopTheLook() {
   };
 
   const categoriesWithLooks = useMemo(() => {
-    if (!categoriesData || allLooks.length === 0) return [];
+    if (!categoriesData?.allCategories || allLooks.length === 0) return [];
     
-    const allCategories = [
-      ...categoriesData.mainCategories.map(c => ({ name: c.name, slug: c.dropdownKey })),
-      ...Object.values(categoriesData.productCategories).flat().map(c => ({ name: c.name, slug: c.href.replace('/', '') }))
-    ];
-
-    const lookCategorySlugs = new Set(allLooks.map(l => l.category_id));
+    const lookCategoryIds = new Set(allLooks.map(l => l.category_id));
     
-    return allCategories
-      .filter(c => c.slug && lookCategorySlugs.has(c.slug))
-      .filter((value, index, self) => self.findIndex(v => v.slug === value.slug) === index); // Unique by slug
+    return categoriesData.allCategories
+      .filter(c => lookCategoryIds.has(c.id))
+      .filter((value, index, self) => self.findIndex(v => v.id === value.id) === index);
       
   }, [allLooks, categoriesData]);
 
   useEffect(() => {
-    if (allLooks.length > 0 && categoriesWithLooks.length > 0 && !activeCategorySlug) {
-      setActiveCategorySlug(categoriesWithLooks[0].slug!);
+    if (allLooks.length > 0 && categoriesWithLooks.length > 0 && !activeCategoryId) {
+      setActiveCategoryId(categoriesWithLooks[0].id!);
     }
-  }, [allLooks, categoriesWithLooks, activeCategorySlug]);
+  }, [allLooks, categoriesWithLooks, activeCategoryId]);
   
-  const currentCategoryLooks = useMemo(() => allLooks.filter(l => l.category_id === activeCategorySlug), [allLooks, activeCategorySlug]);
+  const currentCategoryLooks = useMemo(() => allLooks.filter(l => l.category_id === activeCategoryId), [allLooks, activeCategoryId]);
   
   useEffect(() => {
     setCurrentLookIndex(0);
-  }, [activeCategorySlug]);
+  }, [activeCategoryId]);
 
   const paginateLook = (newDirection: number) => {
     if (currentCategoryLooks.length <= 1) return;
@@ -152,10 +147,10 @@ export function ShopTheLook() {
         <div className="flex justify-center md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0">
           {categoriesWithLooks.map((cat) => (
             <button
-              key={cat.slug}
-              onClick={() => setActiveCategorySlug(cat.slug!)}
+              key={cat.id}
+              onClick={() => setActiveCategoryId(cat.id!)}
               className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl border transition-all whitespace-nowrap shrink-0 ${
-                cat.slug === activeCategorySlug 
+                cat.id === activeCategoryId 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                   : 'bg-white border-border text-muted-foreground hover:border-charcoal'
               }`}

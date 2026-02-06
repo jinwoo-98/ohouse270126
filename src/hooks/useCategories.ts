@@ -40,7 +40,8 @@ export function useCategories() {
             }
             subItemsMap[parent.slug].push({
               name: c.name,
-              href: c.slug.startsWith('/') ? c.slug : `/${c.slug}`
+              href: c.slug.startsWith('/') ? c.slug : `/${c.slug}`,
+              id: c.id // Thêm ID cho danh mục con
             });
           }
         }
@@ -60,10 +61,12 @@ export function useCategories() {
           href: c.slug.startsWith('/') ? c.slug : `/${c.slug}`,
           hasDropdown: categories.some(child => child.parent_id === c.id),
           dropdownKey: c.slug,
-          isHighlight: c.is_highlight
+          isHighlight: c.is_highlight,
+          id: c.id // Thêm ID cho danh mục cha
         })),
         productCategories: subItemsMap,
-        footerLinks
+        footerLinks,
+        allCategories: categories // Trả về tất cả để dễ dàng tra cứu
       };
     }
   });

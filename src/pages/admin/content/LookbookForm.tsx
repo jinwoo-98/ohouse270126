@@ -61,7 +61,7 @@ export default function LookbookForm() {
       } else {
         const defaultCat = cRes.data?.find(c => !c.parent_id && c.menu_location === 'main');
         if (defaultCat) {
-          setFormData(prev => ({ ...prev, category_id: defaultCat.slug }));
+          setFormData(prev => ({ ...prev, category_id: defaultCat.id }));
         }
       }
     } catch (e) {

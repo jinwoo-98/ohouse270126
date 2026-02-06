@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCategories } from "./useCategories";
+import { useSearchParams } from "react-router-dom";
 
 interface LookbookFilterState {
-  selectedCategorySlug: string;
+  selectedCategoryId: string;
   selectedStyle: string;
   selectedMaterial: string;
   selectedColor: string;
@@ -11,6 +12,7 @@ interface LookbookFilterState {
 
 interface FilterOption {
   name: string;
+  id: string;
   slug: string;
 }
 
@@ -18,15 +20,36 @@ export function useLookbookFilters() {
   const { data: categoriesData, isLoading: isLoadingCategories } = useCategories();
   const [allLooks, setAllLooks] = useState<any[]>([]);
   const [isLoadingLooks, setIsLoadingLooks] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
   
   const [fetchedFilterOptions, setFetchedFilterOptions] = useState<any[]>([]);
   
   const [filters, setFilters] = useState<LookbookFilterState>({
-    selectedCategorySlug: "all",
+    selectedCategoryId: "all",
     selectedStyle: "all",
     selectedMaterial: "all",
     selectedColor: "all",
   });
+
+  // Sync filters with URL params on initial load
+  useEffect(() => {
+    const categorySlug = searchParams.get('category');
+    const style = searchParams.get('style');
+    const color = searchParams.get('color');
+    
+    let categoryId = "all";
+    if (categorySlug && categoriesData?.allCategories) {
+      const foundCat = categoriesData.allCategories.find((c: any) => c.slug === categorySlug);
+      if (foundCat) categoryId = foundCat.id;
+    }
+
+    setFilters({
+      selectedCategoryId: categoryId,
+      selectedStyle: style || "all",
+      selectedMaterial: "all", // Material filter not in URL for now
+      selectedColor: color || "all",
+    });
+  }, [searchParams, categoriesData?.allCategories]);
 
   useEffect(() => {
     const fetchLooksAndFilters = async () => {
@@ -70,23 +93,18 @@ export function useLookbookFilters() {
 
   const filterOptions = useMemo(() => {
     const options: { categories: FilterOption[], styles: string[], materials: string[], colors: string[] } = {
-      categories: [{ name: "Tất Cả Không Gian", slug: "all" }],
+      categories: [{ name: "Tất Cả Không Gian", id: "all", slug: "all" }],
       styles: [],
       materials: [],
       colors: [],
     };
 
-    if (categoriesData && allLooks.length > 0) {
-      const allDbCategories = [
-        ...categoriesData.mainCategories.map(c => ({ name: c.name, slug: c.dropdownKey })),
-        ...Object.values(categoriesData.productCategories).flat().map(c => ({ name: c.name, slug: c.href.replace('/', '') }))
-      ];
+    if (categoriesData?.allCategories && allLooks.length > 0) {
+      const lookCategoryIds = new Set(allLooks.map(l => l.category_id).filter(Boolean));
       
-      const lookCategorySlugs = new Set(allLooks.map(l => l.category_id).filter(Boolean));
-      
-      const availableCategories = allDbCategories
-        .filter(c => c.slug && lookCategorySlugs.has(c.slug))
-        .filter((value, index, self) => self.findIndex(v => v.slug === value.slug) === index); // Unique by slug
+      const availableCategories = categoriesData.allCategories
+        .filter((c: any) => lookCategoryIds.has(c.id))
+        .map((c: any) => ({ name: c.name, id: c.id, slug: c.slug }));
 
       options.categories = [...options.categories, ...availableCategories];
     }
@@ -106,7 +124,7 @@ export function useLookbookFilters() {
 
   const filteredLooks = useMemo(() => {
     return allLooks.filter(look => {
-      if (filters.selectedCategorySlug !== "all" && look.category_id !== filters.selectedCategorySlug) {
+      if (filters.selectedCategoryId !== "all" && look.category_id !== filters.selectedCategoryId) {
         return false;
       }
       if (filters.selectedStyle !== "all" && look.style !== filters.selectedStyle) {
