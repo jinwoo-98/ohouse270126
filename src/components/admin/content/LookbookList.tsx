@@ -27,9 +27,7 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
 
   const fetchData = async () => {
     setLoading(true);
-    // Sử dụng * để lấy tất cả cột, bao gồm slug nếu có
     const { data: l } = await supabase.from('shop_looks').select('*, shop_look_items(*)').order('display_order');
-    // Lấy danh mục
     const { data: c } = await supabase.from('categories').select('id, slug, name, parent_id, menu_location');
     
     setLooks(l || []);
@@ -51,34 +49,32 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
     }
   };
 
-  // Sử dụng useMemo để lọc dựa trên searchTerm từ prop
   const filteredLooks = useMemo(() => {
     if (!searchTerm) return looks;
     const lowerCaseSearch = searchTerm.toLowerCase();
     return looks.filter(l => 
       l.title?.toLowerCase().includes(lowerCaseSearch) ||
-      l.category_id?.toLowerCase().includes(lowerCaseSearch) ||
-      l.slug?.toLowerCase().includes(lowerCaseSearch) // Lọc theo slug
+      l.slug?.toLowerCase().includes(lowerCaseSearch)
     );
   }, [looks, searchTerm]);
 
-  // Lấy danh mục cha chính (menu_location = 'main')
   const mainCategories = useMemo(() => 
     categories.filter(c => !c.parent_id && c.menu_location === 'main'),
     [categories]
   );
 
-  // Nhóm Lookbook theo slug danh mục cha (category_id trong lookbook là slug)
   const looksByCategorySlug = useMemo(() => {
     const grouped: Record<string, any[]> = {};
     filteredLooks.forEach(look => {
-      // Tìm danh mục cha của lookbook (dựa trên category_id là slug)
-      const cat = categories.find(c => c.slug === look.category_id);
-      let parentSlug = cat?.slug;
-      
-      if (cat?.parent_id) {
-        const parent = categories.find(c => c.id === cat.parent_id);
+      const cat = categories.find(c => c.id === look.category_id);
+      if (!cat) return;
+
+      let parentSlug = null;
+      if (cat.parent_id) {
+        const parent = categories.find(p => p.id === cat.parent_id);
         parentSlug = parent?.slug;
+      } else {
+        parentSlug = cat.slug;
       }
       
       if (parentSlug) {
@@ -91,7 +87,6 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
     return grouped;
   }, [filteredLooks, categories]);
 
-  // Lấy danh sách các slug danh mục cha có Lookbook
   const categoriesWithLooks = useMemo(() => {
     return mainCategories.filter(cat => looksByCategorySlug[cat.slug]?.length > 0);
   }, [mainCategories, looksByCategorySlug]);
