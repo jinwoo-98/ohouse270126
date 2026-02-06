@@ -1,3 +1,4 @@
+CREATE TABLE IF NOT EXISTS shop_looks (id uuid primary key default gen_random_uuid());
 -- Thêm cột slug nếu chưa tồn tại
 DO $$
 BEGIN
