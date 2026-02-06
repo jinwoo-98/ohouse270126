@@ -69,60 +69,16 @@ export default function CategoryPage() {
 
   // Fetch Parent Category for Breadcrumb & Shop The Look
   useEffect(() => {
-    async function fetchExtraData() {
-      if (!currentCategory && categorySlug !== 'noi-that') return; // Wait for category data or handle special pages
-
-      let parentSlug = null;
-      let parentId = null;
-      
+    async function fetchParent() {
       if (currentCategory?.parent_id) {
         const { data } = await supabase.from('categories').select('id, name, slug').eq('id', currentCategory.parent_id).single();
         setParentCategory(data);
-        parentSlug = data?.slug;
-        parentId = data?.id;
       } else {
         setParentCategory(null);
-        parentId = currentCategory?.id;
-      }
-      
-      if (categorySlug) {
-        let slugsToQuery: string[] = [];
-        
-        if (currentCategory?.parent_id) {
-            // Case 1: Child Page (e.g., /sofa). Query child slug AND parent slug.
-            slugsToQuery.push(categorySlug);
-            if (parentSlug) {
-                slugsToQuery.push(parentSlug);
-            }
-        } else {
-            // Case 2: Parent Page (e.g., /phong-khach). Query parent slug AND all child slugs.
-            slugsToQuery.push(categorySlug);
-            if (parentId) {
-                const { data: children } = await supabase.from('categories').select('slug').eq('parent_id', parentId);
-                if (children) {
-                    slugsToQuery = [...slugsToQuery, ...children.map(c => c.slug)];
-                }
-            }
-        }
-        
-        const { data } = await supabase
-          .from('shop_looks')
-          .select(`
-            *,
-            shop_look_items (
-              *,
-              products:product_id (id, name, price, image_url, slug)
-            )
-          `)
-          .in('category_id', slugsToQuery)
-          .eq('is_active', true)
-          .limit(2);
-          
-        setShopLooks(data || []);
       }
     }
-    fetchExtraData();
-  }, [currentCategory, categorySlug]);
+    fetchParent();
+  }, [currentCategory]);
   
   const pageTitle = currentCategory?.name || "Nội Thất";
   const isParent = currentCategory ? !currentCategory.parent_id : true;
@@ -284,10 +240,9 @@ export default function CategoryPage() {
               {!isLoading && (
                 <CategoryBottomContent 
                   categoryId={currentCategory?.id} 
-                  categorySlug={currentCategory?.slug || categorySlug} 
+                  parentCategoryId={parentCategory?.id}
                   seoContent={currentCategory?.seo_content} 
                   isParentCategory={isParent} 
-                  parentSlug={parentCategory?.slug}
                 />
               )}
             </div>

@@ -15,13 +15,12 @@ import { QuickViewSheet } from "@/components/QuickViewSheet";
 
 interface CategoryBottomContentProps {
   categoryId?: string;
-  categorySlug?: string;
+  parentCategoryId?: string;
   seoContent?: string;
   isParentCategory?: boolean;
-  parentSlug?: string;
 }
 
-export function CategoryBottomContent({ categoryId, categorySlug, seoContent, isParentCategory, parentSlug }: CategoryBottomContentProps) {
+export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent, isParentCategory }: CategoryBottomContentProps) {
   const { addToCart } = useCart();
   const [keywords, setKeywords] = useState<any[]>([]);
   const [shopLooks, setShopLooks] = useState<any[]>([]);
@@ -33,7 +32,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
       fetchKeywords();
       fetchLooks();
     }
-  }, [categoryId, categorySlug, isParentCategory, parentSlug]);
+  }, [categoryId, parentCategoryId, isParentCategory]);
 
   const fetchKeywords = async () => {
     const { data } = await supabase
@@ -46,17 +45,21 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
   };
 
   const fetchLooks = async () => {
-    let slugsToQuery: string[] = [];
+    let idsToQuery: string[] = [];
     
-    if (categorySlug) {
-      slugsToQuery.push(categorySlug);
+    if (categoryId) {
+      idsToQuery.push(categoryId);
     }
 
-    if (!isParentCategory && parentSlug) {
-      slugsToQuery.push(parentSlug);
+    // If it's a child category page, also include looks from its parent.
+    if (!isParentCategory && parentCategoryId) {
+      idsToQuery.push(parentCategoryId);
     }
     
-    if (slugsToQuery.length === 0) return;
+    if (idsToQuery.length === 0) {
+      setShopLooks([]);
+      return;
+    }
 
     const { data } = await supabase
       .from('shop_looks')
@@ -68,7 +71,7 @@ export function CategoryBottomContent({ categoryId, categorySlug, seoContent, is
           products:product_id (*)
         )
       `)
-      .in('category_id', slugsToQuery)
+      .in('category_id', idsToQuery)
       .eq('is_active', true)
       .limit(4);
       

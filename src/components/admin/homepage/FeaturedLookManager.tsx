@@ -28,7 +28,7 @@ export function FeaturedLookManager() {
           .order('display_order', { ascending: true }),
         supabase
           .from('categories')
-          .select('id, name, slug')
+          .select('id, name, slug, parent_id') // Fetch parent_id
       ]);
 
       if (looksRes.error) throw looksRes.error;
@@ -43,30 +43,29 @@ export function FeaturedLookManager() {
     }
   };
   
-  // Group looks by category_id (slug)
   const groupedLooks = useMemo(() => {
-    const groups: Record<string, any[]> = {};
+    const groups: Record<string, { name: string, looks: any[] }> = {};
+
     looks.forEach(look => {
-      if (look.category_id) {
-        if (!groups[look.category_id]) {
-          groups[look.category_id] = [];
+        const category = categories.find(c => c.id === look.category_id);
+        if (!category) return;
+
+        const parent = category.parent_id ? categories.find(p => p.id === category.parent_id) : category;
+        if (!parent) return;
+
+        if (!groups[parent.id]) {
+            groups[parent.id] = { name: parent.name, looks: [] };
         }
-        groups[look.category_id].push(look);
-      }
+        groups[parent.id].looks.push(look);
     });
-    
-    // Sort groups by category name for stable display
-    const sortedGroups = Object.keys(groups).sort((a, b) => {
-      const nameA = categories.find(c => c.slug === a)?.name || a;
-      const nameB = categories.find(c => c.slug === b)?.name || b;
-      return nameA.localeCompare(nameB);
-    });
-    
-    return sortedGroups.map(slug => ({
-      slug,
-      name: categories.find(c => c.slug === slug)?.name || slug,
-      looks: groups[slug].sort((a, b) => a.display_order - b.display_order) // Ensure looks within group are sorted by current order
-    }));
+
+    return Object.entries(groups)
+        .map(([parentId, data]) => ({
+            id: parentId,
+            name: data.name,
+            looks: data.looks.sort((a, b) => a.display_order - b.display_order)
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
   }, [looks, categories]);
 
 
@@ -81,36 +80,33 @@ export function FeaturedLookManager() {
   };
 
   const onDragEnd = async (result: DropResult) => {
-    const { destination, source, destination: { droppableId: destinationCategorySlug } } = result;
+    const { destination, source } = result;
     
-    if (!destination) return;
-    
-    // Prevent dragging between categories
-    if (source.droppableId !== destinationCategorySlug) {
-        toast.error("Chỉ có thể sắp xếp thứ tự trong cùng một danh mục.");
+    if (!destination || source.droppableId !== destination.droppableId) {
+        if (destination) toast.error("Chỉ có thể sắp xếp thứ tự trong cùng một danh mục.");
         return;
     }
     
-    const categorySlug = source.droppableId;
-    // Get the current list of looks for this category, sorted by display_order
-    const categoryLooks = looks.filter(l => l.category_id === categorySlug).sort((a, b) => a.display_order - b.display_order);
+    const parentCategoryId = source.droppableId;
+    const looksInGroup = looks.filter(l => {
+        const cat = categories.find(c => c.id === l.category_id);
+        return cat && (cat.id === parentCategoryId || cat.parent_id === parentCategoryId);
+    }).sort((a, b) => a.display_order - b.display_order);
     
-    const newLooks = Array.from(categoryLooks);
+    const newLooks = Array.from(looksInGroup);
     const [reorderedItem] = newLooks.splice(source.index, 1);
     newLooks.splice(destination.index, 0, reorderedItem);
 
-    // 1. Update local state immediately with new display_order
+    const updatedOrderMap = new Map(newLooks.map((look, index) => [look.id, index + 1]));
+
     const updatedLooks = looks.map(l => {
-        const foundInNew = newLooks.find(n => n.id === l.id);
-        if (foundInNew) {
-            const newOrder = newLooks.indexOf(foundInNew) + 1;
-            return { ...l, display_order: newOrder };
+        if (updatedOrderMap.has(l.id)) {
+            return { ...l, display_order: updatedOrderMap.get(l.id) };
         }
         return l;
     });
-    setLooks(updatedLooks);
+    setLooks(updatedLooks as any[]);
 
-    // 2. Persist changes to database
     try {
       const promises = newLooks.map((item, index) => 
         supabase
@@ -120,10 +116,10 @@ export function FeaturedLookManager() {
       );
       
       await Promise.all(promises);
-      toast.success(`Đã cập nhật vị trí Lookbook trong danh mục ${categorySlug}`);
+      toast.success(`Đã cập nhật vị trí Lookbook trong danh mục.`);
     } catch (error) {
       toast.error("Lỗi khi lưu vị trí");
-      fetchLooks(); // Re-fetch on error
+      fetchLooks();
     }
   };
 
@@ -134,14 +130,14 @@ export function FeaturedLookManager() {
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="space-y-6">
         {groupedLooks.map(group => (
-          <div key={group.slug} className="bg-white p-6 rounded-2xl border shadow-sm">
+          <div key={group.id} className="bg-white p-6 rounded-2xl border shadow-sm">
             <h3 className="font-bold text-lg mb-4 text-charcoal flex items-center gap-2">
               <FolderTree className="w-5 h-5 text-primary" />
               {group.name} 
               <Badge variant="secondary" className="text-[10px]">{group.looks.length}</Badge>
             </h3>
             
-            <Droppable droppableId={group.slug}>
+            <Droppable droppableId={group.id}>
               {(provided, snapshot) => (
                 <div 
                   {...provided.droppableProps} 
