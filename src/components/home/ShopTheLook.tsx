@@ -70,15 +70,24 @@ export function ShopTheLook() {
   };
 
   const categoriesWithLooks = useMemo(() => {
-    if (!categoriesData) return [];
-    return categoriesData.mainCategories.filter(c => 
-      c.dropdownKey && allLooks.some(l => l.category_id === c.dropdownKey)
-    );
+    if (!categoriesData || allLooks.length === 0) return [];
+    
+    const allCategories = [
+      ...categoriesData.mainCategories.map(c => ({ name: c.name, slug: c.dropdownKey })),
+      ...Object.values(categoriesData.productCategories).flat().map(c => ({ name: c.name, slug: c.href.replace('/', '') }))
+    ];
+
+    const lookCategorySlugs = new Set(allLooks.map(l => l.category_id));
+    
+    return allCategories
+      .filter(c => c.slug && lookCategorySlugs.has(c.slug))
+      .filter((value, index, self) => self.findIndex(v => v.slug === value.slug) === index); // Unique by slug
+      
   }, [allLooks, categoriesData]);
 
   useEffect(() => {
     if (allLooks.length > 0 && categoriesWithLooks.length > 0 && !activeCategorySlug) {
-      setActiveCategorySlug(categoriesWithLooks[0].dropdownKey!);
+      setActiveCategorySlug(categoriesWithLooks[0].slug!);
     }
   }, [allLooks, categoriesWithLooks, activeCategorySlug]);
   
@@ -143,10 +152,10 @@ export function ShopTheLook() {
         <div className="flex justify-center md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0">
           {categoriesWithLooks.map((cat) => (
             <button
-              key={cat.dropdownKey}
-              onClick={() => setActiveCategorySlug(cat.dropdownKey!)}
+              key={cat.slug}
+              onClick={() => setActiveCategorySlug(cat.slug!)}
               className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl border transition-all whitespace-nowrap shrink-0 ${
-                cat.dropdownKey === activeCategorySlug 
+                cat.slug === activeCategorySlug 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                   : 'bg-white border-border text-muted-foreground hover:border-charcoal'
               }`}

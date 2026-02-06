@@ -76,11 +76,18 @@ export function useLookbookFilters() {
       colors: [],
     };
 
-    if (categoriesData) {
-      const lookCategories = new Set(allLooks.map(l => l.category_id).filter(Boolean));
-      const availableCategories = categoriesData.mainCategories
-        .filter(c => c.dropdownKey && lookCategories.has(c.dropdownKey))
-        .map(c => ({ name: c.name, slug: c.dropdownKey! }));
+    if (categoriesData && allLooks.length > 0) {
+      const allDbCategories = [
+        ...categoriesData.mainCategories.map(c => ({ name: c.name, slug: c.dropdownKey })),
+        ...Object.values(categoriesData.productCategories).flat().map(c => ({ name: c.name, slug: c.href.replace('/', '') }))
+      ];
+      
+      const lookCategorySlugs = new Set(allLooks.map(l => l.category_id).filter(Boolean));
+      
+      const availableCategories = allDbCategories
+        .filter(c => c.slug && lookCategorySlugs.has(c.slug))
+        .filter((value, index, self) => self.findIndex(v => v.slug === value.slug) === index); // Unique by slug
+
       options.categories = [...options.categories, ...availableCategories];
     }
 
