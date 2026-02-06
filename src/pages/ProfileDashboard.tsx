@@ -22,6 +22,8 @@ import { Label } from "@/components/ui/label";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
 import { OrderHistory } from "@/components/profile/OrderHistory";
+import { VoucherList } from "@/components/profile/VoucherList";
+import { PointsDashboard } from "@/components/profile/PointsDashboard";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -185,6 +187,8 @@ export default function ProfileDashboard() {
                 <div className="animate-fade-in">
                   {location.pathname === "/tai-khoan/thong-tin" && <ProfileForm />}
                   {location.pathname === "/tai-khoan/don-hang" && <OrderHistory />}
+                  {location.pathname === "/tai-khoan/vouchers" && <VoucherList />}
+                  {location.pathname === "/tai-khoan/points" && <PointsDashboard />}
 
                   {location.pathname === "/yeu-thich" && (
                     wishlist.length === 0 ? (
@@ -217,25 +221,6 @@ export default function ProfileDashboard() {
                         ))}
                       </div>
                     )
-                  )}
-
-                  {location.pathname === "/tai-khoan/vouchers" && (
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {[
-                        { code: "OHOUSE500", desc: "Giảm 500.000đ cho đơn đầu tiên", expiry: "31/12/2024", type: 'cash' },
-                        { code: "FREESHIP", desc: "Miễn phí vận chuyển toàn quốc", expiry: "31/12/2024", type: 'ship' },
-                        { code: "GOLDVIP", desc: "Ưu đãi 10% cho khách hàng thân thiết", expiry: "Vô thời hạn", type: 'percent' },
-                      ].map((v) => (
-                        <div key={v.code} className="relative group overflow-hidden flex items-center gap-4 p-5 border border-dashed border-primary/40 rounded-2xl bg-primary/5 hover:bg-primary/10 transition-colors">
-                          <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm shrink-0 border border-primary/10"><Ticket className="w-7 h-7" /></div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-lg leading-tight tracking-tight">{v.code}</p>
-                            <p className="text-xs text-muted-foreground mt-1 font-medium">{v.desc}</p>
-                          </div>
-                          <Button variant="ghost" className="text-[10px] font-bold text-primary hover:bg-primary hover:text-white transition-all h-8 px-3 rounded-lg border border-primary/20">Sao chép</Button>
-                        </div>
-                      ))}
-                    </div>
                   )}
                   
                   {location.pathname === "/tai-khoan/dia-chi" && (
