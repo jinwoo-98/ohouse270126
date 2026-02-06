@@ -32,12 +32,12 @@ interface UseSimilarLookbooksResult {
   isLoadingSimilarLooks: boolean;
 }
 
-export function useSimilarLookbooks(currentLookId: string, categorySlug: string): UseSimilarLookbooksResult {
+export function useSimilarLookbooks(currentLookId: string, categoryId: string): UseSimilarLookbooksResult {
   const [similarLookbooks, setSimilarLookbooks] = useState<Lookbook[]>([]);
   const [isLoadingSimilarLooks, setIsLoadingSimilarLooks] = useState(true);
 
   useEffect(() => {
-    if (!currentLookId || !categorySlug) {
+    if (!currentLookId || !categoryId) {
       setIsLoadingSimilarLooks(false);
       return;
     }
@@ -58,7 +58,7 @@ export function useSimilarLookbooks(currentLookId: string, categorySlug: string)
               products(*)
             )
           `)
-          .eq('category_id', categorySlug)
+          .eq('category_id', categoryId)
           .eq('is_active', true)
           .neq('id', currentLookId)
           .limit(4);
@@ -74,7 +74,7 @@ export function useSimilarLookbooks(currentLookId: string, categorySlug: string)
     };
 
     fetchSimilar();
-  }, [currentLookId, categorySlug]);
+  }, [currentLookId, categoryId]);
 
   return { similarLookbooks, isLoadingSimilarLooks };
 }
