@@ -39,16 +39,6 @@ export default function LookbookForm() {
     color: "none",
   });
 
-  // Auto-generate slug when title changes, only if it's a new lookbook or slug is empty
-  useEffect(() => {
-    if (!isEdit || !formData.slug) {
-      const newSlug = slugify(formData.title);
-      if (newSlug !== formData.slug) {
-        setFormData(prev => ({ ...prev, slug: newSlug }));
-      }
-    }
-  }, [formData.title, isEdit]);
-
   useEffect(() => {
     fetchInitialData();
   }, [id]);
@@ -117,11 +107,9 @@ export default function LookbookForm() {
     if (!formData.title) { toast.error("Vui lòng nhập tên Lookbook"); setSaving(false); return; }
     if (!formData.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
     if (!formData.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
-    if (!formData.slug) { toast.error("Slug không được để trống"); setSaving(false); return; }
 
     const payload = {
       title: formData.title,
-      slug: formData.slug, // Now we explicitly send the slug
       category_id: formData.category_id,
       image_url: formData.image_url,
       gallery_urls: formData.gallery_urls,
