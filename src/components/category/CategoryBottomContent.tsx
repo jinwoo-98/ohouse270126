@@ -35,7 +35,6 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
   }, [categoryId, parentCategoryId, isParentCategory]);
 
   const fetchKeywords = async () => {
-    // This logic needs category ID, not slug. We need to fetch it.
     const { data: catData } = await supabase.from('categories').select('id').eq('slug', categoryId).single();
     if (!catData) return;
 
@@ -49,21 +48,23 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
   };
 
   const fetchLooks = async () => {
-    let slugsToQuery: string[] = [];
-    
-    if (categoryId) {
-      slugsToQuery.push(categoryId);
-    }
-
-    // If it's a child category page, also include looks from its parent.
-    if (!isParentCategory && parentCategoryId) {
-      slugsToQuery.push(parentCategoryId);
-    }
-    
-    if (slugsToQuery.length === 0) {
+    if (!categoryId) {
       setShopLooks([]);
       return;
     }
+
+    const slugsToQuery = [categoryId];
+    if (!isParentCategory && parentCategoryId) {
+      slugsToQuery.push(parentCategoryId);
+    }
+
+    const { data: categories } = await supabase.from('categories').select('id').in('slug', slugsToQuery);
+    if (!categories || categories.length === 0) {
+      setShopLooks([]);
+      return;
+    }
+
+    const categoryIds = categories.map(c => c.id);
 
     const { data } = await supabase
       .from('shop_looks')
@@ -75,7 +76,7 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
           products:product_id (*)
         )
       `)
-      .in('category_id', slugsToQuery)
+      .in('category_id', categoryIds)
       .eq('is_active', true)
       .limit(4);
       

@@ -94,10 +94,10 @@ export function useLookbookFilters() {
     };
 
     if (categoriesData?.allCategories && allLooks.length > 0) {
-      const lookCategorySlugs = new Set(allLooks.map(l => l.category_id).filter(Boolean));
+      const lookCategoryIds = new Set(allLooks.map(l => l.category_id).filter(Boolean));
       
       const availableCategories = categoriesData.allCategories
-        .filter((c: any) => lookCategorySlugs.has(c.slug))
+        .filter((c: any) => lookCategoryIds.has(c.id))
         .map((c: any) => ({ name: c.name, id: c.id, slug: c.slug }));
 
       options.categories = [...options.categories, ...availableCategories];
@@ -118,8 +118,19 @@ export function useLookbookFilters() {
 
   const filteredLooks = useMemo(() => {
     return allLooks.filter(look => {
-      if (filters.selectedCategorySlug !== "all" && look.category_id !== filters.selectedCategorySlug) {
-        return false;
+      if (filters.selectedCategorySlug !== "all") {
+        const selectedCategory = categoriesData?.allCategories.find((c: any) => c.slug === filters.selectedCategorySlug);
+        if (!selectedCategory) return false;
+
+        const targetCategoryIds = [selectedCategory.id];
+        const children = categoriesData?.allCategories.filter((c: any) => c.parent_id === selectedCategory.id);
+        if (children) {
+            children.forEach((child: any) => targetCategoryIds.push(child.id));
+        }
+
+        if (!targetCategoryIds.includes(look.category_id)) {
+            return false;
+        }
       }
       if (filters.selectedStyle !== "all" && look.style !== filters.selectedStyle) {
         return false;
@@ -132,7 +143,7 @@ export function useLookbookFilters() {
       }
       return true;
     });
-  }, [allLooks, filters]);
+  }, [allLooks, filters, categoriesData?.allCategories]);
 
   const updateFilter = (key: keyof LookbookFilterState, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
