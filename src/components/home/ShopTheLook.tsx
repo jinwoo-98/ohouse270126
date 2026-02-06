@@ -72,13 +72,25 @@ export function ShopTheLook() {
   const categoriesWithLooks = useMemo(() => {
     if (!categoriesData?.allCategories || allLooks.length === 0) return [];
     
-    const lookCategorySlugs = new Set(allLooks.map(l => l.category_id).filter(Boolean));
+    const lookCategoryIds = new Set(allLooks.map(l => l.category_id).filter(Boolean));
     
+    const parentCategoryIds = new Set<string>();
+    lookCategoryIds.forEach(catId => {
+        const category = categoriesData.allCategories.find((c: any) => c.id === catId);
+        if (category) {
+            if (category.parent_id) {
+                parentCategoryIds.add(category.parent_id);
+            } else {
+                parentCategoryIds.add(category.id);
+            }
+        }
+    });
+
     return categoriesData.allCategories
-      .filter((c: any) => lookCategorySlugs.has(c.slug))
-      .filter((value: any, index: number, self: any[]) => self.findIndex((v: any) => v.id === value.id) === index);
-      
-  }, [allLooks, categoriesData]);
+      .filter((c: any) => parentCategoryIds.has(c.id))
+      .sort((a: any, b: any) => a.display_order - b.display_order);
+
+  }, [allLooks, categoriesData?.allCategories]);
 
   useEffect(() => {
     if (allLooks.length > 0 && categoriesWithLooks.length > 0 && !activeCategorySlug) {
@@ -86,7 +98,21 @@ export function ShopTheLook() {
     }
   }, [allLooks, categoriesWithLooks, activeCategorySlug]);
   
-  const currentCategoryLooks = useMemo(() => allLooks.filter(l => l.category_id === activeCategorySlug), [allLooks, activeCategorySlug]);
+  const currentCategoryLooks = useMemo(() => {
+    if (!activeCategorySlug || !categoriesData?.allCategories) return [];
+    
+    const selectedParentCategory = categoriesData.allCategories.find((c: any) => c.slug === activeCategorySlug);
+    if (!selectedParentCategory) return [];
+
+    const parentId = selectedParentCategory.id;
+    const childCategoryIds = categoriesData.allCategories
+        .filter((c: any) => c.parent_id === parentId)
+        .map((c: any) => c.id);
+    
+    const targetCategoryIds = [parentId, ...childCategoryIds];
+
+    return allLooks.filter(look => targetCategoryIds.includes(look.category_id));
+  }, [allLooks, activeCategorySlug, categoriesData?.allCategories]);
   
   useEffect(() => {
     setCurrentLookIndex(0);
