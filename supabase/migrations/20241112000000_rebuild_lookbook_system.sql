@@ -1,16 +1,18 @@
--- Giai đoạn 1: Cài đặt lại các hàm và trigger cần thiết cho việc tạo slug tự động
+-- =================================================================
+-- STEP 1: DATA CORRECTION & HEALING
+-- This step ensures all existing lookbooks are in a valid state.
+-- =================================================================
 
--- Xóa trigger và hàm cũ nếu tồn tại để đảm bảo cài đặt mới hoàn toàn
-DROP TRIGGER IF EXISTS trg_set_slug_before_insert_update ON public.shop_looks;
-DROP FUNCTION IF EXISTS public.set_slug_from_title_for_looks();
-DROP FUNCTION IF EXISTS public.slugify(text);
+-- Forcefully activate all existing lookbooks. This is the "Disabled Switch" fix.
+UPDATE public.shop_looks
+SET is_active = true
+WHERE is_active IS NOT true;
 
--- Tái tạo hàm slugify (công thức chuyển đổi tiêu đề thành slug)
+-- Regenerate slugs for any lookbooks that are still missing one. This is the "Corrupted Data" fix (part 1).
+-- This relies on the slugify function being present. The previous migration should have created it.
+-- To be safe, I will include the function creation again.
 CREATE OR REPLACE FUNCTION public.slugify(v text)
-RETURNS text
-LANGUAGE sql
-IMMUTABLE
-AS $function$
+RETURNS text LANGUAGE sql IMMUTABLE AS $function$
   WITH "unaccented" AS (SELECT unaccent("v") AS "str"),
   "lowercase" AS (SELECT lower("str") AS "str" FROM "unaccented"),
   "removed_quotes" AS (SELECT regexp_replace("str", '[''"]+', '', 'gi') AS "str" FROM "lowercase"),
@@ -19,57 +21,45 @@ AS $function$
   SELECT "str" FROM "trimmed";
 $function$;
 
--- Tái tạo hàm trigger (cỗ máy tự động chạy khi tạo/sửa lookbook)
-CREATE OR REPLACE FUNCTION public.set_slug_from_title_for_looks()
-RETURNS trigger
-LANGUAGE plpgsql
-AS $function$
-BEGIN
-  -- Chỉ tạo slug mới nếu là INSERT hoặc title đã thay đổi
-  IF (TG_OP = 'INSERT') OR (TG_OP = 'UPDATE' AND NEW.title <> OLD.title) THEN
-    NEW.slug := public.slugify(NEW.title);
-  END IF;
-  RETURN NEW;
-END;
-$function$;
-
--- Gắn trigger vào bảng shop_looks
-CREATE TRIGGER trg_set_slug_before_insert_update
-BEFORE INSERT OR UPDATE ON public.shop_looks
-FOR EACH ROW
-EXECUTE FUNCTION set_slug_from_title_for_looks();
-
-
--- Giai đoạn 2: "Chữa lành" dữ liệu hiện có trong bảng shop_looks
-
--- Cập nhật lại slug cho tất cả các lookbook đang bị thiếu (slug IS NULL)
 UPDATE public.shop_looks
 SET slug = public.slugify(title)
-WHERE slug IS NULL AND title IS NOT NULL;
+WHERE slug IS NULL OR slug = '';
 
--- "Cứu" các lookbook bị mất liên kết danh mục (category_id IS NULL)
+-- Rescue any "orphan" lookbooks that lost their category link. This is the "Corrupted Data" fix (part 2).
 DO $$
 DECLARE
     default_category_id UUID;
 BEGIN
-    -- Tìm một danh mục gốc mặc định (ưu tiên danh mục có slug 'noi-that' hoặc danh mục đầu tiên)
+    -- Find a default parent category to assign orphans to.
     SELECT id INTO default_category_id
     FROM public.categories
-    WHERE slug = 'noi-that' AND parent_id IS NULL
+    WHERE parent_id IS NULL AND menu_location = 'main'
+    ORDER BY display_order, name
     LIMIT 1;
 
-    IF default_category_id IS NULL THEN
-        SELECT id INTO default_category_id
-        FROM public.categories
-        WHERE parent_id IS NULL AND menu_location = 'main'
-        ORDER BY display_order, name
-        LIMIT 1;
-    END IF;
-
-    -- Nếu tìm thấy danh mục mặc định, cập nhật tất cả các lookbook đang "mồ côi"
+    -- If a default category is found, update all orphan lookbooks.
     IF default_category_id IS NOT NULL THEN
         UPDATE public.shop_looks
         SET category_id = default_category_id
         WHERE category_id IS NULL;
     END IF;
 END $$;
+
+
+-- =================================================================
+-- STEP 2: ROW LEVEL SECURITY (RLS) SETUP
+-- This is the "Locked Door" fix, the most critical part.
+-- =================================================================
+
+-- Enable Row Level Security on the table.
+ALTER TABLE public.shop_looks ENABLE ROW LEVEL SECURITY;
+
+-- Drop any existing public read policies to avoid conflicts.
+DROP POLICY IF EXISTS "Public read access for active looks" ON public.shop_looks;
+
+-- Create a new policy that allows ANYONE (public) to SELECT (read)
+-- only the lookbooks where the 'is_active' switch is ON.
+CREATE POLICY "Public read access for active looks"
+ON public.shop_looks
+FOR SELECT
+USING (is_active = true);
