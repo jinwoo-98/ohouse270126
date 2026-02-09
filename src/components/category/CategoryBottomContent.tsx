@@ -58,14 +58,7 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
       slugsToQuery.push(parentCategoryId);
     }
 
-    const { data: categories } = await supabase.from('categories').select('id').in('slug', slugsToQuery);
-    if (!categories || categories.length === 0) {
-      setShopLooks([]);
-      return;
-    }
-
-    const categoryIds = categories.map(c => c.id);
-
+    // === FIX: Query directly with slugs, not UUIDs ===
     const { data } = await supabase
       .from('shop_looks')
       .select(`
@@ -76,7 +69,7 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
           products:product_id (*)
         )
       `)
-      .in('category_id', categoryIds)
+      .in('category_id', slugsToQuery) // Use slugs directly
       .eq('is_active', true)
       .limit(4);
       
