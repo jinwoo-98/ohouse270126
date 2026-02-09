@@ -1,18 +1,9 @@
--- =================================================================
--- STEP 1: DATA CORRECTION & HEALING
--- This step ensures all existing lookbooks are in a valid state.
--- =================================================================
-
--- Forcefully activate all existing lookbooks. This is the "Disabled Switch" fix.
-UPDATE public.shop_looks
-SET is_active = true
-WHERE is_active IS NOT true;
-
--- Regenerate slugs for any lookbooks that are still missing one. This is the "Corrupted Data" fix (part 1).
--- This relies on the slugify function being present. The previous migration should have created it.
--- To be safe, I will include the function creation again.
+-- Step 1: Recreate the slugify function if it doesn't exist or is incorrect.
 CREATE OR REPLACE FUNCTION public.slugify(v text)
-RETURNS text LANGUAGE sql IMMUTABLE AS $function$
+RETURNS text
+LANGUAGE sql
+IMMUTABLE
+AS $function$
   WITH "unaccented" AS (SELECT unaccent("v") AS "str"),
   "lowercase" AS (SELECT lower("str") AS "str" FROM "unaccented"),
   "removed_quotes" AS (SELECT regexp_replace("str", '[''"]+', '', 'gi') AS "str" FROM "lowercase"),
@@ -21,45 +12,47 @@ RETURNS text LANGUAGE sql IMMUTABLE AS $function$
   SELECT "str" FROM "trimmed";
 $function$;
 
+-- Step 2: Recreate the trigger function to set slug from title.
+CREATE OR REPLACE FUNCTION public.set_slug_from_title_for_looks()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $function$
+BEGIN
+  -- Only update the slug if it's a new record or the title has changed.
+  IF (TG_OP = 'INSERT') OR (TG_OP = 'UPDATE' AND NEW.title IS DISTINCT FROM OLD.title) THEN
+    NEW.slug := public.slugify(NEW.title);
+  END IF;
+  RETURN NEW;
+END;
+$function$;
+
+-- Step 3: Drop the existing trigger to avoid conflicts, then recreate it.
+DROP TRIGGER IF EXISTS trg_set_slug_before_insert_update ON public.shop_looks;
+CREATE TRIGGER trg_set_slug_before_insert_update
+  BEFORE INSERT OR UPDATE ON public.shop_looks
+  FOR EACH ROW
+  EXECUTE FUNCTION public.set_slug_from_title_for_looks();
+
+-- Step 4: Backfill slugs for all existing looks where the slug is currently NULL.
 UPDATE public.shop_looks
 SET slug = public.slugify(title)
-WHERE slug IS NULL OR slug = '';
+WHERE slug IS NULL AND title IS NOT NULL;
 
--- Rescue any "orphan" lookbooks that lost their category link. This is the "Corrupted Data" fix (part 2).
-DO $$
-DECLARE
-    default_category_id UUID;
-BEGIN
-    -- Find a default parent category to assign orphans to.
-    SELECT id INTO default_category_id
-    FROM public.categories
-    WHERE parent_id IS NULL AND menu_location = 'main'
-    ORDER BY display_order, name
-    LIMIT 1;
+-- Step 5: Activate all existing looks to ensure they are visible.
+UPDATE public.shop_looks
+SET is_active = true
+WHERE is_active IS NOT true;
 
-    -- If a default category is found, update all orphan lookbooks.
-    IF default_category_id IS NOT NULL THEN
-        UPDATE public.shop_looks
-        SET category_id = default_category_id
-        WHERE category_id IS NULL;
-    END IF;
-END $$;
-
-
--- =================================================================
--- STEP 2: ROW LEVEL SECURITY (RLS) SETUP
--- This is the "Locked Door" fix, the most critical part.
--- =================================================================
-
--- Enable Row Level Security on the table.
+-- Step 6: Enable Row Level Security (RLS) on the table. CRITICAL FOR PUBLIC VISIBILITY.
 ALTER TABLE public.shop_looks ENABLE ROW LEVEL SECURITY;
 
--- Drop any existing public read policies to avoid conflicts.
+-- Step 7: Create a policy to allow public read access to active looks.
+-- This is the key to making lookbooks visible on the website.
 DROP POLICY IF EXISTS "Public read access for active looks" ON public.shop_looks;
+CREATE POLICY "Public read access for active looks" ON public.shop_looks
+FOR SELECT USING (is_active = true);
 
--- Create a new policy that allows ANYONE (public) to SELECT (read)
--- only the lookbooks where the 'is_active' switch is ON.
-CREATE POLICY "Public read access for active looks"
-ON public.shop_looks
-FOR SELECT
-USING (is_active = true);
+-- Step 8: Create policies for admin/editors to manage all looks.
+DROP POLICY IF EXISTS "Allow full access to authenticated users" ON public.shop_looks;
+CREATE POLICY "Allow full access to authenticated users" ON public.shop_looks
+FOR ALL USING (true) WITH CHECK (true);

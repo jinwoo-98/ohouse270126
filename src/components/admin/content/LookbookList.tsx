@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
 
 interface LookbookListProps {
   searchTerm: string;
@@ -65,10 +66,19 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
 
   const looksByCategorySlug = useMemo(() => {
     const grouped: Record<string, any[]> = {};
+    grouped['uncategorized'] = []; 
+
     filteredLooks.forEach(look => {
-      // SỬA LỖI: Tìm danh mục của lookbook bằng 'id' (UUID) thay vì 'slug'
+      if (!look.category_id) {
+        grouped['uncategorized'].push(look);
+        return;
+      }
+
       const cat = categories.find(c => c.id === look.category_id);
-      if (!cat) return;
+      if (!cat) {
+        grouped['uncategorized'].push(look);
+        return;
+      }
 
       let parentSlug = null;
       if (cat.parent_id) {
@@ -83,13 +93,26 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
           grouped[parentSlug] = [];
         }
         grouped[parentSlug].push(look);
+      } else {
+        grouped['uncategorized'].push(look);
       }
     });
     return grouped;
   }, [filteredLooks, categories]);
 
   const categoriesWithLooks = useMemo(() => {
-    return mainCategories.filter(cat => looksByCategorySlug[cat.slug]?.length > 0);
+    const regularCategories = mainCategories.filter(cat => looksByCategorySlug[cat.slug]?.length > 0);
+    const uncategorized = {
+      slug: 'uncategorized',
+      name: 'Chưa Phân Loại',
+      isUncategorized: true,
+    };
+    
+    if (looksByCategorySlug['uncategorized']?.length > 0) {
+      return [uncategorized, ...regularCategories];
+    }
+    
+    return regularCategories;
   }, [mainCategories, looksByCategorySlug]);
 
 
@@ -100,17 +123,20 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
       ) : categoriesWithLooks.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-border text-muted-foreground italic">Chưa có Lookbook nào được tạo hoặc gán vào danh mục chính.</div>
       ) : (
-        <Accordion type="multiple" defaultValue={[]} className="w-full space-y-4">
-          {categoriesWithLooks.map(cat => {
+        <Accordion type="multiple" defaultValue={['uncategorized']} className="w-full space-y-4">
+          {categoriesWithLooks.map((cat: any) => {
             const childLooks = looksByCategorySlug[cat.slug] || [];
 
             return (
               <AccordionItem key={cat.slug} value={cat.slug} className="border-none">
-                <AccordionTrigger className="bg-white p-4 rounded-2xl border shadow-sm hover:no-underline">
+                <AccordionTrigger className={cn(
+                  "bg-white p-4 rounded-2xl border shadow-sm hover:no-underline",
+                  cat.isUncategorized && "border-amber-500/50 bg-amber-50"
+                )}>
                   <div className="flex items-center gap-3">
-                    <Folder className="w-5 h-5 text-primary" />
-                    <span className="font-bold text-charcoal">{cat.name}</span>
-                    <Badge variant="secondary">{childLooks.length}</Badge>
+                    <Folder className={cn("w-5 h-5", cat.isUncategorized ? "text-amber-600" : "text-primary")} />
+                    <span className={cn("font-bold", cat.isUncategorized ? "text-amber-700" : "text-charcoal")}>{cat.name}</span>
+                    <Badge variant={cat.isUncategorized ? "default" : "secondary"} className={cat.isUncategorized ? "bg-amber-600" : ""}>{childLooks.length}</Badge>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pt-4 pl-8">
