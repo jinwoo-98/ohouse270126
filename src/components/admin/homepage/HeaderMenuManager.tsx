@@ -60,6 +60,7 @@ export function HeaderMenuManager() {
               ...m,
               // Đảm bảo trường content tồn tại, và end_time được format
               content: m.content || m.text || "", // Fallback cho trường hợp dữ liệu cũ
+              // Chuyển đổi ISO string thành định dạng datetime-local cho input
               end_time: m.end_time ? new Date(m.end_time).toISOString().slice(0, 16) : ""
             }))
           : [{ content: "", end_time: "" }],
@@ -111,10 +112,21 @@ export function HeaderMenuManager() {
       
       const filteredMessages = settings.top_banner_messages
         .filter((m: any) => m.content.trim() !== "")
-        .map((m: any) => ({
-          ...m,
-          end_time: m.end_time ? new Date(m.end_time).toISOString() : null
-        }));
+        .map((m: any) => {
+          let endTimeISO = null;
+          if (m.end_time) {
+            const date = new Date(m.end_time);
+            // Kiểm tra nếu ngày hợp lệ trước khi chuyển đổi
+            if (!isNaN(date.getTime())) {
+              endTimeISO = date.toISOString();
+            }
+          }
+          
+          return {
+            ...m,
+            end_time: endTimeISO, // Gán null nếu không hợp lệ hoặc trống
+          };
+        });
       
       const payload = {
         top_banner_messages: filteredMessages,
