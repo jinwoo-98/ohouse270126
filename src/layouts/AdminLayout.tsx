@@ -115,13 +115,21 @@ export default function AdminLayout() {
       
       if (error) {
         console.error("Profile fetch error:", error);
+        // Nếu không tìm thấy hồ sơ (lỗi PGRST116), tạo hồ sơ mặc định
         if (error.code === 'PGRST116') {
-           await supabase.from('profiles').insert({ id: user.id, email: user.email, role: 'user' });
+           // Nếu trigger chưa chạy, chúng ta tạo profile với role 'user'
+           const { data: newProfile, error: insertError } = await supabase.from('profiles').insert({ id: user.id, email: user.email, role: 'user' }).select('role, permissions').single();
+           if (insertError) throw insertError;
+           setUserProfile(newProfile);
+        } else {
+           throw error;
         }
+      } else {
+        setUserProfile(data || { role: 'user' });
       }
-      setUserProfile(data || { role: 'user' });
     } catch (err) {
       console.error("Unexpected error:", err);
+      setUserProfile({ role: 'user' }); // Fallback an toàn
     } finally {
       setFetchingProfile(false);
     }
