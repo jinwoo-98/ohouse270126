@@ -2,44 +2,17 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Home, Palette, Layers, Zap, X, RotateCcw } from "lucide-react";
+import { ChevronDown, Home, Palette, Layers, Zap, X, RotateCcw, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// --- Sub-components (Copied and adapted from InspirationPage) ---
+// --- Sub-components (Adapted for Multi-select) ---
 
-// Component con cho các bộ lọc phụ (Style, Material, Color)
-function FilterCollapsible({ title, options, selected, onSelect, filterKey }: { title: string, options: string[], selected: string[], onSelect: (value: string) => void, filterKey: string }) {
-  
-  if (options.length === 0) return null;
-
-  return (
-    <div className="w-full space-y-2">
-      <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{title}</h4>
-      <div className="space-y-1">
-        {/* Tùy chọn "Tất Cả" được xử lý trong component cha (SubFilter) */}
-        {options.map((opt) => (
-          <label key={opt} className="flex items-center gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors">
-            <Checkbox 
-              id={`${filterKey}-${opt}`} 
-              checked={selected.includes(opt)} 
-              onCheckedChange={() => onSelect(opt)} 
-              className="data-[state=checked]:bg-primary" 
-            />
-            <span className={cn("text-sm font-medium", selected.includes(opt) ? "text-primary font-bold" : "text-foreground/80")}>{opt}</span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Component cho bộ lọc chính (Không gian)
+// Component cho bộ lọc chính (Không gian - Vẫn là Single Select)
 function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
-  // FIX: Find category by slug
   const currentCategory = filterOptions.categories.find((c: any) => c.slug === filters.selectedCategorySlug);
   const isFiltered = filters.selectedCategorySlug !== "all";
   
@@ -64,15 +37,14 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
           {filterOptions.categories.map((cat: any) => (
             <button
               key={cat.id}
-              // FIX: Update filter with slug
               onClick={() => updateFilter('selectedCategorySlug', cat.slug)}
               className={cn(
-                "w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors",
-                // FIX: Compare with slug
+                "w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors flex items-center justify-between",
                 filters.selectedCategorySlug === cat.slug ? "bg-primary text-white font-bold" : "hover:bg-secondary/50"
               )}
             >
               {cat.name}
+              {filters.selectedCategorySlug === cat.slug && <Check className="w-4 h-4" />}
             </button>
           ))}
         </div>
@@ -81,22 +53,20 @@ function SpaceFilter({ filterOptions, filters, updateFilter }: any) {
   );
 }
 
-// Component cho bộ lọc phụ (Style, Material, Color)
+// Component cho bộ lọc phụ (Style, Material, Color) - Hỗ trợ Multi-select
 function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilter }: any) {
-  const isFiltered = selected !== "all";
+  const isFiltered = selected.length > 0;
   
-  // Lấy giá trị đang chọn để hiển thị trên nút
-  const selectedValue = isFiltered ? selected : title;
-
-  const handleSelect = (value: string) => {
-    // Nếu chọn 'all', reset filterKey về 'all'
-    if (value === 'all') {
-      updateFilter(filterKey, 'all');
-    } else {
-      // Nếu chọn một giá trị cụ thể, cập nhật filterKey
-      updateFilter(filterKey, value);
-    }
+  const handleToggle = (value: string) => {
+    const newSelection = selected.includes(value)
+      ? selected.filter((v: string) => v !== value)
+      : [...selected, value];
+      
+    updateFilter(filterKey, newSelection);
   };
+
+  const selectedCount = selected.length;
+  const selectedLabel = selectedCount > 0 ? `${selectedCount} đã chọn` : title;
 
   return (
     <Popover>
@@ -110,30 +80,36 @@ function SubFilter({ title, icon: Icon, options, selected, filterKey, updateFilt
           )}
         >
           <Icon className="w-4 h-4 hidden sm:block shrink-0" />
-          <span className="leading-tight whitespace-nowrap">{selectedValue}</span>
+          <span className="leading-tight whitespace-nowrap">{selectedLabel}</span>
           <ChevronDown className="w-3 h-3 ml-1 opacity-50 shrink-0 hidden sm:block" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-4 rounded-2xl shadow-elevated border-none z-30" align="start">
-        <div className="space-y-1">
-          {/* Tùy chọn Tất Cả */}
-          <button
-            onClick={() => handleSelect('all')}
-            className={cn(
-              "w-full text-left px-3 py-2.5 text-sm rounded-xl transition-colors",
-              !isFiltered ? "bg-primary text-white font-bold" : "hover:bg-secondary/50"
-            )}
-          >
-            {title} (Tất Cả)
-          </button>
+        <div className="space-y-4">
+          <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{title}</h4>
+          <div className="space-y-1 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+            {options.map((opt: string) => (
+              <label key={opt} className="flex items-center justify-between gap-3 cursor-pointer group/item p-1.5 -ml-1.5 rounded-lg transition-colors hover:bg-secondary/50">
+                <span className={cn("text-sm font-medium", selected.includes(opt) ? "text-primary font-bold" : "text-foreground/80")}>{opt}</span>
+                <Checkbox 
+                  checked={selected.includes(opt)} 
+                  onCheckedChange={() => handleToggle(opt)} 
+                  className="data-[state=checked]:bg-primary" 
+                />
+              </label>
+            ))}
+          </div>
+          {selectedCount > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => updateFilter(filterKey, [])}
+              className="w-full text-destructive hover:bg-destructive/10 text-[10px] font-bold uppercase"
+            >
+              <X className="w-3 h-3 mr-1" /> Bỏ chọn tất cả
+            </Button>
+          )}
         </div>
-        <FilterCollapsible 
-          title={title} 
-          options={options} 
-          selected={isFiltered ? [selected] : []} // Chỉ truyền giá trị đang chọn nếu không phải 'all'
-          onSelect={handleSelect} 
-          filterKey={filterKey}
-        />
       </PopoverContent>
     </Popover>
   );
@@ -145,13 +121,13 @@ interface InspirationToolbarProps {
   lookCount: number;
   filterOptions: any;
   filters: any;
-  updateFilter: (key: string, value: string) => void;
+  updateFilter: (key: string, value: string | string[]) => void;
   onResetFilters: () => void;
 }
 
 export function InspirationToolbar({ lookCount, filterOptions, filters, updateFilter, onResetFilters }: InspirationToolbarProps) {
   const isMobile = useIsMobile();
-  const isAnyFilterActive = filters.selectedCategorySlug !== 'all' || filters.selectedStyle !== 'all' || filters.selectedMaterial !== 'all' || filters.selectedColor !== 'all';
+  const isAnyFilterActive = filters.selectedCategorySlug !== 'all' || filters.selectedStyle.length > 0 || filters.selectedMaterial.length > 0 || filters.selectedColor.length > 0;
 
   return (
     <div className="bg-background/95 backdrop-blur-md shadow-medium py-3 border-b border-border/40">

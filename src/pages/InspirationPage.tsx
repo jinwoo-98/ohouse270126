@@ -25,9 +25,9 @@ export default function InspirationPage() {
 
   const handleResetFilters = () => {
     updateFilter('selectedCategorySlug', 'all');
-    updateFilter('selectedStyle', 'all');
-    updateFilter('selectedMaterial', 'all');
-    updateFilter('selectedColor', 'all');
+    updateFilter('selectedStyle', []); // Reset về mảng rỗng
+    updateFilter('selectedMaterial', []); // Reset về mảng rỗng
+    updateFilter('selectedColor', []); // Reset về mảng rỗng
   };
   
   // FIX: Find category by slug, not ID

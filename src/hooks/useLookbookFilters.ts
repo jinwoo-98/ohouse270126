@@ -5,9 +5,9 @@ import { useSearchParams } from "react-router-dom";
 
 interface LookbookFilterState {
   selectedCategorySlug: string;
-  selectedStyle: string;
-  selectedMaterial: string;
-  selectedColor: string;
+  selectedStyle: string[]; // Thay đổi thành mảng
+  selectedMaterial: string[]; // Thay đổi thành mảng
+  selectedColor: string[]; // Thay đổi thành mảng
 }
 
 interface FilterOption {
@@ -26,22 +26,29 @@ export function useLookbookFilters() {
   
   const [filters, setFilters] = useState<LookbookFilterState>({
     selectedCategorySlug: "all",
-    selectedStyle: "all",
-    selectedMaterial: "all",
-    selectedColor: "all",
+    selectedStyle: [],
+    selectedMaterial: [],
+    selectedColor: [],
   });
+
+  // Helper để chuyển đổi giá trị từ URL (có thể là chuỗi 'val1,val2' hoặc 'val') thành mảng
+  const parseUrlParam = (param: string | null): string[] => {
+    if (!param) return [];
+    return param.split(',').filter(v => v.trim() !== '');
+  };
 
   // Sync filters with URL params on initial load
   useEffect(() => {
     const categorySlug = searchParams.get('category');
-    const style = searchParams.get('style');
-    const color = searchParams.get('color');
+    const style = parseUrlParam(searchParams.get('style'));
+    const material = parseUrlParam(searchParams.get('material'));
+    const color = parseUrlParam(searchParams.get('color'));
     
     setFilters({
       selectedCategorySlug: categorySlug || "all",
-      selectedStyle: style || "all",
-      selectedMaterial: "all", // Material filter not in URL for now
-      selectedColor: color || "all",
+      selectedStyle: style,
+      selectedMaterial: material,
+      selectedColor: color,
     });
   }, [searchParams]);
 
@@ -62,6 +69,7 @@ export function useLookbookFilters() {
                 )
               )
             `)
+            .eq('is_active', true) // Chỉ lấy lookbook đang hoạt động
             .order('display_order'),
           supabase
             .from('lookbook_filters')
@@ -117,6 +125,7 @@ export function useLookbookFilters() {
 
   const filteredLooks = useMemo(() => {
     return allLooks.filter(look => {
+      // 1. Category Filter (Single Select)
       if (filters.selectedCategorySlug !== "all") {
         const selectedCategory = categoriesData?.allCategories.find((c: any) => c.slug === filters.selectedCategorySlug);
         if (!selectedCategory) return false;
@@ -131,21 +140,46 @@ export function useLookbookFilters() {
             return false;
         }
       }
-      if (filters.selectedStyle !== "all" && look.style !== filters.selectedStyle) {
+      
+      // 2. Style Filter (Multi Select)
+      if (filters.selectedStyle.length > 0 && !filters.selectedStyle.includes(look.style)) {
         return false;
       }
-      if (filters.selectedMaterial !== "all" && look.material !== filters.selectedMaterial) {
+      
+      // 3. Material Filter (Multi Select)
+      if (filters.selectedMaterial.length > 0 && !filters.selectedMaterial.includes(look.material)) {
         return false;
       }
-      if (filters.selectedColor !== "all" && look.color !== filters.selectedColor) {
+      
+      // 4. Color Filter (Multi Select)
+      if (filters.selectedColor.length > 0 && !filters.selectedColor.includes(look.color)) {
         return false;
       }
+      
       return true;
     });
   }, [allLooks, filters, categoriesData?.allCategories]);
 
-  const updateFilter = (key: keyof LookbookFilterState, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+  const updateFilter = (key: keyof LookbookFilterState, value: string | string[]) => {
+    setFilters(prev => {
+      const newFilters = { ...prev, [key]: value };
+      
+      // Cập nhật URL params
+      const newParams = new URLSearchParams(searchParams);
+      
+      if (key === 'selectedCategorySlug') {
+        if (value === 'all') newParams.delete('category');
+        else newParams.set('category', value as string);
+      } else {
+        const stringValue = Array.isArray(value) ? value.join(',') : value;
+        const paramKey = key.replace('selected', '').toLowerCase();
+        if (!stringValue || stringValue === 'all') newParams.delete(paramKey);
+        else newParams.set(paramKey, stringValue);
+      }
+      
+      setSearchParams(newParams, { replace: true });
+      return newFilters;
+    });
   };
 
   return {
