@@ -1,27 +1,35 @@
--- Step 1: Ensure all existing lookbooks are marked as active.
--- This is a safeguard to ensure visibility.
-UPDATE public.shop_looks
-SET is_active = true
-WHERE is_active IS NOT true;
+-- === DEFINITIVE FIX FOR LOOKBOOK CATEGORY LOGIC ===
+-- This migration corrects the core data type mismatch for lookbook categories.
+-- It changes the `category_id` column from UUID to TEXT to store slugs,
+-- and migrates existing data to the new format.
 
--- Step 2: Drop all existing policies on the table to start fresh.
--- This prevents any potential conflicts with old or incorrect policies.
-DROP POLICY IF EXISTS "Public read access for active looks" ON public.shop_looks;
-DROP POLICY IF EXISTS "Allow full access to authenticated users" ON public.shop_looks;
-DROP POLICY IF EXISTS "Public read access" ON public.shop_looks;
-DROP POLICY IF EXISTS "Admin full access" ON public.shop_looks;
+-- Step 1: Add a new temporary column to store the category slug.
+ALTER TABLE public.shop_looks
+ADD COLUMN IF NOT EXISTS category_slug TEXT;
 
--- Step 3: Enable Row Level Security if it's not already enabled.
+-- Step 2: Update the new column with the correct slug by joining on the old UUID-based category_id.
+-- This finds the matching slug from the `categories` table for each lookbook.
+UPDATE public.shop_looks sl
+SET category_slug = c.slug
+FROM public.categories c
+WHERE c.id = sl.category_id;
+
+-- Step 3: Drop the old, incorrect UUID-based category_id column.
+-- We must first drop any foreign key constraints that might exist.
+ALTER TABLE public.shop_looks DROP CONSTRAINT IF EXISTS shop_looks_category_id_fkey;
+ALTER TABLE public.shop_looks DROP COLUMN IF EXISTS category_id;
+
+-- Step 4: Rename the new column to become the primary category identifier.
+ALTER TABLE public.shop_looks
+RENAME COLUMN category_slug TO category_id;
+
+-- Step 5: Re-apply the RLS policy to ensure security is correctly configured.
+-- This policy ensures that only lookbooks marked as `is_active` are visible to the public.
+-- The frontend query will now correctly filter by the slug, and this RLS provides the final security check.
 ALTER TABLE public.shop_looks ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public read access for active looks" ON public.shop_looks;
+CREATE POLICY "Public read access for active looks" ON public.shop_looks
+FOR SELECT USING (is_active = true);
 
--- Step 4: Create a simple, permissive policy for PUBLIC read access.
--- This allows anyone to read any row. The frontend code will handle filtering for `is_active`.
-CREATE POLICY "Public read access" ON public.shop_looks
-FOR SELECT USING (true);
-
--- Step 5: Create a policy that allows authenticated users (admins, editors) to do everything.
--- This ensures that you can still manage lookbooks from the admin panel.
-CREATE POLICY "Admin full access" ON public.shop_looks
-FOR ALL TO authenticated
-USING (true)
-WITH CHECK (true);
+-- Re-grant permissions to be safe.
+GRANT SELECT ON TABLE public.shop_looks TO anon;
