@@ -62,7 +62,6 @@ export function useLookbookFilters() {
                 )
               )
             `)
-            .eq('is_active', true)
             .order('display_order'),
           supabase
             .from('lookbook_filters')
