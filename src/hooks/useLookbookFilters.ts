@@ -5,9 +5,9 @@ import { useSearchParams } from "react-router-dom";
 
 interface LookbookFilterState {
   selectedCategorySlug: string;
-  selectedStyle: string[]; // Thay đổi thành mảng
-  selectedMaterial: string[]; // Thay đổi thành mảng
-  selectedColor: string[]; // Thay đổi thành mảng
+  selectedStyle: string[]; // Changed to array
+  selectedMaterial: string[]; // Changed to array
+  selectedColor: string[]; // Changed to array
 }
 
 interface FilterOption {
@@ -15,6 +15,12 @@ interface FilterOption {
   id: string;
   slug: string;
 }
+
+// Helper to parse URL params into an array
+const parseUrlParam = (param: string | null): string[] => {
+  if (!param) return [];
+  return param.split(',').filter(v => v.trim() !== '');
+};
 
 export function useLookbookFilters() {
   const { data: categoriesData, isLoading: isLoadingCategories } = useCategories();
@@ -30,12 +36,6 @@ export function useLookbookFilters() {
     selectedMaterial: [],
     selectedColor: [],
   });
-
-  // Helper để chuyển đổi giá trị từ URL (có thể là chuỗi 'val1,val2' hoặc 'val') thành mảng
-  const parseUrlParam = (param: string | null): string[] => {
-    if (!param) return [];
-    return param.split(',').filter(v => v.trim() !== '');
-  };
 
   // Sync filters with URL params on initial load
   useEffect(() => {
@@ -69,7 +69,6 @@ export function useLookbookFilters() {
                 )
               )
             `)
-            .eq('is_active', true) // Chỉ lấy lookbook đang hoạt động
             .order('display_order'),
           supabase
             .from('lookbook_filters')
@@ -125,7 +124,7 @@ export function useLookbookFilters() {
 
   const filteredLooks = useMemo(() => {
     return allLooks.filter(look => {
-      // 1. Category Filter (Single Select)
+      // Category Filter
       if (filters.selectedCategorySlug !== "all") {
         const selectedCategory = categoriesData?.allCategories.find((c: any) => c.slug === filters.selectedCategorySlug);
         if (!selectedCategory) return false;
@@ -141,17 +140,13 @@ export function useLookbookFilters() {
         }
       }
       
-      // 2. Style Filter (Multi Select)
+      // Multi-select filters
       if (filters.selectedStyle.length > 0 && !filters.selectedStyle.includes(look.style)) {
         return false;
       }
-      
-      // 3. Material Filter (Multi Select)
       if (filters.selectedMaterial.length > 0 && !filters.selectedMaterial.includes(look.material)) {
         return false;
       }
-      
-      // 4. Color Filter (Multi Select)
       if (filters.selectedColor.length > 0 && !filters.selectedColor.includes(look.color)) {
         return false;
       }
@@ -164,7 +159,6 @@ export function useLookbookFilters() {
     setFilters(prev => {
       const newFilters = { ...prev, [key]: value };
       
-      // Cập nhật URL params
       const newParams = new URLSearchParams(searchParams);
       
       if (key === 'selectedCategorySlug') {
