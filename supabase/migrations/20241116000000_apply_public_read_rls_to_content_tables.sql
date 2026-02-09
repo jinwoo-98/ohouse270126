@@ -1,29 +1,37 @@
--- This migration ensures all tables related to displaying "Shop The Look"
+-- This migration ensures that all tables related to displaying lookbooks
 -- have the correct Row Level Security (RLS) policies for public access.
+-- It is designed to run last to override any previous conflicting migrations.
 
--- Table: shop_looks (The main lookbook entry)
+-- 1. Enable RLS and set public read policy for 'shop_looks'
 ALTER TABLE public.shop_looks ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read access for shop_looks" ON public.shop_looks;
-CREATE POLICY "Public read access for shop_looks" ON public.shop_looks
-FOR SELECT USING (true);
 
--- Table: shop_look_items (The items/hotspots within a lookbook)
--- This was the critical missing piece in previous attempts.
+DROP POLICY IF EXISTS "Public can read active lookbooks" ON public.shop_looks;
+
+CREATE POLICY "Public can read active lookbooks"
+ON public.shop_looks
+FOR SELECT
+USING (is_active = true);
+
+
+-- 2. Enable RLS and set public read policy for 'shop_look_items'
+-- This table links lookbooks to products (hotspots).
 ALTER TABLE public.shop_look_items ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read access for shop_look_items" ON public.shop_look_items;
-CREATE POLICY "Public read access for shop_look_items" ON public.shop_look_items
-FOR SELECT USING (true);
 
--- Table: products (The products linked by shop_look_items)
--- Must also be readable to show product info in hotspots.
+DROP POLICY IF EXISTS "Public can read lookbook items" ON public.shop_look_items;
+
+CREATE POLICY "Public can read lookbook items"
+ON public.shop_look_items
+FOR SELECT
+USING (true);
+
+
+-- 3. Enable RLS and set public read policy for 'products'
+-- This is the final link in the chain, allowing product details to be fetched.
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read access for products" ON public.products;
-CREATE POLICY "Public read access for products" ON public.products
-FOR SELECT USING (true);
 
--- Table: categories (Used to filter and categorize lookbooks)
--- Must be readable to group looks by category.
-ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read access for categories" ON public.categories;
-CREATE POLICY "Public read access for categories" ON public.categories
-FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public can read products" ON public.products;
+
+CREATE POLICY "Public can read products"
+ON public.products
+FOR SELECT
+USING (true);
