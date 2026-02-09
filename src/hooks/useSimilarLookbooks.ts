@@ -59,7 +59,6 @@ export function useSimilarLookbooks(currentLookId: string, categoryId: string): 
             )
           `)
           .eq('category_id', categoryId)
-          .eq('is_active', true)
           .neq('id', currentLookId)
           .limit(4);
 

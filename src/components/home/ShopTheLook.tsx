@@ -55,7 +55,6 @@ export function ShopTheLook() {
             products:product_id (*)
           )
         `)
-        .eq('is_active', true)
         .order('display_order');
 
       if (error) throw error;
