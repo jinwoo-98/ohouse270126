@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea"; // Import Textarea
 
 interface Option {
   id: string; // Unique ID for DND
@@ -26,31 +27,50 @@ const slugify = (text: string) => {
 };
 
 export function OptionManager({ title, options, onChange }: OptionManagerProps) {
-  const [newLabel, setNewLabel] = useState("");
+  const [newInput, setNewInput] = useState(""); // Thay đổi từ newLabel thành newInput
 
   const handleAddOption = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmedLabel = newLabel.trim();
-    if (!trimmedLabel) {
+    const input = newInput.trim();
+    if (!input) {
       toast.error("Vui lòng nhập Tên hiển thị.");
       return;
     }
     
-    const generatedValue = slugify(trimmedLabel);
+    // Tách chuỗi bằng dấu phẩy hoặc xuống dòng
+    const newLabels = input.split(/[\n,]/)
+      .map(label => label.trim())
+      .filter(label => label.length > 0);
 
-    if (options.some(o => o.value === generatedValue)) {
-      toast.error("Giá trị tự động tạo đã tồn tại. Vui lòng đổi tên hiển thị.");
-      return;
+    if (newLabels.length === 0) return;
+
+    const newOptions: Option[] = [];
+    let hasDuplicate = false;
+
+    newLabels.forEach(label => {
+      const generatedValue = slugify(label);
+      
+      // Kiểm tra trùng lặp trong danh sách hiện tại và danh sách mới
+      if (options.some(o => o.value === generatedValue) || newOptions.some(o => o.value === generatedValue)) {
+        hasDuplicate = true;
+        toast.error(`Giá trị "${label}" đã tồn tại hoặc trùng lặp. Bỏ qua.`);
+        return;
+      }
+
+      newOptions.push({
+        id: Date.now().toString() + Math.random().toString(36).substring(2, 9), // Generate unique ID for DND
+        label: label,
+        value: generatedValue,
+      });
+    });
+
+    if (newOptions.length > 0) {
+      onChange([...options, ...newOptions]);
+      setNewInput("");
+      toast.success(`Đã thêm ${newOptions.length} tùy chọn.`);
+    } else if (!hasDuplicate) {
+      toast.info("Không có tùy chọn hợp lệ nào được thêm.");
     }
-
-    const newOption: Option = {
-      id: Date.now().toString(), // Generate unique ID for DND
-      label: trimmedLabel,
-      value: generatedValue,
-    };
-
-    onChange([...options, newOption]);
-    setNewLabel("");
   };
 
   const handleRemoveOption = (idToRemove: string) => {
@@ -75,14 +95,14 @@ export function OptionManager({ title, options, onChange }: OptionManagerProps) 
       </h4>
       
       <div className="p-4 bg-secondary/20 rounded-xl border border-border/50 space-y-4">
-        <form onSubmit={handleAddOption} className="grid grid-cols-3 gap-3">
-          <div className="col-span-2 space-y-1">
-            <Label className="text-[10px] uppercase font-bold text-muted-foreground">Tên hiển thị (Label)</Label>
-            <Input 
-              placeholder="VD: Phòng Khách" 
-              value={newLabel} 
-              onChange={e => setNewLabel(e.target.value)} 
-              className="h-10 rounded-lg"
+        <form onSubmit={handleAddOption} className="grid grid-cols-4 gap-3">
+          <div className="col-span-3 space-y-1">
+            <Label className="text-[10px] uppercase font-bold text-muted-foreground">Tên hiển thị (Mỗi dòng/dấu phẩy là 1 giá trị)</Label>
+            <Textarea 
+              placeholder="VD: Phòng Khách, Phòng Ngủ, Phòng Bếp" 
+              value={newInput} 
+              onChange={e => setNewInput(e.target.value)} 
+              className="min-h-[80px] rounded-lg resize-none"
             />
           </div>
           <div className="col-span-1 flex items-end">
