@@ -91,6 +91,9 @@ const menuGroups = [
   }
 ];
 
+// Email được gán quyền admin cứng
+const SUPER_ADMIN_EMAIL = 'tranvu20398@gmail.com';
+
 export default function AdminLayout() {
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -113,20 +116,13 @@ export default function AdminLayout() {
         .eq('id', user.id)
         .single();
       
-      if (error) {
-        console.error("Profile fetch error:", error);
-        // Nếu không tìm thấy hồ sơ (lỗi PGRST116), tạo hồ sơ mặc định
-        if (error.code === 'PGRST116') {
-           // Nếu trigger chưa chạy, chúng ta tạo profile với role 'user'
-           const { data: newProfile, error: insertError } = await supabase.from('profiles').insert({ id: user.id, email: user.email, role: 'user' }).select('role, permissions').single();
-           if (insertError) throw insertError;
-           setUserProfile(newProfile);
-        } else {
-           throw error;
-        }
-      } else {
-        setUserProfile(data || { role: 'user' });
+      if (error && error.code !== 'PGRST116') {
+        throw error;
       }
+      
+      // Fallback an toàn nếu không tìm thấy profile
+      setUserProfile(data || { role: 'user' });
+      
     } catch (err) {
       console.error("Unexpected error:", err);
       setUserProfile({ role: 'user' }); // Fallback an toàn
@@ -144,6 +140,16 @@ export default function AdminLayout() {
     navigate("/admin");
   };
 
+  // Logic xác định vai trò cuối cùng
+  let role = userProfile?.role;
+  
+  // Gán quyền admin cứng nếu email khớp
+  if (user?.email === SUPER_ADMIN_EMAIL) {
+      role = 'admin';
+  }
+
+  const permissions = userProfile?.permissions || {};
+
   if (authLoading || (user && fetchingProfile)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -154,9 +160,6 @@ export default function AdminLayout() {
       </div>
     );
   }
-
-  const role = userProfile?.role;
-  const permissions = userProfile?.permissions || {};
 
   // Kiểm tra quyền truy cập Admin chung
   if (role !== 'admin' && role !== 'editor') {
@@ -257,7 +260,7 @@ export default function AdminLayout() {
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-sm font-bold text-charcoal">{user?.email}</p>
-              <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/30 text-primary bg-primary/5">{role}</Badge>
+              <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/30 text-primary bg-primary/5">{role} Portal</Badge>
             </div>
             <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold uppercase shadow-gold shrink-0">
               {user?.email?.charAt(0)}
