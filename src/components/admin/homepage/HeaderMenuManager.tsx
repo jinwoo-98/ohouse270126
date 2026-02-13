@@ -47,7 +47,6 @@ export function HeaderMenuManager() {
     setLoading(true);
     try {
       const { data: catData } = await supabase.from('categories').select('*').order('display_order');
-      // Sử dụng maybeSingle() để không báo lỗi nếu chưa có dữ liệu
       const { data: setData } = await supabase.from('site_settings').select('*').maybeSingle();
       
       setCategories(catData || []);
@@ -90,8 +89,12 @@ export function HeaderMenuManager() {
   };
 
   const handleUpdateMessage = (index: number, field: string, value: string) => {
-    const newMessages = [...settings.top_banner_messages];
-    newMessages[index][field] = value;
+    const newMessages = settings.top_banner_messages.map((msg: any, i: number) => {
+      if (i === index) {
+        return { ...msg, [field]: value };
+      }
+      return msg;
+    });
     setSettings({ ...settings, top_banner_messages: newMessages });
   };
 
@@ -110,11 +113,10 @@ export function HeaderMenuManager() {
     setSaving(true);
     const toastId = toast.loading("Đang lưu cấu hình...");
     try {
-      // Lấy ID chính xác để cập nhật, tránh tạo dòng mới
       const { data: existing } = await supabase.from('site_settings').select('id').maybeSingle();
       
       const filteredMessages = settings.top_banner_messages
-        .filter((m: any) => m.content.trim() !== "")
+        .filter((m: any) => m.content && m.content.trim() !== "")
         .map((m: any) => {
           let endTimeISO = null;
           if (m.end_time) {
@@ -123,7 +125,7 @@ export function HeaderMenuManager() {
               endTimeISO = date.toISOString();
             }
           }
-          return { ...m, end_time: endTimeISO };
+          return { content: m.content, end_time: endTimeISO };
         });
       
       const payload = {

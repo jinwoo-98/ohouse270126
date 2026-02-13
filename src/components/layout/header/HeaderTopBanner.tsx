@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Truck, Loader2, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,7 +14,6 @@ export function HeaderTopBanner() {
 
   useEffect(() => {
     async function fetchSettings() {
-      // Sử dụng maybeSingle để tránh lỗi nếu bảng trống
       const { data } = await supabase.from('site_settings').select('*').maybeSingle();
       setSettings(data);
       setLoading(false);
@@ -22,8 +21,8 @@ export function HeaderTopBanner() {
     fetchSettings();
   }, []);
 
-  const messages = settings?.top_banner_messages || [];
-  const currentMsg = messages[currentMsgIndex];
+  const messages = useMemo(() => settings?.top_banner_messages || [], [settings]);
+  const currentMsg = useMemo(() => messages[currentMsgIndex], [messages, currentMsgIndex]);
 
   useEffect(() => {
     if (!currentMsg?.end_time) {
@@ -50,7 +49,7 @@ export function HeaderTopBanner() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [currentMsgIndex, messages, currentMsg?.end_time]);
+  }, [currentMsg]);
 
   useEffect(() => {
     if (messages.length > 1) {
@@ -62,7 +61,7 @@ export function HeaderTopBanner() {
   }, [messages.length]);
 
   if (loading) return <div className="bg-primary h-10 flex items-center justify-center"><Loader2 className="w-4 h-4 animate-spin text-white" /></div>;
-  if (messages.length === 0) return null;
+  if (!currentMsg || !currentMsg.content) return null;
 
   const hasCountdown = currentMsg?.end_time && (countdown.days > 0 || countdown.hours > 0 || countdown.minutes > 0 || countdown.seconds > 0);
   const textColor = settings?.top_banner_text_color || '#FFFFFF';
@@ -150,7 +149,6 @@ export function HeaderTopBanner() {
           text-overflow: ellipsis;
         }
         
-        /* Reset margin cho nội dung Rich Text trong banner */
         .top-banner-text p, 
         .top-banner-text h1, 
         .top-banner-text h2, 
