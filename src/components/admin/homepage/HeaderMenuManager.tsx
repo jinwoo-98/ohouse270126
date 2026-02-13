@@ -12,9 +12,6 @@ import {
   Plus, 
   Trash2, 
   Clock,
-  Calendar,
-  AlertCircle,
-  Link as LinkIcon,
   Truck,
   Palette
 } from "lucide-react";
@@ -31,13 +28,13 @@ import { cn } from "@/lib/utils";
 export function HeaderMenuManager() {
   const [categories, setCategories] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>({
-    top_banner_messages: [{ content: "", end_time: "" }], // Đổi từ 'text' sang 'content'
+    top_banner_messages: [{ content: "", end_time: "" }],
     top_banner_shipping: "",
     logo_url: "",
     shipping_modal_title: "",
     shipping_modal_content: "",
     top_banner_text_color: "#FFFFFF",
-    top_banner_countdown_color: "#000000", // Giữ nguyên tên trường DB để tránh lỗi schema
+    top_banner_countdown_color: "#000000",
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -48,27 +45,31 @@ export function HeaderMenuManager() {
 
   const fetchData = async () => {
     setLoading(true);
-    const { data: catData } = await supabase.from('categories').select('*').order('display_order');
-    const { data: setData } = await supabase.from('site_settings').select('*').single();
-    
-    setCategories(catData || []);
-    if (setData) {
-      setSettings({
-        ...setData,
-        top_banner_messages: (setData.top_banner_messages && setData.top_banner_messages.length > 0) 
-          ? setData.top_banner_messages.map((m: any) => ({
-              ...m,
-              // Đảm bảo trường content tồn tại, và end_time được format
-              content: m.content || m.text || "", // Fallback cho trường hợp dữ liệu cũ
-              // Chuyển đổi ISO string thành định dạng datetime-local cho input
-              end_time: m.end_time ? new Date(m.end_time).toISOString().slice(0, 16) : ""
-            }))
-          : [{ content: "", end_time: "" }],
-        top_banner_text_color: setData.top_banner_text_color || "#FFFFFF",
-        top_banner_countdown_color: setData.top_banner_countdown_color || "#000000",
-      });
+    try {
+      const { data: catData } = await supabase.from('categories').select('*').order('display_order');
+      // Sử dụng maybeSingle() để không báo lỗi nếu chưa có dữ liệu
+      const { data: setData } = await supabase.from('site_settings').select('*').maybeSingle();
+      
+      setCategories(catData || []);
+      if (setData) {
+        setSettings({
+          ...setData,
+          top_banner_messages: (setData.top_banner_messages && setData.top_banner_messages.length > 0) 
+            ? setData.top_banner_messages.map((m: any) => ({
+                ...m,
+                content: m.content || m.text || "",
+                end_time: m.end_time ? new Date(m.end_time).toISOString().slice(0, 16) : ""
+              }))
+            : [{ content: "", end_time: "" }],
+          top_banner_text_color: setData.top_banner_text_color || "#FFFFFF",
+          top_banner_countdown_color: setData.top_banner_countdown_color || "#000000",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleAddMessage = () => {
@@ -107,8 +108,10 @@ export function HeaderMenuManager() {
 
   const handleSaveSettings = async () => {
     setSaving(true);
+    const toastId = toast.loading("Đang lưu cấu hình...");
     try {
-      const { data: existing } = await supabase.from('site_settings').select('id').single();
+      // Lấy ID chính xác để cập nhật, tránh tạo dòng mới
+      const { data: existing } = await supabase.from('site_settings').select('id').maybeSingle();
       
       const filteredMessages = settings.top_banner_messages
         .filter((m: any) => m.content.trim() !== "")
@@ -116,16 +119,11 @@ export function HeaderMenuManager() {
           let endTimeISO = null;
           if (m.end_time) {
             const date = new Date(m.end_time);
-            // Kiểm tra nếu ngày hợp lệ trước khi chuyển đổi
             if (!isNaN(date.getTime())) {
               endTimeISO = date.toISOString();
             }
           }
-          
-          return {
-            ...m,
-            end_time: endTimeISO, // Gán null nếu không hợp lệ hoặc trống
-          };
+          return { ...m, end_time: endTimeISO };
         });
       
       const payload = {
@@ -139,15 +137,19 @@ export function HeaderMenuManager() {
         updated_at: new Date()
       };
 
-      if (existing) {
-        await supabase.from('site_settings').update(payload).eq('id', existing.id);
+      let result;
+      if (existing?.id) {
+        result = await supabase.from('site_settings').update(payload).eq('id', existing.id);
       } else {
-        await supabase.from('site_settings').insert(payload);
+        result = await supabase.from('site_settings').insert(payload);
       }
-      toast.success("Đã lưu cấu hình Header");
+
+      if (result.error) throw result.error;
+
+      toast.success("Đã lưu cấu hình Header thành công!", { id: toastId });
       fetchData();
     } catch (e: any) {
-      toast.error("Lỗi: " + e.message);
+      toast.error("Lỗi lưu dữ liệu: " + e.message, { id: toastId });
     } finally {
       setSaving(false);
     }
@@ -158,7 +160,6 @@ export function HeaderMenuManager() {
   return (
     <div className="grid lg:grid-cols-2 gap-8 mt-6">
       <div className="space-y-8">
-        {/* ROW 1: CAMPAIGN MESSAGES */}
         <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b pb-4">
             <div className="flex items-center gap-3">
@@ -203,9 +204,8 @@ export function HeaderMenuManager() {
                       <RichTextEditor 
                         value={msg.content} 
                         onChange={val => handleUpdateMessage(idx, 'content', val)}
-                        placeholder="Nhập nội dung, sử dụng công cụ để chèn link và màu chữ..."
+                        placeholder="Nhập nội dung..."
                       />
-                      <p className="text-[10px] text-muted-foreground italic">Sử dụng công cụ chèn link và màu chữ trong trình soạn thảo.</p>
                     </div>
                     
                     <div className="space-y-2 pt-2 border-t border-dashed border-border/40">
@@ -238,7 +238,6 @@ export function HeaderMenuManager() {
           </div>
         </div>
 
-        {/* NEW SECTION: COLOR CONFIG */}
         <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
           <div className="flex items-center gap-3 border-b pb-4">
             <div className="p-2 bg-primary/10 rounded-lg text-primary"><Palette className="w-5 h-5" /></div>
@@ -266,7 +265,6 @@ export function HeaderMenuManager() {
           </div>
         </div>
 
-        {/* SHIPPING MODAL CONFIG */}
         <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
           <div className="flex items-center gap-3 border-b pb-4">
             <div className="p-2 bg-primary/10 rounded-lg text-primary"><Truck className="w-5 h-5" /></div>
@@ -311,7 +309,7 @@ export function HeaderMenuManager() {
               <p className="text-[10px] text-muted-foreground font-medium">Hình ảnh nhận diện thương hiệu</p>
             </div>
           </div>
-          <ImageUpload value={settings.logo_url} onChange={(url) => setSettings({...settings, logo_url: url})} />
+          <ImageUpload value={settings.logo_url} onChange={(url) => setSettings({...settings, logo_url: url as string})} />
         </div>
 
         <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">

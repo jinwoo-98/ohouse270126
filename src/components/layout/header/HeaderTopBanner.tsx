@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { Truck, Loader2, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,7 +14,8 @@ export function HeaderTopBanner() {
 
   useEffect(() => {
     async function fetchSettings() {
-      const { data } = await supabase.from('site_settings').select('*').single();
+      // Sử dụng maybeSingle để tránh lỗi nếu bảng trống
+      const { data } = await supabase.from('site_settings').select('*').maybeSingle();
       setSettings(data);
       setLoading(false);
     }
@@ -25,7 +25,6 @@ export function HeaderTopBanner() {
   const messages = settings?.top_banner_messages || [];
   const currentMsg = messages[currentMsgIndex];
 
-  // Logic đếm ngược dựa trên thông điệp hiện tại
   useEffect(() => {
     if (!currentMsg?.end_time) {
       setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -53,7 +52,6 @@ export function HeaderTopBanner() {
     return () => clearInterval(timer);
   }, [currentMsgIndex, messages, currentMsg?.end_time]);
 
-  // Xoay vòng thông điệp
   useEffect(() => {
     if (messages.length > 1) {
       const interval = setInterval(() => {
@@ -68,7 +66,7 @@ export function HeaderTopBanner() {
 
   const hasCountdown = currentMsg?.end_time && (countdown.days > 0 || countdown.hours > 0 || countdown.minutes > 0 || countdown.seconds > 0);
   const textColor = settings?.top_banner_text_color || '#FFFFFF';
-  const countdownBgColor = settings?.top_banner_countdown_color || '#000000'; // Đổi tên biến
+  const countdownBgColor = settings?.top_banner_countdown_color || '#000000';
 
   return (
     <>
@@ -85,7 +83,6 @@ export function HeaderTopBanner() {
                   transition={{ duration: 0.5 }}
                   className="absolute inset-0 flex items-center gap-2 md:gap-3"
                 >
-                  {/* Nội dung thông báo (Sử dụng content từ Rich Text Editor) */}
                   <div 
                     className="underline-offset-2 hover:no-underline block max-w-full text-left top-banner-text-container"
                     style={{ color: textColor }}
@@ -146,16 +143,23 @@ export function HeaderTopBanner() {
         content={settings?.shipping_modal_content}
       />
       
-      {/* Custom CSS for text wrapping */}
       <style>{`
-        /* Desktop: Luôn hiển thị 1 dòng, ẩn phần thừa */
         .top-banner-text-container {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
         
-        /* Mobile (max-width: 640px): Cho phép 2 dòng */
+        /* Reset margin cho nội dung Rich Text trong banner */
+        .top-banner-text p, 
+        .top-banner-text h1, 
+        .top-banner-text h2, 
+        .top-banner-text h3 {
+          margin: 0 !important;
+          padding: 0 !important;
+          display: inline !important;
+        }
+
         @media (max-width: 640px) {
           .top-banner-text-container {
             white-space: normal;
@@ -164,7 +168,7 @@ export function HeaderTopBanner() {
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-height: 2.5rem; /* Đảm bảo không vượt quá 2 dòng */
+            max-height: 2.5rem;
           }
         }
       `}</style>
