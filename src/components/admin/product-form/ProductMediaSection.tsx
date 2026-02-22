@@ -1,5 +1,6 @@
-import { Image as ImageIcon, X } from "lucide-react";
+import { Image as ImageIcon, X, Ruler } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { Label } from "@/components/ui/label";
 
 interface ProductMediaSectionProps {
   formData: any;
@@ -23,6 +24,14 @@ export function ProductMediaSection({ formData, setFormData }: ProductMediaSecti
           <ImageIcon className="w-4 h-4" /> Hình ảnh đại diện (Ảnh chính)
         </h3>
         <ImageUpload value={formData.image_url} onChange={(url) => setFormData({...formData, image_url: url as string})} />
+      </div>
+
+      <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+          <Ruler className="w-4 h-4" /> Ảnh kích thước kỹ thuật
+        </h3>
+        <ImageUpload value={formData.dimension_image_url} onChange={(url) => setFormData({...formData, dimension_image_url: url as string})} />
+        <p className="text-[10px] text-muted-foreground italic">Ảnh vẽ kỹ thuật hoặc sơ đồ kích thước sản phẩm.</p>
       </div>
 
       <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">

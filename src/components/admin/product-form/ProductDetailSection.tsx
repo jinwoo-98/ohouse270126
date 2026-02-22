@@ -1,7 +1,8 @@
-import { Info } from "lucide-react";
+import { Info, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Select, 
   SelectContent, 
@@ -32,6 +33,7 @@ export function ProductDetailSection({
       <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
         <Info className="w-4 h-4" /> 3. Thông tin chi tiết
       </h3>
+      
       <div className="space-y-2">
         <Label className="text-[10px] font-bold uppercase text-muted-foreground">Tên sản phẩm đầy đủ *</Label>
         <Input 
@@ -53,6 +55,16 @@ export function ProductDetailSection({
         />
         <p className="text-[10px] text-muted-foreground italic">* Để trống để hệ thống tự động tạo từ tên sản phẩm.</p>
       </div>
+
+      <div className="space-y-2">
+        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả ngắn (Hiển thị nhanh)</Label>
+        <Textarea 
+          value={formData.short_description} 
+          onChange={(e) => setFormData({...formData, short_description: e.target.value})}
+          placeholder="Tóm tắt ngắn gọn về sản phẩm (hiển thị ở phần thông tin nhanh)..."
+          className="rounded-xl min-h-[80px] resize-none"
+        />
+      </div>
       
       {/* Attributes Section */}
       {availableAttributes.length > 0 && (
@@ -63,7 +75,6 @@ export function ProductDetailSection({
               
               {attr.type === 'single' ? (
                 <Select 
-                  // Single select: giá trị đã chọn là phần tử đầu tiên trong mảng (hoặc chuỗi rỗng)
                   value={productAttrs[attr.id]?.[0] || ""} 
                   onValueChange={(val) => handleAttributeChange(attr.id, val, false)}
                 >
@@ -82,7 +93,6 @@ export function ProductDetailSection({
                     <div key={opt} className="flex items-center space-x-2">
                       <Checkbox 
                         id={`${attr.id}-${opt}`}
-                        // Multi select: kiểm tra xem giá trị có trong mảng đã chọn không
                         checked={productAttrs[attr.id]?.includes(opt)}
                         onCheckedChange={() => handleAttributeChange(attr.id, opt, true)}
                       />
@@ -98,7 +108,7 @@ export function ProductDetailSection({
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả bài viết</Label>
+          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả chi tiết bài viết</Label>
           <AIContentAssistant 
             contentType="product" 
             contextTitle={formData.name} 
@@ -108,7 +118,7 @@ export function ProductDetailSection({
         <RichTextEditor 
           value={formData.description} 
           onChange={(val) => setFormData({...formData, description: val})} 
-          placeholder="Mô tả kỹ thuật, kích thước, ưu điểm của sản phẩm..."
+          placeholder="Mô tả kỹ thuật, ưu điểm của sản phẩm..."
         />
       </div>
     </div>
