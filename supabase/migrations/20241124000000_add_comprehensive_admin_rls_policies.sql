@@ -4,6 +4,37 @@
 -- The policy "Allow all for authenticated users" is a shorthand for allowing
 -- SELECT, INSERT, UPDATE, and DELETE for any user who is logged in.
 
+-- Drop existing policies to avoid conflicts if they were partially created
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.site_pages;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.categories;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.attributes;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.category_attributes;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.products;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.product_variants;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.slides;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.product_attributes;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.projects;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.usps;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.shop_looks;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.trending_keywords;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.lookbook_filters;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.shop_look_items;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.tracking_scripts;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.reviews;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.showrooms;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.orders;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.homepage_sections;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.order_items;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.design_service_config;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.site_settings;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.theme_config;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.news;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.subscribers;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.contact_messages;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.cooperation_requests;
+DROP POLICY IF EXISTS "Allow all for authenticated users" ON public.design_requests;
+
+-- Create comprehensive policies for all admin-managed tables
 CREATE POLICY "Allow all for authenticated users" ON public.site_pages FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for authenticated users" ON public.categories FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for authenticated users" ON public.attributes FOR ALL TO authenticated USING (true) WITH CHECK (true);
