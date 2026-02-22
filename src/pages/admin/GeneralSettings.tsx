@@ -53,25 +53,25 @@ export default function GeneralSettings() {
 
   const handleSave = async () => {
     setLoading(true);
-    try {
-      const { data: existing } = await supabase.from('site_settings').select('id').single();
-      
-      const payload = {
-        ...settings,
-        updated_at: new Date()
-      };
+    
+    const payload = {
+      ...settings,
+      updated_at: new Date()
+    };
 
-      if (existing) {
-        await supabase.from('site_settings').update(payload).eq('id', existing.id);
-      } else {
-        await supabase.from('site_settings').insert(payload);
-      }
-      
+    const { data: existing } = await supabase.from('site_settings').select('id').single();
+    
+    const { error } = existing
+      ? await supabase.from('site_settings').update(payload).eq('id', existing.id)
+      : await supabase.from('site_settings').insert(payload);
+
+    setLoading(false);
+
+    if (error) {
+      console.error("Supabase error:", error);
+      toast.error("Lỗi khi lưu cấu hình: " + error.message);
+    } else {
       toast.success("Đã lưu thông tin cấu hình!");
-    } catch (error: any) {
-      toast.error("Lỗi: " + error.message);
-    } finally {
-      setLoading(false);
     }
   };
 

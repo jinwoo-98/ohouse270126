@@ -40,18 +40,20 @@ export default function NewsForm() {
     setLoading(true);
     const slug = formData.slug || formData.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
     
-    try {
-      if (id) {
-        await supabase.from('news').update({...formData, slug}).eq('id', id);
-      } else {
-        await supabase.from('news').insert({...formData, slug});
-      }
+    const payload = { ...formData, slug };
+    
+    const { error } = id 
+      ? await supabase.from('news').update(payload).eq('id', id)
+      : await supabase.from('news').insert(payload);
+
+    setLoading(false);
+
+    if (error) {
+      console.error("Supabase error:", error);
+      toast.error("Lỗi khi lưu bài viết: " + error.message);
+    } else {
       toast.success("Đã lưu bài viết thành công!");
       navigate("/admin/news");
-    } catch (err) {
-      toast.error("Lỗi khi lưu bài viết.");
-    } finally {
-      setLoading(false);
     }
   };
 

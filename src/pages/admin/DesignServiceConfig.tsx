@@ -17,9 +17,9 @@ const iconMap: Record<string, any> = { Zap, LayoutGrid, CheckCircle, DollarSign,
 const iconOptions = Object.keys(iconMap);
 
 interface Step {
+  icon_name: string;
   title: string;
   desc: string;
-  icon_name: string;
 }
 
 interface Option {
@@ -66,7 +66,7 @@ export default function DesignServiceConfig() {
         .from('design_service_config')
         .select('*')
         .single();
-
+        
       if (error && error.code !== 'PGRST116') throw error;
 
       if (data) {
@@ -97,30 +97,33 @@ export default function DesignServiceConfig() {
 
   const handleSave = async () => {
     setSaving(true);
-    try {
-      // Remove temporary DND IDs before saving to DB
-      const cleanOptions = (options: Option[]) => options.map(({ id, ...rest }) => rest);
+    
+    // Remove temporary DND IDs before saving to DB
+    const cleanOptions = (options: Option[]) => options.map(({ id, ...rest }) => rest);
 
-      const payload = {
-        hero_image_url: formData.hero_image_url,
-        steps: formData.steps,
-        room_options: cleanOptions(formData.room_options),
-        budget_options: cleanOptions(formData.budget_options),
-        updated_at: new Date().toISOString(),
-      };
+    const payload = {
+      hero_image_url: formData.hero_image_url,
+      steps: formData.steps,
+      room_options: cleanOptions(formData.room_options),
+      budget_options: cleanOptions(formData.budget_options),
+      updated_at: new Date().toISOString(),
+    };
 
-      if (configId) {
-        await supabase.from('design_service_config').update(payload).eq('id', configId);
-      } else {
-        const { data } = await supabase.from('design_service_config').insert(payload).select().single();
-        setConfigId(data.id);
-      }
-      
+    let result;
+    if (configId) {
+      result = await supabase.from('design_service_config').update(payload).eq('id', configId);
+    } else {
+      result = await supabase.from('design_service_config').insert(payload).select().single();
+      if (result.data) setConfigId(result.data.id);
+    }
+    
+    setSaving(false);
+
+    if (result.error) {
+      console.error("Supabase error:", result.error);
+      toast.error("Lỗi lưu cấu hình: " + result.error.message);
+    } else {
       toast.success("Đã lưu cấu hình trang Thiết Kế.");
-    } catch (error: any) {
-      toast.error("Lỗi lưu cấu hình: " + error.message);
-    } finally {
-      setSaving(false);
     }
   };
 

@@ -112,33 +112,38 @@ export default function CategoryForm() {
 
     try {
       let categoryId = id;
+      let categoryError = null;
       
       if (id) {
-        await supabase.from('categories').update(payload).eq('id', id);
+        const { error } = await supabase.from('categories').update(payload).eq('id', id);
+        categoryError = error;
       } else {
-        const { data } = await supabase.from('categories').insert(payload).select().single();
-        categoryId = data.id;
+        const { data, error } = await supabase.from('categories').insert(payload).select().single();
+        if (data) categoryId = data.id;
+        categoryError = error;
       }
 
+      if (categoryError) throw categoryError;
+      if (!categoryId) throw new Error("Không thể lấy ID danh mục.");
+
       // Update Attributes
-      if (categoryId) {
-        // Delete old
-        await supabase.from('category_attributes').delete().eq('category_id', categoryId);
-        
-        // Insert new
-        if (selectedAttrs.length > 0) {
-          const attrPayload = selectedAttrs.map(attrId => ({
-            category_id: categoryId,
-            attribute_id: attrId
-          }));
-          await supabase.from('category_attributes').insert(attrPayload);
-        }
+      const { error: deleteAttrsError } = await supabase.from('category_attributes').delete().eq('category_id', categoryId);
+      if (deleteAttrsError) throw deleteAttrsError;
+      
+      if (selectedAttrs.length > 0) {
+        const attrPayload = selectedAttrs.map(attrId => ({
+          category_id: categoryId,
+          attribute_id: attrId
+        }));
+        const { error: insertAttrsError } = await supabase.from('category_attributes').insert(attrPayload);
+        if (insertAttrsError) throw insertAttrsError;
       }
 
       toast.success("Đã lưu danh mục thành công!");
       navigate("/admin/categories");
     } catch (err: any) {
-      toast.error("Lỗi: " + err.message);
+      console.error("Supabase error:", err);
+      toast.error("Lỗi khi lưu danh mục: " + err.message);
     } finally {
       setLoading(false);
     }

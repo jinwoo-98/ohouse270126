@@ -146,13 +146,12 @@ export default function ProductForm() {
 
     setLoading(true);
     
-    // 1. Generate slug if missing
     const slugifiedName = formData.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
     const finalSlug = formData.slug || slugifiedName;
 
     const payload = {
       ...formData,
-      slug: finalSlug, // Use the generated slug
+      slug: finalSlug,
       price: parseFloat(formData.price) || 0,
       original_price: formData.original_price ? parseFloat(formData.original_price) : null,
       display_order: parseInt(formData.display_order),
@@ -165,17 +164,26 @@ export default function ProductForm() {
 
     try {
       let productId = id;
+      let productError = null;
+
       if (isEdit) {
-        await supabase.from('products').update(payload).eq('id', id);
+        const { error } = await supabase.from('products').update(payload).eq('id', id);
+        productError = error;
       } else {
-        const { data } = await supabase.from('products').insert(payload).select().single();
-        productId = data.id;
+        const { data, error } = await supabase.from('products').insert(payload).select().single();
+        if (data) productId = data.id;
+        productError = error;
       }
 
+      if (productError) throw productError;
+      if (!productId) throw new Error("Không thể lấy ID sản phẩm.");
+
       // Sync Variants
-      await supabase.from('product_variants').delete().eq('product_id', productId);
+      const { error: deleteVariantsError } = await supabase.from('product_variants').delete().eq('product_id', productId);
+      if (deleteVariantsError) throw deleteVariantsError;
+
       if (variants.length > 0) {
-        await supabase.from('product_variants').insert(variants.map(v => ({
+        const { error: insertVariantsError } = await supabase.from('product_variants').insert(variants.map(v => ({
           product_id: productId,
           tier_values: v.tier_values,
           price: parseFloat(v.price),
@@ -183,25 +191,31 @@ export default function ProductForm() {
           stock: parseInt(v.stock),
           sku: v.sku
         })));
+        if (insertVariantsError) throw insertVariantsError;
       }
 
       // Sync Attributes
-      await supabase.from('product_attributes').delete().eq('product_id', productId);
+      const { error: deleteAttrsError } = await supabase.from('product_attributes').delete().eq('product_id', productId);
+      if (deleteAttrsError) throw deleteAttrsError;
+
       const attrPayloads = Object.entries(productAttrs)
-        .filter(([, values]) => values.length > 0) // Chỉ lưu các thuộc tính có giá trị
+        .filter(([, values]) => values.length > 0)
         .map(([attrId, values]) => ({
           product_id: productId,
           attribute_id: attrId,
-          // LUÔN LƯU DƯỚI DẠNG MẢNG (JSONB) để đảm bảo tính nhất quán
           value: values
         }));
         
-      if (attrPayloads.length > 0) await supabase.from('product_attributes').insert(attrPayloads);
+      if (attrPayloads.length > 0) {
+        const { error: insertAttrsError } = await supabase.from('product_attributes').insert(attrPayloads);
+        if (insertAttrsError) throw insertAttrsError;
+      }
 
       toast.success("Đã lưu sản phẩm thành công!");
       navigate("/admin/products");
     } catch (error: any) {
-      toast.error("Lỗi: " + error.message);
+      console.error("Supabase error:", error);
+      toast.error("Lỗi khi lưu sản phẩm: " + error.message);
     } finally {
       setLoading(false);
     }

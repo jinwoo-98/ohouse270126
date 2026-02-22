@@ -61,7 +61,7 @@ export default function LookbookForm() {
       } else {
         const defaultCat = cRes.data?.find(c => !c.parent_id && c.menu_location === 'main');
         if (defaultCat) {
-          setFormData(prev => ({ ...prev, category_id: defaultCat.slug }));
+          setFormData(prev => ({ ...prev, category_id: defaultCat.id }));
         }
       }
     } catch (e) {
@@ -110,6 +110,7 @@ export default function LookbookForm() {
 
     const payload = {
       title: formData.title,
+      slug: formData.slug || slugify(formData.title),
       category_id: formData.category_id,
       image_url: formData.image_url,
       gallery_urls: formData.gallery_urls,
@@ -135,6 +136,7 @@ export default function LookbookForm() {
     }
 
     if (lookError || !lookResult) {
+      console.error("Supabase error:", lookError);
       toast.error("Lỗi lưu Lookbook: " + lookError?.message);
       setSaving(false);
       return;
@@ -144,7 +146,9 @@ export default function LookbookForm() {
 
     try {
       if (lookId) {
-        await supabase.from('shop_look_items').delete().eq('look_id', lookId);
+        const { error: deleteError } = await supabase.from('shop_look_items').delete().eq('look_id', lookId);
+        if (deleteError) throw deleteError;
+
         if (lookItems.length > 0) {
           const itemsToInsert = lookItems.map((item) => ({
             look_id: lookId,
@@ -153,12 +157,14 @@ export default function LookbookForm() {
             y_position: item.y_position,
             target_image_url: item.target_image_url,
           }));
-          await supabase.from('shop_look_items').insert(itemsToInsert);
+          const { error: insertError } = await supabase.from('shop_look_items').insert(itemsToInsert);
+          if (insertError) throw insertError;
         }
       }
       toast.success("Đã lưu thành công!");
       navigate("/admin/content/looks");
     } catch (itemError: any) {
+      console.error("Supabase item error:", itemError);
       toast.error("Lỗi lưu sản phẩm gắn thẻ: " + itemError.message);
     } finally {
       setSaving(false);

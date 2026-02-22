@@ -38,28 +38,20 @@ export default function ThemeSettings() {
 
   const handleSave = async () => {
     setLoading(true);
-    try {
-      const { data: existing } = await supabase.from('theme_config').select('id').single();
-      
-      let error;
-      if (existing) {
-        const { error: updateError } = await supabase
-          .from('theme_config')
-          .update(config)
-          .eq('id', existing.id);
-        error = updateError;
-      } else {
-        const { error: insertError } = await supabase.from('theme_config').insert(config);
-        error = insertError;
-      }
+    
+    const { data: existing } = await supabase.from('theme_config').select('id').single();
+    
+    const { error } = existing
+      ? await supabase.from('theme_config').update(config).eq('id', existing.id)
+      : await supabase.from('theme_config').insert(config);
 
-      if (error) throw error;
-      
+    setLoading(false);
+
+    if (error) {
+      console.error("Supabase error:", error);
+      toast.error("Lỗi khi lưu cấu hình: " + error.message);
+    } else {
       toast.success("Đã lưu cấu hình giao diện thành công!");
-    } catch (error: any) {
-      toast.error("Lỗi: " + error.message);
-    } finally {
-      setLoading(false);
     }
   };
 

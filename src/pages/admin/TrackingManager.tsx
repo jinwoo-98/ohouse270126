@@ -60,29 +60,29 @@ export default function TrackingManager() {
       return;
     }
 
-    try {
-      if (editingScript?.id) {
-        await supabase.from('tracking_scripts').update(payload).eq('id', editingScript.id);
-      } else {
-        await supabase.from('tracking_scripts').insert(payload);
-      }
+    const { error } = editingScript?.id
+      ? await supabase.from('tracking_scripts').update(payload).eq('id', editingScript.id)
+      : await supabase.from('tracking_scripts').insert(payload);
+
+    setSaving(false);
+
+    if (error) {
+      console.error("Supabase error:", error);
+      toast.error("Lỗi lưu dữ liệu: " + error.message);
+    } else {
       toast.success("Đã lưu mã theo dõi.");
       setIsOpen(false);
       fetchScripts();
-    } catch (e: any) { 
-      toast.error("Lỗi lưu dữ liệu: " + e.message); 
-    } finally {
-      setSaving(false);
     }
   };
 
   const toggleActive = async (id: string, current: boolean) => {
-    try {
-      await supabase.from('tracking_scripts').update({ is_active: !current }).eq('id', id);
+    const { error } = await supabase.from('tracking_scripts').update({ is_active: !current }).eq('id', id);
+    if (error) {
+      toast.error("Lỗi cập nhật: " + error.message);
+    } else {
       setScripts(scripts.map(s => s.id === id ? { ...s, is_active: !current } : s));
       toast.success("Đã cập nhật trạng thái.");
-    } catch (e: any) {
-      toast.error("Lỗi: " + e.message);
     }
   };
 
@@ -90,7 +90,8 @@ export default function TrackingManager() {
     if (!deleteId) return;
     const toastId = toast.loading("Đang xóa mã theo dõi...");
     try {
-      await supabase.from('tracking_scripts').delete().eq('id', deleteId);
+      const { error } = await supabase.from('tracking_scripts').delete().eq('id', deleteId);
+      if (error) throw error;
       toast.success("Đã xóa mã theo dõi.", { id: toastId });
       fetchScripts();
     } catch (e) {
@@ -117,6 +118,7 @@ export default function TrackingManager() {
           .update({ display_order: index + 1 })
           .eq('id', item.id)
       );
+      
       await Promise.all(promises);
       toast.success("Đã cập nhật thứ tự hiển thị.");
     } catch (error) {

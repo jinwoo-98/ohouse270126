@@ -31,6 +31,7 @@ export default function ShowroomForm() {
 
   useEffect(() => {
     if (id) fetchShowroom();
+    else setFetching(false); // Set fetching to false if not in edit mode
   }, [id]);
 
   const fetchShowroom = async () => {
@@ -57,18 +58,21 @@ export default function ShowroomForm() {
       display_order: parseInt(formData.display_order) || 1000,
     };
 
-    try {
-      if (isEdit) {
-        await supabase.from('showrooms').update(payload).eq('id', id);
-      } else {
-        await supabase.from('showrooms').insert(payload);
-      }
+    let result;
+    if (isEdit) {
+      result = await supabase.from('showrooms').update(payload).eq('id', id);
+    } else {
+      result = await supabase.from('showrooms').insert(payload);
+    }
+
+    setLoading(false);
+
+    if (result.error) {
+      console.error("Supabase error:", result.error);
+      toast.error("Lỗi khi lưu Showroom: " + result.error.message);
+    } else {
       toast.success("Đã lưu thông tin Showroom thành công!");
       navigate("/admin/showrooms");
-    } catch (err: any) {
-      toast.error("Lỗi khi lưu Showroom: " + err.message);
-    } finally {
-      setLoading(false);
     }
   };
 

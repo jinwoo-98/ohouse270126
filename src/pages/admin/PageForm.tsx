@@ -33,18 +33,19 @@ export default function PageForm() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      if (id) {
-        await supabase.from('site_pages').update(formData).eq('id', id);
-      } else {
-        await supabase.from('site_pages').insert(formData);
-      }
+    
+    const { error } = id
+      ? await supabase.from('site_pages').update(formData).eq('id', id)
+      : await supabase.from('site_pages').insert(formData);
+
+    setLoading(false);
+
+    if (error) {
+      console.error("Supabase error:", error);
+      toast.error("Lỗi khi lưu trang: " + error.message);
+    } else {
       toast.success("Đã lưu trang thành công!");
       navigate("/admin/pages");
-    } catch (err) {
-      toast.error("Lỗi khi lưu trang.");
-    } finally {
-      setLoading(false);
     }
   };
 

@@ -38,19 +38,19 @@ export default function CooperationRequestManager() {
   
   const updateStatus = async (id: string, status: string) => {
     setIsUpdatingId(id);
-    try {
-      const { error } = await supabase
-        .from('cooperation_requests')
-        .update({ status })
-        .eq('id', id);
+    const { error } = await supabase
+      .from('cooperation_requests')
+      .update({ status })
+      .eq('id', id);
 
-      if (error) throw error;
+    setIsUpdatingId(null);
+
+    if (error) {
+      console.error("Supabase error:", error);
+      toast.error("Lỗi cập nhật: " + error.message);
+    } else {
       toast.success("Đã cập nhật trạng thái yêu cầu");
       fetchRequests();
-    } catch (error: any) {
-      toast.error("Lỗi cập nhật: " + error.message);
-    } finally {
-      setIsUpdatingId(null);
     }
   };
   

@@ -52,18 +52,18 @@ export default function AttributeForm() {
     setLoading(true);
     const payload = { ...formData, options };
     
-    try {
-      if (id) {
-        await supabase.from('attributes').update(payload).eq('id', id);
-      } else {
-        await supabase.from('attributes').insert(payload);
-      }
+    const { error } = id
+      ? await supabase.from('attributes').update(payload).eq('id', id)
+      : await supabase.from('attributes').insert(payload);
+
+    setLoading(false);
+
+    if (error) {
+      console.error("Supabase error:", error);
+      toast.error("Lỗi khi lưu thuộc tính: " + error.message);
+    } else {
       toast.success("Đã lưu thuộc tính!");
       navigate("/admin/attributes");
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setLoading(false);
     }
   };
 
