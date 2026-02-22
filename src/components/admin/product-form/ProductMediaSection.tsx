@@ -10,9 +10,11 @@ export function ProductMediaSection({ formData, setFormData }: ProductMediaSecti
   const handleRemoveGalleryImage = (index: number) => {
     setFormData((prev: any) => ({
       ...prev,
-      gallery_urls: prev.gallery_urls.filter((_: any, i: number) => i !== index)
+      gallery_urls: (prev.gallery_urls || []).filter((_: any, i: number) => i !== index)
     }));
   };
+
+  const galleryUrls = formData.gallery_urls || [];
 
   return (
     <div className="space-y-6">
@@ -28,7 +30,7 @@ export function ProductMediaSection({ formData, setFormData }: ProductMediaSecti
           <ImageIcon className="w-4 h-4" /> Bộ sưu tập ảnh (Ảnh phụ)
         </h3>
         <div className="grid grid-cols-2 gap-3 mb-4">
-          {formData.gallery_urls.map((url: string, idx: number) => (
+          {galleryUrls.map((url: string, idx: number) => (
             <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
               <img src={url} alt="Gallery" className="w-full h-full object-cover" />
               <button 
@@ -44,7 +46,7 @@ export function ProductMediaSection({ formData, setFormData }: ProductMediaSecti
         <div className="p-4 border-2 border-dashed border-border rounded-2xl bg-secondary/5">
           <ImageUpload 
             multiple
-            value={formData.gallery_urls}
+            value={galleryUrls}
             onChange={(urls) => setFormData((prev: any) => ({ ...prev, gallery_urls: urls as string[] }))} 
           />
           <p className="text-[10px] text-muted-foreground mt-3 text-center italic">Chọn nhiều ảnh cùng lúc để tải lên bộ sưu tập.</p>
