@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Loader2, ChevronRight } from "lucide-react";
+import { Loader2, ChevronRight, AlertTriangle } from "lucide-react";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ export default function LookDetailPage() {
   const [loading, setLoading] = useState(true);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [currentImage, setCurrentImage] = useState<string>("");
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -35,6 +36,7 @@ export default function LookDetailPage() {
 
   const fetchLook = async () => {
     setLoading(true);
+    setErrorDetail(null);
     
     const selectQuery = `
       *, 
@@ -46,26 +48,39 @@ export default function LookDetailPage() {
     `;
 
     try {
-      const { data: lookData, error } = await supabase
-        .from('shop_looks')
-        .select(selectQuery)
-        .eq('id', id)
-        .single();
+      // Kiểm tra xem id có phải là định dạng UUID hợp lệ không
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id || "");
+      
+      let query = supabase.from('shop_looks').select(selectQuery);
+      
+      if (isUuid) {
+        // Nếu là UUID, tìm theo ID hoặc Slug (đề phòng slug trùng UUID)
+        query = query.or(`id.eq.${id},slug.eq.${id}`);
+      } else {
+        // Nếu không phải UUID, chắc chắn là tìm theo Slug
+        query = query.eq('slug', id);
+      }
 
-      if (error || !lookData) {
-        if (error) console.error("Lookbook fetch error:", error);
-        toast.error("Không tìm thấy không gian thiết kế này.");
-        navigate("/cam-hung");
+      const { data: lookData, error } = await query.maybeSingle();
+
+      if (error) {
+        console.error("Supabase Error:", error);
+        setErrorDetail(error.message);
+        toast.error(`Lỗi truy vấn: ${error.message}`);
+        return;
+      }
+
+      if (!lookData) {
+        setErrorDetail("Không tìm thấy dữ liệu cho Lookbook này.");
         return;
       }
 
       setLook(lookData);
       setCurrentImage(lookData.image_url);
 
-    } catch (e) {
-      console.error("Critical Error fetching lookbook:", e);
-      toast.error("Lỗi tải dữ liệu. Vui lòng thử lại sau.");
-      navigate("/cam-hung");
+    } catch (e: any) {
+      console.error("Critical Error:", e);
+      setErrorDetail(e.message);
     } finally {
       setLoading(false);
     }
@@ -73,7 +88,7 @@ export default function LookDetailPage() {
 
   const visibleItems = useMemo(() => {
     if (!look) return [];
-    return look.shop_look_items.filter((item: any) => item.products);
+    return look.shop_look_items?.filter((item: any) => item.products) || [];
   }, [look]);
   
   const lookbookProducts = useMemo(() => visibleItems.map((item: any) => item.products).filter(Boolean), [visibleItems]);
@@ -108,7 +123,21 @@ export default function LookDetailPage() {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
   }
 
-  if (!look) return null;
+  if (errorDetail || !look) return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center gap-6">
+      <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center text-red-500">
+        <AlertTriangle className="w-10 h-10" />
+      </div>
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold text-charcoal">Rất tiếc, đã có lỗi xảy ra</h2>
+        <p className="text-muted-foreground max-w-md mx-auto">{errorDetail || "Không tìm thấy không gian thiết kế bạn yêu cầu."}</p>
+      </div>
+      <div className="flex gap-4">
+        <Button variant="outline" onClick={() => window.location.reload()}>Thử lại</Button>
+        <Button className="btn-hero" onClick={() => navigate("/cam-hung")}>Về trang Cảm hứng</Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
