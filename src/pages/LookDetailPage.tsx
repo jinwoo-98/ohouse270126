@@ -19,7 +19,7 @@ import { LookProductVerticalList } from "@/components/inspiration/LookProductFul
 import { Button } from "@/components/ui/button";
 
 export default function LookDetailPage() {
-  const { slug } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [look, setLook] = useState<any>(null);
@@ -28,10 +28,10 @@ export default function LookDetailPage() {
   const [currentImage, setCurrentImage] = useState<string>("");
 
   useEffect(() => {
-    if (slug) {
+    if (id) {
       fetchLook();
     }
-  }, [slug]);
+  }, [id]);
 
   const fetchLook = async () => {
     setLoading(true);
@@ -46,11 +46,10 @@ export default function LookDetailPage() {
     `;
 
     try {
-      // REFACTORED QUERY: Use .or() to search by slug OR id in a single, robust query.
       const { data: lookData, error } = await supabase
         .from('shop_looks')
         .select(selectQuery)
-        .or(`slug.eq.${slug},id.eq.${slug}`) // Key change here
+        .eq('id', id)
         .single();
 
       if (error || !lookData) {

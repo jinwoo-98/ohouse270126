@@ -119,12 +119,9 @@ const App = () => (
                 <Route path="/showroom" element={<ShowroomPage />} />
                 
                 <Route path="/cam-hung" element={<InspirationPage />} />
-                {/* Route MỚI: Dùng /y-tuong cho trang chi tiết */}
-                <Route path="/y-tuong/:slug" element={<LookDetailPage />} />
+                {/* Route MỚI: Dùng /y-tuong/:id cho trang chi tiết */}
+                <Route path="/y-tuong/:id" element={<LookDetailPage />} />
                 
-                {/* Giữ route cũ redirect để tránh lỗi link cũ */}
-                <Route path="/cam-hung/:slug" element={<Navigate to="/y-tuong/:slug" replace />} />
-
                 <Route path="/thiet-ke" element={<DesignServicePage />} />
                 <Route path="/ve-chung-toi" element={<ContentPage />} />
                 <Route path="/tuyen-dung" element={<ContentPage />} />
