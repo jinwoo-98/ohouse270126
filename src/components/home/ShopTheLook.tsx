@@ -163,7 +163,7 @@ export function ShopTheLook() {
             {config?.description || "Khám phá những mẫu thiết kế nội thất hoàn mỹ và sở hữu ngay các sản phẩm trong ảnh chỉ với một cú chạm."}
           </p>
 
-          {/* Nút Xem Tất Cả Cảm Hứng (Bo góc tiêu chuẩn) */}
+          {/* Nút Xem Tất Cả Cảm Hứng (Bo góc tiêu chuẩn theo admin) */}
           <div className="flex justify-center mb-10">
             <Button 
               asChild 
@@ -176,11 +176,11 @@ export function ShopTheLook() {
             </Button>
           </div>
 
-          {/* Hàng danh mục (Bo tròn hơn) */}
+          {/* Hàng danh mục (Bo tròn tối đa để tạo sự khác biệt) */}
           <div className="flex justify-center md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0">
             <button
               onClick={() => setActiveCategorySlug("all")}
-              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-3xl border transition-all whitespace-nowrap shrink-0 ${
+              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 ${
                 activeCategorySlug === "all" 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                   : 'bg-white border-border text-muted-foreground hover:border-charcoal'
@@ -192,7 +192,7 @@ export function ShopTheLook() {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategorySlug(cat.slug!)}
-                className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-3xl border transition-all whitespace-nowrap shrink-0 ${
+                className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 ${
                   cat.slug === activeCategorySlug 
                     ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                     : 'bg-white border-border text-muted-foreground hover:border-charcoal'
