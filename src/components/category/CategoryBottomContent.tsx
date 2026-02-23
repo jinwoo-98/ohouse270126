@@ -58,7 +58,6 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
       slugsToQuery.push(parentCategoryId);
     }
 
-    // === FIX: Query directly with slugs, not UUIDs ===
     const { data } = await supabase
       .from('shop_looks')
       .select(`
@@ -69,7 +68,7 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
           products:product_id (*)
         )
       `)
-      .in('category_id', slugsToQuery) // Use slugs directly
+      .in('category_id', slugsToQuery)
       .eq('is_active', true)
       .limit(4);
       
@@ -97,7 +96,7 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
                 <Link
                   key={item.id}
                   to={`/tim-kiem?q=${encodeURIComponent(item.keyword)}`}
-                  className="px-4 py-2 bg-secondary/30 hover:bg-primary hover:text-primary-foreground border border-border/50 rounded-full text-xs font-medium transition-all duration-300"
+                  className="px-4 py-2 bg-secondary/30 hover:bg-primary hover:text-primary-foreground border border-border/50 rounded-xl text-xs font-medium transition-all duration-300"
                 >
                   {item.keyword}
                 </Link>
@@ -149,7 +148,7 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
                                 if (item.products) setQuickViewProduct(item.products);
                               }}
                             >
-                              <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
+                              <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden"></span>
                               <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                             </button>
                           </TooltipTrigger>
