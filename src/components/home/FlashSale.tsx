@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Clock, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 import { ProductCard } from "@/components/ProductCard";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
-
-function formatPrice(price: number) {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
-}
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export function FlashSale() {
   const [products, setProducts] = useState<any[]>([]);
@@ -27,7 +29,7 @@ export function FlashSale() {
       const { data: configData } = await supabase.from('homepage_sections').select('*').eq('section_key', 'flash_sale').single();
       if (configData) setConfig(configData);
 
-      const { data: prodData } = await supabase.from('products').select('*').eq('is_sale', true).order('display_order').limit(4);
+      const { data: prodData } = await supabase.from('products').select('*').eq('is_sale', true).order('display_order').limit(10);
       setProducts(prodData || []);
     } finally {
       setIsLoading(false);
@@ -83,30 +85,33 @@ export function FlashSale() {
               <span className="bg-charcoal text-cream px-2 py-0.5 rounded">{String(timeLeft.seconds).padStart(2, "0")}</span>
             </div>
           </div>
-          
-          {config?.description && (
-            <p className="mt-4 text-sm max-w-xl mx-auto" style={{ color: config.content_color }}>
-              {config.description}
-            </p>
-          )}
         </motion.div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
-          ) : (
-            products.map((product, index) => (
-              <motion.div 
-                key={product.id} 
-                initial={{ opacity: 0, y: 20 }} 
-                whileInView={{ opacity: 1, y: 0 }} 
-                transition={{ delay: index * 0.1 }} 
-              >
-                <ProductCard product={product} />
-              </motion.div>
-            ))
-          )}
-        </div>
+        <Carousel
+          opts={{
+            align: "start",
+            dragFree: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <CarouselItem key={i} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                  <ProductCardSkeleton />
+                </CarouselItem>
+              ))
+            ) : (
+              products.map((product) => (
+                <CarouselItem key={product.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                  <ProductCard product={product} />
+                </CarouselItem>
+              ))
+            )}
+          </CarouselContent>
+          <CarouselPrevious className="hidden md:flex -left-12" />
+          <CarouselNext className="hidden md:flex -right-12" />
+        </Carousel>
       </div>
       <QuickViewSheet product={selectedProduct} isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} />
     </section>

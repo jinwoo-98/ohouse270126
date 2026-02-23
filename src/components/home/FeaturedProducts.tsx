@@ -7,6 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProductCardSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 import { ProductCard } from "@/components/ProductCard";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export function FeaturedProducts() {
   const [products, setProducts] = useState<any[]>([]);
@@ -32,8 +39,7 @@ export function FeaturedProducts() {
         .select('*')
         .eq('is_featured', true)
         .order('display_order', { ascending: true })
-        .order('created_at', { ascending: false })
-        .limit(8);
+        .limit(12);
 
       if (error) throw error;
       setProducts(data || []);
@@ -62,10 +68,10 @@ export function FeaturedProducts() {
           <h2 className="section-title mb-2" style={{ color: config?.title_color }}>
             {config?.title || "Sản Phẩm Nổi Bật"}
           </h2>
-          <p className="max-w-2xl mx-auto text-sm md:text-base" style={{ color: config?.content_color }}>
+          <p className="max-w-2xl mx-auto text-sm md:text-base mb-6" style={{ color: config?.content_color }}>
             {config?.description || "Những thiết kế được yêu thích nhất"}
           </p>
-          <Button variant="outline" asChild className="mt-4 md:mt-6">
+          <Button variant="outline" asChild className="mb-8">
             <Link to="/noi-that" className="group">
               Xem Tất Cả
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -73,25 +79,33 @@ export function FeaturedProducts() {
           </Button>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
-          ) : products.length === 0 ? (
-            <div className="col-span-full text-center py-10 text-muted-foreground">Chưa có sản phẩm nổi bật nào.</div>
-          ) : (
-            products.map((product, index) => (
-              <motion.div 
-                key={product.id} 
-                initial={{ opacity: 0, y: 20 }} 
-                whileInView={{ opacity: 1, y: 0 }} 
-                transition={{ duration: 0.5, delay: index * 0.05 }} 
-                viewport={{ once: true }}
-              >
-                <ProductCard product={product} />
-              </motion.div>
-            ))
-          )}
-        </div>
+        <Carousel
+          opts={{
+            align: "start",
+            dragFree: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <CarouselItem key={i} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                  <ProductCardSkeleton />
+                </CarouselItem>
+              ))
+            ) : products.length === 0 ? (
+              <div className="col-span-full text-center py-10 text-muted-foreground">Chưa có sản phẩm nổi bật nào.</div>
+            ) : (
+              products.map((product) => (
+                <CarouselItem key={product.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                  <ProductCard product={product} />
+                </CarouselItem>
+              ))
+            )}
+          </CarouselContent>
+          <CarouselPrevious className="hidden md:flex -left-12" />
+          <CarouselNext className="hidden md:flex -right-12" />
+        </Carousel>
       </div>
       <QuickViewSheet product={selectedProduct} isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} />
     </section>

@@ -3,6 +3,13 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export function CategoryGrid() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -15,7 +22,6 @@ export function CategoryGrid() {
 
   const fetchData = async () => {
     try {
-      // 1. Fetch Section Config
       const { data: configData } = await supabase
         .from('homepage_sections')
         .select('*')
@@ -23,7 +29,6 @@ export function CategoryGrid() {
         .single();
       if (configData) setConfig(configData);
 
-      // 2. Fetch Categories
       const { data: catData, error } = await supabase
         .from('categories')
         .select('*')
@@ -73,65 +78,61 @@ export function CategoryGrid() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-          {categories.map((category, index) => (
-            <motion.div
-              key={category.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <Link
-                to={`/${category.slug}`}
-                className="group block card-luxury h-full"
-              >
-                <div className="aspect-square img-zoom bg-secondary/20 rounded-2xl overflow-hidden">
-                  <img
-                    src={category.image_url || "/placeholder.svg"}
-                    alt={category.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-3 md:p-5 text-center">
-                  <h3 className="font-bold text-sm md:text-base group-hover:text-primary transition-colors uppercase tracking-wider">
-                    {category.name}
-                  </h3>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-          
-          {!categories.some(c => c.is_highlight) && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: categories.length * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <Link
-                to="/sale"
-                className="group block card-luxury bg-destructive/5 hover:bg-destructive/10 h-full"
-              >
-                <div className="aspect-square flex items-center justify-center rounded-2xl overflow-hidden">
-                  <div className="text-center p-6">
-                    <span className="text-3xl md:text-5xl font-bold text-destructive">
-                      SALE
-                    </span>
-                    <p className="mt-2 text-xs md:text-sm text-destructive/80 font-bold uppercase tracking-widest">
-                      Giảm đến 50%
-                    </p>
+        <Carousel
+          opts={{
+            align: "start",
+            dragFree: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
+            {categories.map((category) => (
+              <CarouselItem key={category.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
+                <Link
+                  to={`/${category.slug}`}
+                  className="group block card-luxury h-full"
+                >
+                  <div className="aspect-square img-zoom bg-secondary/20 rounded-2xl overflow-hidden">
+                    <img
+                      src={category.image_url || "/placeholder.svg"}
+                      alt={category.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                </div>
-                <div className="p-3 md:p-5 text-center border-t border-destructive/10">
-                  <h3 className="font-bold text-sm md:text-base text-destructive uppercase tracking-wider">
-                    Khuyến Mãi
-                  </h3>
-                </div>
-              </Link>
-            </motion.div>
-          )}
-        </div>
+                  <div className="p-3 md:p-5 text-center">
+                    <h3 className="font-bold text-sm md:text-base group-hover:text-primary transition-colors uppercase tracking-wider">
+                      {category.name}
+                    </h3>
+                  </div>
+                </Link>
+              </CarouselItem>
+            ))}
+            
+            {!categories.some(c => c.is_highlight) && (
+              <CarouselItem className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
+                <Link
+                  to="/sale"
+                  className="group block card-luxury bg-destructive/5 hover:bg-destructive/10 h-full"
+                >
+                  <div className="aspect-square flex items-center justify-center rounded-2xl overflow-hidden">
+                    <div className="text-center p-6">
+                      <span className="text-3xl md:text-4xl font-bold text-destructive">
+                        SALE
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-3 md:p-5 text-center border-t border-destructive/10">
+                    <h3 className="font-bold text-sm md:text-base text-destructive uppercase tracking-wider">
+                      Khuyến Mãi
+                    </h3>
+                  </div>
+                </Link>
+              </CarouselItem>
+            )}
+          </CarouselContent>
+          <CarouselPrevious className="hidden md:flex -left-12" />
+          <CarouselNext className="hidden md:flex -right-12" />
+        </Carousel>
       </div>
     </section>
   );
