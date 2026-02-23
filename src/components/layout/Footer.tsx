@@ -18,6 +18,7 @@ interface SiteSettings {
   tiktok_url: string;
   zalo_url: string;
   moit_url: string;
+  moit_logo_url: string;
 }
 
 export function Footer() {
@@ -35,7 +36,7 @@ export function Footer() {
   const fetchSettings = async () => {
     const { data } = await supabase
       .from('site_settings')
-      .select('phone, email, address, facebook_url, youtube_url, tiktok_url, zalo_url, moit_url')
+      .select('phone, email, address, facebook_url, youtube_url, tiktok_url, zalo_url, moit_url, moit_logo_url')
       .single();
     setSettings(data as SiteSettings || null);
   };
@@ -134,9 +135,24 @@ export function Footer() {
           <div>
             <h4 className="font-display font-bold mb-8 uppercase tracking-widest text-[10px] text-primary">Về Chúng Tôi</h4>
             {isLoadingCategories ? <div className="space-y-2"><div className="h-4 w-24 bg-secondary animate-pulse rounded" /><div className="h-4 w-32 bg-secondary animate-pulse rounded" /></div> : (
-              <ul className="space-y-4 text-sm">
-                {footerLinks.about.map(l => <li key={l.name}><Link to={l.href} className="text-muted-foreground hover:text-primary transition-colors">{l.name}</Link></li>)}
-              </ul>
+              <div className="space-y-8">
+                <ul className="space-y-4 text-sm">
+                  {footerLinks.about.map(l => <li key={l.name}><Link to={l.href} className="text-muted-foreground hover:text-primary transition-colors">{l.name}</Link></li>)}
+                </ul>
+                
+                {/* Logo Bộ Công Thương ở Desktop */}
+                {settings?.moit_url && (
+                  <div className="pt-4">
+                    <a href={settings.moit_url} target="_blank" rel="noopener noreferrer" className="inline-block transition-opacity hover:opacity-80">
+                      <img 
+                        src={settings.moit_logo_url || "https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/logo-bo-cong-thuong.png"} 
+                        alt="Chứng nhận Bộ Công Thương" 
+                        className="h-12 w-auto object-contain"
+                      />
+                    </a>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -159,7 +175,21 @@ export function Footer() {
             </AccordionItem>
             <AccordionItem value="about" className="border-border/40">
               <AccordionTrigger className="text-[10px] font-bold uppercase tracking-widest text-primary hover:no-underline py-4">Về Chúng Tôi</AccordionTrigger>
-              <AccordionContent><ul className="space-y-4 pb-4">{footerLinks.about.map(l => <li key={l.name}><Link to={l.href} className="text-muted-foreground block text-sm">{l.name}</Link></li>)}</ul></AccordionContent>
+              <AccordionContent>
+                <ul className="space-y-4 pb-6">{footerLinks.about.map(l => <li key={l.name}><Link to={l.href} className="text-muted-foreground block text-sm">{l.name}</Link></li>)}</ul>
+                {/* Logo Bộ Công Thương ở Mobile (trong Accordion) */}
+                {settings?.moit_url && (
+                  <div className="pb-4">
+                    <a href={settings.moit_url} target="_blank" rel="noopener noreferrer" className="inline-block">
+                      <img 
+                        src={settings.moit_logo_url || "https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/logo-bo-cong-thuong.png"} 
+                        alt="Chứng nhận Bộ Công Thương" 
+                        className="h-10 w-auto object-contain"
+                      />
+                    </a>
+                  </div>
+                )}
+              </AccordionContent>
             </AccordionItem>
           </Accordion>
           <div className="flex items-center gap-6 justify-center pt-6">
@@ -174,16 +204,6 @@ export function Footer() {
       <div className="bg-secondary/50 border-t border-border/40">
         <div className="container-luxury py-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <p className="text-[10px] text-muted-foreground text-center md:text-left uppercase tracking-[0.2em] font-medium">© 2024 OHOUSE.VN. Nâng tầm không gian sống.</p>
-          
-          {settings?.moit_url && (
-            <a href={settings.moit_url} target="_blank" rel="noopener noreferrer" className="shrink-0 transition-opacity hover:opacity-80">
-              <img 
-                src="https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/logo-bo-cong-thuong.png" 
-                alt="Đã thông báo Bộ Công Thương" 
-                className="h-10 w-auto object-contain"
-              />
-            </a>
-          )}
         </div>
       </div>
     </footer>

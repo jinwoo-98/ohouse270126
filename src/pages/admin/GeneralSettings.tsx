@@ -25,7 +25,8 @@ export default function GeneralSettings() {
     tiktok_url: "",
     working_hours: "",
     shipping_policy_summary: "",
-    moit_url: ""
+    moit_url: "",
+    moit_logo_url: ""
   });
 
   useEffect(() => {
@@ -47,7 +48,8 @@ export default function GeneralSettings() {
         tiktok_url: data.tiktok_url || "",
         working_hours: data.working_hours || "",
         shipping_policy_summary: data.shipping_policy_summary || "",
-        moit_url: data.moit_url || ""
+        moit_url: data.moit_url || "",
+        moit_logo_url: data.moit_logo_url || ""
       });
     }
   };
@@ -124,19 +126,33 @@ export default function GeneralSettings() {
                 </div>
               </div>
 
-              <div className="pt-8 border-t border-border/50 space-y-4">
+              <div className="pt-8 border-t border-border/50 space-y-6">
                 <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2 mb-4">
-                  <ShieldCheck className="w-4 h-4" /> Chứng nhận pháp lý
+                  <ShieldCheck className="w-4 h-4" /> Chứng nhận pháp lý (Bộ Công Thương)
                 </h3>
-                <div className="space-y-2">
-                  <Label>Link "Đã thông báo Bộ Công Thương"</Label>
-                  <Input 
-                    value={settings.moit_url} 
-                    onChange={(e) => setSettings({...settings, moit_url: e.target.value})} 
-                    placeholder="https://online.gov.vn/Home/WebDetails/..."
-                    className="h-12 font-mono text-sm"
-                  />
-                  <p className="text-[10px] text-muted-foreground italic">Dán đường dẫn trang chi tiết chứng nhận của bạn trên cổng thông tin Bộ Công Thương.</p>
+                
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <Label>Logo Chứng nhận</Label>
+                    <ImageUpload 
+                      value={settings.moit_logo_url} 
+                      onChange={(url) => setSettings({...settings, moit_logo_url: url as string})} 
+                    />
+                    <p className="text-[10px] text-muted-foreground italic">Tải lên logo "Đã thông báo" hoặc "Đã đăng ký".</p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Đường dẫn chứng nhận (Link)</Label>
+                      <Input 
+                        value={settings.moit_url} 
+                        onChange={(e) => setSettings({...settings, moit_url: e.target.value})} 
+                        placeholder="https://online.gov.vn/Home/WebDetails/..."
+                        className="h-12 font-mono text-sm"
+                      />
+                      <p className="text-[10px] text-muted-foreground italic">Dán link chi tiết từ cổng thông tin Bộ Công Thương.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
