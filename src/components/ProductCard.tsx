@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Heart, ShoppingBag, Eye } from "lucide-react";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatPrice, getOptimizedImageUrl } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -55,8 +55,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
             <AnimatePresence mode="wait">
               <motion.img 
                 key={activeImage}
-                src={activeImage} 
+                src={getOptimizedImageUrl(activeImage, { width: 400 })} 
                 alt={product.name} 
+                loading="lazy"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}

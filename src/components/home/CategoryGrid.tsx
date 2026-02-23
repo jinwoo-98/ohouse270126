@@ -10,6 +10,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
 export function CategoryGrid() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -94,8 +95,9 @@ export function CategoryGrid() {
                 >
                   <div className="aspect-square img-zoom bg-secondary/20 rounded-2xl overflow-hidden">
                     <img
-                      src={category.image_url || "/placeholder.svg"}
+                      src={getOptimizedImageUrl(category.image_url || "/placeholder.svg", { width: 400 })}
                       alt={category.name}
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
                   </div>

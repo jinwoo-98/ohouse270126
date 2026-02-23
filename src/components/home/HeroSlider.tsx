@@ -3,6 +3,7 @@ import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
 const swipeConfidenceThreshold = 10000;
 const swipePower = (offset: number, velocity: number) => {
@@ -86,7 +87,7 @@ export function HeroSlider() {
       <AnimatePresence initial={false} custom={direction}>
         <motion.img
           key={page}
-          src={slides[imageIndex]?.image_url}
+          src={getOptimizedImageUrl(slides[imageIndex]?.image_url, { width: 1920, quality: 85 })}
           alt={slides[imageIndex]?.title}
           custom={direction}
           variants={variants}
