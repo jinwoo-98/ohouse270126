@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TrendingUp, ArrowRight, Sparkles, Search, ShoppingBag, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { getOptimizedImageUrl, formatPrice } from "@/lib/utils";
 
 interface SearchSuggestionsProps {
   isVisible: boolean;
@@ -40,7 +41,7 @@ export function SearchSuggestions({ isVisible, onClose, onKeywordClick, searchQu
     try {
       const { data } = await supabase
         .from('products')
-        .select('id, name, price, image_url, category_id')
+        .select('id, name, price, image_url, category_id, slug')
         .ilike('name', `%${query}%`)
         .limit(4);
       
@@ -51,10 +52,6 @@ export function SearchSuggestions({ isVisible, onClose, onKeywordClick, searchQu
       setLoading(false);
     }
   };
-
-  function formatPrice(price: number) {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
-  }
 
   if (!isVisible) return null;
 
@@ -104,12 +101,16 @@ export function SearchSuggestions({ isVisible, onClose, onKeywordClick, searchQu
               {suggestions.map((product) => (
                 <Link
                   key={product.id}
-                  to={`/san-pham/${product.id}`}
+                  to={`/san-pham/${product.slug || product.id}`}
                   onClick={onClose}
                   className="flex gap-4 group"
                 >
                   <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 border border-border/40">
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                    <img 
+                      src={getOptimizedImageUrl(product.image_url, { width: 100 })} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover transition-transform group-hover:scale-110" 
+                    />
                   </div>
                   <div className="flex flex-col justify-center min-w-0">
                     <h4 className="text-xs font-bold line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h4>

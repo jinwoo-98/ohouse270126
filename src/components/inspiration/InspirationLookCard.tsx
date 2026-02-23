@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Plus, Heart } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatPrice, cn } from "@/lib/utils";
+import { formatPrice, cn, getOptimizedImageUrl } from "@/lib/utils";
 import { useWishlist } from "@/contexts/WishlistContext";
 
 interface InspirationLookCardProps {
@@ -45,7 +45,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
       <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
         <Link to={detailLink} className="block relative w-full h-full">
           <img 
-            src={look.image_url} 
+            src={getOptimizedImageUrl(look.image_url, { width: 800 })} 
             alt={look.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />

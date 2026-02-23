@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Plus } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getOptimizedImageUrl } from "@/lib/utils";
 
 interface ShopTheLookCardProps {
   look: any;
@@ -15,7 +15,7 @@ export function ShopTheLookCard({ look, onQuickView }: ShopTheLookCardProps) {
     <div className="col-span-2 group relative aspect-video md:aspect-[2/1] rounded-2xl overflow-hidden shadow-subtle hover:shadow-medium transition-all duration-500">
       <Link to={detailLink} className="absolute inset-0 z-10">
         <img 
-          src={look.image_url} 
+          src={getOptimizedImageUrl(look.image_url, { width: 1000 })} 
           alt={look.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />

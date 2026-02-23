@@ -1,14 +1,9 @@
 import { Link } from "react-router-dom";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getOptimizedImageUrl } from "@/lib/utils";
 
 interface RelatedProductsProps {
   products: any[];
   title?: string;
-}
-
-// Need to define locally since lib/utils might not have it yet based on previous steps context
-function localFormatPrice(price: number) {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
 }
 
 export function RelatedProducts({ products, title = "Sản phẩm tương tự" }: RelatedProductsProps) {
@@ -21,12 +16,15 @@ export function RelatedProducts({ products, title = "Sản phẩm tương tự" 
         {products.map(p => (
           <Link key={p.id} to={`/san-pham/${p.slug || p.id}`} className="group block card-luxury">
             <div className="aspect-square overflow-hidden bg-secondary/10 relative">
-              <img src={p.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <img 
+                src={getOptimizedImageUrl(p.image_url, { width: 400 })} 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+              />
               {p.is_sale && <span className="absolute top-2 left-2 bg-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider text-charcoal">Sale</span>}
             </div>
             <div className="p-4">
               <h3 className="font-bold text-sm text-charcoal line-clamp-1 mb-1 group-hover:text-primary transition-colors">{p.name}</h3>
-              <p className="text-primary font-bold text-sm">{localFormatPrice(p.price)}</p>
+              <p className="text-primary font-bold text-sm">{formatPrice(p.price)}</p>
             </div>
           </Link>
         ))}

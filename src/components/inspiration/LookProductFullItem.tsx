@@ -5,7 +5,7 @@ import { Eye, ShoppingBag, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
-import { formatPrice, cn } from "@/lib/utils";
+import { formatPrice, cn, getOptimizedImageUrl } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LookProductFullItemProps {
@@ -38,7 +38,11 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
     >
       {/* Image Section */}
       <div className="relative aspect-square overflow-hidden bg-secondary/30 shrink-0">
-        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+        <img 
+          src={getOptimizedImageUrl(product.image_url, { width: 400 })} 
+          alt={product.name} 
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+        />
         
         {/* Nút Yêu thích (Top Right) */}
         <button 
