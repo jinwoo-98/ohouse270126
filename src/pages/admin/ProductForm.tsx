@@ -9,6 +9,10 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { slugify, cn } from "@/lib/utils";
 
+// Import các components bổ sung
+import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+
 // Import các section
 import { PricingCategorySection } from "@/components/admin/product-form/PricingCategorySection";
 import { ProductVariantsSection } from "@/components/admin/product-form/ProductVariantsSection";
@@ -119,8 +123,7 @@ export default function ProductForm() {
         bought_together_ids: data.bought_together_ids || [],
         image_alt_text: data.image_alt_text || "",
       });
-      setIsManualSlug(true); // Khi edit, coi như slug đã được xác định
-
+      
       if (data.tier_variants_config) setTierConfig(data.tier_variants_config);
       
       const [vRes, aRes] = await Promise.all([
@@ -267,6 +270,15 @@ export default function ProductForm() {
 
         <div className="mt-8 animate-fade-in">
           <TabsContent value="general" className="space-y-8 outline-none">
+            <ProductDetailSection 
+              formData={formData} 
+              setFormData={setFormData} 
+              availableAttributes={allAttributes} 
+              productAttrs={productAttrs} 
+              handleAttributeChange={handleAttributeChange}
+              isSlugDuplicate={isSlugDuplicate}
+              onSlugManualChange={() => setIsManualSlug(true)}
+            />
             <PricingCategorySection formData={formData} setFormData={setFormData} categories={categories} />
             <ProductStatusSection formData={formData} setFormData={setFormData} />
             <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-4">
@@ -299,15 +311,22 @@ export default function ProductForm() {
           <TabsContent value="media" className="space-y-8 outline-none">
             <div className="grid lg:grid-cols-3 gap-8">
                <div className="lg:col-span-2">
-                  <ProductDetailSection 
-                    formData={formData} 
-                    setFormData={setFormData} 
-                    availableAttributes={allAttributes} 
-                    productAttrs={productAttrs} 
-                    handleAttributeChange={handleAttributeChange}
-                    isSlugDuplicate={isSlugDuplicate}
-                    onSlugManualChange={() => setIsManualSlug(true)}
-                  />
+                  <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả chi tiết bài viết</Label>
+                      <AIContentAssistant 
+                        contentType="product" 
+                        contextTitle={formData.name} 
+                        onInsert={(val) => setFormData({...formData, description: val})} 
+                      />
+                    </div>
+                    <RichTextEditor 
+                      value={formData.description} 
+                      onChange={(val) => setFormData({...formData, description: val})} 
+                      contextTitle={formData.name}
+                      placeholder="Mô tả kỹ thuật, ưu điểm của sản phẩm..."
+                    />
+                  </div>
                </div>
                <div className="lg:col-span-1">
                   <ProductMediaSection formData={formData} setFormData={setFormData} />

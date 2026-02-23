@@ -125,7 +125,9 @@ export default function LookbookForm() {
       material: lookData.material || "none",
       color: lookData.color || "none",
     });
-    setIsManualSlug(true);
+    
+    // Không set isManualSlug = true ở đây để cho phép tự động đổi slug khi sửa tiêu đề lookbook cũ
+
     setLookItems(lookData.shop_look_items || []);
     setActiveEditingImage(lookData.image_url);
   };
