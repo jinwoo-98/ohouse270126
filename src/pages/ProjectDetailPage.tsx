@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
@@ -110,7 +111,7 @@ export default function ProjectDetailPage() {
                 viewport={{ once: true }}
                 className="rounded-2xl overflow-hidden shadow-elevated mb-12"
               >
-                <img src={project.image_url} alt={project.title} className="w-full h-auto object-cover" />
+                <img src={getOptimizedImageUrl(project.image_url, { width: 1200 })} alt={project.title} className="w-full h-auto object-cover" />
               </motion.div>
 
               <motion.div 
@@ -125,7 +126,7 @@ export default function ProjectDetailPage() {
                 <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-6">
                   {project.gallery_urls.map((img: string, idx: number) => (
                     <div key={idx} className="rounded-xl overflow-hidden shadow-subtle">
-                      <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                      <img src={getOptimizedImageUrl(img, { width: 800 })} alt={`Gallery ${idx}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
                     </div>
                   ))}
                 </div>

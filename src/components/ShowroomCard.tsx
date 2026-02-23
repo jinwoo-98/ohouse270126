@@ -2,6 +2,7 @@ import { MapPin, Phone, Mail, Clock, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
 interface ShowroomCardProps {
   showroom: any;
@@ -21,7 +22,7 @@ export function ShowroomCard({ showroom, index }: ShowroomCardProps) {
         {/* Image/Map Preview */}
         <div className="md:col-span-1 aspect-[4/3] rounded-2xl overflow-hidden bg-secondary/50 border border-border/40 shrink-0">
           {showroom.image_url ? (
-            <img src={showroom.image_url} alt={showroom.name} className="w-full h-full object-cover" />
+            <img src={getOptimizedImageUrl(showroom.image_url, { width: 400 })} alt={showroom.name} className="w-full h-full object-cover" />
           ) : showroom.map_iframe_url ? (
             // Check if the content looks like an iframe (starts with '<iframe')
             showroom.map_iframe_url.trim().toLowerCase().startsWith('<iframe') ? (

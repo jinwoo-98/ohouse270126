@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
 export default function NewsPage() {
   const [news, setNews] = useState<any[]>([]);
@@ -16,6 +17,7 @@ export default function NewsPage() {
   }, []);
 
   const fetchNews = async () => {
+    setLoading(true);
     const { data } = await supabase
       .from('news')
       .select('*')
@@ -42,7 +44,7 @@ export default function NewsPage() {
 
           {news.length === 0 ? (
             <div className="text-center py-20 bg-secondary/20 rounded-3xl">
-              <Newspaper className="w-16 h-16 mx-auto text-muted-foreground/20 mb-4" />
+              < Newspaper className="w-16 h-16 mx-auto text-muted-foreground/20 mb-4" />
               <p className="text-muted-foreground">Hiện chưa có bài viết nào được đăng.</p>
             </div>
           ) : (
@@ -53,7 +55,7 @@ export default function NewsPage() {
                   <Link to={`/tin-tuc/${featured.id}`} className="group block">
                     <div className="grid md:grid-cols-2 gap-8 bg-card rounded-3xl overflow-hidden shadow-subtle hover:shadow-medium transition-all">
                       <div className="aspect-[16/10] md:aspect-auto img-zoom overflow-hidden bg-secondary/30">
-                        <img src={featured.image_url} alt={featured.title} className="w-full h-full object-cover" />
+                        <img src={getOptimizedImageUrl(featured.image_url, { width: 1000 })} alt={featured.title} className="w-full h-full object-cover" />
                       </div>
                       <div className="p-8 md:p-12 flex flex-col justify-center">
                         <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-4 block">Tin nổi bật</span>
@@ -82,7 +84,7 @@ export default function NewsPage() {
                     <Link to={`/tin-tuc/${article.id}`} className="group block h-full">
                       <div className="card-luxury h-full flex flex-col rounded-3xl border border-border/40 overflow-hidden">
                         <div className="aspect-[16/10] overflow-hidden bg-secondary/30">
-                          <img src={article.image_url} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                          <img src={getOptimizedImageUrl(article.image_url, { width: 600 })} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                         </div>
                         <div className="p-6 flex flex-col flex-1">
                           <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3 block">{article.category || 'Xu Hướng'}</span>

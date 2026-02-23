@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
 export default function NewsDetailPage() {
   const { id } = useParams();
@@ -88,7 +89,7 @@ export default function NewsDetailPage() {
 
               {article.image_url && (
                 <div className="aspect-[21/9] rounded-xl overflow-hidden mb-10 shadow-md">
-                  <img src={article.image_url} alt={article.title} className="w-full h-full object-cover" />
+                  <img src={getOptimizedImageUrl(article.image_url, { width: 1200 })} alt={article.title} className="w-full h-full object-cover" />
                 </div>
               )}
 

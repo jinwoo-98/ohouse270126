@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import heroLivingRoom from "@/assets/hero-living-room.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { getOptimizedImageUrl } from "@/lib/utils";
 
 const categories = ["Tất Cả", "Căn Hộ", "Biệt Thự", "Nhà Phố", "Văn Phòng", "Khách Sạn"];
 
@@ -101,7 +102,7 @@ export default function ProjectsPage() {
                     <Link to={`/du-an/${project.id}`} className="group block card-luxury">
                       <div className="relative aspect-[4/3] img-zoom">
                         <img 
-                          src={project.image_url} 
+                          src={getOptimizedImageUrl(project.image_url, { width: 600 })} 
                           alt={project.title}
                           className="w-full h-full object-cover"
                         />

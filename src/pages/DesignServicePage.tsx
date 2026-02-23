@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, getOptimizedImageUrl } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"; // Import Collapsible
 
 const iconMap: Record<string, any> = { Zap, LayoutGrid, CheckCircle, DollarSign, DraftingCompass };
@@ -180,7 +180,7 @@ export default function DesignServicePage() {
           <div className="container-luxury">
             <div className="relative aspect-video overflow-hidden rounded-2xl shadow-xl">
               {config.hero_image_url ? (
-                <img src={config.hero_image_url} alt="Dịch vụ thiết kế miễn phí" className="w-full h-full object-cover img-zoom" />
+                <img src={getOptimizedImageUrl(config.hero_image_url, { width: 1200 })} alt="Dịch vụ thiết kế miễn phí" className="w-full h-full object-cover img-zoom" />
               ) : (
                 <div className="w-full h-full bg-secondary/50 flex items-center justify-center">
                   <LayoutGrid className="w-16 h-16 text-muted-foreground/30" />
