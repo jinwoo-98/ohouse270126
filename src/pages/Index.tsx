@@ -8,23 +8,34 @@ import { ShopTheLook } from "@/components/home/ShopTheLook";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { TrendingSearch } from "@/components/home/TrendingSearch";
 import { Helmet } from "react-helmet-async";
+import { useSeo } from "@/hooks/useSeo";
 
 const Index = () => {
+  const { seo } = useSeo();
+
   return (
     <>
       <Helmet>
-        <title>OHOUSE - Nội Thất Cao Cấp | Sang Trọng & Hiện Đại</title>
-        <meta name="description" content="OHOUSE - Thương hiệu nội thất cao cấp hàng đầu Việt Nam. Mang đến không gian sống sang trọng, hiện đại với hàng nghìn sản phẩm đa dạng từ sofa, bàn ăn, giường ngủ đến đèn trang trí." />
-        <meta property="og:title" content="OHOUSE - Nội Thất Cao Cấp | Sang Trọng & Hiện Đại" />
-        <meta property="og:description" content="Thương hiệu nội thất cao cấp hàng đầu Việt Nam. Kiến tạo không gian sống đẳng cấp." />
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+        <meta property="og:title" content={seo.title} />
+        <meta property="og:description" content={seo.description} />
+        <meta property="og:image" content={seo.image} />
+        <meta property="og:url" content={seo.url} />
         <meta property="og:type" content="website" />
+        {seo.favicon && <link rel="icon" href={seo.favicon} />}
+        {seo.structuredData && (
+          <script type="application/ld+json">
+            {JSON.stringify(seo.structuredData)}
+          </script>
+        )}
       </Helmet>
       <div className="min-h-screen flex flex-col">
         <Header />
         
         <main className="flex-1">
           <HeroSlider />
-          <div className="space-y-0"> {/* Wrapper to manage vertical flow */}
+          <div className="space-y-0">
             <USPBar />
             <CategoryGrid />
             <FlashSale />

@@ -31,7 +31,8 @@ import {
   Sparkles,
   Code,
   MapPin,
-  Zap // Import Zap icon for Design Service Config
+  Zap,
+  Search // Import Search icon for SEO
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -60,12 +61,11 @@ const menuGroups = [
     ]
   },
   {
-  // Nhóm CMS được liệt kê trực tiếp
     label: "Quản Trị Nội Dung (CMS)",
     items: [
       { id: 'homepage', title: "Trang chủ", icon: MonitorPlay, href: "/admin/homepage" },
       { id: 'looks', title: "Lookbook", icon: Sparkles, href: "/admin/content/looks" },
-      { id: 'design-config', title: "Thiết kế (Config)", icon: Zap, href: "/admin/design-config" }, // NEW ITEM
+      { id: 'design-config', title: "Thiết kế (Config)", icon: Zap, href: "/admin/design-config" },
       { id: 'showrooms', title: "Showroom", icon: MapPin, href: "/admin/showrooms" },
       { id: 'pages', title: "Trang nội dung", icon: Files, href: "/admin/pages" },
       { id: 'news', title: "Tin tức", icon: Newspaper, href: "/admin/news" },
@@ -85,13 +85,13 @@ const menuGroups = [
     items: [
       { id: 'theme', title: "Giao diện", icon: Palette, href: "/admin/theme" },
       { id: 'settings', title: "Cấu hình chung", icon: Settings, href: "/admin/settings" },
+      { id: 'seo', title: "Cấu hình SEO", icon: Search, href: "/admin/seo" }, // NEW ITEM
       { id: 'tracking', title: "Mã Theo Dõi", icon: Code, href: "/admin/tracking" },
       { id: 'team', title: "Phân quyền", icon: ShieldCheck, href: "/admin/team" },
     ]
   }
 ];
 
-// Email được gán quyền admin cứng
 const SUPER_ADMIN_EMAIL = 'tranvu20398@gmail.com';
 
 export default function AdminLayout() {
@@ -120,12 +120,11 @@ export default function AdminLayout() {
         throw error;
       }
       
-      // Fallback an toàn nếu không tìm thấy profile
       setUserProfile(data || { role: 'user' });
       
     } catch (err) {
       console.error("Unexpected error:", err);
-      setUserProfile({ role: 'user' }); // Fallback an toàn
+      setUserProfile({ role: 'user' });
     } finally {
       setFetchingProfile(false);
     }
@@ -140,10 +139,7 @@ export default function AdminLayout() {
     navigate("/admin");
   };
 
-  // Logic xác định vai trò cuối cùng
   let role = userProfile?.role;
-  
-  // Gán quyền admin cứng nếu email khớp
   if (user?.email === SUPER_ADMIN_EMAIL) {
       role = 'admin';
   }
@@ -161,7 +157,6 @@ export default function AdminLayout() {
     );
   }
 
-  // Kiểm tra quyền truy cập Admin chung
   if (role !== 'admin' && role !== 'editor') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -177,20 +172,16 @@ export default function AdminLayout() {
     );
   }
 
-  // Lọc menu dựa trên quyền và nhóm lại
   const filteredGroups = menuGroups.map(group => {
     const allowedItems = group.items.filter(item => {
       if (role === 'admin') return true;
       if (item.id === 'dashboard') return true;
       if (item.id === 'team') return false; 
       
-      // Logic cho mục 'customers' (Hub mới)
       if (item.id === 'customers') {
-        // Editor cần ít nhất 1 trong 4 quyền: subscribers, design-requests, messages, cooperation-requests
         return permissions['subscribers'] || permissions['design-requests'] || permissions['messages'] || permissions['cooperation-requests'];
       }
       
-      // Các mục khác, bao gồm các mục CMS mới được liệt kê trực tiếp, sẽ được kiểm tra quyền trực tiếp
       return permissions[item.id] === true;
     });
     return { ...group, items: allowedItems };
@@ -199,7 +190,6 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-gray-100 flex">
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-charcoal text-white transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:relative lg:translate-x-0 flex flex-col`}>
-        {/* Header Sidebar */}
         <div className="h-20 flex items-center justify-between px-6 border-b border-gray-700/50 shrink-0">
           <div className="flex flex-col">
             <span className="text-xl font-bold text-primary">OHOUSE</span>
@@ -208,7 +198,6 @@ export default function AdminLayout() {
           <button className="lg:hidden" onClick={() => setIsSidebarOpen(false)}><X className="w-5 h-5" /></button>
         </div>
 
-        {/* Scrollable Menu */}
         <nav className="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-6">
           {filteredGroups.map((group, groupIdx) => (
             <div key={groupIdx}>
@@ -235,16 +224,8 @@ export default function AdminLayout() {
               </div>
             </div>
           ))}
-
-          {filteredGroups.length === 0 && role === 'editor' && (
-             <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 mt-4">
-                <p className="text-[10px] text-primary font-bold uppercase mb-2">Thông báo</p>
-                <p className="text-[11px] text-gray-400 leading-relaxed">Bạn chưa được cấp quyền truy cập mục nào. Vui lòng liên hệ Admin.</p>
-             </div>
-          )}
         </nav>
 
-        {/* Footer Sidebar */}
         <div className="p-4 border-t border-gray-700/50 shrink-0">
           <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl w-full transition-colors font-bold text-xs uppercase">
             <LogOut className="w-5 h-5" /> Đăng xuất
@@ -252,7 +233,6 @@ export default function AdminLayout() {
         </div>
       </aside>
       
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <header className="h-20 bg-white border-b flex items-center justify-between px-6 lg:px-8 shrink-0">
           <button className="lg:hidden p-2 -ml-2" onClick={() => setIsSidebarOpen(true)}><Menu className="w-6 h-6" /></button>

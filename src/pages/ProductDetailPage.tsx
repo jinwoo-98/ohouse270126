@@ -19,6 +19,7 @@ import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { useProductRelations } from "@/hooks/useProductRelations";
 import { useSimilarProducts } from "@/hooks/useSimilarProducts";
 import { Helmet } from "react-helmet-async";
+import { useSeo } from "@/hooks/useSeo";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -34,6 +35,13 @@ export default function ProductDetailPage() {
   
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+
+  const { seo } = useSeo({
+    title: product ? `${product.name} | OHOUSE` : undefined,
+    description: product?.short_description || undefined,
+    image: product?.image_url || undefined,
+    type: 'product'
+  });
 
   const { perfectMatch, boughtTogether, isLoadingRelations } = useProductRelations(
     product?.id, 
@@ -155,7 +163,6 @@ export default function ProductDetailPage() {
     }
   };
 
-  // Structured Data (Schema.org)
   const productSchema = product ? {
     "@context": "https://schema.org/",
     "@type": "Product",
@@ -192,24 +199,22 @@ export default function ProductDetailPage() {
 
   return (
     <>
-      {product && (
-        <Helmet>
-          <title>{`${product.name} | OHOUSE Nội Thất Cao Cấp`}</title>
-          <meta name="description" content={product.short_description || `Mua ngay ${product.name} tại OHOUSE. Sản phẩm nội thất cao cấp, thiết kế sang trọng, bảo hành chính hãng.`} />
-          <meta property="og:title" content={`${product.name} | OHOUSE`} />
-          <meta property="og:description" content={product.short_description || product.name} />
-          <meta property="og:image" content={product.image_url} />
-          <meta property="og:type" content="product" />
-          <script type="application/ld+json">
-            {JSON.stringify(productSchema)}
-          </script>
-        </Helmet>
-      )}
+      <Helmet>
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+        <meta property="og:title" content={seo.title} />
+        <meta property="og:description" content={seo.description} />
+        <meta property="og:image" content={seo.image} />
+        <meta property="og:type" content="product" />
+        {seo.favicon && <link rel="icon" href={seo.favicon} />}
+        <script type="application/ld+json">
+          {JSON.stringify(productSchema)}
+        </script>
+      </Helmet>
       <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
         <Header />
         
         <main className="flex-1">
-          {/* Breadcrumb */}
           <div className="bg-secondary/50 py-2.5 md:py-3 border-b border-border/40 w-full overflow-hidden">
             <div className="container-luxury flex flex-wrap items-center gap-y-1 gap-x-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
               <Link to="/" className="hover:text-primary transition-colors shrink-0">Trang chủ</Link>
