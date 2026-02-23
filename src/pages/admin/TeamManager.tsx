@@ -2,17 +2,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Users, 
-  Shield, 
   ShieldCheck, 
   UserCog, 
   Search, 
   Loader2, 
   CheckCircle2,
-  Mail,
   Phone,
   Settings,
-  UserCheck,
-  UserPlus
+  UserCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,12 +31,12 @@ const PERMISSION_KEYS = [
   { key: 'pages', label: 'Quản lý Trang nội dung' },
   { key: 'news', label: 'Quản lý Tin tức' },
   { key: 'projects', label: 'Quản lý Dự án' },
-  { key: 'design-requests', label: 'Yêu cầu Thiết kế' },
-  { key: 'messages', label: 'Tin nhắn khách hàng' },
-  { key: 'subscribers', label: 'Danh sách đăng ký' },
-  { key: 'cooperation-requests', label: 'Yêu cầu Hợp tác' },
+  { key: 'design-config', label: 'Yêu cầu Thiết kế' },
+  { key: 'customers', label: 'Khách hàng & Tương tác' },
   { key: 'theme', label: 'Cấu hình Giao diện' },
-  { key: 'settings', label: 'Cài đặt Hệ thống' },
+  { key: 'settings', label: 'Cấu hình chung' },
+  { key: 'seo', label: 'Cấu hình SEO' },
+  { key: 'tracking', label: 'Mã Theo Dõi' },
 ];
 
 export default function TeamManager() {
@@ -115,12 +112,6 @@ export default function TeamManager() {
     return matchesSearch;
   });
 
-  const stats = {
-    totalAdmins: users.filter(u => u.role === 'admin').length,
-    totalEditors: users.filter(u => u.role === 'editor').length,
-    totalUsers: users.filter(u => u.role === 'user').length,
-  };
-
   return (
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -130,43 +121,6 @@ export default function TeamManager() {
             Quản Lý Nhân Sự & Phân Quyền
           </h1>
           <p className="text-muted-foreground text-sm">Quản lý đội ngũ quản trị viên và biên tập viên vận hành hệ thống.</p>
-        </div>
-      </div>
-
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border shadow-sm border-l-4 border-l-primary">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Quản trị viên</p>
-              <p className="text-2xl font-bold text-charcoal">{stats.totalAdmins}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border shadow-sm border-l-4 border-l-blue-500">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-600">
-              <UserCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Biên tập viên</p>
-              <p className="text-2xl font-bold text-charcoal">{stats.totalEditors}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border shadow-sm border-l-4 border-l-gray-300">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500">
-              <Users className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Khách hàng</p>
-              <p className="text-2xl font-bold text-charcoal">{stats.totalUsers}</p>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -217,7 +171,7 @@ export default function TeamManager() {
               {loading ? (
                 <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground italic">Không tìm thấy tài khoản phù hợp trong danh mục này.</td></tr>
+                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground italic">Không tìm thấy tài khoản phù hợp.</td></tr>
               ) : filtered.map((u) => (
                 <tr key={u.id} className="hover:bg-gray-50/50 transition-colors group">
                   <td className="px-6 py-4">
@@ -231,19 +185,12 @@ export default function TeamManager() {
                         {u.email?.charAt(0).toUpperCase() || 'U'}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-charcoal truncate">
-                          {u.email || <span className="text-destructive font-normal italic">Chưa xác thực email</span>}
-                        </p>
+                        <p className="text-sm font-bold text-charcoal truncate">{u.email}</p>
                         <p className="text-[10px] font-mono text-muted-foreground uppercase mt-0.5">{u.id.slice(0, 12)}...</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-sm text-charcoal font-medium">
-                      <Phone className="w-3.5 h-3.5 text-primary" />
-                      {u.phone || "---"}
-                    </div>
-                  </td>
+                  <td className="px-6 py-4 text-sm text-charcoal font-medium">{u.phone || "---"}</td>
                   <td className="px-6 py-4">
                     <Select value={u.role} onValueChange={(val) => handleUpdateRole(u.id, val)}>
                       <SelectTrigger className="w-36 h-9 text-xs font-bold rounded-xl bg-white">
@@ -309,7 +256,6 @@ export default function TeamManager() {
           </div>
 
           <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-            <p className="text-xs text-muted-foreground mb-4 italic">Cho phép nhân viên này truy cập vào các tính năng:</p>
             <div className="grid gap-2">
               {PERMISSION_KEYS.map((p) => (
                 <div 
@@ -326,7 +272,7 @@ export default function TeamManager() {
 
           <div className="p-5 bg-gray-50 border-t flex justify-end gap-3">
             <Button className="btn-hero h-12 px-10 shadow-gold" onClick={() => setIsPermsOpen(false)}>
-              <CheckCircle2 className="w-4 h-4 mr-2" /> XÁC NHẬN CẤP QUYỀN
+              XÁC NHẬN CẤP QUYỀN
             </Button>
           </div>
         </DialogContent>

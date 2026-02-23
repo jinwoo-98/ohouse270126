@@ -9,10 +9,8 @@ import {
   Menu,
   X,
   Loader2,
-  ShieldAlert,
   ClipboardList,
   LayoutGrid,
-  MessageSquareText,
   Lock,
   Files,
   Newspaper,
@@ -23,16 +21,13 @@ import {
   FolderTree,
   MonitorPlay,
   ShieldCheck,
-  RefreshCw,
   ListFilter,
-  LayoutTemplate,
-  Headset,
   Handshake,
   Sparkles,
   Code,
   MapPin,
   Zap,
-  Search // Import Search icon for SEO
+  Search
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +37,6 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { motion } from "framer-motion";
 
-// Định nghĩa cấu trúc nhóm menu đã được tối ưu
 const menuGroups = [
   {
     label: "Tổng Quan",
@@ -85,7 +79,7 @@ const menuGroups = [
     items: [
       { id: 'theme', title: "Giao diện", icon: Palette, href: "/admin/theme" },
       { id: 'settings', title: "Cấu hình chung", icon: Settings, href: "/admin/settings" },
-      { id: 'seo', title: "Cấu hình SEO", icon: Search, href: "/admin/seo" }, // NEW ITEM
+      { id: 'seo', title: "Cấu hình SEO", icon: Search, href: "/admin/seo" },
       { id: 'tracking', title: "Mã Theo Dõi", icon: Code, href: "/admin/tracking" },
       { id: 'team', title: "Phân quyền", icon: ShieldCheck, href: "/admin/team" },
     ]
@@ -116,12 +110,8 @@ export default function AdminLayout() {
         .eq('id', user.id)
         .single();
       
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-      
+      if (error && error.code !== 'PGRST116') throw error;
       setUserProfile(data || { role: 'user' });
-      
     } catch (err) {
       console.error("Unexpected error:", err);
       setUserProfile({ role: 'user' });
@@ -140,19 +130,14 @@ export default function AdminLayout() {
   };
 
   let role = userProfile?.role;
-  if (user?.email === SUPER_ADMIN_EMAIL) {
-      role = 'admin';
-  }
+  if (user?.email === SUPER_ADMIN_EMAIL) role = 'admin';
 
   const permissions = userProfile?.permissions || {};
 
   if (authLoading || (user && fetchingProfile)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-gray-500 font-medium tracking-wide">Đang kiểm tra quyền truy cập...</p>
-        </div>
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
       </div>
     );
   }
@@ -164,7 +149,6 @@ export default function AdminLayout() {
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4"><Lock className="w-8 h-8 text-primary" /></div>
             <h1 className="text-2xl font-bold text-charcoal tracking-tight uppercase">Admin Login</h1>
-            <p className="text-xs text-muted-foreground mt-2">Dành cho Quản trị viên & Biên tập viên</p>
           </div>
           <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={[]} theme="light" />
         </motion.div>
@@ -177,11 +161,6 @@ export default function AdminLayout() {
       if (role === 'admin') return true;
       if (item.id === 'dashboard') return true;
       if (item.id === 'team') return false; 
-      
-      if (item.id === 'customers') {
-        return permissions['subscribers'] || permissions['design-requests'] || permissions['messages'] || permissions['cooperation-requests'];
-      }
-      
       return permissions[item.id] === true;
     });
     return { ...group, items: allowedItems };
@@ -201,11 +180,7 @@ export default function AdminLayout() {
         <nav className="flex-1 p-4 overflow-y-auto custom-scrollbar space-y-6">
           {filteredGroups.map((group, groupIdx) => (
             <div key={groupIdx}>
-              {group.label && (
-                <h4 className="px-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">
-                  {group.label}
-                </h4>
-              )}
+              <h4 className="px-4 text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">{group.label}</h4>
               <div className="space-y-1">
                 {group.items.map((item) => (
                   <Link 
@@ -236,8 +211,7 @@ export default function AdminLayout() {
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <header className="h-20 bg-white border-b flex items-center justify-between px-6 lg:px-8 shrink-0">
           <button className="lg:hidden p-2 -ml-2" onClick={() => setIsSidebarOpen(true)}><Menu className="w-6 h-6" /></button>
-          <div className="hidden lg:block"></div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 ml-auto">
             <div className="text-right">
               <p className="text-sm font-bold text-charcoal">{user?.email}</p>
               <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/30 text-primary bg-primary/5">{role} Portal</Badge>

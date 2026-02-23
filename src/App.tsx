@@ -38,11 +38,12 @@ const LookDetailPage = lazy(() => import("./pages/LookDetailPage"));
 const ShowroomPage = lazy(() => import("./pages/ShowroomPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Admin Pages (Keep standard import for admin to avoid complexity in dashboard)
+// Admin Pages
 import AdminLayout from "./layouts/AdminLayout";
 import DashboardOverview from "./pages/admin/DashboardOverview";
 import ThemeSettings from "./pages/admin/ThemeSettings";
 import GeneralSettings from "./pages/admin/GeneralSettings";
+import SeoSettings from "./pages/admin/SeoSettings"; 
 import HomepageSectionManager from "./pages/admin/HomepageSectionManager";
 import ProductManager from "./pages/admin/ProductManager";
 import ProductForm from "./pages/admin/ProductForm";
@@ -165,6 +166,7 @@ const App = () => (
                     
                     <Route path="theme" element={<ThemeSettings />} />
                     <Route path="settings" element={<GeneralSettings />} />
+                    <Route path="seo" element={<SeoSettings />} /> 
                     <Route path="tracking" element={<TrackingManager />} />
                     <Route path="team" element={<TeamManager />} />
                     <Route path="showrooms" element={<ShowroomManager />} />
