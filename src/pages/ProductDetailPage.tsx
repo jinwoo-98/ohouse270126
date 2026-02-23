@@ -18,6 +18,7 @@ import { StickyActionToolbar } from "@/components/product/detail/StickyActionToo
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { useProductRelations } from "@/hooks/useProductRelations";
 import { useSimilarProducts } from "@/hooks/useSimilarProducts";
+import { Helmet } from "react-helmet-async";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -34,7 +35,6 @@ export default function ProductDetailPage() {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
 
-  // Hooks for related products
   const { perfectMatch, boughtTogether, isLoadingRelations } = useProductRelations(
     product?.id, 
     product?.category_id, 
@@ -42,7 +42,6 @@ export default function ProductDetailPage() {
     product?.bought_together_ids || []
   );
   
-  // Collect IDs of products already displayed in other sections
   const excludedIds = useMemo(() => {
     const ids = new Set<string>();
     perfectMatch.forEach(p => ids.add(p.id));
@@ -50,11 +49,10 @@ export default function ProductDetailPage() {
     return Array.from(ids);
   }, [perfectMatch, boughtTogether]);
 
-  // Hook for similar products
   const { similarProducts, isLoadingSimilar } = useSimilarProducts(
     product?.category_id,
     product?.id,
-    excludedIds // Pass excluded IDs here
+    excludedIds
   );
 
   useEffect(() => {
@@ -69,7 +67,7 @@ export default function ProductDetailPage() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*, slug') // Đảm bảo lấy slug
+        .select('*, slug')
         .eq('slug', slug)
         .single();
       
@@ -131,7 +129,7 @@ export default function ProductDetailPage() {
       setAttributes(dynamicAttributes);
     } catch (err) {
       console.error("Error fetching attributes:", err);
-      setAttributes([]); // Set to empty array on error
+      setAttributes([]);
     }
   };
 
@@ -157,6 +155,33 @@ export default function ProductDetailPage() {
     }
   };
 
+  // Structured Data (Schema.org)
+  const productSchema = product ? {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": [product.image_url, ...(product.gallery_urls || [])],
+    "description": product.short_description || product.name,
+    "sku": product.id,
+    "brand": {
+      "@type": "Brand",
+      "name": "OHOUSE"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": window.location.href,
+      "priceCurrency": "VND",
+      "price": product.price,
+      "availability": "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": product.fake_rating || 5,
+      "reviewCount": product.fake_review_count || reviews.length || 1
+    }
+  } : null;
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -166,143 +191,153 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
-      <Header />
-      
-      <main className="flex-1">
-        {/* Breadcrumb */}
-        <div className="bg-secondary/50 py-2.5 md:py-3 border-b border-border/40 w-full overflow-hidden">
-          <div className="container-luxury flex flex-wrap items-center gap-y-1 gap-x-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-            <Link to="/" className="hover:text-primary transition-colors shrink-0">Trang chủ</Link>
-            {categoryPath.map((cat, idx) => (
-              <div key={idx} className="flex items-center gap-2 shrink-0">
-                <ChevronRight className="w-2.5 h-2.5 opacity-50" />
-                <Link to={`/${cat.slug}`} className="hover:text-primary transition-colors">{cat.name}</Link>
-              </div>
-            ))}
-            <ChevronRight className="w-2.5 h-2.5 opacity-50 shrink-0" />
-            <span className="text-foreground font-bold truncate max-w-[120px] sm:max-w-none">{product.name}</span>
-          </div>
-        </div>
-
-        <div className="container-luxury py-6 md:py-12">
-          <div className="max-w-6xl mx-auto">
-            
-            {/* Grid Container with strict constraints to avoid horizontal overflow */}
-            <div className="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-20 overflow-hidden">
-              {/* Gallery Column */}
-              <div className="min-w-0 w-full overflow-hidden">
-                <ProductGallery mainImage={product.image_url} galleryImages={product.gallery_urls} productName={product.name} />
-              </div>
-              {/* Info Column */}
-              <div className="min-w-0 w-full px-1 md:px-0">
-                <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
-              </div>
+    <>
+      {product && (
+        <Helmet>
+          <title>{`${product.name} | OHOUSE Nội Thất Cao Cấp`}</title>
+          <meta name="description" content={product.short_description || `Mua ngay ${product.name} tại OHOUSE. Sản phẩm nội thất cao cấp, thiết kế sang trọng, bảo hành chính hãng.`} />
+          <meta property="og:title" content={`${product.name} | OHOUSE`} />
+          <meta property="og:description" content={product.short_description || product.name} />
+          <meta property="og:image" content={product.image_url} />
+          <meta property="og:type" content="product" />
+          <script type="application/ld+json">
+            {JSON.stringify(productSchema)}
+          </script>
+        </Helmet>
+      )}
+      <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
+        <Header />
+        
+        <main className="flex-1">
+          {/* Breadcrumb */}
+          <div className="bg-secondary/50 py-2.5 md:py-3 border-b border-border/40 w-full overflow-hidden">
+            <div className="container-luxury flex flex-wrap items-center gap-y-1 gap-x-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+              <Link to="/" className="hover:text-primary transition-colors shrink-0">Trang chủ</Link>
+              {categoryPath.map((cat, idx) => (
+                <div key={idx} className="flex items-center gap-2 shrink-0">
+                  <ChevronRight className="w-2.5 h-2.5 opacity-50" />
+                  <Link to={`/${cat.slug}`} className="hover:text-primary transition-colors">{cat.name}</Link>
+                </div>
+              ))}
+              <ChevronRight className="w-2.5 h-2.5 opacity-50 shrink-0" />
+              <span className="text-foreground font-bold truncate max-w-[120px] sm:max-w-none">{product.name}</span>
             </div>
-            
-            <div className="mt-12 md:mt-24 space-y-24">
-              <div id="description"><ProductDescription description={product.description} /></div>
-              
-              <div id="reviews">
-                <ProductReviews 
-                  reviews={reviews} 
-                  product={product} 
-                  displayRating={product.fake_rating || 5} 
-                  displayReviewCount={product.fake_review_count || reviews.length}
-                  onSubmitReview={handleSubmitReview}
-                />
+          </div>
+
+          <div className="container-luxury py-6 md:py-12">
+            <div className="max-w-6xl mx-auto">
+              <div className="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-20 overflow-hidden">
+                <div className="min-w-0 w-full overflow-hidden">
+                  <ProductGallery mainImage={product.image_url} galleryImages={product.gallery_urls} productName={product.name} />
+                </div>
+                <div className="min-w-0 w-full px-1 md:px-0">
+                  <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
+                </div>
               </div>
-
-              <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
-
-              {/* Thay thế ProductInspiration bằng ProductHorizontalScroll */}
-              {perfectMatch.length > 0 && (
-                <div id="inspiration">
-                  <ProductHorizontalScroll 
-                    products={perfectMatch} 
-                    title="Bộ Sưu Tập Hoàn Hảo" 
-                    onQuickView={setQuickViewProduct} 
+              
+              <div className="mt-12 md:mt-24 space-y-24">
+                <div id="description"><ProductDescription description={product.description} /></div>
+                
+                <div id="reviews">
+                  <ProductReviews 
+                    reviews={reviews} 
+                    product={product} 
+                    displayRating={product.fake_rating || 5} 
+                    displayReviewCount={product.fake_review_count || reviews.length}
+                    onSubmitReview={handleSubmitReview}
                   />
                 </div>
-              )}
 
-              {boughtTogether.length > 0 && (
-                <ProductHorizontalScroll products={boughtTogether} title="Gợi Ý Mua Kèm" onQuickView={setQuickViewProduct} />
-              )}
+                <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
 
-              <div id="related">
-                <ProductHorizontalScroll products={similarProducts} title="Sản Phẩm Tương Tự" onQuickView={setQuickViewProduct} />
-              </div>
-
-              <RecentlyViewed />
-
-              <section id="shipping-info" className="py-12 md:py-16 border-t border-border/60">
-                <div className="grid lg:grid-cols-3 gap-12">
-                  <div className="lg:col-span-2">
-                    <div className="flex items-center gap-3 mb-8">
-                      <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                        <Truck className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-bold uppercase tracking-widest text-charcoal">Vận Chuyển & Đổi Trả</h2>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Thông tin hỗ trợ khách hàng</p>
-                      </div>
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-10">
-                      <div className="space-y-4">
-                        <h3 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Chính Sách Giao Hàng
-                        </h3>
-                        <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
-                          <p>• <strong>Miễn phí vận chuyển</strong> cho đơn hàng từ 5.000.000đ tại nội thành TP.HCM và Hà Nội.</p>
-                          <p>• Thời gian giao hàng từ <strong>2 - 5 ngày làm việc</strong> đối với các sản phẩm có sẵn.</p>
-                          <p>• Hỗ trợ lắp đặt chuyên nghiệp tại nhà bởi đội ngũ kỹ thuật của OHOUSE.</p>
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <h3 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Chính Sách Đổi Trả
-                        </h3>
-                        <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
-                          <p>• Đổi trả trong vòng <strong>30 ngày</strong> nếu phát hiện lỗi từ nhà sản xuất.</p>
-                          <p>• Sản phẩm đổi trả phải còn nguyên vẹn, không trầy xước và đầy đủ phụ kiện đi kèm.</p>
-                          <p>• Hoàn tiền nhanh chóng qua phương thức chuyển khoản trong vòng 3-5 ngày làm việc.</p>
-                        </div>
-                      </div>
-                    </div>
-                    {shippingPolicy && (
-                      <div className="mt-10 p-6 bg-secondary/30 rounded-2xl border border-border/40 prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: shippingPolicy }} />
-                    )}
+                {perfectMatch.length > 0 && (
+                  <div id="inspiration">
+                    <ProductHorizontalScroll 
+                      products={perfectMatch} 
+                      title="Bộ Sưu Tập Hoàn Hảo" 
+                      onQuickView={setQuickViewProduct} 
+                    />
                   </div>
-                  <div className="space-y-4">
-                    <div className="bg-charcoal p-8 rounded-[32px] text-cream shadow-elevated border border-white/5 h-full">
-                      <h3 className="font-bold mb-6 text-sm uppercase tracking-widest flex items-center gap-3"><ShieldCheck className="w-5 h-5 text-primary" /> Cam kết OHOUSE</h3>
-                      <ul className="space-y-5">
-                        {[
-                          { icon: ShieldCheck, t: "Bảo hành 2 năm", d: "Hỗ trợ kỹ thuật trọn đời" },
-                          { icon: RotateCcw, t: "30 ngày đổi trả", d: "An tâm tuyệt đối khi mua sắm" },
-                          { icon: CreditCard, t: "Trả góp 0%", d: "Thủ tục nhanh qua thẻ tín dụng" },
-                          { icon: Truck, t: "Lắp đặt miễn phí", d: "Tận tâm trong từng chi tiết" }
-                        ].map((item, i) => (
-                          <li key={i} className="flex gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10"><item.icon className="w-5 h-5 text-primary" /></div>
-                            <div><p className="text-xs font-bold uppercase tracking-wider">{item.t}</p><p className="text-[10px] text-taupe mt-1">{item.d}</p></div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
+                )}
+
+                {boughtTogether.length > 0 && (
+                  <ProductHorizontalScroll products={boughtTogether} title="Gợi Ý Mua Kèm" onQuickView={setQuickViewProduct} />
+                )}
+
+                <div id="related">
+                  <ProductHorizontalScroll products={similarProducts} title="Sản Phẩm Tương Tự" onQuickView={setQuickViewProduct} />
                 </div>
-              </section>
+
+                <RecentlyViewed />
+
+                <section id="shipping-info" className="py-12 md:py-16 border-t border-border/60">
+                  <div className="grid lg:grid-cols-3 gap-12">
+                    <div className="lg:col-span-2">
+                      <div className="flex items-center gap-3 mb-8">
+                        <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                          <Truck className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h2 className="text-xl font-bold uppercase tracking-widest text-charcoal">Vận Chuyển & Đổi Trả</h2>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Thông tin hỗ trợ khách hàng</p>
+                        </div>
+                      </div>
+                      <div className="grid md:grid-cols-2 gap-10">
+                        <div className="space-y-4">
+                          <h3 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Chính Sách Giao Hàng
+                          </h3>
+                          <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                            <p>• <strong>Miễn phí vận chuyển</strong> cho đơn hàng từ 5.000.000đ tại nội thành TP.HCM và Hà Nội.</p>
+                            <p>• Thời gian giao hàng từ <strong>2 - 5 ngày làm việc</strong> đối với các sản phẩm có sẵn.</p>
+                            <p>• Hỗ trợ lắp đặt chuyên nghiệp tại nhà bởi đội ngũ kỹ thuật của OHOUSE.</p>
+                          </div>
+                        </div>
+                        <div className="space-y-4">
+                          <h3 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Chính Sách Đổi Trả
+                          </h3>
+                          <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                            <p>• Đổi trả trong vòng <strong>30 ngày</strong> nếu phát hiện lỗi từ nhà sản xuất.</p>
+                            <p>• Sản phẩm đổi trả phải còn nguyên vẹn, không trầy xước và đầy đủ phụ kiện đi kèm.</p>
+                            <p>• Hoàn tiền nhanh chóng qua phương thức chuyển khoản trong vòng 3-5 ngày làm việc.</p>
+                          </div>
+                        </div>
+                      </div>
+                      {shippingPolicy && (
+                        <div className="mt-10 p-6 bg-secondary/30 rounded-2xl border border-border/40 prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: shippingPolicy }} />
+                      )}
+                    </div>
+                    <div className="space-y-4">
+                      <div className="bg-charcoal p-8 rounded-[32px] text-cream shadow-elevated border border-white/5 h-full">
+                        <h3 className="font-bold mb-6 text-sm uppercase tracking-widest flex items-center gap-3"><ShieldCheck className="w-5 h-5 text-primary" /> Cam kết OHOUSE</h3>
+                        <ul className="space-y-5">
+                          {[
+                            { icon: ShieldCheck, t: "Bảo hành 2 năm", d: "Hỗ trợ kỹ thuật trọn đời" },
+                            { icon: RotateCcw, t: "30 ngày đổi trả", d: "An tâm tuyệt đối khi mua sắm" },
+                            { icon: CreditCard, t: "Trả góp 0%", d: "Thủ tục nhanh qua thẻ tín dụng" },
+                            { icon: Truck, t: "Lắp đặt miễn phí", d: "Tận tâm trong từng chi tiết" }
+                          ].map((item, i) => (
+                            <li key={i} className="flex gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10"><item.icon className="w-5 h-5 text-primary" /></div>
+                              <div><p className="text-xs font-bold uppercase tracking-wider">{item.t}</p><p className="text-[10px] text-taupe mt-1">{item.d}</p></div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      <StickyActionToolbar product={product} />
-      <AIChatWindow isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} productContext={product} />
-      <Footer />
-      <QuickViewSheet product={quickViewProduct} isOpen={!!quickViewProduct} onClose={() => setQuickViewProduct(null)} />
-    </div>
+        <StickyActionToolbar product={product} />
+        <AIChatWindow isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} productContext={product} />
+        <Footer />
+        <QuickViewSheet product={quickViewProduct} isOpen={!!quickViewProduct} onClose={() => setQuickViewProduct(null)} />
+      </div>
+    </>
   );
 }
