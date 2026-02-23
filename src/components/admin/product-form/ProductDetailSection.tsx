@@ -1,4 +1,4 @@
-import { Info, FileText, AlertTriangle } from "lucide-react";
+import { Info, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,8 +10,6 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
 import { cn } from "@/lib/utils";
 
 interface ProductDetailSectionProps {
@@ -132,23 +130,6 @@ export function ProductDetailSection({
           ))}
         </div>
       )}
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả chi tiết bài viết</Label>
-          <AIContentAssistant 
-            contentType="product" 
-            contextTitle={formData.name} 
-            onInsert={(val) => setFormData({...formData, description: val})} 
-          />
-        </div>
-        <RichTextEditor 
-          value={formData.description} 
-          onChange={(val) => setFormData({...formData, description: val})} 
-          contextTitle={formData.name}
-          placeholder="Mô tả kỹ thuật, ưu điểm của sản phẩm..."
-        />
-      </div>
     </div>
   );
 }
