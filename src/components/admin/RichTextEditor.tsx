@@ -8,7 +8,7 @@ interface RichTextEditorProps {
   value: string;
   onChange: (content: string) => void;
   placeholder?: string;
-  contextTitle?: string; // Thêm tiêu đề sản phẩm để làm gợi ý Alt
+  contextTitle?: string; 
 }
 
 export function RichTextEditor({ value, onChange, placeholder, contextTitle }: RichTextEditorProps) {
@@ -43,22 +43,16 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
           return publicUrl;
         };
 
-        // Tải ảnh lên
         const urls = await Promise.all(files.map(file => uploadFile(file)));
 
-        // Sau khi tải xong, hỏi Alt text cho từng ảnh (Chiến lược 1)
         for (const url of urls) {
           const manualAlt = prompt(
             `Nhập mô tả SEO cho ảnh này:\n(Để trống để tự động dùng: ${contextTitle || 'Tên sản phẩm'})`, 
             contextTitle || ""
           );
           
-          // Chèn ảnh vào editor
           quill.insertEmbed(currentIndex, 'image', url);
           
-          // Nếu có nhập Alt, chúng ta sẽ tìm thẻ img vừa chèn và gán Alt
-          // Lưu ý: Quill insertEmbed không hỗ trợ gán Alt trực tiếp dễ dàng, 
-          // nên ta sẽ xử lý gán Alt vào DOM của editor ngay lập tức.
           setTimeout(() => {
             const images = quill.root.querySelectorAll('img');
             const lastImg = images[images.length - 1];
@@ -100,7 +94,7 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
   ];
 
   return (
-    <div className="bg-white border rounded-xl overflow-hidden">
+    <div className="bg-white border rounded-xl overflow-hidden flex flex-col shadow-sm">
       <ReactQuill 
         ref={quillRef}
         theme="snow"
@@ -109,12 +103,51 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
         modules={modules}
         formats={formats}
         placeholder={placeholder}
-        className="min-h-[350px]"
+        className="flex-1 flex flex-col"
       />
       <style>{`
-        .quill { display: flex; flex-direction: column; }
-        .ql-toolbar.ql-snow { border: none; border-bottom: 1px solid #f0f0f0; padding: 12px; background: #fafafa; }
-        .ql-container.ql-snow { border: none; min-height: 300px; font-family: 'Montserrat', sans-serif; font-size: 14px; }
+        /* Container chính của Quill */
+        .quill { 
+          display: flex; 
+          flex-direction: column; 
+          height: 550px; /* Chiều cao tổng thể của khung soạn thảo */
+        }
+        
+        /* Thanh công cụ (Toolbar) */
+        .ql-toolbar.ql-snow { 
+          border: none; 
+          border-bottom: 1px solid #f0f0f0; 
+          padding: 12px; 
+          background: #fafafa;
+          flex-shrink: 0; /* Không cho phép co lại */
+        }
+        
+        /* Vùng chứa nội dung (Editor area) */
+        .ql-container.ql-snow { 
+          border: none; 
+          flex: 1; /* Chiếm toàn bộ không gian còn lại */
+          overflow-y: auto; /* Cho phép cuộn nội dung bên trong */
+          font-family: 'Montserrat', sans-serif; 
+          font-size: 14px; 
+        }
+        
+        /* Tùy chỉnh thanh cuộn cho vùng soạn thảo */
+        .ql-container::-webkit-scrollbar {
+          width: 6px;
+        }
+        .ql-container::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 10px;
+        }
+        .ql-container::-webkit-scrollbar-thumb:hover {
+          background: #cbd5e1;
+        }
+
+        .ql-editor {
+          min-height: 100%;
+          padding: 20px;
+        }
+        
         .ql-editor a { color: #b08d55 !important; text-decoration: underline !important; font-weight: bold; }
         .ql-editor img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
       `}</style>
