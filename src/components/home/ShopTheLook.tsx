@@ -9,10 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCategories } from "@/hooks/useCategories";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { Button } from "@/components/ui/button";
-
-function formatPrice(price: number) {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
-}
+import { getOptimizedImageUrl, formatPrice } from "@/lib/utils";
 
 const swipeConfidenceThreshold = 10000;
 const swipePower = (offset: number, velocity: number) => {
@@ -163,7 +160,6 @@ export function ShopTheLook() {
             {config?.description || "Khám phá những mẫu thiết kế nội thất hoàn mỹ và sở hữu ngay các sản phẩm trong ảnh chỉ với một cú chạm."}
           </p>
 
-          {/* Nút Xem Tất Cả Cảm Hứng (Bo góc tiêu chuẩn theo admin) */}
           <div className="flex justify-center mb-10">
             <Button 
               asChild 
@@ -176,7 +172,6 @@ export function ShopTheLook() {
             </Button>
           </div>
 
-          {/* Hàng danh mục (Bo tròn tối đa để tạo sự khác biệt) */}
           <div className="flex justify-center md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0">
             <button
               onClick={() => setActiveCategorySlug("all")}
@@ -224,10 +219,11 @@ export function ShopTheLook() {
                   <div key={look.id} className="relative h-full w-full flex-shrink-0 group">
                     <Link to={detailLink} className="absolute inset-0 z-10">
                       <img
-                        src={look.homepage_image_url || look.image_url}
+                        src={getOptimizedImageUrl(look.homepage_image_url || look.image_url, { width: 1200 })}
                         alt={look.title}
                         className="w-full h-full object-cover pointer-events-none"
                         draggable="false"
+                        loading="lazy"
                       />
                     </Link>
                     <div className="absolute inset-0 bg-black/5 pointer-events-none">
