@@ -174,7 +174,7 @@ export function ShopTheLook() {
             <button
               key={cat.id}
               onClick={() => setActiveCategorySlug(cat.slug!)}
-              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-xl border transition-all whitespace-nowrap shrink-0 ${
+              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-lg border transition-all whitespace-nowrap shrink-0 ${
                 cat.slug === activeCategorySlug 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                   : 'bg-white border-border text-muted-foreground hover:border-charcoal'

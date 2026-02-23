@@ -96,7 +96,7 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
                 <Link
                   key={item.id}
                   to={`/tim-kiem?q=${encodeURIComponent(item.keyword)}`}
-                  className="px-4 py-2 bg-secondary/30 hover:bg-primary hover:text-primary-foreground border border-border/50 rounded-xl text-xs font-medium transition-all duration-300"
+                  className="px-4 py-2 bg-secondary/30 hover:bg-primary hover:text-primary-foreground border border-border/50 rounded-lg text-xs font-medium transition-all duration-300"
                 >
                   {item.keyword}
                 </Link>

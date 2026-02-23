@@ -42,7 +42,7 @@ export function TrendingSearch() {
               >
                 <Link
                   to={`/tim-kiem?q=${encodeURIComponent(item.keyword)}`}
-                  className="px-4 py-2 bg-secondary/50 hover:bg-primary hover:text-primary-foreground rounded-xl text-xs font-medium transition-all duration-300 whitespace-nowrap shadow-subtle"
+                  className="px-4 py-2 bg-secondary/50 hover:bg-primary hover:text-primary-foreground rounded-lg text-xs font-medium transition-all duration-300 whitespace-nowrap shadow-subtle"
                 >
                   {item.keyword}
                 </Link>
