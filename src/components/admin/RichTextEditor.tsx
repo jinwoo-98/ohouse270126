@@ -34,32 +34,34 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
         const range = quill.getSelection(true);
         let currentIndex = range.index;
 
-        const uploadFile = async (file: File) => {
+        for (const file of files) {
+          // 1. Hỏi Alt text trước khi tải lên để người dùng chủ động
+          const manualAlt = prompt(
+            `Nhập mô tả SEO (Alt text) cho ảnh này:\n(Mặc định: ${contextTitle || 'Tên sản phẩm'})`, 
+            contextTitle || ""
+          );
+
+          // 2. Tải lên Supabase
           const fileExt = file.name.split('.').pop();
           const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
           const { error } = await supabase.storage.from('uploads').upload(fileName, file);
+          
           if (error) throw error;
+          
           const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(fileName);
-          return publicUrl;
-        };
 
-        const urls = await Promise.all(files.map(file => uploadFile(file)));
-
-        for (const url of urls) {
-          const manualAlt = prompt(
-            `Nhập mô tả SEO cho ảnh này:\n(Để trống để tự động dùng: ${contextTitle || 'Tên sản phẩm'})`, 
-            contextTitle || ""
-          );
+          // 3. Chèn ảnh vào editor
+          quill.insertEmbed(currentIndex, 'image', publicUrl);
           
-          quill.insertEmbed(currentIndex, 'image', url);
-          
+          // 4. Gán Alt text vào thẻ img vừa tạo
           setTimeout(() => {
             const images = quill.root.querySelectorAll('img');
-            const lastImg = images[images.length - 1];
-            if (lastImg && !lastImg.getAttribute('alt')) {
-              lastImg.setAttribute('alt', manualAlt || "");
+            // Tìm ảnh có src trùng với publicUrl vừa chèn
+            const targetImg = Array.from(images).find(img => img.getAttribute('src') === publicUrl);
+            if (targetImg) {
+              targetImg.setAttribute('alt', manualAlt || contextTitle || "");
             }
-          }, 0);
+          }, 100);
 
           currentIndex += 1;
         }
@@ -105,14 +107,12 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
         placeholder={placeholder}
       />
       <style>{`
-        /* Ép buộc khung editor có chiều cao cố định và không được giãn ra */
         .rich-editor-wrapper .quill {
           height: 550px !important;
           display: flex !important;
           flex-direction: column !important;
         }
 
-        /* Cố định thanh công cụ ở trên cùng */
         .rich-editor-wrapper .ql-toolbar.ql-snow {
           flex-shrink: 0 !important;
           border: none !important;
@@ -121,17 +121,15 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
           z-index: 10 !important;
         }
 
-        /* Cho phép vùng nội dung tự co giãn và xuất hiện thanh cuộn riêng */
         .rich-editor-wrapper .ql-container.ql-snow {
           flex-grow: 1 !important;
           overflow-y: auto !important;
           border: none !important;
           display: flex !important;
           flex-direction: column !important;
-          height: auto !important; /* Quan trọng: để flex-grow hoạt động */
+          height: auto !important;
         }
 
-        /* Đảm bảo vùng soạn thảo chiếm hết diện tích container */
         .rich-editor-wrapper .ql-editor {
           flex-grow: 1 !important;
           min-height: 100% !important;
@@ -141,7 +139,6 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
           line-height: 1.6 !important;
         }
 
-        /* Tùy chỉnh thanh cuộn cho đẹp và dễ nhìn */
         .rich-editor-wrapper .ql-container::-webkit-scrollbar {
           width: 8px;
         }

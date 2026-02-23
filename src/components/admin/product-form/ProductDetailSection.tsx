@@ -118,6 +118,7 @@ export function ProductDetailSection({
         <RichTextEditor 
           value={formData.description} 
           onChange={(val) => setFormData({...formData, description: val})} 
+          contextTitle={formData.name}
           placeholder="Mô tả kỹ thuật, ưu điểm của sản phẩm..."
         />
       </div>
