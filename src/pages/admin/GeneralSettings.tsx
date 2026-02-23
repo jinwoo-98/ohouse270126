@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { toast } from "sonner";
-import { Loader2, Save, Globe, MapPin, Phone, Mail, Clock, Share2, Truck, AlertCircle } from "lucide-react";
+import { Loader2, Save, Globe, MapPin, Phone, Mail, Clock, Share2, Truck, AlertCircle, ShieldCheck } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
@@ -24,8 +24,8 @@ export default function GeneralSettings() {
     youtube_url: "",
     tiktok_url: "",
     working_hours: "",
-    // map_iframe_url đã bị loại bỏ khỏi form này
-    shipping_policy_summary: ""
+    shipping_policy_summary: "",
+    moit_url: ""
   });
 
   useEffect(() => {
@@ -46,7 +46,8 @@ export default function GeneralSettings() {
         youtube_url: data.youtube_url || "",
         tiktok_url: data.tiktok_url || "",
         working_hours: data.working_hours || "",
-        shipping_policy_summary: data.shipping_policy_summary || ""
+        shipping_policy_summary: data.shipping_policy_summary || "",
+        moit_url: data.moit_url || ""
       });
     }
   };
@@ -95,30 +96,47 @@ export default function GeneralSettings() {
 
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
           <TabsContent value="general" className="mt-0 space-y-6">
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
-                <Globe className="w-4 h-4" /> Nhận diện thương hiệu
-              </h3>
-              
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <Label>Logo Website</Label>
-                  <ImageUpload 
-                    value={settings.logo_url} 
-                    onChange={(url) => setSettings({...settings, logo_url: url as string})} 
-                  />
-                  <p className="text-[10px] text-muted-foreground italic">Khuyên dùng ảnh PNG trong suốt, kích thước tối thiểu 200x60px.</p>
-                </div>
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
+                  <Globe className="w-4 h-4" /> Nhận diện thương hiệu
+                </h3>
                 
-                <div className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <Label>Tên Website (Tiêu đề trang)</Label>
-                    <Input 
-                      value={settings.site_name} 
-                      onChange={(e) => setSettings({...settings, site_name: e.target.value})} 
-                      className="h-12"
+                    <Label>Logo Website</Label>
+                    <ImageUpload 
+                      value={settings.logo_url} 
+                      onChange={(url) => setSettings({...settings, logo_url: url as string})} 
                     />
                   </div>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Tên Website (Tiêu đề trang)</Label>
+                      <Input 
+                        value={settings.site_name} 
+                        onChange={(e) => setSettings({...settings, site_name: e.target.value})} 
+                        className="h-12"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-8 border-t border-border/50 space-y-4">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2 mb-4">
+                  <ShieldCheck className="w-4 h-4" /> Chứng nhận pháp lý
+                </h3>
+                <div className="space-y-2">
+                  <Label>Link "Đã thông báo Bộ Công Thương"</Label>
+                  <Input 
+                    value={settings.moit_url} 
+                    onChange={(e) => setSettings({...settings, moit_url: e.target.value})} 
+                    placeholder="https://online.gov.vn/Home/WebDetails/..."
+                    className="h-12 font-mono text-sm"
+                  />
+                  <p className="text-[10px] text-muted-foreground italic">Dán đường dẫn trang chi tiết chứng nhận của bạn trên cổng thông tin Bộ Công Thương.</p>
                 </div>
               </div>
             </div>
@@ -165,13 +183,6 @@ export default function GeneralSettings() {
                 onChange={(e) => setSettings({...settings, address: e.target.value})} 
                 className="h-12"
               />
-            </div>
-            
-            <div className="p-4 bg-secondary/30 rounded-xl text-sm text-muted-foreground flex items-start gap-3">
-              <AlertCircle className="w-4 h-4 mt-1 shrink-0" />
-              <p>
-                Để quản lý danh sách Showroom chi tiết (bao gồm bản đồ nhúng), vui lòng truy cập mục <Link to="/admin/showrooms" className="text-primary font-bold underline">Quản lý Showroom</Link>.
-              </p>
             </div>
           </TabsContent>
 
@@ -226,7 +237,6 @@ export default function GeneralSettings() {
                 onChange={(val) => setSettings({...settings, shipping_policy_summary: val})}
                 placeholder="Nhập tóm tắt chính sách vận chuyển, đổi trả..."
               />
-              <p className="text-[10px] text-muted-foreground italic">Nội dung này sẽ hiển thị ở cuối mỗi trang chi tiết sản phẩm.</p>
             </div>
           </TabsContent>
 

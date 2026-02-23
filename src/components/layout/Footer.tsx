@@ -17,6 +17,7 @@ interface SiteSettings {
   youtube_url: string;
   tiktok_url: string;
   zalo_url: string;
+  moit_url: string;
 }
 
 export function Footer() {
@@ -34,7 +35,7 @@ export function Footer() {
   const fetchSettings = async () => {
     const { data } = await supabase
       .from('site_settings')
-      .select('phone, email, address, facebook_url, youtube_url, tiktok_url, zalo_url')
+      .select('phone, email, address, facebook_url, youtube_url, tiktok_url, zalo_url, moit_url')
       .single();
     setSettings(data as SiteSettings || null);
   };
@@ -171,8 +172,18 @@ export function Footer() {
 
       {/* Copyright Section */}
       <div className="bg-secondary/50 border-t border-border/40">
-        <div className="container-luxury py-8">
-          <p className="text-[10px] text-muted-foreground text-center uppercase tracking-[0.2em] font-medium">© 2024 OHOUSE.VN. Nâng tầm không gian sống.</p>
+        <div className="container-luxury py-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <p className="text-[10px] text-muted-foreground text-center md:text-left uppercase tracking-[0.2em] font-medium">© 2024 OHOUSE.VN. Nâng tầm không gian sống.</p>
+          
+          {settings?.moit_url && (
+            <a href={settings.moit_url} target="_blank" rel="noopener noreferrer" className="shrink-0 transition-opacity hover:opacity-80">
+              <img 
+                src="https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/logo-bo-cong-thuong.png" 
+                alt="Đã thông báo Bộ Công Thương" 
+                className="h-10 w-auto object-contain"
+              />
+            </a>
+          )}
         </div>
       </div>
     </footer>
