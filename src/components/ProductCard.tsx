@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Heart, ShoppingBag, Eye } from "lucide-react";
-import { cn, formatPrice, getOptimizedImageUrl } from "@/lib/utils";
+import { cn, formatPrice, getOptimizedImageUrl, generateProductAltText } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,16 +25,15 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   
   const isFavorite = isInWishlist(product.id);
+  const smartAlt = generateProductAltText(product);
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
     const targetSlug = product.slug || product.id;
     
-    // Trên Mobile, click vào thẻ sẽ mở QuickView
     if (isMobile) {
       setIsQuickViewOpen(true);
     } else {
-      // Desktop: Chuyển hướng đến trang chi tiết
       navigate(`/san-pham/${targetSlug}`);
     }
   };
@@ -49,14 +48,13 @@ export function ProductCard({ product, className }: ProductCardProps) {
         )}
         onClick={handleCardClick}
       >
-        {/* Image Section */}
         <div className="relative aspect-square overflow-hidden bg-secondary/15 shrink-0 rounded-2xl">
           <div className="block h-full w-full">
             <AnimatePresence mode="wait">
               <motion.img 
                 key={activeImage}
                 src={getOptimizedImageUrl(activeImage, { width: 400 })} 
-                alt={product.image_alt_text || product.name} 
+                alt={smartAlt} 
                 loading="lazy"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -67,7 +65,6 @@ export function ProductCard({ product, className }: ProductCardProps) {
             </AnimatePresence>
           </div>
 
-          {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
             {product.is_sale && (
               <span className="bg-destructive text-white px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest shadow-sm rounded-sm">Sale</span>
@@ -77,7 +74,6 @@ export function ProductCard({ product, className }: ProductCardProps) {
             )}
           </div>
 
-          {/* Vertical Action Buttons (Top Right) - CHỈ GIỮ LẠI NÚT YÊU THÍCH */}
           <div className="absolute top-3 right-3 flex flex-col gap-2 z-20 md:opacity-0 md:group-hover:opacity-100 transition-all duration-500 transform translate-x-2 md:group-hover:translate-x-0">
             <button 
               onClick={(e) => { 
@@ -96,7 +92,6 @@ export function ProductCard({ product, className }: ProductCardProps) {
             </button>
           </div>
           
-          {/* Nút Xem Nhanh (Bottom Left - ẨN TRÊN MOBILE) */}
           {!isMobile && (
             <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
               <button 
@@ -110,9 +105,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           )}
         </div>
 
-        {/* Info Section */}
         <div className="p-4 flex flex-col items-center text-center flex-1 pt-4">
-          {/* Link này chỉ để đảm bảo SEO và hover style, click chính được xử lý ở div cha */}
           <Link to={`/san-pham/${product.slug || product.id}`} onClick={(e) => e.preventDefault()}>
             <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">
               {product.name}

@@ -11,33 +11,59 @@ export function formatPrice(price: number) {
 
 /**
  * Converts a string to a URL-friendly slug.
- * @param text The input string.
- * @returns The slugified string.
  */
 export function slugify(text: string) {
   if (!text) return '';
   return text
     .toLowerCase()
-    .normalize("NFD") // Normalize to decompose combined characters
-    .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .trim()
-    .replace(/[^a-z0-9\s-]/g, "") // Remove all non-word chars except spaces and hyphens
-    .replace(/[\s_-]+/g, "-") // Replace spaces, underscores, and multiple hyphens with a single hyphen
-    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * Generates a smart, SEO-friendly alt text for product images.
+ * Priority: Manual Alt Text > (Name - Category - Material/Style) > Name
+ */
+export function generateProductAltText(product: any) {
+  if (!product) return "Nội thất cao cấp OHOUSE";
+  
+  // 1. Ưu tiên hàng đầu: Alt text nhập tay (Chiến lược 1)
+  if (product.image_alt_text) return product.image_alt_text;
+
+  // 2. Tự động tạo chuỗi đa dạng (Chiến lược 2)
+  const parts = [];
+  
+  if (product.name) parts.push(product.name);
+  
+  if (product.category_id) {
+    // Chuyển slug danh mục thành tên hiển thị đẹp hơn (VD: sofa-da -> sofa da)
+    const catName = product.category_id.replace(/-/g, ' ');
+    parts.push(catName);
+  }
+  
+  if (product.material) parts.push(product.material);
+  else if (product.style) parts.push(product.style);
+
+  // Nếu có đủ thông tin thì ghép lại bằng dấu gạch ngang
+  if (parts.length > 1) {
+    return parts.join(' - ');
+  }
+
+  // 3. Fallback cuối cùng: Chỉ dùng tên sản phẩm
+  return product.name || "Sản phẩm nội thất OHOUSE";
 }
 
 /**
  * Generates an optimized image URL using Supabase Image Transformation.
- * @param url The original Supabase Storage public URL.
- * @param options Transformation options (width, height, quality, format).
- * @returns The transformed image URL.
  */
 export function getOptimizedImageUrl(url: string | null | undefined, options: { width: number; height?: number; quality?: number; format?: 'webp' }) {
   if (!url || !url.includes('supabase.co')) {
     return url || '/placeholder.svg';
   }
-  // Replace the path segment for image transformation
-  // from /object/public/ to /render/image/public/
   const transformedUrl = url.replace('/object/public/', '/render/image/public/');
   
   const params = new URLSearchParams();

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Heart, ShoppingBag, Eye } from "lucide-react";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatPrice, generateProductAltText } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,18 +20,15 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
   const { toggleWishlist, isInWishlist } = useWishlist();
   
   const isFavorite = isInWishlist(product.id);
+  const smartAlt = generateProductAltText(product);
 
-  // Loại bỏ handleAddToCart vì chúng ta không muốn nút này xuất hiện
-  
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (isMobile) {
-      // Trên Mobile, click vào thẻ sẽ mở QuickView
       onQuickView(product);
     } else {
-      // Desktop: Chuyển hướng đến trang chi tiết
       window.location.href = `/san-pham/${product.slug || product.id}`;
     }
   };
@@ -39,17 +36,15 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
   return (
     <div 
       className="group flex flex-col bg-card rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-medium h-full border border-border/40 cursor-pointer"
-      onClick={handleCardClick} // Xử lý click chung
+      onClick={handleCardClick}
     >
-      {/* Image Section */}
       <Link to={`/san-pham/${product.slug || product.id}`} onClick={(e) => isMobile && e.preventDefault()} className="relative aspect-square overflow-hidden bg-secondary/15 shrink-0 rounded-t-2xl">
         <img 
           src={product.image_url} 
-          alt={product.image_alt_text || product.name} 
+          alt={smartAlt} 
           className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
         />
 
-        {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
           {product.is_sale && (
             <span className="bg-destructive text-white px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest shadow-sm rounded-sm">Sale</span>
@@ -59,7 +54,6 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
           )}
         </div>
 
-        {/* Nút Yêu thích (Top Right) */}
         <button 
           onClick={(e) => { 
             e.preventDefault();
@@ -77,12 +71,10 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
           <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
         </button>
 
-        {/* Nút Xem Nhanh (Bottom Left - ẨN TRÊN MOBILE) */}
         {!isMobile && (
           <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
             <button 
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView(product); }}
-              // Sử dụng kiểu dáng thống nhất với ProductCard
               className="h-9 px-4 rounded-xl flex items-center justify-center bg-charcoal/90 backdrop-blur-md text-white hover:bg-primary transition-all shadow-lg text-[10px] font-bold uppercase tracking-widest"
               title="Xem nhanh"
             >
@@ -92,7 +84,6 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
         )}
       </Link>
 
-      {/* Info Section - Đã đồng bộ khoảng cách tên/giá */}
       <div className="p-4 flex flex-col flex-1 pt-4">
         <Link to={`/san-pham/${product.slug || product.id}`}>
           <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">

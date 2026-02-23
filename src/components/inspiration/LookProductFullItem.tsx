@@ -5,7 +5,7 @@ import { Eye, ShoppingBag, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
-import { formatPrice, cn, getOptimizedImageUrl } from "@/lib/utils";
+import { formatPrice, cn, getOptimizedImageUrl, generateProductAltText } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LookProductFullItemProps {
@@ -18,15 +18,14 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
   const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
   const isFavorite = isInWishlist(product.id);
+  const smartAlt = generateProductAltText(product);
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
     
     if (isMobile) {
-      // Mobile: Mở QuickView
       onQuickView(product);
     } else {
-      // Desktop: Chuyển hướng
       navigate(`/san-pham/${product.slug || product.id}`);
     }
   };
@@ -34,17 +33,15 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
   return (
     <div 
       className="group flex flex-col bg-card rounded-xl overflow-hidden border border-border/40 hover:shadow-subtle transition-all cursor-pointer"
-      onClick={handleCardClick} // Click vào toàn bộ thẻ sẽ xử lý hành vi
+      onClick={handleCardClick}
     >
-      {/* Image Section */}
       <div className="relative aspect-square overflow-hidden bg-secondary/30 shrink-0">
         <img 
           src={getOptimizedImageUrl(product.image_url, { width: 400 })} 
-          alt={product.name} 
+          alt={smartAlt} 
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
         />
         
-        {/* Nút Yêu thích (Top Right) */}
         <button 
           onClick={(e) => { 
             e.preventDefault();
@@ -62,7 +59,6 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
           <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
         </button>
 
-        {/* Nút Xem Nhanh (Bottom Left - ẨN TRÊN MOBILE) */}
         {!isMobile && (
           <div className="absolute bottom-3 left-3 z-20 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
             <button 
@@ -76,9 +72,7 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
         )}
       </div>
       
-      {/* Info Section - Căn giữa, đồng bộ khoảng cách với ProductCard */}
       <div className="p-4 flex flex-col flex-1 items-center text-center pt-4">
-        {/* Link này chỉ để đảm bảo SEO và hover style, click chính được xử lý ở div cha */}
         <Link to={`/san-pham/${product.slug || product.id}`} onClick={(e) => e.preventDefault()}>
           <h3 className="text-xs md:text-sm font-bold text-charcoal hover:text-primary transition-colors line-clamp-2 leading-snug h-10 flex items-center justify-center mb-2">
             {product.name}

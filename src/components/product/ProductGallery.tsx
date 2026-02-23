@@ -23,7 +23,7 @@ interface ProductGalleryProps {
   mainImage: string;
   galleryImages?: string[] | null;
   productName: string;
-  imageAltText?: string;
+  imageAltText?: string; // This is the smart alt text passed from parent
   hotspots?: Hotspot[];
   onHotspotClick?: (product: any) => void;
   children?: (currentImageUrl: string) => React.ReactNode;
@@ -43,6 +43,9 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
 
   const imageIndex = page % allImages.length;
   const currentImageUrl = allImages[imageIndex];
+
+  // Base alt text from props or fallback
+  const baseAlt = imageAltText || productName;
 
   const paginate = (newDirection: number) => {
     if (allImages.length <= 1) return;
@@ -114,7 +117,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
           >
             <img
               src={getOptimizedImageUrl(currentImageUrl, { width: 800 })}
-              alt={imageAltText ? `${imageAltText} - Ảnh ${imageIndex + 1}` : `${productName} - Ảnh ${imageIndex + 1}`}
+              alt={`${baseAlt} - Ảnh ${imageIndex + 1}`}
               className="w-full h-full object-cover pointer-events-none"
               draggable="false"
               loading={imageIndex === 0 ? "eager" : "lazy"}
@@ -176,7 +179,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
                   : "border-transparent opacity-50 hover:opacity-100"
               )}
             >
-              <img src={getOptimizedImageUrl(img, { width: 150 })} alt="" className="w-full h-full object-cover" />
+              <img src={getOptimizedImageUrl(img, { width: 150 })} alt={`${baseAlt} thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
@@ -198,7 +201,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
               <img 
                 src={getOptimizedImageUrl(currentImageUrl, { width: 1200 })} 
                 className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl"
-                alt={imageAltText || productName}
+                alt={`${baseAlt} - Phóng to`}
               />
               {hotspots.length > 0 && renderHotspots(true)}
             </div>

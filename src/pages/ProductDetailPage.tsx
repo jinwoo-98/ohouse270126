@@ -20,6 +20,7 @@ import { useProductRelations } from "@/hooks/useProductRelations";
 import { useSimilarProducts } from "@/hooks/useSimilarProducts";
 import { Helmet } from "react-helmet-async";
 import { useSeo } from "@/hooks/useSeo";
+import { generateProductAltText } from "@/lib/utils";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -178,6 +179,8 @@ export default function ProductDetailPage() {
     );
   }
 
+  const smartAlt = generateProductAltText(product);
+
   return (
     <>
       <Helmet>
@@ -215,7 +218,7 @@ export default function ProductDetailPage() {
                     mainImage={product.image_url} 
                     galleryImages={product.gallery_urls} 
                     productName={product.name} 
-                    imageAltText={product.image_alt_text}
+                    imageAltText={smartAlt}
                   />
                 </div>
                 <div className="min-w-0 w-full px-1 md:px-0">
@@ -256,7 +259,6 @@ export default function ProductDetailPage() {
                   <ProductHorizontalScroll products={similarProducts} title="Sản Phẩm Tương Tự" onQuickView={setQuickViewProduct} />
                 </div>
 
-                {/* Recently Viewed Section */}
                 <RecentlyViewed />
 
                 <section id="shipping-info" className="py-12 md:py-16 border-t border-border/60">
