@@ -25,36 +25,47 @@ export function slugify(text: string) {
 }
 
 /**
- * Generates a smart, SEO-friendly alt text for product images.
- * Priority: Manual Alt Text > (Name - Category - Material/Style) > Name
+ * Generates a smart, unique SEO-friendly alt text for product images.
+ * Structure: [Name] - [Category] - [Attributes] - [Unique Suffix]
  */
-export function generateProductAltText(product: any) {
+export function generateProductAltText(product: any, index: number = 0) {
   if (!product) return "Nội thất cao cấp OHOUSE";
   
-  // 1. Ưu tiên hàng đầu: Alt text nhập tay (Chiến lược 1)
-  if (product.image_alt_text) return product.image_alt_text;
+  // 1. Lấy phần thân (Base Text)
+  let baseText = product.image_alt_text;
 
-  // 2. Tự động tạo chuỗi đa dạng (Chiến lược 2)
-  const parts = [];
-  
-  if (product.name) parts.push(product.name);
-  
-  if (product.category_id) {
-    // Chuyển slug danh mục thành tên hiển thị đẹp hơn (VD: sofa-da -> sofa da)
-    const catName = product.category_id.replace(/-/g, ' ');
-    parts.push(catName);
-  }
-  
-  if (product.material) parts.push(product.material);
-  else if (product.style) parts.push(product.style);
+  if (!baseText) {
+    const parts = [];
+    if (product.name) parts.push(product.name);
+    
+    if (product.category_id) {
+      const catName = product.category_id.replace(/-/g, ' ');
+      parts.push(catName);
+    }
+    
+    // Lấy thuộc tính (ưu tiên chất liệu hoặc phong cách có sẵn trong object)
+    if (product.material) parts.push(product.material);
+    else if (product.style) parts.push(product.style);
 
-  // Nếu có đủ thông tin thì ghép lại bằng dấu gạch ngang
-  if (parts.length > 1) {
-    return parts.join(' - ');
+    baseText = parts.join(' - ');
   }
 
-  // 3. Fallback cuối cùng: Chỉ dùng tên sản phẩm
-  return product.name || "Sản phẩm nội thất OHOUSE";
+  // 2. Tạo hậu tố chống trùng lặp (Unique Suffix)
+  // Giúp mỗi bức ảnh trong gallery có một alt riêng biệt dù cùng 1 sản phẩm
+  const suffixes = [
+    "", // Ảnh chính không cần hậu tố
+    "góc nhìn nghiêng",
+    "chi tiết thiết kế",
+    "phối cảnh không gian",
+    "cận cảnh chất liệu",
+    "kích thước thực tế",
+    "góc nhìn từ trên",
+    "hoàn thiện bề mặt"
+  ];
+
+  const suffix = suffixes[index] || `hình ảnh số ${index + 1}`;
+  
+  return suffix ? `${baseText} - ${suffix}` : baseText;
 }
 
 /**

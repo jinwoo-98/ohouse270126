@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, ZoomIn, X } from "lucide-react";
-import { cn, getOptimizedImageUrl, formatPrice } from "@/lib/utils";
+import { cn, getOptimizedImageUrl, formatPrice, generateProductAltText } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -23,10 +23,11 @@ interface ProductGalleryProps {
   mainImage: string;
   galleryImages?: string[] | null;
   productName: string;
-  imageAltText?: string; // This is the smart alt text passed from parent
+  imageAltText?: string; 
   hotspots?: Hotspot[];
   onHotspotClick?: (product: any) => void;
   children?: (currentImageUrl: string) => React.ReactNode;
+  product?: any; // Thêm prop product để lấy thông tin đầy đủ cho SEO
 }
 
 const swipeConfidenceThreshold = 10000;
@@ -34,7 +35,7 @@ const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
-export function ProductGallery({ mainImage, galleryImages, productName, imageAltText, hotspots = [], onHotspotClick, children }: ProductGalleryProps) {
+export function ProductGallery({ mainImage, galleryImages, productName, imageAltText, hotspots = [], onHotspotClick, children, product }: ProductGalleryProps) {
   const safeGallery = Array.isArray(galleryImages) ? galleryImages : [];
   const allImages = [mainImage, ...safeGallery].filter(Boolean);
   
@@ -44,8 +45,8 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
   const imageIndex = page % allImages.length;
   const currentImageUrl = allImages[imageIndex];
 
-  // Base alt text from props or fallback
-  const baseAlt = imageAltText || productName;
+  // Tạo alt text thông minh dựa trên index của ảnh hiện tại
+  const currentAlt = generateProductAltText(product || { name: productName, image_alt_text: imageAltText }, imageIndex);
 
   const paginate = (newDirection: number) => {
     if (allImages.length <= 1) return;
@@ -117,7 +118,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
           >
             <img
               src={getOptimizedImageUrl(currentImageUrl, { width: 800 })}
-              alt={`${baseAlt} - Ảnh ${imageIndex + 1}`}
+              alt={currentAlt}
               className="w-full h-full object-cover pointer-events-none"
               draggable="false"
               loading={imageIndex === 0 ? "eager" : "lazy"}
@@ -179,7 +180,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
                   : "border-transparent opacity-50 hover:opacity-100"
               )}
             >
-              <img src={getOptimizedImageUrl(img, { width: 150 })} alt={`${baseAlt} thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+              <img src={getOptimizedImageUrl(img, { width: 150 })} alt={generateProductAltText(product || { name: productName }, idx)} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
@@ -201,7 +202,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
               <img 
                 src={getOptimizedImageUrl(currentImageUrl, { width: 1200 })} 
                 className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl"
-                alt={`${baseAlt} - Phóng to`}
+                alt={`${currentAlt} - Phóng to`}
               />
               {hotspots.length > 0 && renderHotspots(true)}
             </div>

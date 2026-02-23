@@ -89,7 +89,11 @@ export default function ProductDetailPage() {
         name: data.name, 
         price: data.price, 
         image: data.image_url, 
-        slug: data.slug 
+        slug: data.slug,
+        category_id: data.category_id,
+        material: data.material,
+        style: data.style,
+        image_alt_text: data.image_alt_text
       });
       
       if (data.category_id) {
@@ -179,8 +183,6 @@ export default function ProductDetailPage() {
     );
   }
 
-  const smartAlt = generateProductAltText(product);
-
   return (
     <>
       <Helmet>
@@ -218,7 +220,7 @@ export default function ProductDetailPage() {
                     mainImage={product.image_url} 
                     galleryImages={product.gallery_urls} 
                     productName={product.name} 
-                    imageAltText={smartAlt}
+                    product={product}
                   />
                 </div>
                 <div className="min-w-0 w-full px-1 md:px-0">
