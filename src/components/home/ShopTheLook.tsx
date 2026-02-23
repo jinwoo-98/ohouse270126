@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion, PanInfo } from "framer-motion";
-import { ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronRight, ChevronLeft, Loader2, Sparkles, ArrowRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { useCategories } from "@/hooks/useCategories";
@@ -24,7 +24,7 @@ export function ShopTheLook() {
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  const [activeCategorySlug, setActiveCategorySlug] = useState<string>("");
+  const [activeCategorySlug, setActiveCategorySlug] = useState<string>("all");
   const [currentLookIndex, setCurrentLookIndex] = useState(0); 
   
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
@@ -91,14 +91,9 @@ export function ShopTheLook() {
 
   }, [allLooks, categoriesData?.allCategories]);
 
-  useEffect(() => {
-    if (allLooks.length > 0 && categoriesWithLooks.length > 0 && !activeCategorySlug) {
-      setActiveCategorySlug(categoriesWithLooks[0].slug!);
-    }
-  }, [allLooks, categoriesWithLooks, activeCategorySlug]);
-  
   const currentCategoryLooks = useMemo(() => {
-    if (!activeCategorySlug || !categoriesData?.allCategories) return [];
+    if (activeCategorySlug === "all") return allLooks;
+    if (!categoriesData?.allCategories) return [];
     
     const selectedParentCategory = categoriesData.allCategories.find((c: any) => c.slug === activeCategorySlug);
     if (!selectedParentCategory) return [];
@@ -164,26 +159,50 @@ export function ShopTheLook() {
           <h2 className="section-title mb-4" style={{ color: config?.title_color }}>
             {config?.title || "Shop The Look"}
           </h2>
-          <p className="text-sm md:text-base max-w-2xl mx-auto" style={{ color: config?.content_color }}>
+          <p className="text-sm md:text-base max-w-2xl mx-auto mb-8" style={{ color: config?.content_color }}>
             {config?.description || "Khám phá những mẫu thiết kế nội thất hoàn mỹ và sở hữu ngay các sản phẩm trong ảnh chỉ với một cú chạm."}
           </p>
-        </motion.div>
 
-        <div className="flex justify-center md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0">
-          {categoriesWithLooks.map((cat) => (
+          {/* Nút Xem Tất Cả Cảm Hứng (Bo góc tiêu chuẩn) */}
+          <div className="flex justify-center mb-10">
+            <Button 
+              asChild 
+              variant="outline" 
+              className="h-12 px-8 rounded-lg border-charcoal/20 text-charcoal font-bold text-xs uppercase tracking-widest hover:bg-charcoal hover:text-white transition-all group"
+            >
+              <Link to="/cam-hung">
+                Khám phá tất cả cảm hứng <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </Button>
+          </div>
+
+          {/* Hàng danh mục (Bo tròn hơn) */}
+          <div className="flex justify-center md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0">
             <button
-              key={cat.id}
-              onClick={() => setActiveCategorySlug(cat.slug!)}
-              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-lg border transition-all whitespace-nowrap shrink-0 ${
-                cat.slug === activeCategorySlug 
+              onClick={() => setActiveCategorySlug("all")}
+              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-3xl border transition-all whitespace-nowrap shrink-0 ${
+                activeCategorySlug === "all" 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                   : 'bg-white border-border text-muted-foreground hover:border-charcoal'
               }`}
             >
-              {cat.name}
+              Tất cả các phòng
             </button>
-          ))}
-        </div>
+            {categoriesWithLooks.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategorySlug(cat.slug!)}
+                className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-3xl border transition-all whitespace-nowrap shrink-0 ${
+                  cat.slug === activeCategorySlug 
+                    ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
+                    : 'bg-white border-border text-muted-foreground hover:border-charcoal'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </motion.div>
 
         <div className="relative rounded-2xl overflow-hidden bg-transparent shadow-elevated border border-border/40">
           <div className="bg-background relative aspect-video overflow-hidden">
