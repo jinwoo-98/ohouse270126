@@ -82,7 +82,14 @@ export default function ProductDetailPage() {
       if (error) throw error;
       setProduct(data);
       
-      trackProductView({ id: data.id, name: data.name, price: data.price, image: data.image_url, slug: data.slug });
+      // Ghi lại lịch sử xem
+      trackProductView({ 
+        id: data.id, 
+        name: data.name, 
+        price: data.price, 
+        image: data.image_url, 
+        slug: data.slug 
+      });
       
       if (data.category_id) {
         fetchCategoryHierarchy(data.category_id);
@@ -163,32 +170,6 @@ export default function ProductDetailPage() {
     }
   };
 
-  const productSchema = product ? {
-    "@context": "https://schema.org/",
-    "@type": "Product",
-    "name": product.name,
-    "image": [product.image_url, ...(product.gallery_urls || [])],
-    "description": product.short_description || product.name,
-    "sku": product.id,
-    "brand": {
-      "@type": "Brand",
-      "name": "OHOUSE"
-    },
-    "offers": {
-      "@type": "Offer",
-      "url": window.location.href,
-      "priceCurrency": "VND",
-      "price": product.price,
-      "availability": "https://schema.org/InStock",
-      "itemCondition": "https://schema.org/NewCondition"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": product.fake_rating || 5,
-      "reviewCount": product.fake_review_count || reviews.length || 1
-    }
-  } : null;
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -207,9 +188,6 @@ export default function ProductDetailPage() {
         <meta property="og:image" content={seo.image} />
         <meta property="og:type" content="product" />
         {seo.favicon && <link rel="icon" href={seo.favicon} />}
-        <script type="application/ld+json">
-          {JSON.stringify(productSchema)}
-        </script>
       </Helmet>
       <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
         <Header />
@@ -273,6 +251,7 @@ export default function ProductDetailPage() {
                   <ProductHorizontalScroll products={similarProducts} title="Sản Phẩm Tương Tự" onQuickView={setQuickViewProduct} />
                 </div>
 
+                {/* Recently Viewed Section */}
                 <RecentlyViewed />
 
                 <section id="shipping-info" className="py-12 md:py-16 border-t border-border/60">
