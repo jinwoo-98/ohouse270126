@@ -12,21 +12,20 @@ interface LookbookBasicInfoSectionProps {
   setFormData: (data: any) => void;
   categories: any[];
   isSlugDuplicate?: boolean;
-  onSlugManualChange?: () => void;
 }
 
 export function LookbookBasicInfoSection({ 
   formData, 
   setFormData, 
   categories,
-  isSlugDuplicate,
-  onSlugManualChange
+  isSlugDuplicate
 }: LookbookBasicInfoSectionProps) {
   const parentCategories = categories.filter(c => !c.parent_id && c.menu_location === 'main');
 
   const handleCopySlug = () => {
+    if (!formData.slug) return;
     navigator.clipboard.writeText(formData.slug);
-    toast.success("Đã sao chép slug!");
+    toast.success("Đã sao chép đường dẫn!");
   };
 
   return (
@@ -46,14 +45,11 @@ export function LookbookBasicInfoSection({
           <div className="relative flex-1">
             <Input 
               value={formData.slug} 
-              onChange={e => {
-                setFormData({...formData, slug: e.target.value});
-                if (onSlugManualChange) onSlugManualChange();
-              }}
+              readOnly
               placeholder="Tự động tạo từ tên..." 
               className={cn(
-                "h-11 rounded-xl font-mono text-xs transition-all",
-                isSlugDuplicate ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "bg-secondary/50"
+                "h-11 rounded-xl font-mono text-xs transition-all bg-secondary/30 cursor-not-allowed",
+                isSlugDuplicate ? "border-destructive ring-1 ring-destructive bg-destructive/5" : ""
               )}
             />
             {isSlugDuplicate && (
@@ -62,14 +58,21 @@ export function LookbookBasicInfoSection({
               </div>
             )}
           </div>
-          <Button type="button" size="icon" variant="outline" onClick={handleCopySlug} className="h-11 w-11 rounded-xl shrink-0">
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="outline" 
+            onClick={handleCopySlug} 
+            className="h-11 w-11 rounded-xl shrink-0 border-border/60"
+            title="Sao chép slug"
+          >
             <Copy className="w-4 h-4" />
           </Button>
         </div>
         {isSlugDuplicate ? (
-          <p className="text-[10px] text-destructive font-bold italic">Lỗi: Slug này đã được sử dụng. Vui lòng chỉnh sửa.</p>
+          <p className="text-[10px] text-destructive font-bold italic">Lỗi: Slug này đã được sử dụng. Vui lòng thay đổi Tên Lookbook.</p>
         ) : (
-          <p className="text-[10px] text-muted-foreground italic">* Slug được tạo tự động từ tên. Bạn có thể sửa thủ công.</p>
+          <p className="text-[10px] text-muted-foreground italic">* Đường dẫn được tạo tự động và duy nhất dựa trên tên Lookbook.</p>
         )}
       </div>
 

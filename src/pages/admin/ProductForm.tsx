@@ -38,7 +38,6 @@ export default function ProductForm() {
   
   // Slug states
   const [isSlugDuplicate, setIsSlugDuplicate] = useState(false);
-  const [isManualSlug, setIsManualSlug] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -67,12 +66,12 @@ export default function ProductForm() {
     fetchInitialData();
   }, [id]);
 
-  // 1. Tự động tạo slug khi nhập tên (nếu chưa sửa thủ công)
+  // 1. Tự động tạo slug khi nhập tên (Luôn đồng bộ)
   useEffect(() => {
-    if (!isManualSlug && formData.name) {
+    if (formData.name) {
       setFormData(prev => ({ ...prev, slug: slugify(formData.name) }));
     }
-  }, [formData.name, isManualSlug]);
+  }, [formData.name]);
 
   // 2. Kiểm tra trùng lặp slug (Debounced)
   useEffect(() => {
@@ -160,7 +159,7 @@ export default function ProductForm() {
 
   const handleSubmit = async () => {
     if (isSlugDuplicate) {
-      toast.error("Đường dẫn (Slug) đã tồn tại. Vui lòng thay đổi để tránh lỗi hệ thống.");
+      toast.error("Đường dẫn (Slug) đã tồn tại. Vui lòng thay đổi Tên sản phẩm.");
       return;
     }
 
@@ -277,7 +276,6 @@ export default function ProductForm() {
               productAttrs={productAttrs} 
               handleAttributeChange={handleAttributeChange}
               isSlugDuplicate={isSlugDuplicate}
-              onSlugManualChange={() => setIsManualSlug(true)}
             />
             <PricingCategorySection formData={formData} setFormData={setFormData} categories={categories} />
             <ProductStatusSection formData={formData} setFormData={setFormData} />

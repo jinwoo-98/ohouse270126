@@ -1,4 +1,4 @@
-import { Info, AlertTriangle } from "lucide-react";
+import { Info, AlertTriangle, Copy } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,6 +10,8 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface ProductDetailSectionProps {
@@ -19,7 +21,6 @@ interface ProductDetailSectionProps {
   productAttrs: Record<string, any>;
   handleAttributeChange: (attrId: string, value: any, isMulti: boolean) => void;
   isSlugDuplicate?: boolean;
-  onSlugManualChange?: () => void;
 }
 
 export function ProductDetailSection({ 
@@ -28,9 +29,15 @@ export function ProductDetailSection({
   availableAttributes, 
   productAttrs, 
   handleAttributeChange,
-  isSlugDuplicate,
-  onSlugManualChange
+  isSlugDuplicate
 }: ProductDetailSectionProps) {
+  
+  const handleCopySlug = () => {
+    if (!formData.slug) return;
+    navigator.clipboard.writeText(formData.slug);
+    toast.success("Đã sao chép đường dẫn!");
+  };
+
   return (
     <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
       <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
@@ -55,29 +62,38 @@ export function ProductDetailSection({
         )}>
           Đường dẫn (Slug) {isSlugDuplicate && "- ĐÃ TỒN TẠI"}
         </Label>
-        <div className="relative">
-          <Input 
-            value={formData.slug} 
-            onChange={(e) => {
-              setFormData({...formData, slug: e.target.value});
-              if (onSlugManualChange) onSlugManualChange();
-            }}
-            placeholder="sofa-da-y-cao-cap"
-            className={cn(
-              "h-11 rounded-xl font-mono text-xs transition-all",
-              isSlugDuplicate ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "bg-secondary/30"
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Input 
+              value={formData.slug} 
+              readOnly
+              placeholder="Tự động tạo từ tên..." 
+              className={cn(
+                "h-11 rounded-xl font-mono text-xs transition-all bg-secondary/30 cursor-not-allowed",
+                isSlugDuplicate && "border-destructive ring-1 ring-destructive bg-destructive/5"
+              )}
+            />
+            {isSlugDuplicate && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
             )}
-          />
-          {isSlugDuplicate && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          )}
+          </div>
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="outline" 
+            onClick={handleCopySlug}
+            className="h-11 w-11 rounded-xl shrink-0 border-border/60"
+            title="Sao chép slug"
+          >
+            <Copy className="w-4 h-4" />
+          </Button>
         </div>
         {isSlugDuplicate ? (
-          <p className="text-[10px] text-destructive font-bold italic">Lỗi: Slug này đã được sử dụng cho sản phẩm khác. Vui lòng chỉnh sửa.</p>
+          <p className="text-[10px] text-destructive font-bold italic">Lỗi: Slug này đã được sử dụng. Vui lòng thay đổi Tên sản phẩm.</p>
         ) : (
-          <p className="text-[10px] text-muted-foreground italic">* Tự động tạo từ tên. Bạn có thể sửa thủ công nếu muốn.</p>
+          <p className="text-[10px] text-muted-foreground italic">* Đường dẫn được tạo tự động và duy nhất dựa trên tên sản phẩm.</p>
         )}
       </div>
 

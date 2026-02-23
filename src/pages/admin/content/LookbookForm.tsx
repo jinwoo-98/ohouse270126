@@ -28,7 +28,6 @@ export default function LookbookForm() {
 
   // Slug states
   const [isSlugDuplicate, setIsSlugDuplicate] = useState(false);
-  const [isManualSlug, setIsManualSlug] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -47,12 +46,12 @@ export default function LookbookForm() {
     fetchInitialData();
   }, [id]);
 
-  // 1. Tự động tạo slug khi nhập tiêu đề
+  // 1. Tự động tạo slug khi nhập tiêu đề (Luôn đồng bộ)
   useEffect(() => {
-    if (!isManualSlug && formData.title) {
+    if (formData.title) {
       setFormData(prev => ({ ...prev, slug: slugify(formData.title) }));
     }
-  }, [formData.title, isManualSlug]);
+  }, [formData.title]);
 
   // 2. Kiểm tra trùng lặp slug (Debounced)
   useEffect(() => {
@@ -126,8 +125,6 @@ export default function LookbookForm() {
       color: lookData.color || "none",
     });
     
-    // Không set isManualSlug = true ở đây để cho phép tự động đổi slug khi sửa tiêu đề lookbook cũ
-
     setLookItems(lookData.shop_look_items || []);
     setActiveEditingImage(lookData.image_url);
   };
@@ -136,7 +133,7 @@ export default function LookbookForm() {
     e.preventDefault();
     
     if (isSlugDuplicate) {
-      toast.error("Đường dẫn (Slug) đã tồn tại. Vui lòng thay đổi.");
+      toast.error("Đường dẫn (Slug) đã tồn tại. Vui lòng thay đổi Tên Lookbook.");
       return;
     }
 
@@ -228,7 +225,6 @@ export default function LookbookForm() {
               setFormData={setFormData} 
               categories={categories}
               isSlugDuplicate={isSlugDuplicate}
-              onSlugManualChange={() => setIsManualSlug(true)}
             />
             
             <LookbookFilterSection 
