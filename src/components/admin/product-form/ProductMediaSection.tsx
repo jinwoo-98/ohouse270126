@@ -1,6 +1,7 @@
 import { Image as ImageIcon, X, Ruler } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface ProductMediaSectionProps {
   formData: any;
@@ -24,6 +25,17 @@ export function ProductMediaSection({ formData, setFormData }: ProductMediaSecti
           <ImageIcon className="w-4 h-4" /> Hình ảnh đại diện (Ảnh chính)
         </h3>
         <ImageUpload value={formData.image_url} onChange={(url) => setFormData({...formData, image_url: url as string})} />
+        
+        <div className="space-y-2 pt-4 border-t border-dashed">
+          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Văn bản thay thế (Alt Text)</Label>
+          <Input 
+            value={formData.image_alt_text || ""} 
+            onChange={(e) => setFormData({...formData, image_alt_text: e.target.value})}
+            placeholder="Mô tả ngắn gọn hình ảnh..."
+            className="h-11 rounded-xl"
+          />
+          <p className="text-[10px] text-muted-foreground italic">Mô tả này giúp cải thiện SEO. Nếu để trống, sẽ tự động dùng tên sản phẩm.</p>
+        </div>
       </div>
 
       <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">

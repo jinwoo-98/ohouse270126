@@ -45,7 +45,7 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
       <Link to={`/san-pham/${product.slug || product.id}`} onClick={(e) => isMobile && e.preventDefault()} className="relative aspect-square overflow-hidden bg-secondary/15 shrink-0 rounded-t-2xl">
         <img 
           src={product.image_url} 
-          alt={product.name} 
+          alt={product.image_alt_text || product.name} 
           className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
         />
 

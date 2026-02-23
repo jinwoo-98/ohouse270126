@@ -211,7 +211,12 @@ export default function ProductDetailPage() {
             <div className="max-w-6xl mx-auto">
               <div className="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-20 overflow-hidden">
                 <div className="min-w-0 w-full overflow-hidden">
-                  <ProductGallery mainImage={product.image_url} galleryImages={product.gallery_urls} productName={product.name} />
+                  <ProductGallery 
+                    mainImage={product.image_url} 
+                    galleryImages={product.gallery_urls} 
+                    productName={product.name} 
+                    imageAltText={product.image_alt_text}
+                  />
                 </div>
                 <div className="min-w-0 w-full px-1 md:px-0">
                   <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />

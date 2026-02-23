@@ -142,7 +142,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 transition={{ duration: 0.3 }}
               >
                 <div className="relative aspect-square bg-secondary/20 overflow-hidden">
-                  <img src={activeImage} alt={product.name} className="w-full h-full object-cover transition-all duration-500" />
+                  <img src={activeImage} alt={product.image_alt_text || product.name} className="w-full h-full object-cover transition-all duration-500" />
                   <div className="absolute top-4 left-4">
                     <Badge variant="secondary" className="bg-primary text-white uppercase tracking-widest text-[9px] font-bold border-none px-3 py-1 shadow-sm">
                       {product.category_id?.replace(/-/g, ' ')}

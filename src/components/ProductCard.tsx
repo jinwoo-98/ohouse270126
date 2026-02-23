@@ -56,7 +56,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
               <motion.img 
                 key={activeImage}
                 src={getOptimizedImageUrl(activeImage, { width: 400 })} 
-                alt={product.name} 
+                alt={product.image_alt_text || product.name} 
                 loading="lazy"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

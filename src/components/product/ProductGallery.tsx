@@ -23,6 +23,7 @@ interface ProductGalleryProps {
   mainImage: string;
   galleryImages?: string[] | null;
   productName: string;
+  imageAltText?: string;
   hotspots?: Hotspot[];
   onHotspotClick?: (product: any) => void;
   children?: (currentImageUrl: string) => React.ReactNode;
@@ -33,7 +34,7 @@ const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
-export function ProductGallery({ mainImage, galleryImages, productName, hotspots = [], onHotspotClick, children }: ProductGalleryProps) {
+export function ProductGallery({ mainImage, galleryImages, productName, imageAltText, hotspots = [], onHotspotClick, children }: ProductGalleryProps) {
   const safeGallery = Array.isArray(galleryImages) ? galleryImages : [];
   const allImages = [mainImage, ...safeGallery].filter(Boolean);
   
@@ -113,7 +114,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, hotspots
           >
             <img
               src={getOptimizedImageUrl(currentImageUrl, { width: 800 })}
-              alt={`${productName} - Ảnh ${imageIndex + 1}`}
+              alt={imageAltText ? `${imageAltText} - Ảnh ${imageIndex + 1}` : `${productName} - Ảnh ${imageIndex + 1}`}
               className="w-full h-full object-cover pointer-events-none"
               draggable="false"
               loading={imageIndex === 0 ? "eager" : "lazy"}
@@ -197,7 +198,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, hotspots
               <img 
                 src={getOptimizedImageUrl(currentImageUrl, { width: 1200 })} 
                 className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl"
-                alt={productName}
+                alt={imageAltText || productName}
               />
               {hotspots.length > 0 && renderHotspots(true)}
             </div>

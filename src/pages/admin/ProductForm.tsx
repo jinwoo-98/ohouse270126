@@ -54,6 +54,7 @@ export default function ProductForm() {
     short_description: "",
     category_id: "",
     image_url: "",
+    image_alt_text: "",
     gallery_urls: [] as string[],
     dimension_image_url: "",
     is_featured: false,
@@ -99,7 +100,8 @@ export default function ProductForm() {
         fake_review_count: data.fake_review_count?.toString() || "0",
         fake_rating: data.fake_rating?.toString() || "5",
         perfect_match_ids: data.perfect_match_ids || [],
-        bought_together_ids: data.bought_together_ids || []
+        bought_together_ids: data.bought_together_ids || [],
+        image_alt_text: data.image_alt_text || "",
       });
 
       if (data.tier_variants_config) setTierConfig(data.tier_variants_config);
