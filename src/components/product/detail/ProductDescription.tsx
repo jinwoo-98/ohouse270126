@@ -1,18 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ProductDescriptionProps {
   description: string;
+  productName?: string; // Thêm tên sản phẩm để làm Alt tự động
 }
 
-export function ProductDescription({ description }: ProductDescriptionProps) {
+export function ProductDescription({ description, productName = "Sản phẩm" }: ProductDescriptionProps) {
   const [isDescExpanded, setIsDescExpanded] = useState(false);
-  const maxLength = 150;
-  const isLongComment = description && description.length > maxLength; // Kiểm tra độ dài nội dung
+
+  // Logic xử lý Alt ảnh tự động cho nội dung bài viết (Chiến lược 2 & 3)
+  const processedContent = useMemo(() => {
+    if (!description) return "";
+
+    // Sử dụng DOMParser để xử lý HTML an toàn
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(description, 'text/html');
+    const images = doc.querySelectorAll('img');
+
+    images.forEach((img, index) => {
+      const currentAlt = img.getAttribute('alt');
+      
+      // Nếu ảnh chưa có Alt hoặc Alt rỗng, tự động tạo Alt đa dạng
+      if (!currentAlt || currentAlt.trim() === "") {
+        img.setAttribute('alt', `${productName} - Chi tiết hình ảnh ${index + 1}`);
+      } else {
+        // Nếu đã có Alt (nhập tay), vẫn thêm hậu tố để tránh trùng lặp nếu dùng 1 Alt cho nhiều ảnh
+        img.setAttribute('alt', `${currentAlt} | ${productName} - Ảnh ${index + 1}`);
+      }
+    });
+
+    return doc.body.innerHTML;
+  }, [description, productName]);
 
   return (
     <section className="mb-20 scroll-mt-28" id="description">
@@ -32,17 +55,12 @@ export function ProductDescription({ description }: ProductDescriptionProps) {
           "max-w-none transition-all duration-1000 ease-in-out",
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
-          {/* 
-            Sử dụng rich-text-content và kết hợp flex center để đảm bảo 
-            toàn bộ nội dung từ Editor được căn giữa.
-          */}
           <div 
             className="rich-text-content flex flex-col items-center text-center prose prose-lg prose-stone max-w-none text-muted-foreground"
-            dangerouslySetInnerHTML={{ __html: description || "<p className='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
+            dangerouslySetInnerHTML={{ __html: processedContent || "<p className='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>
         
-        {/* Gradient Overlay when collapsed */}
         {!isDescExpanded && (
           <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-background via-background/90 to-transparent z-10 flex items-end justify-center pb-4"></div>
         )}
@@ -59,7 +77,6 @@ export function ProductDescription({ description }: ProductDescriptionProps) {
                 if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: 'smooth' });
               }
             }}
-            // Thay đổi rounded-full thành rounded-2xl
             className={cn(
               "btn-hero h-14 px-12 rounded-2xl font-bold shadow-gold group overflow-hidden relative transition-all active:scale-95",
               isDescExpanded ? "bg-charcoal text-white hover:bg-black" : "bg-primary text-white"

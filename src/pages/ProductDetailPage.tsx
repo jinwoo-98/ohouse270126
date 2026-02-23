@@ -229,7 +229,12 @@ export default function ProductDetailPage() {
               </div>
               
               <div className="mt-12 md:mt-24 space-y-24">
-                <div id="description"><ProductDescription description={product.description} /></div>
+                <div id="description">
+                  <ProductDescription 
+                    description={product.description} 
+                    productName={product.name} 
+                  />
+                </div>
                 
                 <div id="reviews">
                   <ProductReviews 

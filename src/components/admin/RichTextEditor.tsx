@@ -8,17 +8,17 @@ interface RichTextEditorProps {
   value: string;
   onChange: (content: string) => void;
   placeholder?: string;
+  contextTitle?: string; // Thêm tiêu đề sản phẩm để làm gợi ý Alt
 }
 
-export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, placeholder, contextTitle }: RichTextEditorProps) {
   const quillRef = useRef<ReactQuill>(null);
 
-  // Trình xử lý tải ảnh tùy chỉnh
   const imageHandler = () => {
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
     input.setAttribute('accept', 'image/*');
-    input.setAttribute('multiple', 'true'); // Cho phép chọn nhiều ảnh
+    input.setAttribute('multiple', 'true');
     input.click();
 
     input.onchange = async () => {
@@ -31,11 +31,9 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         const quill = quillRef.current?.getEditor();
         if (!quill) return;
 
-        // Lưu vị trí con trỏ hiện tại
         const range = quill.getSelection(true);
         let currentIndex = range.index;
 
-        // Hàm tải 1 file lên Supabase
         const uploadFile = async (file: File) => {
           const fileExt = file.name.split('.').pop();
           const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
@@ -45,18 +43,36 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
           return publicUrl;
         };
 
-        // Tải tất cả ảnh và giữ đúng thứ tự
+        // Tải ảnh lên
         const urls = await Promise.all(files.map(file => uploadFile(file)));
 
-        // Chèn các ảnh vào Quill theo thứ tự
-        urls.forEach(url => {
+        // Sau khi tải xong, hỏi Alt text cho từng ảnh (Chiến lược 1)
+        for (const url of urls) {
+          const manualAlt = prompt(
+            `Nhập mô tả SEO cho ảnh này:\n(Để trống để tự động dùng: ${contextTitle || 'Tên sản phẩm'})`, 
+            contextTitle || ""
+          );
+          
+          // Chèn ảnh vào editor
           quill.insertEmbed(currentIndex, 'image', url);
-          currentIndex += 1; // Di chuyển vị trí chèn cho ảnh tiếp theo
-        });
+          
+          // Nếu có nhập Alt, chúng ta sẽ tìm thẻ img vừa chèn và gán Alt
+          // Lưu ý: Quill insertEmbed không hỗ trợ gán Alt trực tiếp dễ dàng, 
+          // nên ta sẽ xử lý gán Alt vào DOM của editor ngay lập tức.
+          setTimeout(() => {
+            const images = quill.root.querySelectorAll('img');
+            const lastImg = images[images.length - 1];
+            if (lastImg && !lastImg.getAttribute('alt')) {
+              lastImg.setAttribute('alt', manualAlt || "");
+            }
+          }, 0);
+
+          currentIndex += 1;
+        }
 
         toast.success("Đã chèn ảnh thành công", { id: toastId });
       } catch (error: any) {
-        toast.error("Lỗi khi tải ảnh vào bài viết: " + error.message, { id: toastId });
+        toast.error("Lỗi khi tải ảnh: " + error.message, { id: toastId });
       }
     };
   };
@@ -76,7 +92,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         image: imageHandler
       }
     }
-  }), []);
+  }), [contextTitle]);
 
   const formats = [
     'header', 'bold', 'italic', 'underline', 'strike', 'blockquote',
