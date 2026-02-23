@@ -1,4 +1,4 @@
-import { Info, FileText } from "lucide-react";
+import { Info, FileText, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
+import { cn } from "@/lib/utils";
 
 interface ProductDetailSectionProps {
   formData: any;
@@ -19,6 +20,8 @@ interface ProductDetailSectionProps {
   availableAttributes: any[];
   productAttrs: Record<string, any>;
   handleAttributeChange: (attrId: string, value: any, isMulti: boolean) => void;
+  isSlugDuplicate?: boolean;
+  onSlugManualChange?: () => void;
 }
 
 export function ProductDetailSection({ 
@@ -26,7 +29,9 @@ export function ProductDetailSection({
   setFormData, 
   availableAttributes, 
   productAttrs, 
-  handleAttributeChange 
+  handleAttributeChange,
+  isSlugDuplicate,
+  onSlugManualChange
 }: ProductDetailSectionProps) {
   return (
     <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
@@ -46,14 +51,36 @@ export function ProductDetailSection({
       </div>
       
       <div className="space-y-2">
-        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Đường dẫn (Slug)</Label>
-        <Input 
-          value={formData.slug} 
-          onChange={(e) => setFormData({...formData, slug: e.target.value})}
-          placeholder="sofa-da-y-cao-cap"
-          className="h-11 rounded-xl font-mono text-xs"
-        />
-        <p className="text-[10px] text-muted-foreground italic">* Để trống để hệ thống tự động tạo từ tên sản phẩm.</p>
+        <Label className={cn(
+          "text-[10px] font-bold uppercase text-muted-foreground",
+          isSlugDuplicate && "text-destructive"
+        )}>
+          Đường dẫn (Slug) {isSlugDuplicate && "- ĐÃ TỒN TẠI"}
+        </Label>
+        <div className="relative">
+          <Input 
+            value={formData.slug} 
+            onChange={(e) => {
+              setFormData({...formData, slug: e.target.value});
+              if (onSlugManualChange) onSlugManualChange();
+            }}
+            placeholder="sofa-da-y-cao-cap"
+            className={cn(
+              "h-11 rounded-xl font-mono text-xs transition-all",
+              isSlugDuplicate ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "bg-secondary/30"
+            )}
+          />
+          {isSlugDuplicate && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+          )}
+        </div>
+        {isSlugDuplicate ? (
+          <p className="text-[10px] text-destructive font-bold italic">Lỗi: Slug này đã được sử dụng cho sản phẩm khác. Vui lòng chỉnh sửa.</p>
+        ) : (
+          <p className="text-[10px] text-muted-foreground italic">* Tự động tạo từ tên. Bạn có thể sửa thủ công nếu muốn.</p>
+        )}
       </div>
 
       <div className="space-y-2">

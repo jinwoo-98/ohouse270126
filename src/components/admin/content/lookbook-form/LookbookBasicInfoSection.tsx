@@ -1,18 +1,27 @@
-import { Sparkles, Eye, Copy } from "lucide-react";
+import { Sparkles, Eye, Copy, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface LookbookBasicInfoSectionProps {
   formData: any;
   setFormData: (data: any) => void;
   categories: any[];
+  isSlugDuplicate?: boolean;
+  onSlugManualChange?: () => void;
 }
 
-export function LookbookBasicInfoSection({ formData, setFormData, categories }: LookbookBasicInfoSectionProps) {
+export function LookbookBasicInfoSection({ 
+  formData, 
+  setFormData, 
+  categories,
+  isSlugDuplicate,
+  onSlugManualChange
+}: LookbookBasicInfoSectionProps) {
   const parentCategories = categories.filter(c => !c.parent_id && c.menu_location === 'main');
 
   const handleCopySlug = () => {
@@ -30,19 +39,38 @@ export function LookbookBasicInfoSection({ formData, setFormData, categories }: 
       </div>
       
       <div className="space-y-2">
-        <Label>Đường dẫn (Slug)</Label>
+        <Label className={cn(isSlugDuplicate && "text-destructive")}>
+          Đường dẫn (Slug) {isSlugDuplicate && "- ĐÃ TỒN TẠI"}
+        </Label>
         <div className="flex items-center gap-2">
-          <Input 
-            value={formData.slug} 
-            onChange={e => setFormData({...formData, slug: e.target.value})}
-            placeholder="Tự động tạo từ tên..." 
-            className="h-11 rounded-xl font-mono text-xs bg-secondary/50" 
-          />
+          <div className="relative flex-1">
+            <Input 
+              value={formData.slug} 
+              onChange={e => {
+                setFormData({...formData, slug: e.target.value});
+                if (onSlugManualChange) onSlugManualChange();
+              }}
+              placeholder="Tự động tạo từ tên..." 
+              className={cn(
+                "h-11 rounded-xl font-mono text-xs transition-all",
+                isSlugDuplicate ? "border-destructive ring-1 ring-destructive bg-destructive/5" : "bg-secondary/50"
+              )}
+            />
+            {isSlugDuplicate && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+            )}
+          </div>
           <Button type="button" size="icon" variant="outline" onClick={handleCopySlug} className="h-11 w-11 rounded-xl shrink-0">
             <Copy className="w-4 h-4" />
           </Button>
         </div>
-        <p className="text-[10px] text-muted-foreground italic">* Slug được tạo tự động từ tên. Bạn có thể sao chép hoặc chỉnh sửa thủ công.</p>
+        {isSlugDuplicate ? (
+          <p className="text-[10px] text-destructive font-bold italic">Lỗi: Slug này đã được sử dụng. Vui lòng chỉnh sửa.</p>
+        ) : (
+          <p className="text-[10px] text-muted-foreground italic">* Slug được tạo tự động từ tên. Bạn có thể sửa thủ công.</p>
+        )}
       </div>
 
       <div className="space-y-2">

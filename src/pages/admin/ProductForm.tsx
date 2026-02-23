@@ -1,28 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Save, Loader2, Info, FileText, ImageIcon, Layers, Box, Settings2, Ruler, X } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Info, FileText, ImageIcon, Layers, Box, Settings2, Ruler, X, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Select, 
-  SelectContent, 
-  SelectGroup, 
-  SelectItem, 
-  SelectLabel, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ImageUpload } from "@/components/admin/ImageUpload";
-import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
+import { slugify, cn } from "@/lib/utils";
 
-// Import các section đã tách nhỏ
+// Import các section
 import { PricingCategorySection } from "@/components/admin/product-form/PricingCategorySection";
 import { ProductVariantsSection } from "@/components/admin/product-form/ProductVariantsSection";
 import { ProductDetailSection } from "@/components/admin/product-form/ProductDetailSection";
@@ -45,6 +32,10 @@ export default function ProductForm() {
   const [variants, setVariants] = useState<any[]>([]);
   const [productAttrs, setProductAttrs] = useState<Record<string, string[]>>({});
   
+  // Slug states
+  const [isSlugDuplicate, setIsSlugDuplicate] = useState(false);
+  const [isManualSlug, setIsManualSlug] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -71,6 +62,31 @@ export default function ProductForm() {
   useEffect(() => {
     fetchInitialData();
   }, [id]);
+
+  // 1. Tự động tạo slug khi nhập tên (nếu chưa sửa thủ công)
+  useEffect(() => {
+    if (!isManualSlug && formData.name) {
+      setFormData(prev => ({ ...prev, slug: slugify(formData.name) }));
+    }
+  }, [formData.name, isManualSlug]);
+
+  // 2. Kiểm tra trùng lặp slug (Debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.slug) {
+        checkSlugUniqueness(formData.slug);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [formData.slug]);
+
+  const checkSlugUniqueness = async (slug: string) => {
+    let query = supabase.from('products').select('id').eq('slug', slug);
+    if (isEdit) query = query.neq('id', id);
+    
+    const { data } = await query.maybeSingle();
+    setIsSlugDuplicate(!!data);
+  };
 
   const fetchInitialData = async () => {
     setFetching(true);
@@ -103,6 +119,7 @@ export default function ProductForm() {
         bought_together_ids: data.bought_together_ids || [],
         image_alt_text: data.image_alt_text || "",
       });
+      setIsManualSlug(true); // Khi edit, coi như slug đã được xác định
 
       if (data.tier_variants_config) setTierConfig(data.tier_variants_config);
       
@@ -115,7 +132,6 @@ export default function ProductForm() {
       if (aRes.data) {
         const attrMap: Record<string, string[]> = {};
         aRes.data.forEach(item => {
-          // Đảm bảo giá trị luôn là mảng string khi đưa vào state
           let values: string[] = [];
           if (Array.isArray(item.value)) {
             values = item.value.filter((v: any) => typeof v === 'string');
@@ -135,12 +151,16 @@ export default function ProductForm() {
       if (isMulti) {
         return { ...prev, [attrId]: current.includes(value) ? current.filter(v => v !== value) : [...current, value] };
       }
-      // Single select: replace the array with a new array containing only the selected value
       return { ...prev, [attrId]: [value] };
     });
   };
 
   const handleSubmit = async () => {
+    if (isSlugDuplicate) {
+      toast.error("Đường dẫn (Slug) đã tồn tại. Vui lòng thay đổi để tránh lỗi hệ thống.");
+      return;
+    }
+
     if (!formData.name || !formData.category_id || !formData.price) {
       toast.error("Vui lòng nhập đầy đủ Tên, Giá và Danh mục.");
       return;
@@ -148,12 +168,8 @@ export default function ProductForm() {
 
     setLoading(true);
     
-    const slugifiedName = formData.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, '-').replace(/[^\w-]+/g, '');
-    const finalSlug = formData.slug || slugifiedName;
-
     const payload = {
       ...formData,
-      slug: finalSlug,
       price: parseFloat(formData.price) || 0,
       original_price: formData.original_price ? parseFloat(formData.original_price) : null,
       display_order: parseInt(formData.display_order),
@@ -178,14 +194,11 @@ export default function ProductForm() {
       }
 
       if (productError) throw productError;
-      if (!productId) throw new Error("Không thể lấy ID sản phẩm.");
 
       // Sync Variants
-      const { error: deleteVariantsError } = await supabase.from('product_variants').delete().eq('product_id', productId);
-      if (deleteVariantsError) throw deleteVariantsError;
-
+      await supabase.from('product_variants').delete().eq('product_id', productId);
       if (variants.length > 0) {
-        const { error: insertVariantsError } = await supabase.from('product_variants').insert(variants.map(v => ({
+        await supabase.from('product_variants').insert(variants.map(v => ({
           product_id: productId,
           tier_values: v.tier_values,
           price: parseFloat(v.price),
@@ -193,13 +206,10 @@ export default function ProductForm() {
           stock: parseInt(v.stock),
           sku: v.sku
         })));
-        if (insertVariantsError) throw insertVariantsError;
       }
 
       // Sync Attributes
-      const { error: deleteAttrsError } = await supabase.from('product_attributes').delete().eq('product_id', productId);
-      if (deleteAttrsError) throw deleteAttrsError;
-
+      await supabase.from('product_attributes').delete().eq('product_id', productId);
       const attrPayloads = Object.entries(productAttrs)
         .filter(([, values]) => values.length > 0)
         .map(([attrId, values]) => ({
@@ -209,14 +219,12 @@ export default function ProductForm() {
         }));
         
       if (attrPayloads.length > 0) {
-        const { error: insertAttrsError } = await supabase.from('product_attributes').insert(attrPayloads);
-        if (insertAttrsError) throw insertAttrsError;
+        await supabase.from('product_attributes').insert(attrPayloads);
       }
 
       toast.success("Đã lưu sản phẩm thành công!");
       navigate("/admin/products");
     } catch (error: any) {
-      console.error("Supabase error:", error);
       toast.error("Lỗi khi lưu sản phẩm: " + error.message);
     } finally {
       setLoading(false);
@@ -232,7 +240,11 @@ export default function ProductForm() {
           <Button variant="outline" size="icon" className="rounded-xl" asChild><Link to="/admin/products"><ArrowLeft className="w-4 h-4" /></Link></Button>
           <h1 className="text-2xl font-bold">{isEdit ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}</h1>
         </div>
-        <Button onClick={handleSubmit} disabled={loading} className="btn-hero px-10 rounded-xl shadow-gold">
+        <Button 
+          onClick={handleSubmit} 
+          disabled={loading || isSlugDuplicate} 
+          className={cn("btn-hero px-10 rounded-xl shadow-gold", isSlugDuplicate && "opacity-50 cursor-not-allowed")}
+        >
           {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Lưu toàn bộ
         </Button>
       </div>
@@ -287,7 +299,15 @@ export default function ProductForm() {
           <TabsContent value="media" className="space-y-8 outline-none">
             <div className="grid lg:grid-cols-3 gap-8">
                <div className="lg:col-span-2">
-                  <ProductDetailSection formData={formData} setFormData={setFormData} availableAttributes={allAttributes} productAttrs={productAttrs} handleAttributeChange={handleAttributeChange} />
+                  <ProductDetailSection 
+                    formData={formData} 
+                    setFormData={setFormData} 
+                    availableAttributes={allAttributes} 
+                    productAttrs={productAttrs} 
+                    handleAttributeChange={handleAttributeChange}
+                    isSlugDuplicate={isSlugDuplicate}
+                    onSlugManualChange={() => setIsManualSlug(true)}
+                  />
                </div>
                <div className="lg:col-span-1">
                   <ProductMediaSection formData={formData} setFormData={setFormData} />

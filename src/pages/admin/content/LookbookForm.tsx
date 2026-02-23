@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { slugify } from "@/lib/utils"; // Import slugify
+import { slugify, cn } from "@/lib/utils";
 
 // Import các components
 import { LookbookBasicInfoSection } from "@/components/admin/content/lookbook-form/LookbookBasicInfoSection";
@@ -26,6 +26,10 @@ export default function LookbookForm() {
   
   const [lookbookFilters, setLookbookFilters] = useState<any[]>([]);
 
+  // Slug states
+  const [isSlugDuplicate, setIsSlugDuplicate] = useState(false);
+  const [isManualSlug, setIsManualSlug] = useState(false);
+
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
@@ -42,6 +46,31 @@ export default function LookbookForm() {
   useEffect(() => {
     fetchInitialData();
   }, [id]);
+
+  // 1. Tự động tạo slug khi nhập tiêu đề
+  useEffect(() => {
+    if (!isManualSlug && formData.title) {
+      setFormData(prev => ({ ...prev, slug: slugify(formData.title) }));
+    }
+  }, [formData.title, isManualSlug]);
+
+  // 2. Kiểm tra trùng lặp slug (Debounced)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.slug) {
+        checkSlugUniqueness(formData.slug);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [formData.slug]);
+
+  const checkSlugUniqueness = async (slug: string) => {
+    let query = supabase.from('shop_looks').select('id').eq('slug', slug);
+    if (isEdit) query = query.neq('id', id);
+    
+    const { data } = await query.maybeSingle();
+    setIsSlugDuplicate(!!data);
+  };
 
   const fetchInitialData = async () => {
     setLoading(true);
@@ -86,7 +115,7 @@ export default function LookbookForm() {
 
     setFormData({
       title: lookData.title,
-      slug: lookData.slug || slugify(lookData.title), // Ensure slug exists for old data
+      slug: lookData.slug || slugify(lookData.title),
       category_id: lookData.category_id,
       image_url: lookData.image_url,
       gallery_urls: lookData.gallery_urls || [],
@@ -96,12 +125,19 @@ export default function LookbookForm() {
       material: lookData.material || "none",
       color: lookData.color || "none",
     });
+    setIsManualSlug(true);
     setLookItems(lookData.shop_look_items || []);
     setActiveEditingImage(lookData.image_url);
   };
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (isSlugDuplicate) {
+      toast.error("Đường dẫn (Slug) đã tồn tại. Vui lòng thay đổi.");
+      return;
+    }
+
     setSaving(true);
     
     if (!formData.title) { toast.error("Vui lòng nhập tên Lookbook"); setSaving(false); return; }
@@ -110,7 +146,7 @@ export default function LookbookForm() {
 
     const payload = {
       title: formData.title,
-      slug: formData.slug || slugify(formData.title),
+      slug: formData.slug,
       category_id: formData.category_id,
       image_url: formData.image_url,
       gallery_urls: formData.gallery_urls,
@@ -121,51 +157,31 @@ export default function LookbookForm() {
       color: formData.color === 'none' ? null : formData.color,
     };
 
-    let lookId = id;
-    let lookResult = null;
-    let lookError = null;
-
-    if (isEdit) {
-      const { data, error } = await supabase.from('shop_looks').update(payload).eq('id', id).select().single();
-      lookResult = data;
-      lookError = error;
-    } else {
-      const { data, error } = await supabase.from('shop_looks').insert(payload).select().single();
-      lookResult = data;
-      lookError = error;
-    }
-
-    if (lookError || !lookResult) {
-      console.error("Supabase error:", lookError);
-      toast.error("Lỗi lưu Lookbook: " + lookError?.message);
-      setSaving(false);
-      return;
-    }
-    
-    lookId = lookResult.id;
-
     try {
-      if (lookId) {
-        const { error: deleteError } = await supabase.from('shop_look_items').delete().eq('look_id', lookId);
-        if (deleteError) throw deleteError;
+      let lookId = id;
+      const { data: lookResult, error: lookError } = isEdit 
+        ? await supabase.from('shop_looks').update(payload).eq('id', id).select().single()
+        : await supabase.from('shop_looks').insert(payload).select().single();
 
-        if (lookItems.length > 0) {
-          const itemsToInsert = lookItems.map((item) => ({
-            look_id: lookId,
-            product_id: item.product_id,
-            x_position: item.x_position,
-            y_position: item.y_position,
-            target_image_url: item.target_image_url,
-          }));
-          const { error: insertError } = await supabase.from('shop_look_items').insert(itemsToInsert);
-          if (insertError) throw insertError;
-        }
+      if (lookError || !lookResult) throw lookError;
+      lookId = lookResult.id;
+
+      await supabase.from('shop_look_items').delete().eq('look_id', lookId);
+      if (lookItems.length > 0) {
+        const itemsToInsert = lookItems.map((item) => ({
+          look_id: lookId,
+          product_id: item.product_id,
+          x_position: item.x_position,
+          y_position: item.y_position,
+          target_image_url: item.target_image_url,
+        }));
+        await supabase.from('shop_look_items').insert(itemsToInsert);
       }
+      
       toast.success("Đã lưu thành công!");
       navigate("/admin/content/looks");
-    } catch (itemError: any) {
-      console.error("Supabase item error:", itemError);
-      toast.error("Lỗi lưu sản phẩm gắn thẻ: " + itemError.message);
+    } catch (err: any) {
+      toast.error("Lỗi lưu dữ liệu: " + err.message);
     } finally {
       setSaving(false);
     }
@@ -192,7 +208,12 @@ export default function LookbookForm() {
           <Button variant="outline" size="icon" className="rounded-xl" asChild><Link to="/admin/content/looks"><ArrowLeft className="w-4 h-4" /></Link></Button>
           <h1 className="text-2xl font-bold">{isEdit ? "Chỉnh sửa Lookbook" : "Tạo Lookbook mới"}</h1>
         </div>
-        <Button type="submit" form="lookbook-form" disabled={saving} className="btn-hero px-10 rounded-xl shadow-gold">
+        <Button 
+          type="submit" 
+          form="lookbook-form" 
+          disabled={saving || isSlugDuplicate} 
+          className={cn("btn-hero px-10 rounded-xl shadow-gold", isSlugDuplicate && "opacity-50 cursor-not-allowed")}
+        >
           {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Lưu Lookbook
         </Button>
       </div>
@@ -203,7 +224,9 @@ export default function LookbookForm() {
             <LookbookBasicInfoSection 
               formData={formData} 
               setFormData={setFormData} 
-              categories={categories} 
+              categories={categories}
+              isSlugDuplicate={isSlugDuplicate}
+              onSlugManualChange={() => setIsManualSlug(true)}
             />
             
             <LookbookFilterSection 
@@ -229,11 +252,6 @@ export default function LookbookForm() {
               setActiveEditingImage={setActiveEditingImage}
             />
           </div>
-        </div>
-        <div className="flex justify-end pt-4 border-t border-border/50">
-          <Button type="submit" disabled={saving} className="btn-hero h-12 px-8 shadow-gold">
-            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Lưu Lookbook
-          </Button>
         </div>
       </form>
     </div>
