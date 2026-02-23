@@ -140,14 +140,14 @@ export function Footer() {
                   {footerLinks.about.map(l => <li key={l.name}><Link to={l.href} className="text-muted-foreground hover:text-primary transition-colors">{l.name}</Link></li>)}
                 </ul>
                 
-                {/* Logo Bộ Công Thương ở Desktop - Đã thu nhỏ kích thước */}
+                {/* Logo Bộ Công Thương ở Desktop - Đã tăng kích thước */}
                 {settings?.moit_url && (
                   <div className="pt-4">
                     <a href={settings.moit_url} target="_blank" rel="noopener noreferrer" className="inline-block transition-opacity hover:opacity-80">
                       <img 
                         src={settings.moit_logo_url || "https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/logo-bo-cong-thuong.png"} 
                         alt="Chứng nhận Bộ Công Thương" 
-                        className="h-10 w-auto object-contain"
+                        className="h-14 w-auto object-contain"
                       />
                     </a>
                   </div>
@@ -177,14 +177,14 @@ export function Footer() {
               <AccordionTrigger className="text-[10px] font-bold uppercase tracking-widest text-primary hover:no-underline py-4">Về Chúng Tôi</AccordionTrigger>
               <AccordionContent>
                 <ul className="space-y-4 pb-6">{footerLinks.about.map(l => <li key={l.name}><Link to={l.href} className="text-muted-foreground block text-sm">{l.name}</Link></li>)}</ul>
-                {/* Logo Bộ Công Thương ở Mobile - Đã thu nhỏ kích thước */}
+                {/* Logo Bộ Công Thương ở Mobile - Đã tăng kích thước */}
                 {settings?.moit_url && (
                   <div className="pb-4">
                     <a href={settings.moit_url} target="_blank" rel="noopener noreferrer" className="inline-block">
                       <img 
                         src={settings.moit_logo_url || "https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/logo-bo-cong-thuong.png"} 
                         alt="Chứng nhận Bộ Công Thương" 
-                        className="h-8 w-auto object-contain"
+                        className="h-12 w-auto object-contain"
                       />
                     </a>
                   </div>

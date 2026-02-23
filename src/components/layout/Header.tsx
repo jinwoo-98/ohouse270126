@@ -78,7 +78,7 @@ export function Header() {
 
             <Link to="/trangchu" className="flex items-center flex-shrink-0">
               {logoUrl ? (
-                <img src={logoUrl} alt="OHOUSE" className="h-7 md:h-10 w-auto object-contain" />
+                <img src={logoUrl} alt="OHOUSE" className="h-7 md:h-9 w-auto object-contain" />
               ) : (
                 <div className="flex flex-col items-center">
                   <span className="text-2xl md:text-3xl font-bold tracking-tight text-charcoal leading-none">OHOUSE</span>
