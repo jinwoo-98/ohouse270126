@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import { getOptimizedImageUrl, formatPrice } from "@/lib/utils";
 
 interface Product {
   id: string | number;
@@ -24,10 +25,6 @@ export function RecentlyViewed() {
 
   if (products.length === 0) return null;
 
-  function formatPrice(price: number) {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
-  }
-
   return (
     <section className="py-12 border-t">
       <div className="container-luxury">
@@ -38,7 +35,7 @@ export function RecentlyViewed() {
               <div className="bg-card rounded-lg overflow-hidden border border-border/50 transition-shadow hover:shadow-subtle">
                 <div className="aspect-square overflow-hidden">
                   <img 
-                    src={product.image} 
+                    src={getOptimizedImageUrl(product.image, { width: 300 })} 
                     alt={product.name} 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                   />

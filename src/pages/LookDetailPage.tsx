@@ -17,6 +17,7 @@ import { LookbookCTAFilters } from "@/components/inspiration/LookbookCTAFilters"
 import { LookProductHorizontalScroll } from "@/components/inspiration/LookProductHorizontalScroll";
 import { LookProductVerticalList } from "@/components/inspiration/LookProductFullList";
 import { Button } from "@/components/ui/button";
+import { Helmet } from "react-helmet-async";
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -48,16 +49,13 @@ export default function LookDetailPage() {
     `;
 
     try {
-      // Kiểm tra xem id có phải là định dạng UUID hợp lệ không
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id || "");
       
       let query = supabase.from('shop_looks').select(selectQuery);
       
       if (isUuid) {
-        // Nếu là UUID, tìm theo ID hoặc Slug (đề phòng slug trùng UUID)
         query = query.or(`id.eq.${id},slug.eq.${id}`);
       } else {
-        // Nếu không phải UUID, chắc chắn là tìm theo Slug
         query = query.eq('slug', id);
       }
 
@@ -66,7 +64,6 @@ export default function LookDetailPage() {
       if (error) {
         console.error("Supabase Error:", error);
         setErrorDetail(error.message);
-        toast.error(`Lỗi truy vấn: ${error.message}`);
         return;
       }
 
@@ -140,116 +137,125 @@ export default function LookDetailPage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
-      <Header />
-      <main className="flex-1">
-        <div className="bg-secondary/50 py-3 border-b border-border/40">
-          <div className="container-luxury flex items-center gap-2 text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
-            <ChevronRight className="w-3 h-3" />
-            <Link to="/cam-hung" className="hover:text-primary transition-colors">Cảm hứng</Link>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-foreground truncate">{look.title}</span>
-          </div>
-        </div>
-
-        <div className="container-luxury py-8 md:py-12">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center max-w-4xl mx-auto mb-12"
-          >
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-charcoal">{look.title}</h1>
-            <p className="text-muted-foreground">
-              {`Khám phá ${visibleItems.length} sản phẩm trong không gian này và thêm vào giỏ hàng của bạn.`}
-            </p>
-          </motion.div>
-
-          <div className="grid lg:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto">
-            <div className="lg:col-span-2 min-w-0 w-full overflow-hidden">
-              <ProductGallery 
-                mainImage={look.image_url} 
-                galleryImages={look.gallery_urls} 
-                productName={look.title} 
-                hotspots={lookHotspots}
-                onHotspotClick={setQuickViewProduct}
-              >
-                {(currentImageUrl) => {
-                  useEffect(() => {
-                    setCurrentImage(currentImageUrl);
-                  }, [currentImageUrl]);
-                  return null;
-                }}
-              </ProductGallery>
+    <>
+      <Helmet>
+        <title>{`${look.title} | Cảm Hứng OHOUSE`}</title>
+        <meta name="description" content={`Khám phá không gian ${look.title} với các sản phẩm nội thất cao cấp từ OHOUSE. Ý tưởng thiết kế sang trọng cho ngôi nhà của bạn.`} />
+        <meta property="og:title" content={look.title} />
+        <meta property="og:image" content={look.image_url} />
+        <meta property="og:type" content="website" />
+      </Helmet>
+      <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
+        <Header />
+        <main className="flex-1">
+          <div className="bg-secondary/50 py-3 border-b border-border/40">
+            <div className="container-luxury flex items-center gap-2 text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
+              <ChevronRight className="w-3 h-3" />
+              <Link to="/cam-hung" className="hover:text-primary transition-colors">Cảm hứng</Link>
+              <ChevronRight className="w-3 h-3" />
+              <span className="text-foreground truncate">{look.title}</span>
             </div>
+          </div>
 
+          <div className="container-luxury py-8 md:py-12">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center max-w-4xl mx-auto mb-12"
+            >
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 text-charcoal">{look.title}</h1>
+              <p className="text-muted-foreground">
+                {`Khám phá ${visibleItems.length} sản phẩm trong không gian này và thêm vào giỏ hàng của bạn.`}
+              </p>
+            </motion.div>
+
+            <div className="grid lg:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto">
+              <div className="lg:col-span-2 min-w-0 w-full overflow-hidden">
+                <ProductGallery 
+                  mainImage={look.image_url} 
+                  galleryImages={look.gallery_urls} 
+                  productName={look.title} 
+                  hotspots={lookHotspots}
+                  onHotspotClick={setQuickViewProduct}
+                >
+                  {(currentImageUrl) => {
+                    useEffect(() => {
+                      setCurrentImage(currentImageUrl);
+                    }, [currentImageUrl]);
+                    return null;
+                  }}
+                </ProductGallery>
+              </div>
+
+              {visibleItems.length > 0 && (
+                <div className="lg:col-span-1 min-w-0 w-full hidden lg:block">
+                  <LookProductList products={lookbookProducts} onQuickView={setQuickViewProduct} />
+                </div>
+              )}
+            </div>
+            
             {visibleItems.length > 0 && (
-              <div className="lg:col-span-1 min-w-0 w-full hidden lg:block">
-                <LookProductList products={lookbookProducts} onQuickView={setQuickViewProduct} />
+              <div className="mt-12 lg:hidden">
+                <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest container-luxury px-0">Sản phẩm trong không gian</h2>
+                <LookProductHorizontalScroll products={lookbookProducts} onQuickView={setQuickViewProduct} />
               </div>
             )}
-          </div>
-          
-          {visibleItems.length > 0 && (
-            <div className="mt-12 lg:hidden">
-              <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest container-luxury px-0">Sản phẩm trong không gian</h2>
-              <LookProductHorizontalScroll products={lookbookProducts} onQuickView={setQuickViewProduct} />
-            </div>
-          )}
-          
-          <section className="mt-20">
-            <h2 className="text-2xl font-bold uppercase tracking-widest mb-8 text-charcoal text-center">SẢN PHẨM TƯƠNG TỰ</h2>
             
-            <div className="flex flex-wrap gap-3 mb-8 justify-center">
-              <Button
-                variant={activeCategorySlug === 'all' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveCategorySlug('all')}
-                className={cn(
-                  "h-10 rounded-2xl px-6 text-xs font-bold uppercase tracking-widest",
-                  activeCategorySlug === 'all' ? "btn-hero shadow-gold" : "border-border/60 hover:bg-secondary/50"
-                )}
-              >
-                Tất Cả ({lookbookProducts.length})
-              </Button>
-              {categories.map(cat => (
+            <section className="mt-20">
+              <h2 className="text-2xl font-bold uppercase tracking-widest mb-8 text-charcoal text-center">SẢN PHẨM TƯƠNG TỰ</h2>
+              
+              <div className="flex flex-wrap gap-3 mb-8 justify-center">
                 <Button
-                  key={cat.slug}
-                  variant={activeCategorySlug === cat.slug ? 'default' : 'outline'}
+                  variant={activeCategorySlug === 'all' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setActiveCategorySlug(cat.slug)}
+                  onClick={() => setActiveCategorySlug('all')}
                   className={cn(
                     "h-10 rounded-2xl px-6 text-xs font-bold uppercase tracking-widest",
-                    activeCategorySlug === cat.slug ? "btn-hero shadow-gold" : "border-border/60 hover:bg-secondary/50"
+                    activeCategorySlug === 'all' ? "btn-hero shadow-gold" : "border-border/60 hover:bg-secondary/50"
                   )}
                 >
-                  {cat.name}
+                  Tất Cả ({lookbookProducts.length})
                 </Button>
-              ))}
-            </div>
+                {categories.map(cat => (
+                  <Button
+                    key={cat.slug}
+                    variant={activeCategorySlug === cat.slug ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setActiveCategorySlug(cat.slug)}
+                    className={cn(
+                      "h-10 rounded-2xl px-6 text-xs font-bold uppercase tracking-widest",
+                      activeCategorySlug === cat.slug ? "btn-hero shadow-gold" : "border-border/60 hover:bg-secondary/50"
+                    )}
+                  >
+                    {cat.name}
+                  </Button>
+                ))}
+              </div>
+              
+              {isLoadingSimilar ? (
+                <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+              ) : similarProducts.length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground italic">Không tìm thấy sản phẩm tương tự trong danh mục này.</div>
+              ) : (
+                <LookProductVerticalList 
+                  products={similarProducts} 
+                  title=""
+                  onQuickView={setQuickViewProduct} 
+                />
+              )}
+            </section>
             
-            {isLoadingSimilar ? (
-              <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-            ) : similarProducts.length === 0 ? (
-              <div className="text-center py-10 text-muted-foreground italic">Không tìm thấy sản phẩm tương tự trong danh mục này.</div>
-            ) : (
-              <LookProductVerticalList 
-                products={similarProducts} 
-                title=""
-                onQuickView={setQuickViewProduct} 
-              />
+            {!isLoadingSimilarLooks && similarLookbooks.length > 0 && (
+              <SimilarLookbooks lookbooks={similarLookbooks} title="COMBO TƯƠNG TỰ KHÁC" onQuickView={setQuickViewProduct} />
             )}
-          </section>
+          </div>
           
-          {!isLoadingSimilarLooks && similarLookbooks.length > 0 && (
-            <SimilarLookbooks lookbooks={similarLookbooks} title="COMBO TƯƠNG TỰ KHÁC" onQuickView={setQuickViewProduct} />
-          )}
-        </div>
-        
-        <LookbookCTAFilters />
-      </main>
-      <Footer />
-      <QuickViewSheet product={quickViewProduct} isOpen={!!quickViewProduct} onClose={() => setQuickViewProduct(null)} />
-    </div>
+          <LookbookCTAFilters />
+        </main>
+        <Footer />
+        <QuickViewSheet product={quickViewProduct} isOpen={!!quickViewProduct} onClose={() => setQuickViewProduct(null)} />
+      </div>
+    </>
   );
 }
