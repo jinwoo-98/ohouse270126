@@ -73,12 +73,12 @@ export function Header() {
         shouldBeFixed ? "fixed top-0 z-[100] shadow-lg" : "relative lg:shadow-sm"
       )}>
         <div className="container-luxury">
-          <div className="flex items-center justify-between h-12 md:h-14 gap-4">
+          <div className="flex items-center justify-between h-12 md:h-16 gap-4">
             <HeaderSearch onOpenMobileMenu={() => setIsMobileMenuOpen(true)} />
 
             <Link to="/trangchu" className="flex items-center flex-shrink-0">
               {logoUrl ? (
-                <img src={logoUrl} alt="OHOUSE" className="h-6 md:h-8 w-auto object-contain" />
+                <img src={logoUrl} alt="OHOUSE" className="h-7 md:h-10 w-auto object-contain" />
               ) : (
                 <div className="flex flex-col items-center">
                   <span className="text-2xl md:text-3xl font-bold tracking-tight text-charcoal leading-none">OHOUSE</span>
