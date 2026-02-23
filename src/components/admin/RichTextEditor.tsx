@@ -94,7 +94,7 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
   ];
 
   return (
-    <div className="bg-white border rounded-xl overflow-hidden flex flex-col shadow-sm">
+    <div className="rich-editor-wrapper bg-white border rounded-xl overflow-hidden shadow-sm">
       <ReactQuill 
         ref={quillRef}
         theme="snow"
@@ -103,53 +103,71 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
         modules={modules}
         formats={formats}
         placeholder={placeholder}
-        className="flex-1 flex flex-col"
       />
       <style>{`
-        /* Container chính của Quill */
-        .quill { 
-          display: flex; 
-          flex-direction: column; 
-          height: 550px; /* Chiều cao tổng thể của khung soạn thảo */
-        }
-        
-        /* Thanh công cụ (Toolbar) */
-        .ql-toolbar.ql-snow { 
-          border: none; 
-          border-bottom: 1px solid #f0f0f0; 
-          padding: 12px; 
-          background: #fafafa;
-          flex-shrink: 0; /* Không cho phép co lại */
-        }
-        
-        /* Vùng chứa nội dung (Editor area) */
-        .ql-container.ql-snow { 
-          border: none; 
-          flex: 1; /* Chiếm toàn bộ không gian còn lại */
-          overflow-y: auto; /* Cho phép cuộn nội dung bên trong */
-          font-family: 'Montserrat', sans-serif; 
-          font-size: 14px; 
-        }
-        
-        /* Tùy chỉnh thanh cuộn cho vùng soạn thảo */
-        .ql-container::-webkit-scrollbar {
-          width: 6px;
-        }
-        .ql-container::-webkit-scrollbar-thumb {
-          background: #e2e8f0;
-          border-radius: 10px;
-        }
-        .ql-container::-webkit-scrollbar-thumb:hover {
-          background: #cbd5e1;
+        /* Ép buộc khung editor có chiều cao cố định và không được giãn ra */
+        .rich-editor-wrapper .quill {
+          height: 550px !important;
+          display: flex !important;
+          flex-direction: column !important;
         }
 
-        .ql-editor {
-          min-height: 100%;
-          padding: 20px;
+        /* Cố định thanh công cụ ở trên cùng */
+        .rich-editor-wrapper .ql-toolbar.ql-snow {
+          flex-shrink: 0 !important;
+          border: none !important;
+          border-bottom: 1px solid #f0f0f0 !important;
+          background: #fafafa !important;
+          z-index: 10 !important;
+        }
+
+        /* Cho phép vùng nội dung tự co giãn và xuất hiện thanh cuộn riêng */
+        .rich-editor-wrapper .ql-container.ql-snow {
+          flex-grow: 1 !important;
+          overflow-y: auto !important;
+          border: none !important;
+          display: flex !important;
+          flex-direction: column !important;
+          height: auto !important; /* Quan trọng: để flex-grow hoạt động */
+        }
+
+        /* Đảm bảo vùng soạn thảo chiếm hết diện tích container */
+        .rich-editor-wrapper .ql-editor {
+          flex-grow: 1 !important;
+          min-height: 100% !important;
+          padding: 25px !important;
+          font-family: 'Montserrat', sans-serif !important;
+          font-size: 14px !important;
+          line-height: 1.6 !important;
+        }
+
+        /* Tùy chỉnh thanh cuộn cho đẹp và dễ nhìn */
+        .rich-editor-wrapper .ql-container::-webkit-scrollbar {
+          width: 8px;
+        }
+        .rich-editor-wrapper .ql-container::-webkit-scrollbar-track {
+          background: #f1f1f1;
+        }
+        .rich-editor-wrapper .ql-container::-webkit-scrollbar-thumb {
+          background: #ccc;
+          border-radius: 10px;
+        }
+        .rich-editor-wrapper .ql-container::-webkit-scrollbar-thumb:hover {
+          background: #b08d55;
+        }
+
+        .rich-editor-wrapper .ql-editor img { 
+          max-width: 100%; 
+          border-radius: 12px; 
+          margin: 15px 0; 
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         
-        .ql-editor a { color: #b08d55 !important; text-decoration: underline !important; font-weight: bold; }
-        .ql-editor img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
+        .rich-editor-wrapper .ql-editor a { 
+          color: #b08d55 !important; 
+          text-decoration: underline !important; 
+          font-weight: bold; 
+        }
       `}</style>
     </div>
   );
