@@ -20,12 +20,15 @@ export function useSeo(overrides?: SeoData) {
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
 
+  const currentUrl = window.location.origin + window.location.pathname;
+
   const finalSeo = {
     title: overrides?.title || globalSettings?.meta_title || "OHOUSE - Nội Thất Cao Cấp",
     description: overrides?.description || globalSettings?.meta_description || "Thương hiệu nội thất cao cấp hàng đầu Việt Nam.",
     image: overrides?.image || globalSettings?.og_image_url || "/og-image.jpg",
     type: overrides?.type || 'website',
-    url: overrides?.url || window.location.href,
+    url: overrides?.url || currentUrl,
+    canonical: currentUrl, // Thẻ canonical tự động
     structuredData: globalSettings?.structured_data,
     favicon: globalSettings?.favicon_url
   };
