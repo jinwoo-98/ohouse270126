@@ -26,12 +26,12 @@ export function slugify(text: string) {
 
 /**
  * Generates a smart, unique SEO-friendly alt text for product images.
- * Structure: [Name] - [Category] - [Attributes] - [Unique Suffix]
+ * Structure: [Manual Alt or (Name - Category - Attr)] | [Short ID] - [Index]
  */
 export function generateProductAltText(product: any, index: number = 0) {
   if (!product) return "Nội thất cao cấp OHOUSE";
   
-  // 1. Lấy phần thân (Base Text)
+  // 1. Lấy phần nội dung mô tả (Base Text)
   let baseText = product.image_alt_text;
 
   if (!baseText) {
@@ -43,29 +43,21 @@ export function generateProductAltText(product: any, index: number = 0) {
       parts.push(catName);
     }
     
-    // Lấy thuộc tính (ưu tiên chất liệu hoặc phong cách có sẵn trong object)
+    // Lấy thuộc tính từ các trường có sẵn
     if (product.material) parts.push(product.material);
     else if (product.style) parts.push(product.style);
 
     baseText = parts.join(' - ');
   }
 
-  // 2. Tạo hậu tố chống trùng lặp (Unique Suffix)
-  // Giúp mỗi bức ảnh trong gallery có một alt riêng biệt dù cùng 1 sản phẩm
-  const suffixes = [
-    "", // Ảnh chính không cần hậu tố
-    "góc nhìn nghiêng",
-    "chi tiết thiết kế",
-    "phối cảnh không gian",
-    "cận cảnh chất liệu",
-    "kích thước thực tế",
-    "góc nhìn từ trên",
-    "hoàn thiện bề mặt"
-  ];
-
-  const suffix = suffixes[index] || `hình ảnh số ${index + 1}`;
+  // 2. Tạo hậu tố định danh để đảm bảo tính chính xác và duy nhất
+  // Sử dụng 5 ký tự đầu của ID sản phẩm để phân biệt với các sản phẩm trùng tên
+  const shortId = product.id ? product.id.toString().substring(0, 5).toUpperCase() : "";
   
-  return suffix ? `${baseText} - ${suffix}` : baseText;
+  // Tạo chuỗi định danh: "Mã: ABCDE - Ảnh 1"
+  const identifier = `| Mã: ${shortId} - Ảnh ${index + 1}`;
+  
+  return `${baseText} ${identifier}`.trim();
 }
 
 /**

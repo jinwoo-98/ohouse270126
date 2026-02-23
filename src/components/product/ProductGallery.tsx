@@ -27,7 +27,7 @@ interface ProductGalleryProps {
   hotspots?: Hotspot[];
   onHotspotClick?: (product: any) => void;
   children?: (currentImageUrl: string) => React.ReactNode;
-  product?: any; // Thêm prop product để lấy thông tin đầy đủ cho SEO
+  product?: any; 
 }
 
 const swipeConfidenceThreshold = 10000;
@@ -45,8 +45,8 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
   const imageIndex = page % allImages.length;
   const currentImageUrl = allImages[imageIndex];
 
-  // Tạo alt text thông minh dựa trên index của ảnh hiện tại
-  const currentAlt = generateProductAltText(product || { name: productName, image_alt_text: imageAltText }, imageIndex);
+  // Sử dụng logic mới: Tên - Danh mục - Thuộc tính | Mã SP - Ảnh X
+  const currentAlt = generateProductAltText(product || { name: productName, id: 'GALLERY', image_alt_text: imageAltText }, imageIndex);
 
   const paginate = (newDirection: number) => {
     if (allImages.length <= 1) return;
@@ -180,7 +180,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
                   : "border-transparent opacity-50 hover:opacity-100"
               )}
             >
-              <img src={getOptimizedImageUrl(img, { width: 150 })} alt={generateProductAltText(product || { name: productName }, idx)} className="w-full h-full object-cover" />
+              <img src={getOptimizedImageUrl(img, { width: 150 })} alt={generateProductAltText(product || { name: productName, id: 'THUMB' }, idx)} className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
