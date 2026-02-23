@@ -7,7 +7,6 @@ import { FlashSale } from "@/components/home/FlashSale";
 import { ShopTheLook } from "@/components/home/ShopTheLook";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { TrendingSearch } from "@/components/home/TrendingSearch";
-import { BrandPromise } from "@/components/home/BrandPromise";
 
 const Index = () => {
   return (
@@ -23,7 +22,6 @@ const Index = () => {
           <ShopTheLook />
           <FeaturedProducts />
           <TrendingSearch />
-          <BrandPromise />
         </div>
       </main>
 
