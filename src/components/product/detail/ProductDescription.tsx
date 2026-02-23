@@ -3,39 +3,33 @@
 import { useState, useMemo } from "react";
 import { ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, generateProductAltText } from "@/lib/utils";
 
 interface ProductDescriptionProps {
   description: string;
-  productName?: string; // Thêm tên sản phẩm để làm Alt tự động
+  product?: any; // Nhận toàn bộ object product để lấy danh mục và thuộc tính
 }
 
-export function ProductDescription({ description, productName = "Sản phẩm" }: ProductDescriptionProps) {
+export function ProductDescription({ description, product }: ProductDescriptionProps) {
   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
-  // Logic xử lý Alt ảnh tự động cho nội dung bài viết (Chiến lược 2 & 3)
+  // Logic xử lý Alt ảnh tự động cho nội dung bài viết
   const processedContent = useMemo(() => {
     if (!description) return "";
 
-    // Sử dụng DOMParser để xử lý HTML an toàn
     const parser = new DOMParser();
     const doc = parser.parseFromString(description, 'text/html');
     const images = doc.querySelectorAll('img');
 
     images.forEach((img, index) => {
-      const currentAlt = img.getAttribute('alt');
-      
-      // Nếu ảnh chưa có Alt hoặc Alt rỗng, tự động tạo Alt đa dạng
-      if (!currentAlt || currentAlt.trim() === "") {
-        img.setAttribute('alt', `${productName} - Chi tiết hình ảnh ${index + 1}`);
-      } else {
-        // Nếu đã có Alt (nhập tay), vẫn thêm hậu tố để tránh trùng lặp nếu dùng 1 Alt cho nhiều ảnh
-        img.setAttribute('alt', `${currentAlt} | ${productName} - Ảnh ${index + 1}`);
-      }
+      // Luôn tạo Alt mới theo công thức chuẩn để đảm bảo tính chính xác và SEO
+      // Tên - Danh mục - Thuộc tính - Số thứ tự
+      const newAlt = generateProductAltText(product, index);
+      img.setAttribute('alt', newAlt);
     });
 
     return doc.body.innerHTML;
-  }, [description, productName]);
+  }, [description, product]);
 
   return (
     <section className="mb-20 scroll-mt-28" id="description">

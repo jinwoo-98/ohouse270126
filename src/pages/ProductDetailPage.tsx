@@ -232,7 +232,7 @@ export default function ProductDetailPage() {
                 <div id="description">
                   <ProductDescription 
                     description={product.description} 
-                    productName={product.name} 
+                    product={product} 
                   />
                 </div>
                 

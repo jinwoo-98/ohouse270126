@@ -26,38 +26,40 @@ export function slugify(text: string) {
 
 /**
  * Generates a smart, unique SEO-friendly alt text for product images.
- * Structure: [Manual Alt or (Name - Category - Attr)] | [Short ID] - [Index]
+ * Structure: [Name] - [Category] - [Attribute/Variant] - [Index]
  */
 export function generateProductAltText(product: any, index: number = 0) {
   if (!product) return "Nội thất cao cấp OHOUSE";
   
-  // 1. Lấy phần nội dung mô tả (Base Text)
-  let baseText = product.image_alt_text;
+  const parts = [];
 
-  if (!baseText) {
-    const parts = [];
-    if (product.name) parts.push(product.name);
-    
-    if (product.category_id) {
-      const catName = product.category_id.replace(/-/g, ' ');
-      parts.push(catName);
-    }
-    
-    // Lấy thuộc tính từ các trường có sẵn
-    if (product.material) parts.push(product.material);
-    else if (product.style) parts.push(product.style);
-
-    baseText = parts.join(' - ');
+  // 1. Tên sản phẩm
+  if (product.name) parts.push(product.name);
+  
+  // 2. Danh mục (Làm sạch slug)
+  if (product.category_id) {
+    const catName = product.category_id.replace(/-/g, ' ');
+    parts.push(catName);
   }
+  
+  // 3. Thuộc tính hoặc Phân loại
+  let attrPart = "";
+  if (product.material) {
+    attrPart = product.material;
+  } else if (product.style) {
+    attrPart = product.style;
+  } else if (product.tier_variants_config && Array.isArray(product.tier_variants_config)) {
+    // Nếu không có thuộc tính tĩnh, lấy tên các nhóm phân loại (VD: Màu sắc, Kích thước)
+    attrPart = product.tier_variants_config.map((t: any) => t.name).join(", ");
+  }
+  
+  if (attrPart) parts.push(attrPart);
 
-  // 2. Tạo hậu tố định danh để đảm bảo tính chính xác và duy nhất
-  // Sử dụng 5 ký tự đầu của ID sản phẩm để phân biệt với các sản phẩm trùng tên
-  const shortId = product.id ? product.id.toString().substring(0, 5).toUpperCase() : "";
-  
-  // Tạo chuỗi định danh: "Mã: ABCDE - Ảnh 1"
-  const identifier = `| Mã: ${shortId} - Ảnh ${index + 1}`;
-  
-  return `${baseText} ${identifier}`.trim();
+  // Kết hợp các phần bằng dấu gạch ngang
+  const baseText = parts.join(' - ');
+
+  // 4. Số thứ tự (Bắt đầu từ 1)
+  return `${baseText} - ${index + 1}`.trim();
 }
 
 /**
