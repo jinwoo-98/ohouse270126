@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Star, Loader2, AlertCircle, ChevronDown, ChevronUp, ImageIcon, Hash } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Star, Loader2, AlertCircle, ChevronDown, ChevronUp, ImageIcon, Hash, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -12,13 +13,14 @@ import { ReviewItem } from "./ReviewItem";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { ReviewImageGallery } from "./ReviewImageGallery";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ProductReviewsProps {
   reviews: any[];
   product: any;
   displayRating: number;
   displayReviewCount: number;
-  onSubmitReview: (rating: number, comment: string, name: string, imageUrl?: string) => Promise<void>;
+  onSubmitReview: (rating: number, comment: string, name: string, imageUrl?: string, userId?: string) => Promise<void>;
 }
 
 export function StarRating({ rating, size = "w-4 h-4" }: { rating: number, size?: string }) {
@@ -47,6 +49,7 @@ export function ProductReviews({
   displayReviewCount, 
   onSubmitReview
 }: ProductReviewsProps) {
+  const { user } = useAuth();
   const [step, setStep] = useState<'verify' | 'write'>('verify');
   const [verifyOrderId, setVerifyOrderId] = useState("");
   const [verifyContact, setVerifyContact] = useState("");
@@ -96,8 +99,12 @@ export function ProductReviews({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để gửi đánh giá.");
+      return;
+    }
     setIsSubmitting(true);
-    await onSubmitReview(newReview.rating, newReview.comment, customerName, newReview.image_url);
+    await onSubmitReview(newReview.rating, newReview.comment, customerName, newReview.image_url, user.id);
     setNewReview({ rating: 5, comment: "", image_url: "" });
     setStep('verify');
     setIsSubmitting(false);
@@ -175,7 +182,20 @@ export function ProductReviews({
           <div className="bg-charcoal p-8 rounded-[32px] shadow-elevated border border-white/5 sticky top-24">
             <h3 className="font-bold mb-6 text-cream uppercase tracking-widest text-sm text-center">Gửi đánh giá của bạn</h3>
             
-            {step === 'verify' ? (
+            {!user ? (
+              <div className="text-center space-y-6 py-4">
+                <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto border border-white/10">
+                  <Lock className="w-8 h-8 text-primary" />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-cream font-bold">Yêu cầu đăng nhập</p>
+                  <p className="text-xs text-taupe leading-relaxed">Vui lòng đăng nhập tài khoản đã mua hàng để gửi đánh giá thực tế cho sản phẩm này.</p>
+                </div>
+                <Button asChild className="w-full btn-hero h-12 shadow-gold rounded-xl">
+                  <Link to="/dang-nhap">ĐĂNG NHẬP NGAY</Link>
+                </Button>
+              </div>
+            ) : step === 'verify' ? (
               <form onSubmit={handleVerify} className="space-y-5">
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10 text-[11px] text-taupe mb-4 flex gap-3">
                   <AlertCircle className="w-4 h-4 shrink-0 text-primary" />

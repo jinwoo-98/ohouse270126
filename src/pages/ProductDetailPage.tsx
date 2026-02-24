@@ -158,14 +158,15 @@ export default function ProductDetailPage() {
     setReviews(data || []);
   };
 
-  const handleSubmitReview = async (rating: number, comment: string, name: string, imageUrl?: string) => {
+  const handleSubmitReview = async (rating: number, comment: string, name: string, imageUrl?: string, userId?: string) => {
     try {
       const { error } = await supabase.from('reviews').insert({
         product_id: product.id,
         rating,
         comment,
         user_name: name,
-        image_url: imageUrl
+        image_url: imageUrl,
+        user_id: userId
       });
       if (error) throw error;
       toast.success("Cảm ơn bạn đã gửi đánh giá thực tế!");
