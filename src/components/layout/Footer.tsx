@@ -68,7 +68,7 @@ export function Footer() {
 
   return (
     <footer className="bg-background text-foreground overflow-hidden relative border-t border-border/40">
-      {/* 1. Thanh Đăng ký nhận tin (Nằm trên cùng Footer) */}
+      {/* 1. Thanh Đăng ký nhận tin */}
       <div className="bg-secondary/30 border-b border-border/40 py-10 md:py-14">
         <div className="container-luxury">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
@@ -104,7 +104,7 @@ export function Footer() {
       {/* 2. Nội dung chính Footer */}
       <div className="container-luxury pt-16 pb-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          {/* Cột 1: Thương hiệu & Liên hệ (Dọc) */}
+          {/* Cột 1: Thương hiệu & Liên hệ */}
           <div className="lg:col-span-1 space-y-8">
             <div className="space-y-4">
               <Link to="/" className="inline-block group">
@@ -115,7 +115,6 @@ export function Footer() {
               </p>
             </div>
 
-            {/* Thông tin liên hệ theo chiều dọc */}
             <div className="space-y-5 pt-2">
               <div className="flex items-start gap-3 group">
                 <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
@@ -197,14 +196,28 @@ export function Footer() {
               {isLoadingCategories ? (
                 <div className="space-y-2"><div className="h-4 w-24 bg-secondary animate-pulse rounded" /></div>
               ) : (
-                footerLinks.support.map(l => (
-                  <li key={l.name}>
-                    <Link to={l.href} className="text-muted-foreground hover:text-primary text-sm transition-colors flex items-center group">
+                <>
+                  {footerLinks.support.map(l => (
+                    <li key={l.name}>
+                      <Link to={l.href} className="text-muted-foreground hover:text-primary text-sm transition-colors flex items-center group">
+                        <ArrowRight className="w-3 h-3 mr-2 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
+                        {l.name}
+                      </Link>
+                    </li>
+                  ))}
+                  <li>
+                    <Link to="/ho-tro/bao-mat" className="text-muted-foreground hover:text-primary text-sm transition-colors flex items-center group">
                       <ArrowRight className="w-3 h-3 mr-2 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
-                      {l.name}
+                      Chính sách bảo mật
                     </Link>
                   </li>
-                ))
+                  <li>
+                    <Link to="/ho-tro/dieu-khoan" className="text-muted-foreground hover:text-primary text-sm transition-colors flex items-center group">
+                      <ArrowRight className="w-3 h-3 mr-2 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
+                      Điều khoản sử dụng
+                    </Link>
+                  </li>
+                </>
               )}
             </ul>
           </div>
@@ -259,6 +272,8 @@ export function Footer() {
               <AccordionContent>
                 <ul className="space-y-4 pb-4">
                   {footerLinks.support.map(l => <li key={l.name}><Link to={l.href} className="text-muted-foreground block text-sm">{l.name}</Link></li>)}
+                  <li><Link to="/ho-tro/bao-mat" className="text-muted-foreground block text-sm">Chính sách bảo mật</Link></li>
+                  <li><Link to="/ho-tro/dieu-khoan" className="text-muted-foreground block text-sm">Điều khoản sử dụng</Link></li>
                 </ul>
               </AccordionContent>
             </AccordionItem>
@@ -269,12 +284,6 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-10 border-t border-border/40">
           <div className="text-muted-foreground text-[11px] font-medium text-center md:text-left">
             <p>© {new Date().getFullYear()} OHOUSE.VN. Nâng tầm không gian sống.</p>
-          </div>
-          
-          <div className="flex items-center gap-6 text-muted-foreground text-[11px] font-medium">
-            <Link to="/ho-tro/bao-mat" className="hover:text-primary transition-colors">Bảo mật</Link>
-            <Link to="/ho-tro/dieu-khoan" className="hover:text-primary transition-colors">Điều khoản</Link>
-            <Link to="/sitemap" className="hover:text-primary transition-colors">Sitemap</Link>
           </div>
         </div>
       </div>
