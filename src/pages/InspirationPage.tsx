@@ -102,16 +102,16 @@ export default function InspirationPage() {
             </div>
           </section>
 
-          {/* CTA */}
-          <section className="py-16 bg-charcoal text-cream">
+          {/* CTA - Updated to Light Background */}
+          <section className="py-16 md:py-24 bg-secondary/30 border-t border-border/40">
             <div className="container-luxury text-center">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">Cần Tư Vấn Thiết Kế Riêng?</h2>
-              <p className="text-taupe mb-8 max-w-xl mx-auto">
-                Đội ngũ kiến trúc sư của chúng tôi sẵn sàng biến ý tưởng của bạn thành hiện thực.
+              <h2 className="text-2xl md:text-3xl font-bold mb-4 text-charcoal uppercase tracking-widest">Cần Tư Vấn Thiết Kế Riêng?</h2>
+              <p className="text-muted-foreground mb-8 max-w-xl mx-auto text-sm md:text-base">
+                Đội ngũ kiến trúc sư của chúng tôi sẵn sàng biến ý tưởng của bạn thành hiện thực với giải pháp không gian tối ưu.
               </p>
-              <Button className="btn-hero" asChild>
+              <Button className="btn-hero h-12 px-10 rounded-2xl shadow-gold" asChild>
                 <Link to="/thiet-ke">
-                  Yêu Cầu Thiết Kế
+                  Yêu Cầu Thiết Kế Ngay
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
