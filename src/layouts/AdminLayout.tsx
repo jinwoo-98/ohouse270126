@@ -96,6 +96,7 @@ export default function AdminLayout() {
 
   const fetchProfile = async () => {
     if (!user) {
+      setUserProfile(null); // Quan trọng: Xóa profile cũ khi không có user
       setFetchingProfile(false);
       return;
     }
@@ -134,13 +135,11 @@ export default function AdminLayout() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setUserProfile(null); // Xóa profile ngay lập tức
     navigate("/admin");
   };
 
-  const role = userProfile?.role;
-  const permissions = userProfile?.permissions || {};
-
-  if (authLoading || (user && fetchingProfile)) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
@@ -148,7 +147,8 @@ export default function AdminLayout() {
     );
   }
 
-  if (role !== 'admin' && role !== 'editor') {
+  // Nếu không có user, hiển thị màn hình đăng nhập ngay
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full bg-white rounded-3xl shadow-elevated p-8 md:p-10">
@@ -162,14 +162,36 @@ export default function AdminLayout() {
     );
   }
 
+  if (fetchingProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const role = userProfile?.role;
+  const permissions = userProfile?.permissions || {};
+
+  // Nếu đã đăng nhập nhưng không có quyền admin/editor
+  if (role !== 'admin' && role !== 'editor') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full bg-white rounded-3xl shadow-elevated p-8 text-center">
+          <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><X className="w-8 h-8 text-red-500" /></div>
+          <h1 className="text-xl font-bold text-charcoal mb-2">Truy cập bị từ chối</h1>
+          <p className="text-muted-foreground mb-6 text-sm">Tài khoản của bạn không có quyền truy cập vào khu vực quản trị.</p>
+          <Button onClick={handleLogout} variant="outline" className="w-full">Đăng xuất & Quay lại</Button>
+        </motion.div>
+      </div>
+    );
+  }
+
   const filteredGroups = menuGroups.map(group => {
     const allowedItems = group.items.filter(item => {
       if (role === 'admin') return true;
       if (item.id === 'dashboard') return true;
-      
-      // BẢO MẬT: Luôn chặn Editor truy cập các mục nhạy cảm hệ thống
       if (item.id === 'team' || item.id === 'tracking') return false; 
-      
       return permissions[item.id] === true;
     });
     return { ...group, items: allowedItems };
