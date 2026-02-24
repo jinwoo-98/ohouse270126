@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Search, Loader2, Package, Calendar, MapPin, ChevronRight, X } from "lucide-react";
+import { Search, Loader2, Package, Calendar, MapPin, ChevronRight, X, Hash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -15,15 +15,16 @@ interface OrderTrackingDialogProps {
 }
 
 export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProps) {
-  const [identifier, setIdentifier] = useState("");
+  const [orderId, setOrderId] = useState("");
+  const [contact, setContact] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const [searched, setSearched] = useState(false);
 
   const handleTrackOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!identifier.trim()) {
-      toast.error("Vui lòng nhập số điện thoại hoặc email.");
+    if (!orderId.trim() || !contact.trim()) {
+      toast.error("Vui lòng nhập đầy đủ Mã đơn hàng và Thông tin liên hệ.");
       return;
     }
 
@@ -32,32 +33,24 @@ export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProp
     setOrders([]);
 
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          order_items (
-            product_name,
-            quantity,
-            price,
-            product_image
-          )
-        `)
-        .or(`contact_phone.eq.${identifier},contact_email.eq.${identifier}`)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.functions.invoke('order-lookup', {
+        body: { 
+          action: 'track', 
+          orderId: orderId.trim().replace('#', ''), 
+          contact: contact.trim() 
+        }
+      });
 
       if (error) throw error;
 
-      setOrders(data || []);
+      setOrders(data.orders || []);
       setSearched(true);
       
-      if (data && data.length > 0) {
-        toast.success(`Tìm thấy ${data.length} đơn hàng.`);
-      } else {
-        toast.info("Không tìm thấy đơn hàng nào với thông tin này.");
+      if (data.orders && data.orders.length > 0) {
+        toast.success(`Tìm thấy đơn hàng.`);
       }
     } catch (error: any) {
-      toast.error("Lỗi tra cứu: " + error.message);
+      toast.error("Không tìm thấy đơn hàng phù hợp. Vui lòng kiểm tra lại thông tin.");
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +72,8 @@ export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProp
   }
 
   const resetSearch = () => {
-    setIdentifier("");
+    setOrderId("");
+    setContact("");
     setOrders([]);
     setSearched(false);
   };
@@ -93,31 +87,48 @@ export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProp
               <Search className="w-5 h-5 text-primary" /> Tra Cứu Đơn Hàng
             </DialogTitle>
             <DialogDescription>
-              Nhập Số điện thoại hoặc Email bạn đã dùng để đặt hàng.
+              Nhập Mã đơn hàng và Số điện thoại/Email để bảo mật thông tin.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleTrackOrder} className="mt-4 flex gap-2">
-            <div className="flex-1">
-              <Input
-                id="identifier"
-                placeholder="VD: 0909xxxxxx hoặc email@example.com"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                className="h-12 bg-white"
-                required
-              />
+          <form onSubmit={handleTrackOrder} className="mt-6 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="orderId" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Mã đơn hàng</Label>
+                <div className="relative">
+                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="orderId"
+                    placeholder="VD: 8 ký tự đầu"
+                    value={orderId}
+                    onChange={(e) => setOrderId(e.target.value)}
+                    className="h-12 bg-white pl-10"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contact" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">SĐT hoặc Email</Label>
+                <Input
+                  id="contact"
+                  placeholder="0909xxxxxx"
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  className="h-12 bg-white"
+                  required
+                />
+              </div>
             </div>
-            <Button type="submit" className="btn-hero h-12 px-6 shadow-gold" disabled={isLoading}>
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Tra Cứu"}
+            <Button type="submit" className="w-full btn-hero h-12 shadow-gold" disabled={isLoading}>
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Tra Cứu Ngay"}
             </Button>
           </form>
         </div>
 
-        <ScrollArea className="max-h-[60vh] p-6 bg-white">
+        <ScrollArea className="max-h-[50vh] p-6 bg-white">
           {isLoading ? (
             <div className="py-12 flex flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="w-8 h-8 animate-spin mb-2 text-primary" />
-              <p className="text-xs font-medium">Đang tìm kiếm dữ liệu...</p>
+              <p className="text-xs font-medium">Đang xác thực dữ liệu...</p>
             </div>
           ) : searched && orders.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
@@ -156,10 +167,6 @@ export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProp
                     </div>
                     
                     <div className="pt-3 border-t border-dashed border-border/50 flex flex-col gap-2">
-                      <div className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <MapPin className="w-3.5 h-3.5 mt-0.5 text-primary shrink-0" />
-                        <span className="line-clamp-1">{order.shipping_address}</span>
-                      </div>
                       <div className="flex justify-between items-center text-sm font-bold pt-1">
                         <span>Tổng cộng:</span>
                         <span className="text-primary text-lg">{formatPrice(order.total_amount)}</span>

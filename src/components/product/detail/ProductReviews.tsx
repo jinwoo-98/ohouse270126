@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, Loader2, AlertCircle, ChevronDown, ChevronUp, ImageIcon } from "lucide-react";
+import { Star, Loader2, AlertCircle, ChevronDown, ChevronUp, ImageIcon, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -48,7 +48,8 @@ export function ProductReviews({
   onSubmitReview
 }: ProductReviewsProps) {
   const [step, setStep] = useState<'verify' | 'write'>('verify');
-  const [verifyInfo, setVerifyInfo] = useState("");
+  const [verifyOrderId, setVerifyOrderId] = useState("");
+  const [verifyContact, setVerifyContact] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [customerName, setCustomerName] = useState("");
   
@@ -60,36 +61,34 @@ export function ProductReviews({
   const visibleReviews = showAll ? reviews : reviews.slice(0, INITIAL_COUNT);
   const hasMore = reviews.length > INITIAL_COUNT;
 
-  // Sử dụng số lượng thực tế từ DB nếu danh sách reviews đã load xong
   const finalReviewCount = reviews.length > 0 ? reviews.length : displayReviewCount;
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!verifyInfo) return;
+    if (!verifyOrderId || !verifyContact) return;
     
     setIsVerifying(true);
     try {
-      const { data: orders, error } = await supabase
-        .from('orders')
-        .select('id, contact_phone, contact_email, status, order_items(product_id)')
-        .eq('status', 'delivered')
-        .or(`contact_phone.eq.${verifyInfo},contact_email.eq.${verifyInfo}`);
+      const { data, error } = await supabase.functions.invoke('order-lookup', {
+        body: { 
+          action: 'verify-purchase', 
+          productId: product.id,
+          orderId: verifyOrderId.trim().replace('#', ''),
+          contact: verifyContact.trim()
+        }
+      });
 
       if (error) throw error;
 
-      const hasBought = orders?.some(order => 
-        order.order_items.some((item: any) => item.product_id === product.id)
-      );
-
-      if (hasBought) {
-        setCustomerName(verifyInfo.includes('@') ? verifyInfo.split('@')[0] : "Khách hàng");
+      if (data.hasPurchased) {
+        setCustomerName(verifyContact.includes('@') ? verifyContact.split('@')[0] : "Khách hàng");
         setStep('write');
         toast.success("Xác thực thành công! Bạn có thể viết đánh giá.");
       } else {
-        toast.error("Bạn cần có đơn hàng 'Đã giao' chứa sản phẩm này để đánh giá.");
+        toast.error("Không tìm thấy đơn hàng 'Đã giao' chứa sản phẩm này với thông tin đã nhập.");
       }
     } catch (error) {
-      toast.error("Lỗi xác thực hệ thống.");
+      toast.error("Lỗi xác thực hệ thống. Vui lòng thử lại sau.");
     } finally {
       setIsVerifying(false);
     }
@@ -119,7 +118,6 @@ export function ProductReviews({
 
       <div className="grid lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 flex flex-col">
-          {/* Nút mở gallery ảnh thực tế */}
           <ReviewImageGallery reviews={reviews} />
 
           {reviews.length === 0 ? (
@@ -159,7 +157,6 @@ export function ProductReviews({
                         if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: 'smooth' });
                       }
                     }}
-                    // Thay đổi rounded-full thành rounded-2xl
                     className="h-12 px-8 rounded-2xl border-primary/30 text-primary font-bold text-[11px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-subtle group"
                   >
                     {showAll ? (
@@ -182,17 +179,29 @@ export function ProductReviews({
               <form onSubmit={handleVerify} className="space-y-5">
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10 text-[11px] text-taupe mb-4 flex gap-3">
                   <AlertCircle className="w-4 h-4 shrink-0 text-primary" />
-                  <p>Nhập SĐT hoặc Email đã mua hàng thành công để bắt đầu đánh giá.</p>
+                  <p>Nhập Mã đơn hàng và SĐT/Email đã mua sản phẩm này để xác thực.</p>
                 </div>
-                <Input 
-                  value={verifyInfo} 
-                  onChange={(e) => setVerifyInfo(e.target.value)} 
-                  placeholder="SĐT hoặc Email..."
-                  className="h-12 bg-white/5 border-white/10 text-cream rounded-xl"
-                  required
-                />
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-taupe" />
+                    <Input 
+                      value={verifyOrderId} 
+                      onChange={(e) => setVerifyOrderId(e.target.value)} 
+                      placeholder="Mã đơn hàng..."
+                      className="h-12 bg-white/5 border-white/10 text-cream rounded-xl pl-10"
+                      required
+                    />
+                  </div>
+                  <Input 
+                    value={verifyContact} 
+                    onChange={(e) => setVerifyContact(e.target.value)} 
+                    placeholder="SĐT hoặc Email..."
+                    className="h-12 bg-white/5 border-white/10 text-cream rounded-xl"
+                    required
+                  />
+                </div>
                 <Button type="submit" className="w-full btn-hero h-12 shadow-gold rounded-xl" disabled={isVerifying}>
-                  {isVerifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "XÁC THỰC ĐƠN HÀNG"}
+                  {isVerifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "XÁC THỰC NGƯỜI MUA"}
                 </Button>
               </form>
             ) : (
