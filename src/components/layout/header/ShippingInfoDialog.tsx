@@ -3,6 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, Truck } from "lucide-react";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface ShippingInfoDialogProps {
   isOpen: boolean;
@@ -37,7 +38,7 @@ export function ShippingInfoDialog({ isOpen, onClose, title, content }: Shipping
           <div 
             className="prose prose-stone max-w-none text-muted-foreground leading-relaxed
               prose-ul:list-disc prose-ul:pl-5 prose-li:mb-4 prose-a:text-primary prose-a:font-bold prose-a:underline"
-            dangerouslySetInnerHTML={{ __html: content || "" }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(content || "") }}
           />
           
           <div className="mt-10 pt-6 border-t border-border/40">

@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface AIContentAssistantProps {
   onInsert: (content: string) => void;
@@ -126,7 +127,7 @@ ${isLongRequest ? `
             <div className="space-y-3 animate-fade-in">
               <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center justify-between">Kết quả gợi ý</Label>
               <div className="bg-secondary/30 p-4 rounded-xl border border-dashed border-primary/20 max-h-64 overflow-y-auto text-sm text-muted-foreground leading-relaxed prose prose-sm">
-                <div dangerouslySetInnerHTML={{ __html: result }} />
+                <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(result) }} />
               </div>
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" className="flex-1 rounded-xl h-12 text-xs font-bold" onClick={() => setResult("")}>Hủy</Button>

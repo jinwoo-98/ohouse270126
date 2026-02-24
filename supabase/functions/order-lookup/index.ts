@@ -21,8 +21,9 @@ serve(async (req) => {
     const { action, orderId, contact, productId } = await req.json();
 
     if (action === 'track') {
-      if (!orderId || !contact) {
-        return new Response(JSON.stringify({ error: "Thiếu mã đơn hàng hoặc thông tin liên hệ." }), {
+      // Thắt chặt kiểm tra đầu vào: orderId phải có ít nhất 8 ký tự
+      if (!orderId || orderId.length < 8 || !contact) {
+        return new Response(JSON.stringify({ error: "Mã đơn hàng không hợp lệ hoặc thiếu thông tin liên hệ." }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
@@ -72,8 +73,8 @@ serve(async (req) => {
     }
 
     if (action === 'verify-purchase') {
-      if (!productId || !contact || !orderId) {
-        return new Response(JSON.stringify({ error: "Thiếu thông tin xác thực." }), {
+      if (!productId || !contact || !orderId || orderId.length < 8) {
+        return new Response(JSON.stringify({ error: "Thiếu thông tin xác thực hoặc mã đơn hàng quá ngắn." }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
