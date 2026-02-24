@@ -66,12 +66,12 @@ export function HeroSlider() {
     }
   };
 
-  if (loading) return <div className="h-[65vh] md:h-[80vh] bg-charcoal flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
+  if (loading) return <div className="h-[65vh] md:h-[80vh] bg-secondary/20 flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
   
   if (slides.length === 0) return null;
 
   return (
-    <section className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-charcoal">
+    <section className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-secondary/20">
       <motion.div
         className="flex h-full w-full cursor-grab active:cursor-grabbing"
         drag="x"
@@ -89,7 +89,7 @@ export function HeroSlider() {
               className="absolute h-full w-full object-cover pointer-events-none"
               draggable="false"
             />
-            <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+            <div className="absolute inset-0 bg-black/10 pointer-events-none" />
             
             <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
               <div className="container-luxury w-full">
