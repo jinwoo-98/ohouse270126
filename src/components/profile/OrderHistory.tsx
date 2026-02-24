@@ -5,11 +5,21 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Package, Calendar, ChevronDown, ChevronUp, RotateCw, MapPin } from "lucide-react";
+import { Loader2, Package, Calendar, ChevronDown, ChevronUp, RotateCw, MapPin, Trash2, Edit3, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -29,10 +39,15 @@ const getStatusLabel = (status: string) => {
 export function OrderHistory() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, clearCart } = useCart();
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  
+  // Action states
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
+  const [editConfirmOrder, setEditConfirmOrder] = useState<any | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -59,6 +74,66 @@ export function OrderHistory() {
       toast.error("Không thể tải lịch sử đơn hàng.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    setIsActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('id', orderId)
+        .eq('user_id', user?.id)
+        .eq('status', 'pending'); // Chỉ cho phép hủy nếu vẫn đang pending
+
+      if (error) throw error;
+      
+      toast.success("Đã hủy đơn hàng thành công.");
+      setCancelConfirmId(null);
+      fetchOrders();
+    } catch (error: any) {
+      toast.error("Không thể hủy đơn hàng: " + error.message);
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleEditOrder = async (order: any) => {
+    setIsActionLoading(true);
+    try {
+      // 1. Hủy đơn hàng hiện tại
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('id', order.id)
+        .eq('user_id', user?.id)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+
+      // 2. Đưa sản phẩm vào giỏ hàng
+      // Xóa giỏ hàng hiện tại để tránh nhầm lẫn (tùy chọn)
+      clearCart();
+      
+      order.order_items.forEach((item: any) => {
+        addToCart({
+          id: item.product_id,
+          name: item.product_name,
+          price: item.price,
+          image: item.product_image,
+          quantity: item.quantity,
+          slug: item.product_id // Giả định product_id là slug hoặc id hợp lệ
+        });
+      });
+
+      toast.success("Đã chuyển sản phẩm vào giỏ hàng. Bạn có thể chỉnh sửa ngay.");
+      setEditConfirmOrder(null);
+      navigate("/gio-hang");
+    } catch (error: any) {
+      toast.error("Lỗi khi sửa đơn hàng: " + error.message);
+    } finally {
+      setIsActionLoading(false);
     }
   };
 
@@ -181,16 +256,39 @@ export function OrderHistory() {
                   </div>
 
                   <div className="pt-6 border-t border-border/40 flex flex-col sm:flex-row justify-between items-center gap-6">
-                    <div className="flex gap-3 w-full sm:w-auto">
-                      <Button variant="outline" className="flex-1 sm:flex-none h-11 text-[11px] font-bold uppercase tracking-widest border-charcoal/20" asChild>
-                        <a href="/ho-tro/huong-dan">Hỗ trợ</a>
-                      </Button>
-                      <Button 
-                        className="flex-1 sm:flex-none btn-hero h-11 shadow-gold text-[11px]" 
-                        onClick={() => handleReorder(order.order_items)}
-                      >
-                        <RotateCw className="w-3.5 h-3.5 mr-2" /> Mua lại đơn này
-                      </Button>
+                    <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+                      {order.status === 'pending' ? (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            className="flex-1 sm:flex-none h-11 text-[11px] font-bold uppercase tracking-widest border-destructive/20 text-destructive hover:bg-destructive/5"
+                            onClick={() => setCancelConfirmId(order.id)}
+                            disabled={isActionLoading}
+                          >
+                            <Trash2 className="w-3.5 h-3.5 mr-2" /> Hủy đơn hàng
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            className="flex-1 sm:flex-none h-11 text-[11px] font-bold uppercase tracking-widest border-primary/20 text-primary hover:bg-primary/5"
+                            onClick={() => setEditConfirmOrder(order)}
+                            disabled={isActionLoading}
+                          >
+                            <Edit3 className="w-3.5 h-3.5 mr-2" /> Sửa đơn hàng
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button variant="outline" className="flex-1 sm:flex-none h-11 text-[11px] font-bold uppercase tracking-widest border-charcoal/20" asChild>
+                            <a href="/ho-tro/huong-dan">Hỗ trợ</a>
+                          </Button>
+                          <Button 
+                            className="flex-1 sm:flex-none btn-hero h-11 shadow-gold text-[11px]" 
+                            onClick={() => handleReorder(order.order_items)}
+                          >
+                            <RotateCw className="w-3.5 h-3.5 mr-2" /> Mua lại đơn này
+                          </Button>
+                        </>
+                      )}
                     </div>
                     <div className="text-center sm:text-right">
                       <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground mr-3">Tổng cộng thanh toán:</span>
@@ -203,6 +301,54 @@ export function OrderHistory() {
           </AnimatePresence>
         </div>
       ))}
+
+      {/* Dialog xác nhận hủy đơn */}
+      <AlertDialog open={!!cancelConfirmId} onOpenChange={(open) => !open && setCancelConfirmId(null)}>
+        <AlertDialogContent className="rounded-3xl border-none shadow-elevated">
+          <AlertDialogHeader>
+            <div className="w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center text-destructive mb-4">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold uppercase tracking-widest">Xác nhận hủy đơn hàng?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm leading-relaxed">
+              Hành động này sẽ hủy bỏ đơn hàng của bạn. Bạn sẽ không thể hoàn tác sau khi xác nhận.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-6 gap-3">
+            <AlertDialogCancel className="rounded-xl h-12 font-bold text-xs uppercase border-border/60">Quay lại</AlertDialogCancel>
+            <AlertDialogAction 
+              className="rounded-xl h-12 font-bold text-xs uppercase bg-destructive text-white hover:bg-destructive/90"
+              onClick={() => cancelConfirmId && handleCancelOrder(cancelConfirmId)}
+            >
+              Xác nhận hủy đơn
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog xác nhận sửa đơn */}
+      <AlertDialog open={!!editConfirmOrder} onOpenChange={(open) => !open && setEditConfirmOrder(null)}>
+        <AlertDialogContent className="rounded-3xl border-none shadow-elevated">
+          <AlertDialogHeader>
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4">
+              <Edit3 className="w-6 h-6" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold uppercase tracking-widest">Hủy & Sửa đơn hàng?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm leading-relaxed">
+              Hệ thống sẽ <strong>hủy đơn hàng hiện tại</strong> và đưa các sản phẩm này quay lại giỏ hàng để bạn chỉnh sửa. Bạn có muốn tiếp tục?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-6 gap-3">
+            <AlertDialogCancel className="rounded-xl h-12 font-bold text-xs uppercase border-border/60">Quay lại</AlertDialogCancel>
+            <AlertDialogAction 
+              className="rounded-xl h-12 font-bold text-xs uppercase btn-hero shadow-gold"
+              onClick={() => editConfirmOrder && handleEditOrder(editConfirmOrder)}
+            >
+              Đồng ý & Sửa đơn
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
