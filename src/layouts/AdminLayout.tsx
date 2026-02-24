@@ -86,8 +86,6 @@ const menuGroups = [
   }
 ];
 
-const SUPER_ADMIN_EMAIL = 'tranvu20398@gmail.com';
-
 export default function AdminLayout() {
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -129,9 +127,8 @@ export default function AdminLayout() {
     navigate("/admin");
   };
 
-  let role = userProfile?.role;
-  if (user?.email === SUPER_ADMIN_EMAIL) role = 'admin';
-
+  // Bảo mật: Chỉ dựa vào vai trò được xác thực từ database
+  const role = userProfile?.role;
   const permissions = userProfile?.permissions || {};
 
   if (authLoading || (user && fetchingProfile)) {

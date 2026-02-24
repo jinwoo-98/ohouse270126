@@ -21,6 +21,7 @@ import { useSimilarProducts } from "@/hooks/useSimilarProducts";
 import { Helmet } from "react-helmet-async";
 import { useSeo } from "@/hooks/useSeo";
 import { generateProductAltText } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -304,7 +305,10 @@ export default function ProductDetailPage() {
                         </div>
                       </div>
                       {shippingPolicy && (
-                        <div className="mt-10 p-6 bg-secondary/30 rounded-2xl border border-border/40 prose prose-sm max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: shippingPolicy }} />
+                        <div 
+                          className="mt-10 p-6 bg-secondary/30 rounded-2xl border border-border/40 prose prose-sm max-w-none text-muted-foreground" 
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(shippingPolicy) }} 
+                        />
                       )}
                     </div>
                     <div className="space-y-4">
