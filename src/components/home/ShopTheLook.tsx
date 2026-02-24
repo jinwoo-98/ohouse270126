@@ -189,10 +189,7 @@ export function ShopTheLook() {
                     <div className="relative aspect-video overflow-hidden group">
                       <div 
                         className="absolute inset-0 z-10 cursor-pointer"
-                        onClick={(e) => {
-                          // Chỉ điều hướng nếu không phải đang vuốt (kiểm tra đơn giản qua pointer events)
-                          navigate(detailLink);
-                        }}
+                        onClick={() => navigate(detailLink)}
                       >
                         <img
                           src={getOptimizedImageUrl(look.homepage_image_url || look.image_url, { width: 1200 })}
@@ -233,7 +230,8 @@ export function ShopTheLook() {
                           ))}
                         </TooltipProvider>
                         
-                        <div className="absolute bottom-4 right-4 z-20 md:opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
+                        {/* Nút xem chi tiết: Chỉ hiện trên Desktop khi hover */}
+                        <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block pointer-events-auto">
                           <Button asChild size="sm" className="btn-hero h-9 text-[10px] shadow-gold px-4">
                             <Link to={detailLink}>
                               Xem Chi Tiết <ChevronRight className="w-3 h-3 ml-1" />
