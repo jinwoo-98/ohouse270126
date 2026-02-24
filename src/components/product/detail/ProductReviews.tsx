@@ -68,7 +68,12 @@ export function ProductReviews({
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!verifyOrderId || !verifyContact) return;
+    const cleanId = verifyOrderId.trim().replace('#', '');
+    
+    if (cleanId.length < 36) {
+      toast.error("Vui lòng nhập đầy đủ mã đơn hàng (36 ký tự).");
+      return;
+    }
     
     setIsVerifying(true);
     try {
@@ -76,7 +81,7 @@ export function ProductReviews({
         body: { 
           action: 'verify-purchase', 
           productId: product.id,
-          orderId: verifyOrderId.trim().replace('#', ''),
+          orderId: cleanId,
           contact: verifyContact.trim()
         }
       });
@@ -88,10 +93,10 @@ export function ProductReviews({
         setStep('write');
         toast.success("Xác thực thành công! Bạn có thể viết đánh giá.");
       } else {
-        toast.error("Không tìm thấy đơn hàng 'Đã giao' chứa sản phẩm này với thông tin đã nhập.");
+        toast.error("Không tìm thấy đơn hàng 'Đã giao' chứa sản phẩm này.");
       }
     } catch (error) {
-      toast.error("Lỗi xác thực hệ thống. Vui lòng thử lại sau.");
+      toast.error("Lỗi xác thực hệ thống.");
     } finally {
       setIsVerifying(false);
     }
@@ -199,7 +204,7 @@ export function ProductReviews({
               <form onSubmit={handleVerify} className="space-y-5">
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10 text-[11px] text-taupe mb-4 flex gap-3">
                   <AlertCircle className="w-4 h-4 shrink-0 text-primary" />
-                  <p>Nhập Mã đơn hàng và SĐT/Email đã mua sản phẩm này để xác thực.</p>
+                  <p>Nhập Mã đơn hàng (Full ID) và SĐT/Email đã mua sản phẩm này để xác thực.</p>
                 </div>
                 <div className="space-y-4">
                   <div className="relative">
@@ -207,8 +212,8 @@ export function ProductReviews({
                     <Input 
                       value={verifyOrderId} 
                       onChange={(e) => setVerifyOrderId(e.target.value)} 
-                      placeholder="Mã đơn hàng..."
-                      className="h-12 bg-white/5 border-white/10 text-cream rounded-xl pl-10"
+                      placeholder="Mã đơn hàng đầy đủ..."
+                      className="h-12 bg-white/5 border-white/10 text-cream rounded-xl pl-10 font-mono text-xs"
                       required
                     />
                   </div>

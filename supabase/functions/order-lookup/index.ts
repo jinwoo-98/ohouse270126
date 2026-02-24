@@ -8,7 +8,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -20,18 +19,32 @@ serve(async (req) => {
 
     const { action, orderId, contact, productId } = await req.json();
 
-    if (action === 'track') {
-      // Thắt chặt kiểm tra đầu vào: orderId phải có ít nhất 8 ký tự
-      if (!orderId || orderId.length < 8 || !contact) {
-        return new Response(JSON.stringify({ error: "Mã đơn hàng không hợp lệ hoặc thiếu thông tin liên hệ." }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
+    // --- BẢO MẬT: Kiểm duyệt đầu vào contact ---
+    const cleanContact = typeof contact === 'string' ? contact.trim() : '';
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanContact);
+    const isPhone = /^[0-9+]{8,15}$/.test(cleanContact);
 
-      // Search for the order. We support both full UUID and the 8-char prefix used in the UI.
-      // We enforce that the contact (phone or email) MUST match.
-      let query = supabase
+    if (!isEmail && !isPhone) {
+      return new Response(JSON.stringify({ error: "Vui lòng nhập Email hoặc Số điện thoại hợp lệ." }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // --- BẢO MẬT: Kiểm tra định dạng UUID của orderId ---
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const cleanOrderId = typeof orderId === 'string' ? orderId.trim().replace('#', '') : '';
+    
+    if (!uuidRegex.test(cleanOrderId)) {
+      return new Response(JSON.stringify({ error: "Mã đơn hàng không hợp lệ. Vui lòng nhập đầy đủ mã đơn hàng (UUID)." }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    if (action === 'track') {
+      // Sử dụng .eq() thay vì .ilike() để tránh brute-force tiền tố
+      const { data: orders, error } = await supabase
         .from('orders')
         .select(`
           id,
@@ -45,17 +58,8 @@ serve(async (req) => {
             product_image
           )
         `)
-        .or(`contact_phone.eq.${contact},contact_email.eq.${contact}`);
-
-      // If it's a full UUID
-      if (orderId.length === 36) {
-        query = query.eq('id', orderId);
-      } else {
-        // If it's the 8-char prefix
-        query = query.ilike('id', `${orderId}%`);
-      }
-
-      const { data: orders, error } = await query;
+        .eq('id', cleanOrderId)
+        .or(`contact_phone.eq.${cleanContact},contact_email.eq.${cleanContact}`);
 
       if (error) throw error;
 
@@ -66,35 +70,26 @@ serve(async (req) => {
         });
       }
 
-      // Return sanitized data (no full address, no full contact info)
       return new Response(JSON.stringify({ orders }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
     if (action === 'verify-purchase') {
-      if (!productId || !contact || !orderId || orderId.length < 8) {
-        return new Response(JSON.stringify({ error: "Thiếu thông tin xác thực hoặc mã đơn hàng quá ngắn." }), {
+      if (!productId) {
+        return new Response(JSON.stringify({ error: "Thiếu thông tin sản phẩm." }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
 
-      // Check if there's a delivered order for this product with matching contact and orderId
-      let query = supabase
+      const { data, error } = await supabase
         .from('orders')
         .select('id, order_items!inner(product_id)')
+        .eq('id', cleanOrderId)
         .eq('status', 'delivered')
         .eq('order_items.product_id', productId)
-        .or(`contact_phone.eq.${contact},contact_email.eq.${contact}`);
-
-      if (orderId.length === 36) {
-        query = query.eq('id', orderId);
-      } else {
-        query = query.ilike('id', `${orderId}%`);
-      }
-
-      const { data, error } = await query;
+        .or(`contact_phone.eq.${cleanContact},contact_email.eq.${cleanContact}`);
 
       if (error) throw error;
 
@@ -110,7 +105,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("[order-lookup] Error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: "Lỗi hệ thống nội bộ." }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

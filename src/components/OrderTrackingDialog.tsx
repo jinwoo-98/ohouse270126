@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Search, Loader2, Package, Calendar, MapPin, ChevronRight, X, Hash } from "lucide-react";
+import { Search, Loader2, Package, Calendar, MapPin, ChevronRight, X, Hash, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -23,8 +23,10 @@ export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProp
 
   const handleTrackOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!orderId.trim() || !contact.trim()) {
-      toast.error("Vui lòng nhập đầy đủ Mã đơn hàng và Thông tin liên hệ.");
+    const cleanId = orderId.trim().replace('#', '');
+    
+    if (cleanId.length < 36) {
+      toast.error("Vui lòng nhập đầy đủ mã đơn hàng (36 ký tự).");
       return;
     }
 
@@ -36,7 +38,7 @@ export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProp
       const { data, error } = await supabase.functions.invoke('order-lookup', {
         body: { 
           action: 'track', 
-          orderId: orderId.trim().replace('#', ''), 
+          orderId: cleanId, 
           contact: contact.trim() 
         }
       });
@@ -45,12 +47,9 @@ export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProp
 
       setOrders(data.orders || []);
       setSearched(true);
-      
-      if (data.orders && data.orders.length > 0) {
-        toast.success(`Tìm thấy đơn hàng.`);
-      }
+      toast.success(`Tìm thấy đơn hàng.`);
     } catch (error: any) {
-      toast.error("Không tìm thấy đơn hàng phù hợp. Vui lòng kiểm tra lại thông tin.");
+      toast.error("Thông tin không chính xác hoặc đơn hàng không tồn tại.");
     } finally {
       setIsLoading(false);
     }
@@ -87,21 +86,21 @@ export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProp
               <Search className="w-5 h-5 text-primary" /> Tra Cứu Đơn Hàng
             </DialogTitle>
             <DialogDescription>
-              Nhập Mã đơn hàng và Số điện thoại/Email để bảo mật thông tin.
+              Nhập đầy đủ mã đơn hàng từ email xác nhận để bảo mật thông tin.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleTrackOrder} className="mt-6 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="orderId" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Mã đơn hàng</Label>
+                <Label htmlFor="orderId" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Mã đơn hàng (Full ID)</Label>
                 <div className="relative">
                   <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="orderId"
-                    placeholder="VD: 8 ký tự đầu"
+                    placeholder="Nhập đủ 36 ký tự..."
                     value={orderId}
                     onChange={(e) => setOrderId(e.target.value)}
-                    className="h-12 bg-white pl-10"
+                    className="h-12 bg-white pl-10 text-xs font-mono"
                     required
                   />
                 </div>
@@ -122,27 +121,22 @@ export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProp
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Tra Cứu Ngay"}
             </Button>
           </form>
+          <div className="mt-4 flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
+            <AlertCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+            <p className="text-[10px] text-blue-800 leading-relaxed">
+              Vì lý do bảo mật, bạn cần nhập chính xác mã đơn hàng đầy đủ được gửi trong email hoặc tin nhắn xác nhận.
+            </p>
+          </div>
         </div>
 
-        <ScrollArea className="max-h-[50vh] p-6 bg-white">
-          {isLoading ? (
-            <div className="py-12 flex flex-col items-center justify-center text-muted-foreground">
-              <Loader2 className="w-8 h-8 animate-spin mb-2 text-primary" />
-              <p className="text-xs font-medium">Đang xác thực dữ liệu...</p>
-            </div>
-          ) : searched && orders.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">
-              <Package className="w-12 h-12 mx-auto mb-3 opacity-20" />
-              <p>Không tìm thấy đơn hàng nào.</p>
-              <Button variant="link" onClick={resetSearch} className="mt-2 text-primary">Thử lại</Button>
-            </div>
-          ) : (
+        <ScrollArea className="max-h-[40vh] p-6 bg-white">
+          {searched && orders.length > 0 && (
             <div className="space-y-4">
               {orders.map((order) => (
                 <div key={order.id} className="border border-border rounded-xl overflow-hidden hover:shadow-subtle transition-shadow">
                   <div className="bg-secondary/10 p-4 flex items-center justify-between border-b border-border/50">
                     <div>
-                      <p className="text-xs font-bold text-primary mb-1">#{order.id.slice(0, 8).toUpperCase()}</p>
+                      <p className="text-xs font-bold text-primary mb-1">#{order.id.slice(0, 8).toUpperCase()}...</p>
                       <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                         <Calendar className="w-3 h-3" /> {new Date(order.created_at).toLocaleDateString('vi-VN')}
                       </div>
@@ -166,11 +160,9 @@ export function OrderTrackingDialog({ isOpen, onClose }: OrderTrackingDialogProp
                       ))}
                     </div>
                     
-                    <div className="pt-3 border-t border-dashed border-border/50 flex flex-col gap-2">
-                      <div className="flex justify-between items-center text-sm font-bold pt-1">
-                        <span>Tổng cộng:</span>
-                        <span className="text-primary text-lg">{formatPrice(order.total_amount)}</span>
-                      </div>
+                    <div className="pt-3 border-t border-dashed border-border/50 flex justify-between items-center">
+                      <span className="text-sm font-bold">Tổng cộng:</span>
+                      <span className="text-primary text-lg font-bold">{formatPrice(order.total_amount)}</span>
                     </div>
                   </div>
                 </div>
