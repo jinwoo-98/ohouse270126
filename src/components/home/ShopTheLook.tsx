@@ -141,8 +141,8 @@ export function ShopTheLook() {
             </Button>
           </div>
 
-          {/* Danh mục phòng: Cuộn ngang mượt mà trên mobile */}
-          <div className="flex justify-start md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0 pb-4 touch-pan-x">
+          {/* Danh mục phòng: Đảm bảo cuộn ngang mượt mà và không nhảy dòng */}
+          <div className="flex flex-nowrap justify-start md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0 pb-4 touch-pan-x">
             <button
               onClick={() => setActiveCategorySlug("all")}
               className={`px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 ${
@@ -166,6 +166,8 @@ export function ShopTheLook() {
                 {cat.name}
               </button>
             ))}
+            {/* Thêm khoảng trống cuối để vuốt không bị khựng */}
+            <div className="w-4 shrink-0 md:hidden" />
           </div>
         </motion.div>
 
