@@ -1,4 +1,65 @@
-/* ... keep existing code */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 20 14.3% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
+    --primary: 36 35% 51%;
+    --primary-foreground: 60 9.1% 97.8%;
+    --secondary: 60 4.8% 95.9%;
+    --secondary-foreground: 24 9.8% 10%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 60 4.8% 95.9%;
+    --accent-foreground: 24 9.8% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 36 35% 51%;
+    --radius: 1rem;
+    
+    /* Luxury Colors */
+    --charcoal: 210 11% 15%;
+    --walnut: 25 30% 25%;
+    --cream: 40 33% 98%;
+    --taupe: 30 10% 60%;
+    
+    /* Shadows */
+    --shadow-subtle: 0 2px 10px rgba(0, 0, 0, 0.05);
+    --shadow-medium: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --shadow-elevated: 0 20px 50px rgba(0, 0, 0, 0.12);
+    --shadow-gold: 0 10px 25px -5px rgba(176, 141, 85, 0.3);
+  }
+}
+
+@layer components {
+  .container-luxury {
+    @apply container mx-auto px-4 md:px-8 max-w-[1700px];
+  }
+
+  .btn-hero {
+    @apply bg-primary text-white hover:bg-primary/90 transition-all duration-300 font-bold uppercase tracking-widest;
+  }
+
+  .card-luxury {
+    @apply bg-white rounded-3xl shadow-subtle hover:shadow-medium transition-all duration-500 border border-border/40;
+  }
+
+  .img-zoom {
+    @apply overflow-hidden;
+  }
+  
+  .img-zoom img {
+    @apply transition-transform duration-700 hover:scale-110;
+  }
+}
 
 /* Custom Phone Input Styling */
 .luxury-phone-input .PhoneInput {
@@ -19,4 +80,20 @@
 
 .luxury-phone-input .PhoneInputCountryIcon {
   @apply shadow-sm rounded-sm overflow-hidden;
+}
+
+.rich-text-content p {
+  @apply mb-4;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/40 transition-colors;
 }
