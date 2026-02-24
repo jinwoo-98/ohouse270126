@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCategories } from "@/hooks/useCategories";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { Button } from "@/components/ui/button";
-import { getOptimizedImageUrl, formatPrice } from "@/lib/utils";
+import { getOptimizedImageUrl, formatPrice, cn } from "@/lib/utils";
 import {
   Carousel,
   CarouselContent,
@@ -108,7 +108,7 @@ export function ShopTheLook() {
   if (allLooks.length === 0) return null;
 
   return (
-    <section className="py-10 md:py-24 bg-secondary/20 overflow-hidden">
+    <section className="py-10 md:py-24 bg-charcoal overflow-hidden">
       <div className="container-luxury">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -122,10 +122,10 @@ export function ShopTheLook() {
               {config.subtitle}
             </span>
           )}
-          <h2 className="section-title mb-4" style={{ color: config?.title_color }}>
+          <h2 className="section-title mb-4 text-white" style={{ color: config?.title_color && config.title_color !== '#1a1a1a' ? config.title_color : undefined }}>
             {config?.title || "Shop The Look"}
           </h2>
-          <p className="text-sm md:text-base max-w-2xl mx-auto mb-8" style={{ color: config?.content_color }}>
+          <p className="text-sm md:text-base max-w-2xl mx-auto mb-8 text-taupe" style={{ color: config?.content_color && config.content_color !== '#666666' ? config.content_color : undefined }}>
             {config?.description || "Khám phá những mẫu thiết kế nội thất hoàn mỹ và sở hữu ngay các sản phẩm trong ảnh chỉ với một cú chạm."}
           </p>
 
@@ -133,7 +133,7 @@ export function ShopTheLook() {
             <Button 
               asChild 
               variant="outline" 
-              className="h-12 px-8 rounded-lg border-charcoal/20 text-charcoal font-bold text-xs uppercase tracking-widest hover:bg-charcoal hover:text-white transition-all group"
+              className="h-12 px-8 rounded-lg border-white/20 text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-charcoal transition-all group"
             >
               <Link to="/cam-hung">
                 Khám phá tất cả cảm hứng <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -145,11 +145,12 @@ export function ShopTheLook() {
           <div className="flex flex-nowrap justify-start md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0 pb-4 touch-pan-x">
             <button
               onClick={() => setActiveCategorySlug("all")}
-              className={`px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 active:scale-95 ${
+              className={cn(
+                "px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 active:scale-95",
                 activeCategorySlug === "all" 
-                  ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
-                  : 'bg-white border-border text-muted-foreground hover:border-charcoal'
-              }`}
+                  ? 'bg-primary text-white border-primary shadow-gold' 
+                  : 'bg-white/5 border-white/10 text-taupe hover:border-white/40'
+              )}
             >
               Tất cả các phòng
             </button>
@@ -157,11 +158,12 @@ export function ShopTheLook() {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategorySlug(cat.slug!)}
-                className={`px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 active:scale-95 ${
+                className={cn(
+                  "px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 active:scale-95",
                   cat.slug === activeCategorySlug 
-                    ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
-                    : 'bg-white border-border text-muted-foreground hover:border-charcoal'
-                }`}
+                    ? 'bg-primary text-white border-primary shadow-gold' 
+                    : 'bg-white/5 border-white/10 text-taupe hover:border-white/40'
+                )}
               >
                 {cat.name}
               </button>
@@ -170,7 +172,7 @@ export function ShopTheLook() {
           </div>
         </motion.div>
 
-        <div className="relative rounded-2xl overflow-hidden bg-transparent shadow-elevated border border-border/40">
+        <div className="relative rounded-2xl overflow-hidden bg-transparent shadow-elevated border border-white/5">
           <Carousel 
             setApi={setApi}
             opts={{ 
@@ -200,7 +202,7 @@ export function ShopTheLook() {
                         />
                       </div>
                       
-                      <div className="absolute inset-0 bg-black/5 pointer-events-none">
+                      <div className="absolute inset-0 bg-black/10 pointer-events-none">
                         <TooltipProvider>
                           {look.shop_look_items
                             .filter((item: any) => item.target_image_url === look.image_url)
@@ -254,12 +256,12 @@ export function ShopTheLook() {
           </Carousel>
 
           {count > 1 && (
-            <div className="flex justify-center items-center gap-3 p-4 bg-secondary/20">
+            <div className="flex justify-center items-center gap-3 p-4 bg-white/5">
               {Array.from({ length: count }).map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => api?.scrollTo(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-500 ${idx === current ? "bg-primary w-8 md:w-12" : "bg-muted-foreground/30 w-2 md:w-3 hover:bg-primary/60"}`}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${idx === current ? "bg-primary w-8 md:w-12" : "bg-white/20 w-2 md:w-3 hover:bg-primary/60"}`}
                 />
               ))}
             </div>
