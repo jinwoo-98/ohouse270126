@@ -122,12 +122,21 @@ export default function AdminLayout() {
     if (!authLoading) fetchProfile();
   }, [user, authLoading]);
 
+  // Logic bảo vệ đường dẫn nhạy cảm
+  useEffect(() => {
+    if (!fetchingProfile && userProfile?.role === 'editor') {
+      const sensitivePaths = ['/admin/team', '/admin/tracking'];
+      if (sensitivePaths.some(path => location.pathname.startsWith(path))) {
+        navigate('/admin');
+      }
+    }
+  }, [location.pathname, userProfile, fetchingProfile, navigate]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/admin");
   };
 
-  // Bảo mật: Chỉ dựa vào vai trò được xác thực từ database
   const role = userProfile?.role;
   const permissions = userProfile?.permissions || {};
 

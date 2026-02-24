@@ -69,17 +69,30 @@ export default function TeamManager() {
     }
   };
 
-  const handleUpdateRole = async (userId: string, role: string) => {
+  const handleUpdateRole = async (userId: string, newRole: string) => {
+    const userToUpdate = users.find(u => u.id === userId);
+    
+    // Kiểm tra nếu là Admin cuối cùng
+    if (userToUpdate?.role === 'admin' && newRole !== 'admin') {
+      const adminCount = users.filter(u => u.role === 'admin').length;
+      if (adminCount <= 1) {
+        toast.error("Hệ thống phải có ít nhất một Quản trị viên. Không thể hạ cấp tài khoản này.");
+        return;
+      }
+    }
+
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ role })
+        .update({ role: newRole })
         .eq('id', userId);
+      
       if (error) throw error;
-      setUsers(users.map(u => u.id === userId ? { ...u, role } : u));
+      
+      setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
       toast.success("Đã cập nhật vai trò nhân sự");
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error("Lỗi cập nhật: " + e.message);
     }
   };
 
