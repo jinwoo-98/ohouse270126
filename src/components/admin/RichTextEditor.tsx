@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Image as ImageIcon, Save, Settings2, X, Check } from "lucide-react";
@@ -170,6 +170,42 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
         />
       </div>
 
+      <div className="hidden">
+        <style>{`
+          .rich-editor-wrapper .quill {
+            height: 550px !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          .rich-editor-wrapper .ql-toolbar.ql-snow {
+            flex-shrink: 0 !important;
+            border: none !important;
+            border-bottom: 1px solid #f0f0f0 !important;
+            background: #fafafa !important;
+            z-index: 10 !important;
+          }
+          .rich-editor-wrapper .ql-container.ql-snow {
+            flex-grow: 1 !important;
+            overflow-y: auto !important;
+            border: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            height: auto !important;
+          }
+          .rich-editor-wrapper .ql-editor {
+            flex-grow: 1 !important;
+            min-height: 100% !important;
+            padding: 25px !important;
+            font-family: 'Montserrat', sans-serif !important;
+            font-size: 14px !important;
+            line-height: 1.6 !important;
+          }
+          .rich-editor-wrapper .ql-container::-webkit-scrollbar { width: 8px; }
+          .rich-editor-wrapper .ql-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+          .rich-editor-wrapper .ql-editor img { max-width: 100%; border-radius: 12px; margin: 15px 0; }
+        `}</style>
+      </div>
+
       <Dialog open={isAltModalOpen} onOpenChange={setIsAltModalOpen}>
         <DialogContent className="max-w-2xl rounded-3xl p-0 overflow-hidden border-none shadow-elevated z-[160]">
           <div className="bg-charcoal p-6 text-white">
@@ -212,40 +248,6 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <style>{`
-        .rich-editor-wrapper .quill {
-          height: 550px !important;
-          display: flex !important;
-          flex-direction: column !important;
-        }
-        .rich-editor-wrapper .ql-toolbar.ql-snow {
-          flex-shrink: 0 !important;
-          border: none !important;
-          border-bottom: 1px solid #f0f0f0 !important;
-          background: #fafafa !important;
-          z-index: 10 !important;
-        }
-        .rich-editor-wrapper .ql-container.ql-snow {
-          flex-grow: 1 !important;
-          overflow-y: auto !important;
-          border: none !important;
-          display: flex !important;
-          flex-direction: column !important;
-          height: auto !important;
-        }
-        .rich-editor-wrapper .ql-editor {
-          flex-grow: 1 !important;
-          min-height: 100% !important;
-          padding: 25px !important;
-          font-family: 'Montserrat', sans-serif !important;
-          font-size: 14px !important;
-          line-height: 1.6 !important;
-        }
-        .rich-editor-wrapper .ql-container::-webkit-scrollbar { width: 8px; }
-        .rich-editor-wrapper .ql-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
-        .rich-editor-wrapper .ql-editor img { max-width: 100%; border-radius: 12px; margin: 15px 0; }
-      `}</style>
     </div>
   );
 }
