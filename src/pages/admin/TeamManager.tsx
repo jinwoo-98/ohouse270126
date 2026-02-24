@@ -9,7 +9,8 @@ import {
   CheckCircle2,
   Phone,
   Settings,
-  UserCheck
+  UserCheck,
+  AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,6 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Danh sách các quyền có thể cấp cho Editor (Đã loại bỏ các mục nhạy cảm hệ thống)
 const PERMISSION_KEYS = [
   { key: 'homepage', label: 'Quản lý Trang chủ' },
   { key: 'orders', label: 'Quản lý Đơn hàng' },
@@ -52,6 +52,7 @@ export default function TeamManager() {
   const [editingUser, setEditingUser] = useState<any>(null);
   const [isPermsOpen, setIsPermsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "staff">("staff");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -74,12 +75,12 @@ export default function TeamManager() {
   const adminCount = users.filter(u => u.role === 'admin').length;
 
   const handleUpdateRole = async (userId: string, newRole: string) => {
-    // 1. Chặn hạ cấp nếu là Admin cuối cùng
     if (userId === currentUser?.id && adminCount <= 1 && newRole !== 'admin') {
-      toast.error("Bạn là Quản trị viên duy nhất. Hệ thống cần ít nhất 1 Admin để vận hành.");
+      toast.error("Bạn là Quản trị viên duy nhất. Không thể hạ cấp.");
       return;
     }
 
+    const toastId = toast.loading("Đang cập nhật vai trò...");
     try {
       const { error } = await supabase
         .from('profiles')
@@ -89,29 +90,19 @@ export default function TeamManager() {
       if (error) throw error;
       
       setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
-      toast.success("Đã cập nhật vai trò nhân sự");
-      
-      // Nếu tự đổi vai trò của mình, thông báo người dùng tải lại trang
-      if (userId === currentUser?.id) {
-        toast.info("Vai trò của bạn đã thay đổi. Vui lòng tải lại trang để áp dụng quyền mới.");
-      }
+      toast.success("Đã cập nhật vai trò thành công", { id: toastId });
     } catch (e: any) {
-      toast.error("Lỗi cập nhật: " + e.message);
+      toast.error("Lỗi: " + e.message, { id: toastId });
     }
   };
 
   const handleTogglePermission = async (key: string) => {
-    if (!editingUser) return;
-    
-    // Bảo mật: Không cho phép tự sửa quyền của chính mình (Admin luôn có toàn quyền, Editor không được tự nâng quyền)
-    if (editingUser.id === currentUser?.id) {
-      toast.error("Bạn không thể tự chỉnh sửa danh sách quyền hạn của chính mình.");
-      return;
-    }
+    if (!editingUser || isSaving) return;
     
     const newPerms = { ...editingUser.permissions };
     newPerms[key] = !newPerms[key];
     
+    setIsSaving(true);
     try {
       const { error } = await supabase
         .from('profiles')
@@ -124,14 +115,15 @@ export default function TeamManager() {
       setUsers(users.map(u => u.id === editingUser.id ? { ...u, permissions: newPerms } : u));
     } catch (e: any) {
       toast.error("Lỗi cập nhật quyền hạn");
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const filtered = users.filter(u => {
     const matchesSearch = 
       u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.phone?.includes(searchTerm) ||
-      u.id.toLowerCase().includes(searchTerm.toLowerCase());
+      u.phone?.includes(searchTerm);
     
     if (activeTab === "staff") {
       return matchesSearch && (u.role === 'admin' || u.role === 'editor');
@@ -154,32 +146,12 @@ export default function TeamManager() {
       <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="p-4 border-b bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex gap-1 p-1 bg-secondary/50 rounded-xl">
-            <Button 
-              variant={activeTab === 'staff' ? 'default' : 'ghost'} 
-              size="sm" 
-              onClick={() => setActiveTab('staff')}
-              className="text-[10px] uppercase font-bold h-9 rounded-lg"
-            >
-              Danh sách Nhân sự
-            </Button>
-            <Button 
-              variant={activeTab === 'all' ? 'default' : 'ghost'} 
-              size="sm" 
-              onClick={() => setActiveTab('all')}
-              className="text-[10px] uppercase font-bold h-9 rounded-lg"
-            >
-              Tất cả tài khoản
-            </Button>
+            <Button variant={activeTab === 'staff' ? 'default' : 'ghost'} size="sm" onClick={() => setActiveTab('staff')} className="text-[10px] uppercase font-bold h-9 rounded-lg">Danh sách Nhân sự</Button>
+            <Button variant={activeTab === 'all' ? 'default' : 'ghost'} size="sm" onClick={() => setActiveTab('all')} className="text-[10px] uppercase font-bold h-9 rounded-lg">Tất cả tài khoản</Button>
           </div>
-
           <div className="relative max-w-sm w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Tìm theo Email hoặc Số điện thoại..." 
-              className="pl-10 h-11 bg-white rounded-xl"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <Input placeholder="Tìm theo Email hoặc SĐT..." className="pl-10 h-11 bg-white rounded-xl" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
           </div>
         </div>
 
@@ -187,8 +159,7 @@ export default function TeamManager() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50 text-[10px] uppercase tracking-widest font-bold text-muted-foreground border-b">
-                <th className="px-6 py-4">Tài khoản nhân sự</th>
-                <th className="px-6 py-4">Số điện thoại</th>
+                <th className="px-6 py-4">Tài khoản</th>
                 <th className="px-6 py-4">Vai trò</th>
                 <th className="px-6 py-4">Quyền truy cập</th>
                 <th className="px-6 py-4 text-right">Thao tác</th>
@@ -196,41 +167,28 @@ export default function TeamManager() {
             </thead>
             <tbody className="divide-y divide-border">
               {loading ? (
-                <tr><td colSpan={5} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
+                <tr><td colSpan={4} className="p-12 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="p-12 text-center text-muted-foreground italic">Không tìm thấy tài khoản phù hợp.</td></tr>
+                <tr><td colSpan={4} className="p-12 text-center text-muted-foreground italic">Không tìm thấy tài khoản.</td></tr>
               ) : filtered.map((u) => (
                 <tr key={u.id} className="hover:bg-gray-50/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <div className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center font-bold shrink-0 border",
-                        u.role === 'admin' ? "bg-primary/10 text-primary border-primary/20" : 
-                        u.role === 'editor' ? "bg-blue-50 text-blue-600 border-blue-100" : 
-                        "bg-gray-50 text-gray-400 border-gray-100"
-                      )}>
-                        {u.email?.charAt(0).toUpperCase() || 'U'}
+                      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0 border", u.role === 'admin' ? "bg-primary/10 text-primary border-primary/20" : "bg-blue-50 text-blue-600 border-blue-100")}>
+                        {u.email?.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-charcoal truncate flex items-center gap-2">
                           {u.email}
                           {u.id === currentUser?.id && <Badge className="bg-primary/10 text-primary text-[8px] border-none">BẠN</Badge>}
                         </p>
-                        <p className="text-[10px] font-mono text-muted-foreground uppercase mt-0.5">{u.id.slice(0, 12)}...</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{u.phone || "Chưa cập nhật SĐT"}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-charcoal font-medium">{u.phone || "---"}</td>
                   <td className="px-6 py-4">
-                    <Select 
-                      value={u.role} 
-                      onValueChange={(val) => handleUpdateRole(u.id, val)}
-                      disabled={u.id === currentUser?.id && adminCount <= 1}
-                    >
-                      <SelectTrigger className={cn(
-                        "w-36 h-9 text-xs font-bold rounded-xl bg-white",
-                        u.id === currentUser?.id && adminCount <= 1 && "opacity-50 cursor-not-allowed"
-                      )}>
+                    <Select value={u.role} onValueChange={(val) => handleUpdateRole(u.id, val)} disabled={u.id === currentUser?.id && adminCount <= 1}>
+                      <SelectTrigger className="w-36 h-9 text-xs font-bold rounded-xl bg-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
@@ -239,29 +197,20 @@ export default function TeamManager() {
                         <SelectItem value="admin">Quản trị viên</SelectItem>
                       </SelectContent>
                     </Select>
-                    {u.id === currentUser?.id && adminCount <= 1 && (
-                      <p className="text-[8px] text-destructive font-bold mt-1 uppercase">Admin cuối cùng</p>
-                    )}
                   </td>
                   <td className="px-6 py-4">
                     {u.role === 'admin' ? (
-                      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 font-bold px-3">Toàn quyền hệ thống</Badge>
+                      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 font-bold px-3">Toàn quyền</Badge>
                     ) : u.role === 'editor' ? (
-                      <div className="flex flex-wrap gap-1 max-w-[200px]">
-                        {Object.entries(u.permissions || {}).filter(([_, v]) => v).length > 0 ? (
-                          <Badge variant="outline" className="text-[9px] uppercase bg-primary/5 text-primary border-primary/20 font-bold">
-                            {Object.entries(u.permissions || {}).filter(([_, v]) => v).length} Mục đã cấp
-                          </Badge>
-                        ) : (
-                          <span className="text-[10px] text-muted-foreground italic">Chưa được cấp quyền</span>
-                        )}
-                      </div>
+                      <Badge variant="outline" className="text-[9px] uppercase bg-primary/5 text-primary border-primary/20 font-bold">
+                        {Object.values(u.permissions || {}).filter(v => v).length} Mục đã cấp
+                      </Badge>
                     ) : (
-                      <span className="text-[10px] text-muted-foreground">Mặc định (User)</span>
+                      <span className="text-[10px] text-muted-foreground">Mặc định</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    {u.role === 'editor' && u.id !== currentUser?.id && (
+                    {u.role === 'editor' && (
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -296,24 +245,33 @@ export default function TeamManager() {
           </div>
 
           <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-            <div className="grid gap-2">
-              {PERMISSION_KEYS.map((p) => (
-                <div 
-                  key={p.key} 
-                  className="flex items-center justify-between p-3.5 rounded-xl border border-border/60 hover:bg-secondary/30 transition-colors cursor-pointer"
-                  onClick={() => handleTogglePermission(p.key)}
-                >
-                  <Label className="font-bold text-xs cursor-pointer text-charcoal">{p.label}</Label>
-                  <Checkbox checked={editingUser?.permissions?.[p.key] || false} className="data-[state=checked]:bg-primary" />
-                </div>
-              ))}
-            </div>
+            {editingUser?.id === currentUser?.id ? (
+              <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  Bạn không thể tự chỉnh sửa quyền hạn của chính mình để đảm bảo tính toàn vẹn của hệ thống.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-2">
+                {PERMISSION_KEYS.map((p) => (
+                  <div 
+                    key={p.key} 
+                    className="flex items-center justify-between p-3.5 rounded-xl border border-border/60 hover:bg-secondary/30 transition-colors cursor-pointer"
+                    onClick={() => handleTogglePermission(p.key)}
+                  >
+                    <Label className="font-bold text-xs cursor-pointer text-charcoal">{p.label}</Label>
+                    <div className="flex items-center">
+                      {isSaving ? <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /> : <Checkbox checked={editingUser?.permissions?.[p.key] || false} className="data-[state=checked]:bg-primary" />}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="p-5 bg-gray-50 border-t flex justify-end gap-3">
-            <Button className="btn-hero h-12 px-10 shadow-gold" onClick={() => setIsPermsOpen(false)}>
-              XÁC NHẬN CẤP QUYỀN
-            </Button>
+          <div className="p-5 bg-gray-50 border-t flex justify-end">
+            <Button className="btn-hero h-12 px-10 shadow-gold" onClick={() => setIsPermsOpen(false)}>ĐÓNG CỬA SỔ</Button>
           </div>
         </DialogContent>
       </Dialog>
