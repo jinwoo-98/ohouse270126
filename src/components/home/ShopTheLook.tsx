@@ -169,10 +169,11 @@ export function ShopTheLook() {
             </Button>
           </div>
 
-          <div className="flex justify-center md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0">
+          {/* Danh mục phòng: Tối ưu cuộn ngang trên mobile */}
+          <div className="flex justify-start md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0 pb-2">
             <button
               onClick={() => setActiveCategorySlug("all")}
-              className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 ${
+              className={`px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 ${
                 activeCategorySlug === "all" 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                   : 'bg-white border-border text-muted-foreground hover:border-charcoal'
@@ -184,7 +185,7 @@ export function ShopTheLook() {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategorySlug(cat.slug!)}
-                className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 ${
+                className={`px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 ${
                   cat.slug === activeCategorySlug 
                     ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                     : 'bg-white border-border text-muted-foreground hover:border-charcoal'
@@ -202,7 +203,7 @@ export function ShopTheLook() {
               className="flex h-full w-full cursor-grab active:cursor-grabbing"
               drag="x"
               dragConstraints={{ 
-                left: -((currentCategoryLooks.length - 1) * window.innerWidth), 
+                left: 0, 
                 right: 0 
               }}
               dragElastic={0.5}
