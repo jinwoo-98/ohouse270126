@@ -4,26 +4,29 @@ import { useState, useMemo } from "react";
 import { ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn, generateProductAltText } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface ProductDescriptionProps {
   description: string;
-  product?: any; // Nhận toàn bộ object product để lấy danh mục và thuộc tính
+  product?: any; 
 }
 
 export function ProductDescription({ description, product }: ProductDescriptionProps) {
   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
-  // Logic xử lý Alt ảnh tự động cho nội dung bài viết
+  // Logic xử lý Alt ảnh tự động cho nội dung bài viết và sanitize HTML
   const processedContent = useMemo(() => {
     if (!description) return "";
 
+    // 1. Sanitize content first
+    const sanitized = sanitizeHtml(description);
+
+    // 2. Process images for SEO
     const parser = new DOMParser();
-    const doc = parser.parseFromString(description, 'text/html');
+    const doc = parser.parseFromString(sanitized, 'text/html');
     const images = doc.querySelectorAll('img');
 
     images.forEach((img, index) => {
-      // Luôn tạo Alt mới theo công thức chuẩn để đảm bảo tính chính xác và SEO
-      // Tên - Danh mục - Thuộc tính - Số thứ tự
       const newAlt = generateProductAltText(product, index);
       img.setAttribute('alt', newAlt);
     });
@@ -51,7 +54,7 @@ export function ProductDescription({ description, product }: ProductDescriptionP
         )}>
           <div 
             className="rich-text-content flex flex-col items-center text-center prose prose-lg prose-stone max-w-none text-muted-foreground"
-            dangerouslySetInnerHTML={{ __html: processedContent || "<p className='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
+            dangerouslySetInnerHTML={{ __html: processedContent || "<p class='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>
         

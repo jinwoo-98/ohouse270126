@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 export default function ContentPage() {
   const location = useLocation();
@@ -78,7 +79,7 @@ export default function ContentPage() {
                   
                   <div 
                     className="prose prose-lg prose-stone max-w-none text-muted-foreground leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: pageData.content || '' }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(pageData.content) }}
                   />
                 </>
               ) : (

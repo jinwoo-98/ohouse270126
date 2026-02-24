@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { getOptimizedImageUrl } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const swipeConfidenceThreshold = 10000;
 const swipePower = (offset: number, velocity: number) => {
@@ -71,7 +72,6 @@ export function HeroSlider() {
 
   return (
     <section className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-charcoal">
-      {/* Dải ảnh liền mạch */}
       <motion.div
         className="flex h-full w-full cursor-grab active:cursor-grabbing"
         drag="x"
@@ -117,7 +117,7 @@ export function HeroSlider() {
                   {slide.description && (
                     <div 
                       className="text-sm md:text-xl mb-6 md:mb-8 max-w-lg leading-relaxed px-4 md:px-0 opacity-90 rich-text-content"
-                      dangerouslySetInnerHTML={{ __html: slide.description }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.description) }}
                     />
                   )}
                   
@@ -139,7 +139,6 @@ export function HeroSlider() {
         ))}
       </motion.div>
 
-      {/* Nút điều hướng */}
       {slides.length > 1 && (
         <>
           <button 
@@ -155,7 +154,6 @@ export function HeroSlider() {
             <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </button>
           
-          {/* Chỉ báo vị trí */}
           <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20">
             {slides.map((_, index) => (
               <button
