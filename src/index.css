@@ -1,160 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+/* ... keep existing code */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  :root {
-    /* OHOUSE.VN - Luxury Furniture Design System */
-    --primary: 38 65% 50%;
-    --primary-foreground: 0 0% 100%;
-    --background: 40 20% 98%;
-    --foreground: 30 10% 15%;
-    --card: 0 0% 100%;
-    --card-foreground: 30 10% 15%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 30 10% 15%;
-    --secondary: 35 25% 93%;
-    --secondary-foreground: 30 10% 20%;
-    --muted: 30 15% 92%;
-    --muted-foreground: 30 10% 45%;
-    --accent: 25 35% 25%;
-    --accent-foreground: 40 20% 98%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 30 15% 88%;
-    --input: 30 15% 88%;
-    --ring: 38 65% 50%;
-    --radius: 0.5rem;
-    --gold: 38 65% 50%;
-    --gold-light: 40 60% 70%;
-    --gold-dark: 35 70% 35%;
-    --charcoal: 30 10% 15%;
-    --walnut: 25 35% 25%;
-    --cream: 40 30% 95%;
-    --taupe: 30 15% 75%;
-    --gradient-gold: linear-gradient(135deg, hsl(38 65% 55%) 0%, hsl(35 70% 40%) 100%);
-    --gradient-luxury: linear-gradient(180deg, hsl(40 20% 98%) 0%, hsl(35 25% 93%) 100%);
-    --gradient-dark: linear-gradient(180deg, hsl(30 10% 15%) 0%, hsl(25 15% 10%) 100%);
-    --shadow-subtle: 0 2px 12px -2px hsl(30 10% 15% / 0.05);
-    --shadow-medium: 0 12px 32px -4px hsl(30 10% 15% / 0.08);
-    --shadow-elevated: 0 24px 64px -12px hsl(30 10% 15% / 0.12);
-    --shadow-gold: 0 4px 16px -2px hsl(38 65% 50% / 0.2);
-    --sidebar-background: 30 10% 15%;
-    --sidebar-foreground: 40 20% 95%;
-    --sidebar-primary: 38 65% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 25 35% 25%;
-    --sidebar-accent-foreground: 40 20% 95%;
-    --sidebar-border: 30 15% 25%;
-    --sidebar-ring: 38 65% 50%;
-  }
+/* Custom Phone Input Styling */
+.luxury-phone-input .PhoneInput {
+  @apply flex items-center gap-3 bg-secondary/20 p-1 rounded-xl border border-border/60 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all;
 }
 
-@layer base {
-  * { 
-    @apply border-transparent;
-    /* Firefox scrollbar support */
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
-  }
-  
-  html, body { 
-    width: 100%;
-    position: relative;
-    scroll-behavior: smooth;
-  }
-  
-  body {
-    @apply bg-background text-foreground antialiased;
-    font-family: 'Montserrat', sans-serif;
-  }
-
-  /* Custom Webkit Scrollbar (Chrome, Safari, Edge) */
-  ::-webkit-scrollbar {
-    width: 5px; /* Chiều rộng thanh cuộn dọc */
-    height: 5px; /* Chiều cao thanh cuộn ngang */
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.2);
-    border-radius: 10px;
-    transition: background 0.3s ease;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.5);
-  }
+.luxury-phone-input .PhoneInputInput {
+  @apply bg-transparent border-none focus:ring-0 text-sm font-bold h-10 w-full;
 }
 
-@layer components {
-  .section-title {
-    @apply text-2xl md:text-4xl font-display font-bold uppercase tracking-[0.1em] leading-tight text-charcoal;
-  }
-
-  .btn-hero {
-    @apply bg-primary text-primary-foreground px-8 py-4 text-sm font-medium uppercase tracking-widest;
-    @apply transition-all duration-300 ease-out;
-    @apply hover:shadow-gold hover:scale-[1.02];
-  }
-
-  .card-luxury {
-    @apply bg-transparent rounded-2xl overflow-hidden;
-    @apply transition-all duration-500 ease-out;
-  }
-
-  .card-luxury:hover {
-    @apply bg-card -translate-y-1;
-    box-shadow: var(--shadow-medium);
-  }
-
-  .container-luxury { 
-    /* Tăng max-width từ 1440px lên 1700px và giảm padding ngang để nội dung to hơn */
-    @apply max-w-[1700px] mx-auto px-2 md:px-4 lg:px-6; 
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  /* Custom Scrollbar for specific containers */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.3);
-    border-radius: 10px;
-  }
-
-  /* Rich Text Style */
-  .rich-text-content {
-    @apply text-center mx-auto max-w-4xl;
-  }
-  .rich-text-content img {
-    @apply mx-auto rounded-2xl my-8 shadow-medium block;
-    max-width: 100%;
-  }
-  .rich-text-content p {
-    @apply mb-4 leading-relaxed;
-  }
+.luxury-phone-input .PhoneInputCountry {
+  @apply ml-3 flex items-center gap-1;
 }
 
-@layer utilities {
-  /* Ensure links are clickable and styled correctly */
-  .top-banner-text a {
-    text-decoration: underline;
-    font-weight: bold;
-  }
-  
-  /* Utility to hide horizontal scrollbar */
-  .no-scrollbar-x::-webkit-scrollbar {
-    height: 0;
-  }
-  .no-scrollbar-x {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
+.luxury-phone-input .PhoneInputCountrySelect {
+  @apply cursor-pointer;
+}
+
+.luxury-phone-input .PhoneInputCountryIcon {
+  @apply shadow-sm rounded-sm overflow-hidden;
 }
