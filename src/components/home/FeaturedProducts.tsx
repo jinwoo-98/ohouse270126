@@ -51,7 +51,7 @@ export function FeaturedProducts() {
   };
 
   return (
-    <section className="py-10 md:py-24 bg-secondary/30">
+    <section className="py-10 md:py-24 bg-background">
       <div className="container-luxury">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

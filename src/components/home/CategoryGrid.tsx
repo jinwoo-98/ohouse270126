@@ -57,7 +57,7 @@ export function CategoryGrid() {
   if (categories.length === 0) return null;
 
   return (
-    <section className="py-10 md:py-24">
+    <section className="py-10 md:py-24 bg-background">
       <div className="container-luxury">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -82,7 +82,7 @@ export function CategoryGrid() {
         <Carousel
           opts={{
             align: "start",
-            dragFree: false, // Tắt dragFree để snap chuẩn hơn
+            dragFree: false,
             skipSnaps: false
           }}
           className="w-full"
