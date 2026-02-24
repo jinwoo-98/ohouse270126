@@ -114,8 +114,8 @@
   }
 
   .container-luxury { 
-    /* Giảm padding ngang trên mobile (px-2) */
-    @apply max-w-[1440px] mx-auto px-2 md:px-6 lg:px-8; 
+    /* Tăng max-width từ 1440px lên 1700px và giảm padding ngang để nội dung to hơn */
+    @apply max-w-[1700px] mx-auto px-2 md:px-4 lg:px-6; 
     width: 100%;
     box-sizing: border-box;
   }
