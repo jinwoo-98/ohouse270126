@@ -6,7 +6,7 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, AtSign, Smartphone, X } from "lucide-react";
+import { Loader2, AtSign, Smartphone, AlertTriangle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import PhoneInput from 'react-phone-number-input';
 import ReCAPTCHA from "react-google-recaptcha";
 import { E164Number } from 'libphonenumber-js/core';
 
+// Lấy Site Key từ biến môi trường
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
 
 interface AuthDialogProps {
@@ -31,7 +32,6 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
   const [resendCooldown, setResendCooldown] = useState(0);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
-  // Đóng dialog khi người dùng đã đăng nhập thành công
   useEffect(() => {
     if (user && isOpen) {
       onClose();
@@ -53,9 +53,16 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
       return;
     }
 
+    // Kiểm tra nếu chưa có Site Key
+    if (!RECAPTCHA_SITE_KEY) {
+      toast.error("Hệ thống chưa được cấu hình Google reCAPTCHA. Vui lòng liên hệ quản trị viên.");
+      console.error("Missing VITE_RECAPTCHA_SITE_KEY in environment variables.");
+      return;
+    }
+
     const recaptchaToken = recaptchaRef.current?.getValue();
     if (!recaptchaToken) {
-      toast.error("Vui lòng xác thực reCAPTCHA.");
+      toast.error("Vui lòng xác thực 'Tôi không phải là người máy'.");
       return;
     }
 
@@ -68,12 +75,12 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
       if (error) throw error;
       setOtpSent(true);
       setResendCooldown(60);
-      toast.success("Mã OTP đã được gửi.");
+      toast.success("Mã OTP đã được gửi thành công.");
     } catch (error: any) {
-      toast.error("Lỗi: " + error.message);
+      toast.error("Lỗi: " + (error.message || "Không thể gửi OTP"));
+      recaptchaRef.current?.reset();
     } finally {
       setIsPhoneLoading(false);
-      recaptchaRef.current?.reset();
     }
   };
 
@@ -87,7 +94,7 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
       toast.success("Đăng nhập thành công!");
       onClose();
     } catch (error: any) {
-      toast.error("Mã OTP không chính xác.");
+      toast.error("Mã OTP không chính xác hoặc đã hết hạn.");
     } finally {
       setIsPhoneLoading(false);
     }
@@ -171,13 +178,25 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                   </div>
                 </div>
                 
-                {RECAPTCHA_SITE_KEY && (
-                  <div className="flex justify-center scale-90 origin-center">
-                    <ReCAPTCHA ref={recaptchaRef} sitekey={RECAPTCHA_SITE_KEY} />
-                  </div>
-                )}
+                <div className="flex flex-col items-center gap-4">
+                  {RECAPTCHA_SITE_KEY ? (
+                    <div className="scale-90 origin-center z-[120]">
+                      <ReCAPTCHA 
+                        ref={recaptchaRef} 
+                        sitekey={RECAPTCHA_SITE_KEY}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                      <p className="text-[10px] text-amber-800 leading-relaxed">
+                        <strong>Lỗi cấu hình:</strong> Vui lòng thêm <code>VITE_RECAPTCHA_SITE_KEY</code> vào biến môi trường để sử dụng tính năng này.
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-                <Button type="submit" disabled={isPhoneLoading || !phone} className="w-full btn-hero h-12 shadow-gold rounded-xl text-[10px] font-bold">
+                <Button type="submit" disabled={isPhoneLoading || !phone || !RECAPTCHA_SITE_KEY} className="w-full btn-hero h-12 shadow-gold rounded-xl text-[10px] font-bold">
                   {isPhoneLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'GỬI MÃ XÁC THỰC OTP'}
                 </Button>
               </form>
