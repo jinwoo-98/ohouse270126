@@ -13,7 +13,7 @@ export default {
         md: "768px",
         lg: "1024px",
         xl: "1280px",
-        "2xl": "1700px", // Tăng từ 1440px lên 1700px
+        "2xl": "1700px",
       },
     },
     extend: {
@@ -79,9 +79,9 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-        xl: "calc(var(--radius) + 4px)", // Keep xl slightly larger than base for image inside card
-        '2xl': "var(--radius)", // FIX: Use base radius for main card
-        '3xl': "calc(var(--radius) + 8px)", // Keep 3xl larger for dialogs/sections
+        xl: "calc(var(--radius) + 4px)",
+        '2xl': "var(--radius)",
+        '3xl': "calc(var(--radius) + 8px)",
       },
       boxShadow: {
         subtle: "var(--shadow-subtle)",
