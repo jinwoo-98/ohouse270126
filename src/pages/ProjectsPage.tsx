@@ -137,14 +137,14 @@ export default function ProjectsPage() {
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="py-16 bg-charcoal text-cream">
+        {/* CTA - Updated to Light Background */}
+        <section className="py-16 md:py-24 bg-secondary/30 border-t border-border/40">
           <div className="container-luxury text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">Bạn Có Dự Án Cần Tư Vấn?</h2>
-            <p className="text-taupe mb-8 max-w-xl mx-auto">
-              Đội ngũ thiết kế chuyên nghiệp của OHOUSE sẵn sàng đồng hành cùng bạn
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-charcoal uppercase tracking-widest">Bạn Có Dự Án Cần Tư Vấn?</h2>
+            <p className="text-muted-foreground mb-8 max-w-xl mx-auto text-sm md:text-base">
+              Đội ngũ thiết kế chuyên nghiệp của OHOUSE sẵn sàng đồng hành cùng bạn để kiến tạo không gian sống đẳng cấp.
             </p>
-            <Button className="btn-hero" asChild>
+            <Button className="btn-hero h-12 px-10 rounded-2xl shadow-gold" asChild>
               <Link to="/lien-he">
                 Liên Hệ Ngay
                 <ArrowRight className="w-4 h-4 ml-2" />

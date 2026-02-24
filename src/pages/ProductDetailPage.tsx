@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Loader2, Truck, RotateCcw, ShieldCheck, CreditCard } from "lucide-react";
+import { ChevronRight, Loader2, Truck, RotateCw, ShieldCheck, CreditCard } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -312,18 +312,18 @@ export default function ProductDetailPage() {
                       )}
                     </div>
                     <div className="space-y-4">
-                      <div className="bg-charcoal p-8 rounded-[32px] text-cream shadow-elevated border border-white/5 h-full">
-                        <h3 className="font-bold mb-6 text-sm uppercase tracking-widest flex items-center gap-3"><ShieldCheck className="w-5 h-5 text-primary" /> Cam kết OHOUSE</h3>
+                      <div className="bg-secondary/30 p-8 rounded-[32px] text-charcoal shadow-subtle border border-border/40 h-full">
+                        <h3 className="font-bold mb-6 text-sm uppercase tracking-widest flex items-center gap-3 text-primary"><ShieldCheck className="w-5 h-5" /> Cam kết OHOUSE</h3>
                         <ul className="space-y-5">
                           {[
                             { icon: ShieldCheck, t: "Bảo hành 2 năm", d: "Hỗ trợ kỹ thuật trọn đời" },
-                            { icon: RotateCcw, t: "30 ngày đổi trả", d: "An tâm tuyệt đối khi mua sắm" },
+                            { icon: RotateCw, t: "30 ngày đổi trả", d: "An tâm tuyệt đối khi mua sắm" },
                             { icon: CreditCard, t: "Trả góp 0%", d: "Thủ tục nhanh qua thẻ tín dụng" },
                             { icon: Truck, t: "Lắp đặt miễn phí", d: "Tận tâm trong từng chi tiết" }
                           ].map((item, i) => (
                             <li key={i} className="flex gap-4">
-                              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 border border-white/10"><item.icon className="w-5 h-5 text-primary" /></div>
-                              <div><p className="text-xs font-bold uppercase tracking-wider">{item.t}</p><p className="text-[10px] text-taupe mt-1">{item.d}</p></div>
+                              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 border border-border/40 shadow-sm"><item.icon className="w-5 h-5 text-primary" /></div>
+                              <div><p className="text-xs font-bold uppercase tracking-wider">{item.t}</p><p className="text-[10px] text-muted-foreground mt-1">{item.d}</p></div>
                             </li>
                           ))}
                         </ul>
