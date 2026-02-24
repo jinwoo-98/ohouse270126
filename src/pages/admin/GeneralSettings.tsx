@@ -54,7 +54,23 @@ export default function GeneralSettings() {
     }
   };
 
+  const validateUrl = (url: string) => {
+    if (!url) return true;
+    const trimmed = url.trim();
+    // Allow only safe protocols: http, https, mailto, tel
+    return /^(https?|mailto|tel):/i.test(trimmed) || trimmed.startsWith('/') || trimmed.startsWith('#');
+  };
+
   const handleSave = async () => {
+    // Validate all URL fields
+    const urlFields = ['facebook_url', 'zalo_url', 'youtube_url', 'tiktok_url', 'moit_url'];
+    for (const field of urlFields) {
+      if (!validateUrl((settings as any)[field])) {
+        toast.error(`Đường dẫn ${field} không hợp lệ. Vui lòng sử dụng http:// hoặc https://`);
+        return;
+      }
+    }
+
     setLoading(true);
     
     const payload = {

@@ -81,3 +81,20 @@ export function getOptimizedImageUrl(url: string | null | undefined, options: { 
   
   return `${transformedUrl}?${params.toString()}`;
 }
+
+/**
+ * Sanitizes a URL to prevent XSS attacks by ensuring it uses safe protocols.
+ */
+export function sanitizeUrl(url: string | null | undefined): string {
+  if (!url) return "#";
+  const trimmedUrl = url.trim();
+  
+  // Allow only safe protocols: http, https, mailto, tel
+  // Also allow relative paths starting with / or #
+  if (/^(https?|mailto|tel):/i.test(trimmedUrl) || trimmedUrl.startsWith('/') || trimmedUrl.startsWith('#')) {
+    return trimmedUrl;
+  }
+  
+  // Default to # for unsafe protocols like javascript:
+  return "#";
+}

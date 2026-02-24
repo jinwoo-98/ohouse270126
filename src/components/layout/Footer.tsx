@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCategories } from "@/hooks/useCategories";
+import { sanitizeUrl } from "@/lib/utils";
 
 interface SiteSettings {
   phone: string;
@@ -149,17 +150,17 @@ export function Footer() {
 
             <div className="flex items-center gap-3 pt-2">
               {settings?.facebook_url && (
-                <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300 border border-border/40">
+                <a href={sanitizeUrl(settings.facebook_url)} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300 border border-border/40">
                   <Facebook className="w-4 h-4" />
                 </a>
               )}
               {settings?.youtube_url && (
-                <a href={settings.youtube_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300 border border-border/40">
+                <a href={sanitizeUrl(settings.youtube_url)} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300 border border-border/40">
                   <Youtube className="w-4 h-4" />
                 </a>
               )}
               {settings?.tiktok_url && (
-                <a href={settings.tiktok_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300 border border-border/40">
+                <a href={sanitizeUrl(settings.tiktok_url)} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300 border border-border/40">
                   <Instagram className="w-4 h-4" />
                 </a>
               )}
@@ -244,7 +245,7 @@ export function Footer() {
 
             {settings?.moit_url && (
               <div className="pt-2">
-                <a href={settings.moit_url} target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity inline-block">
+                <a href={sanitizeUrl(settings.moit_url)} target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100 transition-opacity inline-block">
                   <img 
                     src={settings.moit_logo_url || "https://frontend.tikicdn.com/_desktop-frontend/static/img/footer/logo-bo-cong-thuong.png"} 
                     alt="Chứng nhận Bộ Công Thương" 
