@@ -90,11 +90,12 @@ export function FlashSale() {
         <Carousel
           opts={{
             align: "start",
-            dragFree: true,
+            dragFree: false,
+            skipSnaps: false
           }}
           className="w-full"
         >
-          <CarouselContent className="-ml-4">
+          <CarouselContent className="-ml-4 touch-pan-y">
             {isLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <CarouselItem key={i} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">

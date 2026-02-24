@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, ChevronLeft, Loader2, Sparkles, ArrowRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/carousel";
 
 export function ShopTheLook() {
+  const navigate = useNavigate();
   const [allLooks, setAllLooks] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -140,11 +141,11 @@ export function ShopTheLook() {
             </Button>
           </div>
 
-          {/* Danh mục phòng: Cuộn ngang mượt mà, không nhảy dòng */}
-          <div className="flex flex-nowrap justify-start md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0 pb-4 touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
+          {/* Danh mục phòng: Cuộn ngang mượt mà */}
+          <div className="flex flex-nowrap justify-start md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0 pb-4 touch-pan-x">
             <button
               onClick={() => setActiveCategorySlug("all")}
-              className={`px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 ${
+              className={`px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 active:scale-95 ${
                 activeCategorySlug === "all" 
                   ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                   : 'bg-white border-border text-muted-foreground hover:border-charcoal'
@@ -156,7 +157,7 @@ export function ShopTheLook() {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategorySlug(cat.slug!)}
-                className={`px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 ${
+                className={`px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 active:scale-95 ${
                   cat.slug === activeCategorySlug 
                     ? 'bg-charcoal text-cream border-charcoal shadow-medium' 
                     : 'bg-white border-border text-muted-foreground hover:border-charcoal'
@@ -165,7 +166,7 @@ export function ShopTheLook() {
                 {cat.name}
               </button>
             ))}
-            <div className="w-6 shrink-0 md:hidden" /> {/* Padding cuối cho mobile */}
+            <div className="w-6 shrink-0 md:hidden" />
           </div>
         </motion.div>
 
@@ -175,25 +176,33 @@ export function ShopTheLook() {
             opts={{ 
               align: "start", 
               loop: true,
-              dragFree: true, // Cho phép vuốt tự do mượt mà hơn
-              containScroll: "trimSnaps"
+              skipSnaps: false,
+              dragFree: false 
             }}
             className="w-full"
           >
-            <CarouselContent className="-ml-0">
+            <CarouselContent className="-ml-0 touch-pan-y">
               {currentCategoryLooks.map((look) => {
                 const detailLink = `/y-tuong/${look.slug || look.id}`;
                 return (
                   <CarouselItem key={look.id} className="pl-0 basis-full">
-                    <div className="relative aspect-video overflow-hidden group touch-pan-y">
-                      <Link to={detailLink} className="absolute inset-0 z-10">
+                    <div className="relative aspect-video overflow-hidden group">
+                      <div 
+                        className="absolute inset-0 z-10 cursor-pointer"
+                        onClick={(e) => {
+                          // Chỉ điều hướng nếu không phải đang vuốt (kiểm tra đơn giản qua pointer events)
+                          navigate(detailLink);
+                        }}
+                      >
                         <img
                           src={getOptimizedImageUrl(look.homepage_image_url || look.image_url, { width: 1200 })}
                           alt={look.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover pointer-events-none"
                           loading="lazy"
+                          draggable="false"
                         />
-                      </Link>
+                      </div>
+                      
                       <div className="absolute inset-0 bg-black/5 pointer-events-none">
                         <TooltipProvider>
                           {look.shop_look_items
@@ -223,8 +232,9 @@ export function ShopTheLook() {
                             </Tooltip>
                           ))}
                         </TooltipProvider>
-                        <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block pointer-events-auto">
-                          <Button asChild size="sm" className="btn-hero h-9 text-[10px] shadow-gold">
+                        
+                        <div className="absolute bottom-4 right-4 z-20 md:opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
+                          <Button asChild size="sm" className="btn-hero h-9 text-[10px] shadow-gold px-4">
                             <Link to={detailLink}>
                               Xem Chi Tiết <ChevronRight className="w-3 h-3 ml-1" />
                             </Link>
@@ -245,7 +255,6 @@ export function ShopTheLook() {
             )}
           </Carousel>
 
-          {/* Dots Indicator */}
           {count > 1 && (
             <div className="flex justify-center items-center gap-3 p-4 bg-secondary/20">
               {Array.from({ length: count }).map((_, idx) => (

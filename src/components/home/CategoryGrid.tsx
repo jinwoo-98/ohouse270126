@@ -82,11 +82,12 @@ export function CategoryGrid() {
         <Carousel
           opts={{
             align: "start",
-            dragFree: true,
+            dragFree: false, // Tắt dragFree để snap chuẩn hơn
+            skipSnaps: false
           }}
           className="w-full"
         >
-          <CarouselContent className="-ml-4">
+          <CarouselContent className="-ml-4 touch-pan-y">
             {categories.map((category) => (
               <CarouselItem key={category.id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/5">
                 <Link
