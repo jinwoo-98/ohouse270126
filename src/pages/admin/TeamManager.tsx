@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Danh sách các quyền có thể cấp cho Editor (Đã loại bỏ các mục nhạy cảm hệ thống)
 const PERMISSION_KEYS = [
@@ -44,6 +45,7 @@ const PERMISSION_KEYS = [
 ];
 
 export default function TeamManager() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,16 +71,13 @@ export default function TeamManager() {
     }
   };
 
+  const adminCount = users.filter(u => u.role === 'admin').length;
+
   const handleUpdateRole = async (userId: string, newRole: string) => {
-    const userToUpdate = users.find(u => u.id === userId);
-    
-    // Kiểm tra nếu là Admin cuối cùng
-    if (userToUpdate?.role === 'admin' && newRole !== 'admin') {
-      const adminCount = users.filter(u => u.role === 'admin').length;
-      if (adminCount <= 1) {
-        toast.error("Hệ thống phải có ít nhất một Quản trị viên. Không thể hạ cấp tài khoản này.");
-        return;
-      }
+    // 1. Chặn hạ cấp nếu là Admin cuối cùng
+    if (userId === currentUser?.id && adminCount <= 1 && newRole !== 'admin') {
+      toast.error("Bạn là Quản trị viên duy nhất. Hệ thống cần ít nhất 1 Admin để vận hành.");
+      return;
     }
 
     try {
@@ -91,6 +90,11 @@ export default function TeamManager() {
       
       setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
       toast.success("Đã cập nhật vai trò nhân sự");
+      
+      // Nếu tự đổi vai trò của mình, thông báo người dùng tải lại trang
+      if (userId === currentUser?.id) {
+        toast.info("Vai trò của bạn đã thay đổi. Vui lòng tải lại trang để áp dụng quyền mới.");
+      }
     } catch (e: any) {
       toast.error("Lỗi cập nhật: " + e.message);
     }
@@ -98,6 +102,12 @@ export default function TeamManager() {
 
   const handleTogglePermission = async (key: string) => {
     if (!editingUser) return;
+    
+    // Bảo mật: Không cho phép tự sửa quyền của chính mình (Admin luôn có toàn quyền, Editor không được tự nâng quyền)
+    if (editingUser.id === currentUser?.id) {
+      toast.error("Bạn không thể tự chỉnh sửa danh sách quyền hạn của chính mình.");
+      return;
+    }
     
     const newPerms = { ...editingUser.permissions };
     newPerms[key] = !newPerms[key];
@@ -202,15 +212,25 @@ export default function TeamManager() {
                         {u.email?.charAt(0).toUpperCase() || 'U'}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-charcoal truncate">{u.email}</p>
+                        <p className="text-sm font-bold text-charcoal truncate flex items-center gap-2">
+                          {u.email}
+                          {u.id === currentUser?.id && <Badge className="bg-primary/10 text-primary text-[8px] border-none">BẠN</Badge>}
+                        </p>
                         <p className="text-[10px] font-mono text-muted-foreground uppercase mt-0.5">{u.id.slice(0, 12)}...</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-charcoal font-medium">{u.phone || "---"}</td>
                   <td className="px-6 py-4">
-                    <Select value={u.role} onValueChange={(val) => handleUpdateRole(u.id, val)}>
-                      <SelectTrigger className="w-36 h-9 text-xs font-bold rounded-xl bg-white">
+                    <Select 
+                      value={u.role} 
+                      onValueChange={(val) => handleUpdateRole(u.id, val)}
+                      disabled={u.id === currentUser?.id && adminCount <= 1}
+                    >
+                      <SelectTrigger className={cn(
+                        "w-36 h-9 text-xs font-bold rounded-xl bg-white",
+                        u.id === currentUser?.id && adminCount <= 1 && "opacity-50 cursor-not-allowed"
+                      )}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
@@ -219,6 +239,9 @@ export default function TeamManager() {
                         <SelectItem value="admin">Quản trị viên</SelectItem>
                       </SelectContent>
                     </Select>
+                    {u.id === currentUser?.id && adminCount <= 1 && (
+                      <p className="text-[8px] text-destructive font-bold mt-1 uppercase">Admin cuối cùng</p>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     {u.role === 'admin' ? (
@@ -238,7 +261,7 @@ export default function TeamManager() {
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    {u.role === 'editor' && (
+                    {u.role === 'editor' && u.id !== currentUser?.id && (
                       <Button 
                         variant="outline" 
                         size="sm" 
