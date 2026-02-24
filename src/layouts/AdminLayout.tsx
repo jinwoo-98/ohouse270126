@@ -27,7 +27,8 @@ import {
   Code,
   MapPin,
   Zap,
-  Search
+  Search,
+  UserCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ const menuGroups = [
     label: "Tổng Quan",
     items: [
       { id: 'dashboard', title: "Dashboard", icon: LayoutDashboard, href: "/admin" },
+      { id: 'account', title: "Tài khoản của tôi", icon: UserCircle, href: "/admin/account" },
     ]
   },
   {
@@ -96,7 +98,7 @@ export default function AdminLayout() {
 
   const fetchProfile = async () => {
     if (!user) {
-      setUserProfile(null); // Quan trọng: Xóa profile cũ khi không có user
+      setUserProfile(null);
       setFetchingProfile(false);
       return;
     }
@@ -123,7 +125,6 @@ export default function AdminLayout() {
     if (!authLoading) fetchProfile();
   }, [user, authLoading]);
 
-  // Logic bảo vệ đường dẫn nhạy cảm
   useEffect(() => {
     if (!fetchingProfile && userProfile?.role === 'editor') {
       const sensitivePaths = ['/admin/team', '/admin/tracking'];
@@ -135,7 +136,7 @@ export default function AdminLayout() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setUserProfile(null); // Xóa profile ngay lập tức
+    setUserProfile(null);
     navigate("/admin");
   };
 
@@ -147,7 +148,6 @@ export default function AdminLayout() {
     );
   }
 
-  // Nếu không có user, hiển thị màn hình đăng nhập ngay
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -173,7 +173,6 @@ export default function AdminLayout() {
   const role = userProfile?.role;
   const permissions = userProfile?.permissions || {};
 
-  // Nếu đã đăng nhập nhưng không có quyền admin/editor
   if (role !== 'admin' && role !== 'editor') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -190,7 +189,7 @@ export default function AdminLayout() {
   const filteredGroups = menuGroups.map(group => {
     const allowedItems = group.items.filter(item => {
       if (role === 'admin') return true;
-      if (item.id === 'dashboard') return true;
+      if (item.id === 'dashboard' || item.id === 'account') return true;
       if (item.id === 'team' || item.id === 'tracking') return false; 
       return permissions[item.id] === true;
     });
@@ -243,13 +242,15 @@ export default function AdminLayout() {
         <header className="h-20 bg-white border-b flex items-center justify-between px-6 lg:px-8 shrink-0">
           <button className="lg:hidden p-2 -ml-2" onClick={() => setIsSidebarOpen(true)}><Menu className="w-6 h-6" /></button>
           <div className="flex items-center gap-4 ml-auto">
-            <div className="text-right">
-              <p className="text-sm font-bold text-charcoal">{user?.email}</p>
-              <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/30 text-primary bg-primary/5">{role} Portal</Badge>
-            </div>
-            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold uppercase shadow-gold shrink-0">
-              {user?.email?.charAt(0)}
-            </div>
+            <Link to="/admin/account" className="flex items-center gap-4 group">
+              <div className="text-right">
+                <p className="text-sm font-bold text-charcoal group-hover:text-primary transition-colors">{user?.email}</p>
+                <Badge variant="outline" className="text-[8px] uppercase font-bold border-primary/30 text-primary bg-primary/5">{role} Portal</Badge>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold uppercase shadow-gold shrink-0 group-hover:scale-105 transition-transform">
+                {user?.email?.charAt(0)}
+              </div>
+            </Link>
           </div>
         </header>
         <main className="flex-1 overflow-auto p-6 lg:p-8 bg-gray-50/50">

@@ -67,6 +67,7 @@ import TrackingManager from "./pages/admin/TrackingManager";
 import ShowroomManager from "./pages/admin/ShowroomManager";
 import ShowroomForm from "./pages/admin/ShowroomForm";
 import DesignServiceConfig from "./pages/admin/DesignServiceConfig";
+import AdminAccount from "./pages/admin/AdminAccount"; // Import mới
 
 // Homepage Sub-pages
 import SlidePage from "./pages/admin/homepage/SlidePage.tsx";
@@ -134,6 +135,7 @@ const App = () => (
                   {/* Admin Routes */}
                   <Route path="/admin" element={<AdminLayout />}>
                     <Route index element={<DashboardOverview />} />
+                    <Route path="account" element={<AdminAccount />} />
                     <Route path="homepage" element={<HomepageSectionManager />} />
                     <Route path="homepage/slides" element={<SlidePage />} />
                     <Route path="homepage/sections" element={<SectionConfigPage />} />
