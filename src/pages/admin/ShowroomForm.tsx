@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Save, Loader2, MapPin, Phone, Mail, Clock, Image as ImageIcon, Code } from "lucide-react";
+import { ArrowLeft, Save, Loader2, MapPin, Phone, Mail, Clock, Image as ImageIcon, Code, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +31,7 @@ export default function ShowroomForm() {
 
   useEffect(() => {
     if (id) fetchShowroom();
-    else setFetching(false); // Set fetching to false if not in edit mode
+    else setFetching(false);
   }, [id]);
 
   const fetchShowroom = async () => {
@@ -45,6 +45,17 @@ export default function ShowroomForm() {
     setFetching(false);
   };
 
+  // Helper to extract URL from iframe tag or just return the URL
+  const extractUrl = (input: string) => {
+    if (!input) return "";
+    const trimmed = input.trim();
+    if (trimmed.toLowerCase().startsWith('<iframe')) {
+      const match = trimmed.match(/src=["']([^"']+)["']/i);
+      return match ? match[1] : trimmed;
+    }
+    return trimmed;
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.address || !formData.phone) {
@@ -55,6 +66,7 @@ export default function ShowroomForm() {
     setLoading(true);
     const payload = {
       ...formData,
+      map_iframe_url: extractUrl(formData.map_iframe_url),
       display_order: parseInt(formData.display_order) || 1000,
     };
 
@@ -123,16 +135,16 @@ export default function ShowroomForm() {
           </div>
           
           <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Code className="w-4 h-4" /> Mã nhúng bản đồ</h3>
+            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><Globe className="w-4 h-4" /> Bản đồ Google Maps</h3>
             <div className="space-y-2">
-              <Label>Google Maps Iframe URL</Label>
+              <Label>Đường dẫn nhúng (Embed URL)</Label>
               <Textarea 
                 value={formData.map_iframe_url} 
                 onChange={e => setFormData({...formData, map_iframe_url: e.target.value})} 
-                placeholder='<iframe src="https://www.google.com/maps/embed?..." ...></iframe>'
-                className="font-mono text-xs min-h-[150px]"
+                placeholder='Dán link "src" hoặc toàn bộ mã nhúng <iframe> từ Google Maps...'
+                className="font-mono text-xs min-h-[120px]"
               />
-              <p className="text-[10px] text-muted-foreground italic">Dán mã nhúng HTML từ Google Maps.</p>
+              <p className="text-[10px] text-muted-foreground italic">Hệ thống sẽ tự động trích xuất URL an toàn từ mã nhúng của bạn.</p>
             </div>
           </div>
         </div>

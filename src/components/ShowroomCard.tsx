@@ -10,6 +10,18 @@ interface ShowroomCardProps {
 }
 
 export function ShowroomCard({ showroom, index }: ShowroomCardProps) {
+  // Helper to check if the string is a URL or an old iframe tag
+  const getMapUrl = (input: string) => {
+    if (!input) return "";
+    if (input.trim().toLowerCase().startsWith('<iframe')) {
+      const match = input.match(/src=["']([^"']+)["']/i);
+      return match ? match[1] : "";
+    }
+    return input;
+  };
+
+  const mapUrl = getMapUrl(showroom.map_iframe_url);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -23,25 +35,15 @@ export function ShowroomCard({ showroom, index }: ShowroomCardProps) {
         <div className="md:col-span-1 aspect-[4/3] rounded-2xl overflow-hidden bg-secondary/50 border border-border/40 shrink-0">
           {showroom.image_url ? (
             <img src={getOptimizedImageUrl(showroom.image_url, { width: 400 })} alt={showroom.name} className="w-full h-full object-cover" />
-          ) : showroom.map_iframe_url ? (
-            // Check if the content looks like an iframe (starts with '<iframe')
-            showroom.map_iframe_url.trim().toLowerCase().startsWith('<iframe') ? (
-              <div 
-                className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-none"
-                dangerouslySetInnerHTML={{ __html: showroom.map_iframe_url }}
-              />
-            ) : (
-              // Fallback: Treat it as a simple URL and make it clickable
-              <a 
-                href={showroom.map_iframe_url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-full h-full flex flex-col items-center justify-center text-center p-4 text-primary hover:underline text-sm font-bold"
-              >
-                <MapPin className="w-8 h-8 mb-2" />
-                Mở bản đồ (Lỗi định dạng mã nhúng)
-              </a>
-            )
+          ) : mapUrl ? (
+            <iframe
+              src={mapUrl}
+              className="w-full h-full border-none"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title={`Bản đồ ${showroom.name}`}
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground/50">
               <MapPin className="w-8 h-8" />
