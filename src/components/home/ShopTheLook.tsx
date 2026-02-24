@@ -35,10 +35,7 @@ export function ShopTheLook() {
   const fetchData = async () => {
     try {
       const { data: configData } = await supabase
-        .from('homepage_sections')
-        .select('*')
-        .eq('section_key', 'shop_look')
-        .single();
+        .from('homepage_sections').select('*').eq('section_key', 'shop_look').single();
       if (configData) setConfig(configData);
 
       const { data, error } = await supabase
