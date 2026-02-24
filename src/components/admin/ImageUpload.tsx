@@ -13,6 +13,10 @@ interface ImageUploadProps {
   multiple?: boolean;
 }
 
+// Allowed image MIME types for security
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
 export function ImageUpload({ value, onChange, disabled, bucket = "uploads", multiple = false }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
 
@@ -23,7 +27,10 @@ export function ImageUpload({ value, onChange, disabled, bucket = "uploads", mul
 
     const { error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        contentType: file.type,
+        upsert: false
+      });
 
     if (uploadError) throw uploadError;
 
@@ -39,26 +46,27 @@ export function ImageUpload({ value, onChange, disabled, bucket = "uploads", mul
       const files = Array.from(e.target.files || []);
       if (files.length === 0) return;
 
-      // Kiểm tra dung lượng
-      const oversized = files.some(f => f.size > 2 * 1024 * 1024);
-      if (oversized) {
-        toast.error("Một số ảnh quá lớn! Vui lòng chọn ảnh dưới 2MB.");
-        return;
+      // Strict validation for each file
+      for (const file of files) {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+          toast.error(`Định dạng tệp "${file.name}" không được hỗ trợ. Vui lòng chọn ảnh JPG, PNG, WebP hoặc GIF.`);
+          return;
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          toast.error(`Tệp "${file.name}" quá lớn! Vui lòng chọn ảnh dưới 2MB.`);
+          return;
+        }
       }
 
       setIsUploading(true);
 
-      // Tải lên tất cả các file và giữ nguyên thứ tự bằng Promise.all
-      // Chúng ta map qua danh sách file gốc để kết quả trả về đúng thứ tự đó
       const uploadPromises = files.map(file => uploadFile(file));
       const urls = await Promise.all(uploadPromises);
 
       if (multiple) {
-        // Nếu là multiple, gộp vào mảng hiện tại
         const currentUrls = Array.isArray(value) ? value : (value ? [value] : []);
         onChange([...currentUrls, ...urls]);
       } else {
-        // Nếu không, chỉ lấy ảnh đầu tiên
         onChange(urls[0]);
       }
 
@@ -79,8 +87,6 @@ export function ImageUpload({ value, onChange, disabled, bucket = "uploads", mul
     }
   };
 
-  // Giao diện cho trường hợp Multiple sẽ được quản lý bởi component cha (ProductForm)
-  // Component này chỉ đóng vai trò là nút bấm/vùng chọn file
   return (
     <div className="w-full">
       {!multiple && value && typeof value === 'string' ? (
@@ -120,7 +126,7 @@ export function ImageUpload({ value, onChange, disabled, bucket = "uploads", mul
             <input 
               type="file" 
               className="hidden" 
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={handleUpload}
               disabled={disabled || isUploading}
               multiple={multiple}

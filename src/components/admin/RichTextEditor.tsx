@@ -22,12 +22,14 @@ interface ImageAltItem {
   index: number;
 }
 
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
 export function RichTextEditor({ value, onChange, placeholder, contextTitle }: RichTextEditorProps) {
   const quillRef = useRef<ReactQuill>(null);
   const [isAltModalOpen, setIsAltModalOpen] = useState(false);
   const [imageList, setImageList] = useState<ImageAltItem[]>([]);
 
-  // Hàm trích xuất danh sách ảnh từ nội dung HTML hiện tại
   const extractImages = () => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(value || "", 'text/html');
@@ -50,7 +52,6 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
     setIsAltModalOpen(true);
   };
 
-  // Hàm lưu lại các thay đổi Alt vào nội dung HTML
   const handleSaveAlts = () => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(value || "", 'text/html');
@@ -74,13 +75,25 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
   const imageHandler = () => {
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
-    input.setAttribute('accept', 'image/*');
+    input.setAttribute('accept', 'image/jpeg,image/png,image/webp,image/gif');
     input.setAttribute('multiple', 'true');
     input.click();
 
     input.onchange = async () => {
       const files = Array.from(input.files || []);
       if (files.length === 0) return;
+
+      // Validation
+      for (const file of files) {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+          toast.error(`Định dạng tệp "${file.name}" không được hỗ trợ.`);
+          return;
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          toast.error(`Tệp "${file.name}" quá lớn (tối đa 2MB).`);
+          return;
+        }
+      }
 
       const toastId = toast.loading(`Đang tải lên ${files.length} ảnh...`);
 
@@ -94,16 +107,17 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
         for (const file of files) {
           const fileExt = file.name.split('.').pop();
           const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
-          const { error } = await supabase.storage.from('uploads').upload(fileName, file);
+          const { error } = await supabase.storage.from('uploads').upload(fileName, file, {
+            contentType: file.type,
+            upsert: false
+          });
           
           if (error) throw error;
           
           const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(fileName);
 
-          // Chèn ảnh với Alt mặc định là tên sản phẩm
           quill.insertEmbed(currentIndex, 'image', publicUrl);
           
-          // Đợi một chút để DOM cập nhật rồi gán Alt mặc định
           setTimeout(() => {
             const images = quill.root.querySelectorAll('img');
             const targetImg = Array.from(images).find(img => img.getAttribute('src') === publicUrl);
@@ -115,7 +129,7 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
           currentIndex += 1;
         }
 
-        toast.success("Đã chèn ảnh thành công. Hãy nhấn 'Quản lý Alt ảnh' để tối ưu SEO.", { id: toastId });
+        toast.success("Đã chèn ảnh thành công.", { id: toastId });
       } catch (error: any) {
         toast.error("Lỗi khi tải ảnh: " + error.message, { id: toastId });
       }
