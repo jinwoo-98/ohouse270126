@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeTrackingScript } from "@/lib/sanitize";
 
 interface Script {
   id: string;
@@ -29,44 +30,56 @@ export function TrackingScripts() {
     const headScripts = scripts.filter(s => s.location === 'head');
     const bodyScripts = scripts.filter(s => s.location === 'body');
 
-    // Function để chèn script vào DOM
+    /**
+     * Safely injects scripts into the DOM using a contextual fragment.
+     * This method allows script execution while maintaining better control than innerHTML.
+     */
     const injectScripts = (scripts: Script[], target: 'head' | 'body') => {
       const targetElement = target === 'head' ? document.head : document.body;
       
       scripts.forEach(script => {
-        // Kiểm tra xem script đã được chèn chưa (dựa trên ID)
-        if (document.getElementById(`tracking-script-${script.id}`)) return;
+        const containerId = `tracking-script-container-${script.id}`;
+        // Prevent duplicate injection
+        if (document.getElementById(containerId)) return;
 
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = script.script_content;
+        // Sanitize again before injection for defense in depth
+        const sanitized = sanitizeTrackingScript(script.script_content);
         
-        // Chèn từng phần tử con (script, noscript, iframe...)
-        Array.from(tempDiv.children).forEach(child => {
-          const element = child.cloneNode(true) as HTMLElement;
-          element.id = `tracking-script-${script.id}`; // Gắn ID để tránh chèn trùng
-          targetElement.appendChild(element);
-        });
+        try {
+          // Create a fragment from the sanitized HTML
+          const fragment = document.createRange().createContextualFragment(sanitized);
+          
+          // Wrap in a hidden span to manage the script group and allow easy cleanup
+          const wrapper = document.createElement('span');
+          wrapper.id = containerId;
+          wrapper.style.display = 'none';
+          wrapper.appendChild(fragment);
+          
+          targetElement.appendChild(wrapper);
+        } catch (e) {
+          console.error(`[TrackingScripts] Failed to inject script ${script.id}:`, e);
+        }
       });
     };
 
-    // Chèn vào Head
+    // Inject head scripts immediately
     injectScripts(headScripts, 'head');
 
-    // Chèn vào Body (sử dụng setTimeout để đảm bảo body đã sẵn sàng)
+    // Inject body scripts with a small delay to ensure body is ready
     const bodyTimeout = setTimeout(() => {
       injectScripts(bodyScripts, 'body');
     }, 100);
 
     return () => {
       clearTimeout(bodyTimeout);
-      // Dọn dẹp khi component unmount (chủ yếu cho hot reload)
+      // Cleanup injected scripts on unmount
       scripts.forEach(script => {
-        const elements = document.querySelectorAll(`#tracking-script-${script.id}`);
-        elements.forEach(el => el.remove());
+        const el = document.getElementById(`tracking-script-container-${script.id}`);
+        if (el) el.remove();
       });
     };
   }, [scripts]);
 
-  // Component này không render gì cả, chỉ quản lý DOM side effects
+  // This component manages side effects and doesn't render visible UI
   return null;
 }

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { cn } from "@/lib/utils";
+import { sanitizeTrackingScript } from "@/lib/sanitize";
 
 export default function TrackingManager() {
   const [scripts, setScripts] = useState<any[]>([]);
@@ -46,10 +47,15 @@ export default function TrackingManager() {
     e.preventDefault();
     setSaving(true);
     const formData = new FormData(e.currentTarget);
+    
+    // Sanitize the script content before saving to prevent persistent XSS
+    const rawContent = formData.get('script_content') as string;
+    const sanitizedContent = sanitizeTrackingScript(rawContent);
+
     const payload = {
       name: formData.get('name'),
       location: formData.get('location'),
-      script_content: formData.get('script_content'),
+      script_content: sanitizedContent,
       is_active: editingScript?.is_active ?? true,
       display_order: editingScript?.display_order ?? scripts.length + 1,
     };
