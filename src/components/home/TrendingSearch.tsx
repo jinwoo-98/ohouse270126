@@ -18,16 +18,16 @@ export function TrendingSearch() {
   if (keywords.length === 0) return null;
 
   return (
-    <section className="py-12 md:py-16 bg-background">
+    <section className="py-12 md:py-20 bg-background">
       <div className="container-luxury">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-primary" />
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex items-center gap-4 shrink-0">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-sm font-bold uppercase tracking-widest">Xu Hướng Tìm Kiếm</h2>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Được quan tâm nhiều nhất</p>
+              <h2 className="text-lg md:text-xl font-bold uppercase tracking-widest text-charcoal">Xu Hướng Tìm Kiếm</h2>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-1">Được quan tâm nhiều nhất</p>
             </div>
           </div>
 
@@ -42,7 +42,7 @@ export function TrendingSearch() {
               >
                 <Link
                   to={`/tim-kiem?q=${encodeURIComponent(item.keyword)}`}
-                  className="px-4 py-2 bg-secondary/50 hover:bg-primary hover:text-primary-foreground rounded-lg text-xs font-medium transition-all duration-300 whitespace-nowrap shadow-subtle"
+                  className="px-5 py-2.5 bg-secondary/50 hover:bg-primary hover:text-primary-foreground rounded-xl text-xs font-bold transition-all duration-300 whitespace-nowrap shadow-subtle border border-border/40"
                 >
                   {item.keyword}
                 </Link>
@@ -52,7 +52,7 @@ export function TrendingSearch() {
 
           <Link 
             to="/noi-that" 
-            className="group flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary shrink-0"
+            className="group flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-primary shrink-0"
           >
             Tất cả sản phẩm
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -59,6 +59,11 @@
   .img-zoom img {
     @apply transition-transform duration-700 hover:scale-110;
   }
+
+  /* Định nghĩa tiêu đề chính cho các section */
+  .section-title {
+    @apply text-2xl md:text-4xl lg:text-5xl font-bold uppercase tracking-[0.15em] text-charcoal leading-tight;
+  }
 }
 
 /* Custom Phone Input Styling */
