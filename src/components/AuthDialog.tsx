@@ -15,8 +15,8 @@ import PhoneInput from 'react-phone-number-input';
 import ReCAPTCHA from "react-google-recaptcha";
 import { E164Number } from 'libphonenumber-js/core';
 
-// Lấy Site Key từ biến môi trường
-const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
+// Sử dụng Khóa trang web bạn đã cung cấp
+const RECAPTCHA_SITE_KEY = "6LfcQXYsAAAAAEcc2VHOPlffDiHVbsMg1dXdzbQR";
 
 interface AuthDialogProps {
   isOpen: boolean;
@@ -50,13 +50,6 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
     e.preventDefault();
     if (!phone) {
       toast.error("Vui lòng nhập số điện thoại.");
-      return;
-    }
-
-    // Kiểm tra nếu chưa có Site Key
-    if (!RECAPTCHA_SITE_KEY) {
-      toast.error("Hệ thống chưa được cấu hình Google reCAPTCHA. Vui lòng liên hệ quản trị viên.");
-      console.error("Missing VITE_RECAPTCHA_SITE_KEY in environment variables.");
       return;
     }
 
@@ -179,24 +172,15 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                 </div>
                 
                 <div className="flex flex-col items-center gap-4">
-                  {RECAPTCHA_SITE_KEY ? (
-                    <div className="scale-90 origin-center z-[120]">
-                      <ReCAPTCHA 
-                        ref={recaptchaRef} 
-                        sitekey={RECAPTCHA_SITE_KEY}
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-full p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
-                      <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                      <p className="text-[10px] text-amber-800 leading-relaxed">
-                        <strong>Lỗi cấu hình:</strong> Vui lòng thêm <code>VITE_RECAPTCHA_SITE_KEY</code> vào biến môi trường để sử dụng tính năng này.
-                      </p>
-                    </div>
-                  )}
+                  <div className="scale-90 origin-center z-[120]">
+                    <ReCAPTCHA 
+                      ref={recaptchaRef} 
+                      sitekey={RECAPTCHA_SITE_KEY}
+                    />
+                  </div>
                 </div>
 
-                <Button type="submit" disabled={isPhoneLoading || !phone || !RECAPTCHA_SITE_KEY} className="w-full btn-hero h-12 shadow-gold rounded-xl text-[10px] font-bold">
+                <Button type="submit" disabled={isPhoneLoading || !phone} className="w-full btn-hero h-12 shadow-gold rounded-xl text-[10px] font-bold">
                   {isPhoneLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'GỬI MÃ XÁC THỰC OTP'}
                 </Button>
               </form>
