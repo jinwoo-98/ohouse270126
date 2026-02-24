@@ -65,7 +65,6 @@ export function ShopTheLook() {
     }
   };
 
-  // Cập nhật trạng thái carousel khi người dùng vuốt
   useEffect(() => {
     if (!api) return;
     setCount(api.scrollSnapList().length);
@@ -141,8 +140,8 @@ export function ShopTheLook() {
             </Button>
           </div>
 
-          {/* Danh mục phòng: Đảm bảo cuộn ngang mượt mà và không nhảy dòng */}
-          <div className="flex flex-nowrap justify-start md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0 pb-4 touch-pan-x">
+          {/* Danh mục phòng: Cuộn ngang mượt mà, không nhảy dòng */}
+          <div className="flex flex-nowrap justify-start md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0 pb-4 touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
             <button
               onClick={() => setActiveCategorySlug("all")}
               className={`px-4 md:px-6 py-2 md:py-2.5 text-[9px] md:text-[10px] font-bold uppercase tracking-widest rounded-full border transition-all whitespace-nowrap shrink-0 ${
@@ -166,15 +165,19 @@ export function ShopTheLook() {
                 {cat.name}
               </button>
             ))}
-            {/* Thêm khoảng trống cuối để vuốt không bị khựng */}
-            <div className="w-4 shrink-0 md:hidden" />
+            <div className="w-6 shrink-0 md:hidden" /> {/* Padding cuối cho mobile */}
           </div>
         </motion.div>
 
         <div className="relative rounded-2xl overflow-hidden bg-transparent shadow-elevated border border-border/40">
           <Carousel 
             setApi={setApi}
-            opts={{ align: "start", loop: true }}
+            opts={{ 
+              align: "start", 
+              loop: true,
+              dragFree: true, // Cho phép vuốt tự do mượt mà hơn
+              containScroll: "trimSnaps"
+            }}
             className="w-full"
           >
             <CarouselContent className="-ml-0">
@@ -182,7 +185,7 @@ export function ShopTheLook() {
                 const detailLink = `/y-tuong/${look.slug || look.id}`;
                 return (
                   <CarouselItem key={look.id} className="pl-0 basis-full">
-                    <div className="relative aspect-video overflow-hidden group">
+                    <div className="relative aspect-video overflow-hidden group touch-pan-y">
                       <Link to={detailLink} className="absolute inset-0 z-10">
                         <img
                           src={getOptimizedImageUrl(look.homepage_image_url || look.image_url, { width: 1200 })}
