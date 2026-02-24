@@ -10,26 +10,9 @@ const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
-const variants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? "100%" : "-100%",
-    opacity: 0,
-  }),
-  center: {
-    zIndex: 1,
-    x: 0,
-    opacity: 1,
-  },
-  exit: (direction: number) => ({
-    zIndex: 0,
-    x: direction < 0 ? "100%" : "-100%",
-    opacity: 0,
-  }),
-};
-
 export function HeroSlider() {
   const [slides, setSlides] = useState<any[]>([]);
-  const [[page, direction], setPage] = useState([0, 0]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,12 +35,15 @@ export function HeroSlider() {
     }
   };
 
-  const imageIndex = page % (slides.length || 1);
-  const current = slides[imageIndex];
-
   const paginate = (newDirection: number) => {
     if (slides.length <= 1) return;
-    setPage([page + newDirection, newDirection]);
+    let newIndex = currentIndex + newDirection;
+    if (newIndex < 0) {
+      newIndex = slides.length - 1;
+    } else if (newIndex >= slides.length) {
+      newIndex = 0;
+    }
+    setCurrentIndex(newIndex);
   };
 
   useEffect(() => {
@@ -67,10 +53,11 @@ export function HeroSlider() {
       }, 6000);
       return () => clearInterval(timer);
     }
-  }, [slides.length, page]);
+  }, [slides.length, currentIndex]);
 
   const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
     const swipe = swipePower(offset.x, velocity.x);
+
     if (swipe < -swipeConfidenceThreshold) {
       paginate(1);
     } else if (swipe > swipeConfidenceThreshold) {
@@ -80,93 +67,79 @@ export function HeroSlider() {
 
   if (loading) return <div className="h-[65vh] md:h-[80vh] bg-charcoal flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
   
-  if (!current) return null;
+  if (slides.length === 0) return null;
 
   return (
-    <section className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-charcoal cursor-grab active:cursor-grabbing">
-      <AnimatePresence initial={false} custom={direction}>
-        <motion.img
-          key={page}
-          src={getOptimizedImageUrl(slides[imageIndex]?.image_url, { width: 1920, quality: 85 })}
-          alt={slides[imageIndex]?.title}
-          custom={direction}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{
-            x: { type: "spring", stiffness: 300, damping: 30 },
-            opacity: { duration: 0.2 },
-          }}
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={1}
-          onDragEnd={handleDragEnd}
-          className="absolute h-full w-full object-cover"
-          draggable="false"
-        />
-      </AnimatePresence>
-      
-      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
-
-      <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
-        <div className="container-luxury w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={current.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -30 }}
-              transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className={`max-w-2xl relative z-10 pointer-events-auto ${
-                current.text_align === 'left' ? 'mr-auto text-left' : 
-                current.text_align === 'right' ? 'ml-auto text-right' : 
-                'mx-auto text-center'
-              }`}
-              style={{ color: current.text_color || '#ffffff' }}
-            >
-              {current.subtitle && (
-                <motion.span 
-                  initial={{ opacity: 0, letterSpacing: "0.5em" }}
-                  animate={{ opacity: 1, letterSpacing: "0.2em" }}
-                  transition={{ duration: 1, delay: 0.5 }}
-                  className="inline-block text-primary font-bold uppercase tracking-[0.2em] text-[10px] md:text-sm mb-2 md:mb-4"
+    <section className="relative h-[65vh] md:h-[80vh] overflow-hidden bg-charcoal">
+      {/* Dải ảnh liền mạch */}
+      <motion.div
+        className="flex h-full w-full cursor-grab active:cursor-grabbing"
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={1}
+        onDragEnd={handleDragEnd}
+        animate={{ x: `-${currentIndex * 100}%` }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
+        {slides.map((slide, index) => (
+          <div key={slide.id} className="relative h-full w-full flex-shrink-0">
+            <img
+              src={getOptimizedImageUrl(slide.image_url, { width: 1920, quality: 85 })}
+              alt={slide.title}
+              className="absolute h-full w-full object-cover pointer-events-none"
+              draggable="false"
+            />
+            <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+            
+            <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+              <div className="container-luxury w-full">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className={`max-w-2xl relative z-10 pointer-events-auto ${
+                    slide.text_align === 'left' ? 'mr-auto text-left' : 
+                    slide.text_align === 'right' ? 'ml-auto text-right' : 
+                    'mx-auto text-center'
+                  }`}
+                  style={{ color: slide.text_color || '#ffffff' }}
                 >
-                  {current.subtitle}
-                </motion.span>
-              )}
-              
-              <h1 
-                className="text-3xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight whitespace-pre-line" 
-                style={{ color: current.text_color || '#ffffff' }}
-              >
-                {current.title}
-              </h1>
-              
-              {current.description && (
-                <div 
-                  className="text-sm md:text-xl mb-6 md:mb-8 max-w-lg leading-relaxed px-4 md:px-0 opacity-90 rich-text-content"
-                  style={{ color: current.text_color || '#ffffff' }}
-                  dangerouslySetInnerHTML={{ __html: current.description }}
-                />
-              )}
-              
-              {current.cta_text && (
-                <Button
-                  size="lg"
-                  className="btn-hero h-12 md:h-14 px-8 md:px-10 text-xs md:text-sm"
-                  asChild
-                >
-                  <a href={current.cta_link}>
-                    {current.cta_text}
-                  </a>
-                </Button>
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </div>
+                  {slide.subtitle && (
+                    <span className="inline-block text-primary font-bold uppercase tracking-[0.2em] text-[10px] md:text-sm mb-2 md:mb-4">
+                      {slide.subtitle}
+                    </span>
+                  )}
+                  
+                  <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight whitespace-pre-line">
+                    {slide.title}
+                  </h1>
+                  
+                  {slide.description && (
+                    <div 
+                      className="text-sm md:text-xl mb-6 md:mb-8 max-w-lg leading-relaxed px-4 md:px-0 opacity-90 rich-text-content"
+                      dangerouslySetInnerHTML={{ __html: slide.description }}
+                    />
+                  )}
+                  
+                  {slide.cta_text && (
+                    <Button
+                      size="lg"
+                      className="btn-hero h-12 md:h-14 px-8 md:px-10 text-xs md:text-sm"
+                      asChild
+                    >
+                      <a href={slide.cta_link}>
+                        {slide.cta_text}
+                      </a>
+                    </Button>
+                  )}
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </motion.div>
 
+      {/* Nút điều hướng */}
       {slides.length > 1 && (
         <>
           <button 
@@ -182,12 +155,13 @@ export function HeroSlider() {
             <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </button>
           
+          {/* Chỉ báo vị trí */}
           <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20">
             {slides.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setPage([index, index > imageIndex ? 1 : -1])}
-                className={`h-1.5 rounded-full transition-all duration-500 pointer-events-auto ${index === imageIndex ? "bg-primary w-8 md:w-12" : "bg-white/30 w-2 md:w-3 hover:bg-white/60"}`}
+                onClick={() => setCurrentIndex(index)}
+                className={`h-1.5 rounded-full transition-all duration-500 pointer-events-auto ${index === currentIndex ? "bg-primary w-8 md:w-12" : "bg-white/30 w-2 md:w-3 hover:bg-white/60"}`}
               />
             ))}
           </div>
