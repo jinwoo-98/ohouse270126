@@ -21,22 +21,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+// Danh sách các quyền có thể cấp cho Editor (Đã loại bỏ các mục nhạy cảm hệ thống)
 const PERMISSION_KEYS = [
   { key: 'homepage', label: 'Quản lý Trang chủ' },
   { key: 'orders', label: 'Quản lý Đơn hàng' },
   { key: 'products', label: 'Quản lý Sản phẩm' },
   { key: 'categories', label: 'Danh mục & Menu' },
-  { key: 'marketing', label: 'Công cụ Marketing' },
+  { key: 'attributes', label: 'Thuộc tính sản phẩm' },
   { key: 'reviews', label: 'Quản lý Đánh giá' },
+  { key: 'looks', label: 'Quản lý Lookbook' },
+  { key: 'showrooms', label: 'Quản lý Showroom' },
   { key: 'pages', label: 'Quản lý Trang nội dung' },
   { key: 'news', label: 'Quản lý Tin tức' },
   { key: 'projects', label: 'Quản lý Dự án' },
-  { key: 'design-config', label: 'Yêu cầu Thiết kế' },
+  { key: 'design-config', label: 'Cấu hình Tư vấn thiết kế' },
   { key: 'customers', label: 'Khách hàng & Tương tác' },
+  { key: 'cooperation-requests', label: 'Yêu cầu Hợp tác' },
+  { key: 'marketing', label: 'Công cụ Marketing' },
   { key: 'theme', label: 'Cấu hình Giao diện' },
-  { key: 'settings', label: 'Cấu hình chung' },
+  { key: 'settings', label: 'Cấu hình chung (Liên hệ)' },
   { key: 'seo', label: 'Cấu hình SEO' },
-  { key: 'tracking', label: 'Mã Theo Dõi' },
 ];
 
 export default function TeamManager() {

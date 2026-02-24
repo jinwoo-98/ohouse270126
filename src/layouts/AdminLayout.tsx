@@ -157,7 +157,10 @@ export default function AdminLayout() {
     const allowedItems = group.items.filter(item => {
       if (role === 'admin') return true;
       if (item.id === 'dashboard') return true;
-      if (item.id === 'team') return false; 
+      
+      // BẢO MẬT: Luôn chặn Editor truy cập các mục nhạy cảm hệ thống
+      if (item.id === 'team' || item.id === 'tracking') return false; 
+      
       return permissions[item.id] === true;
     });
     return { ...group, items: allowedItems };
