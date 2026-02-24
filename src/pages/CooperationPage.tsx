@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const partnerTypes = [
   { icon: Building2, title: "Đại Lý Phân Phối", desc: "Trở thành đối tác phân phối sản phẩm OHOUSE với chính sách chiết khấu hấp dẫn." },
@@ -101,7 +102,7 @@ export default function CooperationPage() {
               <div className="text-lg md:text-xl text-cream/80 max-w-2xl mx-auto leading-relaxed">
                 {pageContent ? (
                   <div 
-                    dangerouslySetInnerHTML={{ __html: pageContent }} 
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(pageContent) }} 
                     className="prose prose-lg prose-invert max-w-none text-cream/80 prose-p:text-cream/80 prose-ul:text-cream/80 prose-li:text-cream/80"
                   />
                 ) : (

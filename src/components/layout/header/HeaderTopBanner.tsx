@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShippingInfoDialog } from "./ShippingInfoDialog";
 import { cn } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 export function HeaderTopBanner() {
   const [settings, setSettings] = useState<any>(null);
@@ -88,7 +89,7 @@ export function HeaderTopBanner() {
                   >
                     <span 
                       className="top-banner-text"
-                      dangerouslySetInnerHTML={{ __html: currentMsg.content || currentMsg.text || "" }} 
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(currentMsg.content || currentMsg.text || "") }} 
                     />
                   </div>
 

@@ -12,6 +12,7 @@ import { useCart } from "@/contexts/CartContext";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface CategoryBottomContentProps {
   categoryId?: string;
@@ -191,7 +192,7 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
         <section className="py-12 border-t border-border/40">
           <div 
             className="rich-text-content prose prose-stone max-w-none text-muted-foreground prose-headings:text-charcoal prose-a:text-primary leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: seoContent }} 
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(seoContent) }} 
           />
         </section>
       )}

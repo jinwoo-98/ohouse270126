@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn, getOptimizedImageUrl } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"; // Import Collapsible
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const iconMap: Record<string, any> = { Zap, LayoutGrid, CheckCircle, DollarSign, DraftingCompass };
 
@@ -164,7 +165,7 @@ export default function DesignServicePage() {
               <div className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
                 {pageContent ? (
                   <div 
-                    dangerouslySetInnerHTML={{ __html: pageContent }} 
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(pageContent) }} 
                     className="prose prose-lg max-w-none text-muted-foreground prose-p:text-muted-foreground prose-ul:text-muted-foreground prose-li:text-muted-foreground"
                   />
                 ) : (

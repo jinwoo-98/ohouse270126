@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { getOptimizedImageUrl } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
@@ -119,7 +120,7 @@ export default function ProjectDetailPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 className="prose prose-lg prose-stone max-w-none"
-                dangerouslySetInnerHTML={{ __html: project.description }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.description) }}
               />
 
               {project.gallery_urls && project.gallery_urls.length > 0 && (

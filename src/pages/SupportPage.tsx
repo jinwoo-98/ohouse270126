@@ -5,6 +5,7 @@ import { ChevronRight, Truck, RefreshCw, Shield, CreditCard, HelpCircle, FileTex
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 const supportMenu = [
   { slug: "huong-dan", title: "Hướng Dẫn Mua Hàng", icon: FileText },
@@ -93,7 +94,7 @@ export default function SupportPage() {
                     </div>
                     <div 
                       className="prose prose-stone max-w-none text-muted-foreground leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: pageData.content || '' }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(pageData.content || '') }}
                     />
                   </>
                 ) : (

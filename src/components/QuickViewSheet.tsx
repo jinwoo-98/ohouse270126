@@ -17,6 +17,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { StarRating } from "@/components/product/detail/ProductReviews";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface QuickViewSheetProps {
   product: any | null;
@@ -239,7 +240,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                           {isDescriptionOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </CollapsibleTrigger>
                         <CollapsibleContent className="animate-accordion-down relative">
-                          <div className="prose prose-sm max-w-none text-muted-foreground rich-text-content-small pb-8" dangerouslySetInnerHTML={{ __html: product.description }} />
+                          <div className="prose prose-sm max-w-none text-muted-foreground rich-text-content-small pb-8" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }} />
                           {isDescriptionOpen && (
                             <div className="flex justify-center pt-4 border-t border-dashed border-border/40">
                               <Button variant="ghost" size="sm" onClick={() => setIsDescriptionOpen(false)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 gap-2">
@@ -321,7 +322,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                         {reviews.slice(0, 3).map((rev) => (
                           <div key={rev.id} className="bg-white p-4 rounded-xl border border-border/40 shadow-sm">
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-[11px] font-bold text-charcoal">{rev.user_name}</span>
+                              <span className="text-11px font-bold text-charcoal">{rev.user_name}</span>
                               <StarRating rating={rev.rating} size="w-3 h-3" />
                             </div>
                             <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed italic">"{rev.comment}"</p>

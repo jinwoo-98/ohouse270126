@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Helmet } from "react-helmet-async";
 import { getOptimizedImageUrl } from "@/lib/utils";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 export default function NewsDetailPage() {
   const { id } = useParams();
@@ -95,7 +96,7 @@ export default function NewsDetailPage() {
 
               <div 
                 className="prose prose-lg prose-stone max-w-none text-foreground/80 leading-relaxed mb-10"
-                dangerouslySetInnerHTML={{ __html: article.content }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
               />
 
               <div className="mt-12 pt-8 border-t border-border flex flex-wrap items-center justify-between gap-6">
