@@ -15,8 +15,8 @@ import PhoneInput from 'react-phone-number-input';
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { E164Number } from 'libphonenumber-js/core';
 
-// Thay thế bằng hCaptcha Site Key của bạn từ dashboard hCaptcha
-const HCAPTCHA_SITE_KEY = "DÁN_SITE_KEY_HCAPTCHA_CỦA_BẠN_VÀO_ĐÂY";
+// hCaptcha Site Key của bạn
+const HCAPTCHA_SITE_KEY = "0fac0b70-8cd8-4418-ab96-b4d8b37e5a4a";
 
 interface AuthDialogProps {
   isOpen: boolean;
@@ -71,7 +71,6 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
       toast.success("Mã OTP đã được gửi thành công.");
     } catch (error: any) {
       toast.error("Lỗi: " + (error.message || "Không thể gửi OTP"));
-      // Reset captcha khi có lỗi để người dùng thử lại
       hcaptchaRef.current?.resetCaptcha();
       setCaptchaToken(null);
     } finally {
