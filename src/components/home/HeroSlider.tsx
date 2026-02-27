@@ -110,13 +110,14 @@ export function HeroSlider() {
                     </span>
                   )}
                   
-                  <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold mb-4 md:mb-6 leading-tight whitespace-pre-line">
+                  {/* Điều chỉnh kích thước tiêu đề Banner: Giảm từ 7xl xuống 6xl ở màn hình lớn */}
+                  <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight whitespace-pre-line">
                     {slide.title}
                   </h1>
                   
                   {slide.description && (
                     <div 
-                      className="text-sm md:text-xl mb-6 md:mb-8 max-w-lg leading-relaxed px-4 md:px-0 opacity-90 rich-text-content"
+                      className="text-sm md:text-lg mb-6 md:mb-8 max-w-lg leading-relaxed px-4 md:px-0 opacity-90 rich-text-content"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.description) }}
                     />
                   )}

@@ -60,9 +60,9 @@
     @apply transition-transform duration-700 hover:scale-110;
   }
 
-  /* Định nghĩa tiêu đề chính cho các section */
+  /* Điều chỉnh kích thước tiêu đề section: Giảm từ 5xl xuống 4xl ở màn hình lớn */
   .section-title {
-    @apply text-2xl md:text-4xl lg:text-5xl font-bold uppercase tracking-[0.15em] text-charcoal leading-tight;
+    @apply text-xl md:text-3xl lg:text-4xl font-bold uppercase tracking-[0.15em] text-charcoal leading-tight;
   }
 }
 
