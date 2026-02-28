@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
-import { Plus, X, Search, Tag as LabelIcon } from "lucide-react";
+import { Plus, X, Search, Tag as LabelIcon, Monitor, Smartphone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface LookItem {
   product_id: string;
@@ -32,6 +34,7 @@ export function LookbookHotspotManager({
   setActiveEditingImage
 }: LookbookHotspotManagerProps) {
   const [productSearch, setProductSearch] = useState("");
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(productSearch.toLowerCase())
@@ -42,8 +45,8 @@ export function LookbookHotspotManager({
     [lookItems, activeEditingImage]
   );
 
-  const currentImageType = useMemo(() => {
-    return allEditingImages.find(img => img.url === activeEditingImage)?.type || 'main';
+  const currentImageInfo = useMemo(() => {
+    return allEditingImages.find(img => img.url === activeEditingImage);
   }, [activeEditingImage, allEditingImages]);
 
   const handleAddLookItem = (product: any) => {
@@ -69,14 +72,46 @@ export function LookbookHotspotManager({
     }));
   };
 
+  // Xác định tỉ lệ khung hình hiển thị
+  const getAspectRatioClass = () => {
+    if (currentImageInfo?.type === 'homepage') {
+      return previewMode === 'desktop' ? "aspect-[2/1]" : "aspect-video"; // 2:1 vs 16:9
+    }
+    return "aspect-[4/3]"; // Ảnh chính/phụ luôn 4:3
+  };
+
   return (
     <div className="space-y-6">
       {/* Hotspot Preview */}
       <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Ảnh & Hotspot</h3>
+          <div className="flex items-center gap-3">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Ảnh & Hotspot</h3>
+            {currentImageInfo?.type === 'homepage' && (
+              <div className="flex bg-secondary/50 p-1 rounded-lg">
+                <button 
+                  type="button"
+                  onClick={() => setPreviewMode('desktop')}
+                  className={cn("p-1.5 rounded-md transition-all", previewMode === 'desktop' ? "bg-white shadow-sm text-primary" : "text-muted-foreground")}
+                  title="Chế độ Desktop (2:1)"
+                >
+                  <Monitor className="w-3.5 h-3.5" />
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setPreviewMode('mobile')}
+                  className={cn("p-1.5 rounded-md transition-all", previewMode === 'mobile' ? "bg-white shadow-sm text-primary" : "text-muted-foreground")}
+                  title="Chế độ Mobile (16:9)"
+                >
+                  <Smartphone className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
           <Badge variant="secondary" className="text-[9px] uppercase font-bold">
-            Tỉ lệ: {currentImageType === 'homepage' ? '16:9 (Trang chủ)' : '4:3 (Chi tiết)'}
+            {currentImageInfo?.type === 'homepage' 
+              ? (previewMode === 'desktop' ? 'Tỉ lệ 2:1 (Desktop)' : 'Tỉ lệ 16:9 (Mobile)') 
+              : 'Tỉ lệ 4:3 (Thống nhất)'}
           </Badge>
         </div>
         
@@ -100,8 +135,9 @@ export function LookbookHotspotManager({
         </div>
         
         <div className={cn(
-          "bg-gray-100 rounded-2xl relative overflow-hidden border border-border/50 shadow-inner transition-all duration-500",
-          currentImageType === 'homepage' ? "aspect-video" : "aspect-[4/3]"
+          "bg-gray-100 rounded-2xl relative overflow-hidden border border-border/50 shadow-inner transition-all duration-500 mx-auto",
+          getAspectRatioClass(),
+          currentImageInfo?.type === 'homepage' && previewMode === 'mobile' ? "max-w-md" : "w-full"
         )}>
           {activeEditingImage ? (
             <>
@@ -124,6 +160,11 @@ export function LookbookHotspotManager({
             <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Chọn ảnh để gắn hotspot</div>
           )}
         </div>
+        {currentImageInfo?.type === 'homepage' && (
+          <p className="text-[10px] text-muted-foreground italic text-center">
+            * Nút sản phẩm (Hotspot) được tính theo %, sẽ tự động khớp khi tỉ lệ khung hình thay đổi.
+          </p>
+        )}
       </div>
 
       {/* Product Selector & Position Manager */}
@@ -191,5 +232,3 @@ export function LookbookHotspotManager({
     </div>
   );
 }
-
-import { Badge } from "@/components/ui/badge";

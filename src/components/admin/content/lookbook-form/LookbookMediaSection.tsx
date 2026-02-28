@@ -36,8 +36,8 @@ export function LookbookMediaSection({ formData, setFormData, setActiveEditingIm
       </div>
       
       <div className="space-y-2 pt-4 border-t border-dashed">
-        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh cho Shop The Look (Tỉ lệ 16:9 - Trang chủ)</Label>
-        <div className="aspect-video rounded-2xl overflow-hidden border border-border/40 bg-secondary/5">
+        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh cho Shop The Look (Tỉ lệ 2:1 - Trang chủ Desktop)</Label>
+        <div className="aspect-[2/1] rounded-2xl overflow-hidden border border-border/40 bg-secondary/5">
           <ImageUpload 
             value={formData.homepage_image_url} 
             onChange={(url) => setFormData({...formData, homepage_image_url: url as string})} 
