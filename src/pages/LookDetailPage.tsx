@@ -178,26 +178,26 @@ export default function LookDetailPage() {
                     <div className="max-w-[740px]">
                       <div 
                         className={cn(
-                          "vn-text-final-fix text-muted-foreground transition-all duration-500 prose prose-sm md:prose-base max-w-none",
-                          !isExpanded ? "max-h-[120px]" : "max-h-none"
+                          "vn-text-final-fix text-muted-foreground transition-all duration-500 prose prose-sm md:prose-base max-w-none overflow-hidden",
+                          !isExpanded ? "max-h-[82px]" : "max-h-none"
                         )}
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                       />
                     </div>
                     
                     {!isExpanded && (
-                      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
                     )}
                     
-                    <div className="mt-4 flex justify-start">
+                    <div className="mt-2 flex justify-start">
                       <button
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className="text-primary font-bold text-[10px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1.5 px-3 bg-secondary/50 rounded-lg shadow-sm"
+                        className="text-primary font-bold text-[10px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1 px-2 bg-secondary/30 rounded-md"
                       >
                         {isExpanded ? (
-                          <>Thu gọn <ChevronUp className="w-3.5 h-3.5" /></>
+                          <>Thu gọn <ChevronUp className="w-3 h-3" /></>
                         ) : (
-                          <>Xem thêm nội dung <ChevronDown className="w-3.5 h-3.5" /></>
+                          <>Xem thêm nội dung <ChevronDown className="w-3 h-3" /></>
                         )}
                       </button>
                     </div>
