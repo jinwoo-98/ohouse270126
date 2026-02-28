@@ -5,9 +5,9 @@ import { useSearchParams } from "react-router-dom";
 
 interface LookbookFilterState {
   selectedCategorySlug: string;
-  selectedStyle: string[]; // Changed to array
-  selectedMaterial: string[]; // Changed to array
-  selectedColor: string[]; // Changed to array
+  selectedStyle: string[];
+  selectedMaterial: string[];
+  selectedColor: string[];
 }
 
 interface FilterOption {
@@ -16,7 +16,6 @@ interface FilterOption {
   slug: string;
 }
 
-// Helper to parse URL params into an array
 const parseUrlParam = (param: string | null): string[] => {
   if (!param) return [];
   return param.split(',').filter(v => v.trim() !== '');
@@ -37,7 +36,6 @@ export function useLookbookFilters() {
     selectedColor: [],
   });
 
-  // Sync filters with URL params on initial load
   useEffect(() => {
     const categorySlug = searchParams.get('category');
     const style = parseUrlParam(searchParams.get('style'));
@@ -124,7 +122,6 @@ export function useLookbookFilters() {
 
   const filteredLooks = useMemo(() => {
     return allLooks.filter(look => {
-      // Category Filter
       if (filters.selectedCategorySlug !== "all") {
         const selectedCategory = categoriesData?.allCategories.find((c: any) => c.slug === filters.selectedCategorySlug);
         if (!selectedCategory) return false;
@@ -140,7 +137,6 @@ export function useLookbookFilters() {
         }
       }
       
-      // Multi-select filters
       if (filters.selectedStyle.length > 0 && !filters.selectedStyle.includes(look.style)) {
         return false;
       }
@@ -158,7 +154,6 @@ export function useLookbookFilters() {
   const updateFilter = (key: keyof LookbookFilterState, value: string | string[]) => {
     setFilters(prev => {
       const newFilters = { ...prev, [key]: value };
-      
       const newParams = new URLSearchParams(searchParams);
       
       if (key === 'selectedCategorySlug') {
@@ -176,11 +171,28 @@ export function useLookbookFilters() {
     });
   };
 
+  const resetAllFilters = () => {
+    setFilters({
+      selectedCategorySlug: "all",
+      selectedStyle: [],
+      selectedMaterial: [],
+      selectedColor: [],
+    });
+    
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('category');
+    newParams.delete('style');
+    newParams.delete('material');
+    newParams.delete('color');
+    setSearchParams(newParams, { replace: true });
+  };
+
   return {
     filteredLooks,
     filterOptions,
     filters,
     updateFilter,
+    resetAllFilters,
     isLoading: isLoadingCategories || isLoadingLooks,
   };
 }

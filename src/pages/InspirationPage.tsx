@@ -18,19 +18,13 @@ export default function InspirationPage() {
     filterOptions, 
     filters, 
     updateFilter, 
+    resetAllFilters,
     isLoading 
   } = useLookbookFilters();
   
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [quickViewLook, setQuickViewLook] = useState<any>(null);
 
-  const handleResetFilters = () => {
-    updateFilter('selectedCategorySlug', 'all');
-    updateFilter('selectedStyle', []);
-    updateFilter('selectedMaterial', []);
-    updateFilter('selectedColor', []);
-  };
-  
   const currentCategory = filterOptions.categories.find((c: any) => c.slug === filters.selectedCategorySlug);
   const pageTitle = currentCategory?.name || "Tất Cả Không Gian";
 
@@ -74,7 +68,7 @@ export default function InspirationPage() {
             filterOptions={filterOptions}
             filters={filters}
             updateFilter={updateFilter}
-            onResetFilters={handleResetFilters}
+            onResetFilters={resetAllFilters}
           />
 
           <section className="py-12 md:py-16">
