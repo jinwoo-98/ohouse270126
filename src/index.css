@@ -25,7 +25,7 @@
     --ring: 36 35% 51%;
     --radius: 1rem;
     
-    /* Luxury Colors - Refined for deeper contrast */
+    /* Luxury Colors */
     --charcoal: 210 10% 10%;
     --walnut: 25 30% 18%;
     --cream: 40 33% 98%;
@@ -60,19 +60,25 @@
     @apply transition-transform duration-700 hover:scale-110;
   }
 
-  /* Điều chỉnh kích thước tiêu đề section: Giảm từ 5xl xuống 4xl ở màn hình lớn */
   .section-title {
     @apply text-xl md:text-3xl lg:text-4xl font-bold uppercase tracking-[0.15em] text-charcoal leading-tight;
   }
 }
 
 @layer utilities {
-  /* Lớp CSS sửa lỗi ngắt đôi từ tiếng Việt */
-  .prose-word-break-normal {
-    word-break: normal !important;
-    overflow-wrap: break-word !important;
+  /* Giải pháp triệt để cho tiếng Việt: Ép buộc ngắt dòng tại khoảng trắng */
+  .vn-text-fix {
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
+    word-wrap: normal !important;
     hyphens: none !important;
     -webkit-hyphens: none !important;
+    line-break: strict !important;
+  }
+
+  .vn-text-fix * {
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
   }
 }
 
