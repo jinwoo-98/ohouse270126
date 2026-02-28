@@ -66,8 +66,8 @@
 }
 
 @layer utilities {
-  /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT */
-  .vn-text-fix {
+  /* GIẢI PHÁP TRIỆT ĐỂ CUỐI CÙNG CHO TIẾNG VIỆT */
+  .vn-text-final-fix {
     /* Ngăn chặn việc chia đôi từ */
     word-break: normal !important; 
     overflow-wrap: break-word !important;
@@ -79,16 +79,21 @@
     -moz-hyphens: none !important;
     -ms-hyphens: none !important;
     
-    /* Cố định chiều cao dòng để cắt dòng chính xác */
-    line-height: 1.6 !important;
+    /* Vô hiệu hóa căn đều, nguyên nhân chính gây xé từ */
     text-align: left !important;
+    text-justify: none !important;
+
+    /* Cố định chiều cao dòng để tính toán cắt dòng chính xác */
+    line-height: 1.6 !important;
   }
 
   /* Áp dụng cho tất cả các thẻ con bên trong (p, span, v.v.) */
-  .vn-text-fix * {
+  .vn-text-final-fix * {
     word-break: normal !important;
     overflow-wrap: break-word !important;
     hyphens: none !important;
+    text-align: left !important;
+    text-justify: none !important;
   }
 }
 
