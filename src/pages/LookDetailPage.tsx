@@ -177,23 +177,24 @@ export default function LookDetailPage() {
                     <div 
                       className={cn(
                         "prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed italic transition-all duration-500 overflow-hidden",
-                        !isExpanded ? "max-h-[80px]" : "max-h-none"
+                        !isExpanded ? "max-h-[72px]" : "max-h-none"
                       )}
                       style={{ 
-                        wordBreak: 'keep-all', 
+                        wordBreak: 'normal', 
                         overflowWrap: 'break-word',
-                        whiteSpace: 'normal'
+                        hyphens: 'none',
+                        WebkitHyphens: 'none'
                       }}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                     />
                     
                     {!isExpanded && (
-                      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background to-transparent pointer-events-none" />
                     )}
                     
                     <button
                       onClick={() => setIsExpanded(!isExpanded)}
-                      className="mt-1 text-primary font-bold text-[11px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1"
+                      className="mt-2 text-primary font-bold text-[11px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1.5 px-2 bg-secondary/30 rounded-md"
                     >
                       {isExpanded ? (
                         <>Thu gọn <ChevronUp className="w-3.5 h-3.5" /></>
