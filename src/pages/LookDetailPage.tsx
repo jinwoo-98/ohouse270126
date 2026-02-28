@@ -173,12 +173,13 @@ export default function LookDetailPage() {
               {/* Cột Trái: Mô tả & Gallery */}
               <div className="lg:col-span-2 min-w-0 w-full space-y-8">
                 {look.description && (
-                  <div className="relative w-full overflow-hidden">
+                  <div className="relative w-full">
                     <div 
                       className={cn(
-                        "prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed italic transition-all duration-500 break-words whitespace-normal",
-                        !isExpanded ? "max-h-[100px] overflow-hidden" : "max-h-none"
+                        "prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed italic transition-all duration-500 overflow-hidden whitespace-normal break-words",
+                        !isExpanded ? "max-h-[100px]" : "max-h-none"
                       )}
+                      style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                     />
                     
