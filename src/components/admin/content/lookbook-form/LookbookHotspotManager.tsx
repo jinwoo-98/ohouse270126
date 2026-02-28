@@ -19,7 +19,7 @@ interface LookbookHotspotManagerProps {
   lookItems: LookItem[];
   setLookItems: React.Dispatch<React.SetStateAction<LookItem[]>>;
   activeEditingImage: string | null;
-  allEditingImages: { url: string, label: string }[];
+  allEditingImages: { url: string, label: string, type: string }[];
   setActiveEditingImage: (url: string) => void;
 }
 
@@ -41,6 +41,10 @@ export function LookbookHotspotManager({
     lookItems.filter(i => i.target_image_url === activeEditingImage),
     [lookItems, activeEditingImage]
   );
+
+  const currentImageType = useMemo(() => {
+    return allEditingImages.find(img => img.url === activeEditingImage)?.type || 'main';
+  }, [activeEditingImage, allEditingImages]);
 
   const handleAddLookItem = (product: any) => {
     if (!activeEditingImage) {
@@ -69,7 +73,13 @@ export function LookbookHotspotManager({
     <div className="space-y-6">
       {/* Hotspot Preview */}
       <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
-        <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Ảnh & Hotspot</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Ảnh & Hotspot</h3>
+          <Badge variant="secondary" className="text-[9px] uppercase font-bold">
+            Tỉ lệ: {currentImageType === 'homepage' ? '16:9 (Trang chủ)' : '4:3 (Chi tiết)'}
+          </Badge>
+        </div>
+        
         <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
           {allEditingImages.map(img => (
             <button 
@@ -89,7 +99,10 @@ export function LookbookHotspotManager({
           ))}
         </div>
         
-        <div className="bg-gray-100 rounded-2xl relative aspect-[4/3] overflow-hidden border border-border/50 shadow-inner">
+        <div className={cn(
+          "bg-gray-100 rounded-2xl relative overflow-hidden border border-border/50 shadow-inner transition-all duration-500",
+          currentImageType === 'homepage' ? "aspect-video" : "aspect-[4/3]"
+        )}>
           {activeEditingImage ? (
             <>
               <img src={activeEditingImage} className="w-full h-full object-cover" />
@@ -178,3 +191,5 @@ export function LookbookHotspotManager({
     </div>
   );
 }
+
+import { Badge } from "@/components/ui/badge";

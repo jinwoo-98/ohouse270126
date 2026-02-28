@@ -1,6 +1,7 @@
 import { Image as ImageIcon, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { cn } from "@/lib/utils";
 
 interface LookbookMediaSectionProps {
   formData: any;
@@ -22,30 +23,34 @@ export function LookbookMediaSection({ formData, setFormData, setActiveEditingIm
       <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Quản lý ảnh</h3>
       
       <div className="space-y-2">
-        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh chính (Gallery & Hotspot)</Label>
-        <ImageUpload 
-          value={formData.image_url} 
-          onChange={(url) => { 
-            setFormData({...formData, image_url: url as string}); 
-            setActiveEditingImage(url as string); 
-          }} 
-        />
+        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh chính (Tỉ lệ 4:3 - Gallery & Hotspot)</Label>
+        <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-border/40 bg-secondary/5">
+          <ImageUpload 
+            value={formData.image_url} 
+            onChange={(url) => { 
+              setFormData({...formData, image_url: url as string}); 
+              setActiveEditingImage(url as string); 
+            }} 
+          />
+        </div>
       </div>
       
       <div className="space-y-2 pt-4 border-t border-dashed">
-        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh cho Shop The Look (Trang chủ)</Label>
-        <ImageUpload 
-          value={formData.homepage_image_url} 
-          onChange={(url) => setFormData({...formData, homepage_image_url: url as string})} 
-        />
+        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh cho Shop The Look (Tỉ lệ 16:9 - Trang chủ)</Label>
+        <div className="aspect-video rounded-2xl overflow-hidden border border-border/40 bg-secondary/5">
+          <ImageUpload 
+            value={formData.homepage_image_url} 
+            onChange={(url) => setFormData({...formData, homepage_image_url: url as string})} 
+          />
+        </div>
         <p className="text-[10px] text-muted-foreground italic">Ảnh này sẽ hiển thị ở mục Shop The Look trên trang chủ. Nếu để trống, sẽ dùng ảnh chính.</p>
       </div>
       
       <div className="space-y-2 pt-4 border-t border-dashed">
-        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh phụ (Gallery)</Label>
+        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh phụ (Tỉ lệ 4:3 - Gallery)</Label>
         <div className="grid grid-cols-3 gap-3 mb-4">
           {(formData.gallery_urls || []).map((url: string, idx: number) => (
-            <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
+            <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border group">
               <img src={url} alt="Gallery" className="w-full h-full object-cover" />
               <button type="button" onClick={() => handleRemoveGalleryImage(idx)} className="absolute top-1 right-1 p-1 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
             </div>

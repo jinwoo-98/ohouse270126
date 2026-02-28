@@ -189,11 +189,11 @@ export default function LookbookForm() {
   // Danh sách ảnh để gắn hotspot: Ảnh chính, Ảnh trang chủ, Ảnh Gallery
   const allEditingImages = useMemo(() => {
     const list = [];
-    if (formData.image_url) list.push({ url: formData.image_url, label: "Ảnh chính" });
-    if (formData.homepage_image_url) list.push({ url: formData.homepage_image_url, label: "Ảnh trang chủ" });
+    if (formData.image_url) list.push({ url: formData.image_url, label: "Ảnh chính", type: 'main' });
+    if (formData.homepage_image_url) list.push({ url: formData.homepage_image_url, label: "Ảnh trang chủ", type: 'homepage' });
     
     (formData.gallery_urls || []).forEach((url, idx) => {
-      list.push({ url, label: `Ảnh phụ ${idx + 1}` });
+      list.push({ url, label: `Ảnh phụ ${idx + 1}`, type: 'gallery' });
     });
     
     return list;
