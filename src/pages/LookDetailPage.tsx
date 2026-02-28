@@ -171,25 +171,29 @@ export default function LookDetailPage() {
 
             <div className="grid lg:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto items-start">
               {/* Cột Trái: Mô tả & Gallery */}
-              <div className="lg:col-span-2 min-w-0 w-full space-y-8">
+              <div className="lg:col-span-2 min-w-0 w-full space-y-6">
                 {look.description && (
                   <div className="relative w-full">
                     <div 
                       className={cn(
-                        "prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed italic transition-all duration-500 overflow-hidden whitespace-normal break-words",
-                        !isExpanded ? "max-h-[100px]" : "max-h-none"
+                        "prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed italic transition-all duration-500 overflow-hidden",
+                        !isExpanded ? "max-h-[80px]" : "max-h-none"
                       )}
-                      style={{ wordBreak: 'normal', overflowWrap: 'break-word' }}
+                      style={{ 
+                        wordBreak: 'keep-all', 
+                        overflowWrap: 'break-word',
+                        whiteSpace: 'normal'
+                      }}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                     />
                     
                     {!isExpanded && (
-                      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
                     )}
                     
                     <button
                       onClick={() => setIsExpanded(!isExpanded)}
-                      className="mt-2 text-primary font-bold text-[10px] uppercase tracking-widest flex items-center gap-1.5 hover:opacity-80 transition-all"
+                      className="mt-1 text-primary font-bold text-[11px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1"
                     >
                       {isExpanded ? (
                         <>Thu gọn <ChevronUp className="w-3.5 h-3.5" /></>
