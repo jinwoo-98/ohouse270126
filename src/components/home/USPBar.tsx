@@ -34,13 +34,13 @@ export function USPBar() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="flex flex-col md:flex-row items-center text-center md:text-left gap-2 md:gap-4"
+                className="flex flex-col md:flex-row items-center justify-center text-center gap-2 md:gap-4"
               >
                 <div className="flex-shrink-0 w-8 h-8 md:w-12 md:h-12 bg-primary/10 rounded-full flex items-center justify-center">
                   <Icon className="w-4 h-4 md:w-6 h-6 text-primary" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-bold text-[8px] md:text-sm text-charcoal leading-tight uppercase md:normal-case">
+                  <h3 className="font-bold text-[8px] md:text-sm text-charcoal leading-tight uppercase">
                     {usp.title}
                   </h3>
                   <p className="hidden md:block text-xs text-muted-foreground mt-1">
