@@ -173,9 +173,9 @@ export default function LookDetailPage() {
               {/* Cột Trái: Mô tả & Gallery */}
               <div className="lg:col-span-2 min-w-0 w-full space-y-8">
                 {look.description && (
-                  <div className="relative w-full overflow-hidden">
-                    {/* Cố định chiều ngang 740px để khớp 1:1 với Editor */}
-                    <div className="max-w-[740px]">
+                  <div className="w-full">
+                    {/* Khung chứa văn bản có lớp phủ mờ */}
+                    <div className="relative max-w-[740px]">
                       <div 
                         className={cn(
                           "vn-text-final-fix text-muted-foreground transition-all duration-500 prose prose-sm md:prose-base max-w-none overflow-hidden",
@@ -183,21 +183,23 @@ export default function LookDetailPage() {
                         )}
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                       />
+                      
+                      {/* Lớp phủ mờ chỉ nằm trong khung văn bản */}
+                      {!isExpanded && (
+                        <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none" />
+                      )}
                     </div>
                     
-                    {!isExpanded && (
-                      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-                    )}
-                    
-                    <div className="mt-2 flex justify-start">
+                    {/* Nút bấm nằm ngoài vùng mờ */}
+                    <div className="mt-3 flex justify-start">
                       <button
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className="text-primary font-bold text-[10px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1 px-2 bg-secondary/30 rounded-md"
+                        className="text-primary font-bold text-[10px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1.5 px-3 bg-secondary/50 rounded-lg shadow-sm border border-border/40"
                       >
                         {isExpanded ? (
-                          <>Thu gọn <ChevronUp className="w-3 h-3" /></>
+                          <>Thu gọn <ChevronUp className="w-3.5 h-3.5" /></>
                         ) : (
-                          <>Xem thêm nội dung <ChevronDown className="w-3 h-3" /></>
+                          <>Xem thêm nội dung <ChevronDown className="w-3.5 h-3.5" /></>
                         )}
                       </button>
                     </div>
