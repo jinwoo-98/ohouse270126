@@ -178,6 +178,7 @@ export default function LookDetailPage() {
                   productName={look.title} 
                   hotspots={lookHotspots}
                   onHotspotClick={setQuickViewProduct}
+                  aspectRatio="aspect-[4/3]"
                 >
                   {(currentImageUrl) => {
                     useEffect(() => {

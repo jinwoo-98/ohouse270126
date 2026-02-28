@@ -83,7 +83,8 @@ export function LookbookHotspotManager({
           ))}
         </div>
         
-        <div className="bg-gray-100 rounded-2xl relative aspect-square overflow-hidden border border-border/50 shadow-inner">
+        {/* Chuyển sang aspect-[4/3] */}
+        <div className="bg-gray-100 rounded-2xl relative aspect-[4/3] overflow-hidden border border-border/50 shadow-inner">
           {activeEditingImage ? (
             <>
               <img src={activeEditingImage} className="w-full h-full object-cover" />

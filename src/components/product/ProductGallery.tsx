@@ -28,6 +28,7 @@ interface ProductGalleryProps {
   onHotspotClick?: (product: any) => void;
   children?: (currentImageUrl: string) => React.ReactNode;
   product?: any; 
+  aspectRatio?: string; // Thêm prop này
 }
 
 const swipeConfidenceThreshold = 10000;
@@ -35,7 +36,17 @@ const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
 
-export function ProductGallery({ mainImage, galleryImages, productName, imageAltText, hotspots = [], onHotspotClick, children, product }: ProductGalleryProps) {
+export function ProductGallery({ 
+  mainImage, 
+  galleryImages, 
+  productName, 
+  imageAltText, 
+  hotspots = [], 
+  onHotspotClick, 
+  children, 
+  product,
+  aspectRatio = "aspect-square" // Mặc định là vuông
+}: ProductGalleryProps) {
   const safeGallery = Array.isArray(galleryImages) ? galleryImages : [];
   const allImages = [mainImage, ...safeGallery].filter(Boolean);
   
@@ -45,7 +56,6 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
   const imageIndex = page % allImages.length;
   const currentImageUrl = allImages[imageIndex];
 
-  // Sử dụng logic mới: Tên - Danh mục - Thuộc tính | Mã SP - Ảnh X
   const currentAlt = generateProductAltText(product || { name: productName, id: 'GALLERY', image_alt_text: imageAltText }, imageIndex);
 
   const paginate = (newDirection: number) => {
@@ -101,7 +111,7 @@ export function ProductGallery({ mainImage, galleryImages, productName, imageAlt
 
   return (
     <div className="w-full max-w-full space-y-4 select-none">
-      <div className="relative w-full aspect-square bg-white rounded-2xl md:rounded-3xl overflow-hidden border border-border/40 shadow-subtle group">
+      <div className={cn("relative w-full bg-white rounded-2xl md:rounded-3xl overflow-hidden border border-border/40 shadow-subtle group", aspectRatio)}>
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={page}
