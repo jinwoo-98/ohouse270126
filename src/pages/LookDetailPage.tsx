@@ -176,18 +176,14 @@ export default function LookDetailPage() {
                   <div className="relative w-full bg-card p-6 rounded-2xl border border-border/40 shadow-subtle">
                     <div 
                       className={cn(
-                        "vn-text-final-fix text-muted-foreground italic transition-all duration-500 overflow-hidden",
-                        isExpanded && "prose prose-sm md:prose-base max-w-none"
+                        "vn-text-final-fix text-muted-foreground italic transition-all duration-500 overflow-hidden prose prose-sm md:prose-base max-w-none",
+                        !isExpanded ? "max-h-[120px]" : "max-h-none"
                       )}
-                      style={{ 
-                        // calc(3 * 1em * 1.6) = 3 dòng x cỡ chữ x chiều cao dòng
-                        maxHeight: !isExpanded ? "calc(3 * 1em * 1.6)" : "none" 
-                      }}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                     />
                     
                     {!isExpanded && (
-                      <div className="absolute bottom-14 left-6 right-6 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+                      <div className="absolute bottom-14 left-6 right-6 h-16 bg-gradient-to-t from-card via-card/80 to-transparent pointer-events-none" />
                     )}
                     
                     <button
