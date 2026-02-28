@@ -84,7 +84,7 @@
     word-break: keep-all !important;
     overflow-wrap: break-word !important;
     text-align: left !important;
-    font-style: normal !important; /* Bỏ in nghiêng mặc định */
+    font-style: normal !important;
   }
 }
 

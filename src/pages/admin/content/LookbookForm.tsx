@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ArrowLeft, Save } from "lucide-react";
+import { Loader2, ArrowLeft, Save, AlignLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { slugify, cn } from "@/lib/utils";
 
@@ -11,6 +12,8 @@ import { LookbookBasicInfoSection } from "@/components/admin/content/lookbook-fo
 import { LookbookFilterSection } from "@/components/admin/content/lookbook-form/LookbookFilterSection";
 import { LookbookMediaSection } from "@/components/admin/content/lookbook-form/LookbookMediaSection";
 import { LookbookHotspotManager } from "@/components/admin/content/lookbook-form/LookbookHotspotManager";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
 
 export default function LookbookForm() {
   const { id } = useParams();
@@ -249,6 +252,26 @@ export default function LookbookForm() {
           </div>
 
           <div className="lg:col-span-2 space-y-6">
+            {/* Ô soạn thảo mô tả được di chuyển sang đây để có không gian rộng rãi */}
+            <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+                  <AlignLeft className="w-4 h-4" /> Mô tả chi tiết Lookbook
+                </Label>
+                <AIContentAssistant 
+                  contentType="product" 
+                  contextTitle={formData.title} 
+                  onInsert={(val) => setFormData({...formData, description: val})} 
+                />
+              </div>
+              <RichTextEditor 
+                value={formData.description || ""} 
+                onChange={val => setFormData({...formData, description: val})} 
+                placeholder="Nhập đoạn giới thiệu chi tiết về không gian này..." 
+              />
+              <p className="text-[10px] text-muted-foreground italic">Mô tả này sẽ hiển thị ở phần giới thiệu trang chi tiết Lookbook.</p>
+            </div>
+
             <LookbookHotspotManager
               products={products}
               lookItems={lookItems}
