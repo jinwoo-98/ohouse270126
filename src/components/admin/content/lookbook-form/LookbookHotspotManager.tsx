@@ -19,7 +19,7 @@ interface LookbookHotspotManagerProps {
   lookItems: LookItem[];
   setLookItems: React.Dispatch<React.SetStateAction<LookItem[]>>;
   activeEditingImage: string | null;
-  allEditingImages: string[];
+  allEditingImages: { url: string, label: string }[];
   setActiveEditingImage: (url: string) => void;
 }
 
@@ -70,20 +70,25 @@ export function LookbookHotspotManager({
       {/* Hotspot Preview */}
       <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-4">
         <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Ảnh & Hotspot</h3>
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
           {allEditingImages.map(img => (
             <button 
-              key={img} 
+              key={img.url} 
               type="button" 
-              onClick={() => setActiveEditingImage(img)} 
-              className={cn("w-20 h-20 rounded-xl overflow-hidden border-2 shrink-0", activeEditingImage === img ? "border-primary" : "border-transparent")}
+              onClick={() => setActiveEditingImage(img.url)} 
+              className={cn(
+                "relative w-24 h-24 rounded-xl overflow-hidden border-2 shrink-0 transition-all", 
+                activeEditingImage === img.url ? "border-primary ring-2 ring-primary/10" : "border-transparent opacity-70 hover:opacity-100"
+              )}
             >
-              <img src={img} className="w-full h-full object-cover" />
+              <img src={img.url} className="w-full h-full object-cover" />
+              <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[8px] font-bold uppercase py-1 px-1 truncate">
+                {img.label}
+              </div>
             </button>
           ))}
         </div>
         
-        {/* Chuyển sang aspect-[4/3] */}
         <div className="bg-gray-100 rounded-2xl relative aspect-[4/3] overflow-hidden border border-border/50 shadow-inner">
           {activeEditingImage ? (
             <>

@@ -186,6 +186,8 @@ export function ShopTheLook() {
             <CarouselContent className="-ml-0 touch-pan-y">
               {currentCategoryLooks.map((look) => {
                 const detailLink = `/y-tuong/${look.slug || look.id}`;
+                const displayImage = look.homepage_image_url || look.image_url;
+                
                 return (
                   <CarouselItem key={look.id} className="pl-0 basis-full">
                     <div className="relative aspect-video overflow-hidden group">
@@ -194,7 +196,7 @@ export function ShopTheLook() {
                         onClick={() => navigate(detailLink)}
                       >
                         <img
-                          src={getOptimizedImageUrl(look.homepage_image_url || look.image_url, { width: 1200 })}
+                          src={getOptimizedImageUrl(displayImage, { width: 1200 })}
                           alt={look.title}
                           className="w-full h-full object-cover pointer-events-none"
                           loading="lazy"
@@ -205,7 +207,7 @@ export function ShopTheLook() {
                       <div className="absolute inset-0 bg-black/5 pointer-events-none">
                         <TooltipProvider>
                           {look.shop_look_items
-                            .filter((item: any) => item.target_image_url === look.image_url)
+                            .filter((item: any) => item.target_image_url === displayImage)
                             .map((item: any) => (
                             <Tooltip key={item.id} delayDuration={0}>
                               <TooltipTrigger asChild>

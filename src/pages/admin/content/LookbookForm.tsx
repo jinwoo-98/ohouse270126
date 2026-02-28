@@ -186,7 +186,18 @@ export default function LookbookForm() {
     }
   };
 
-  const allEditingImages = [formData.image_url, ...(formData.gallery_urls || [])].filter(Boolean);
+  // Danh sách ảnh để gắn hotspot: Ảnh chính, Ảnh trang chủ, Ảnh Gallery
+  const allEditingImages = useMemo(() => {
+    const list = [];
+    if (formData.image_url) list.push({ url: formData.image_url, label: "Ảnh chính" });
+    if (formData.homepage_image_url) list.push({ url: formData.homepage_image_url, label: "Ảnh trang chủ" });
+    
+    (formData.gallery_urls || []).forEach((url, idx) => {
+      list.push({ url, label: `Ảnh phụ ${idx + 1}` });
+    });
+    
+    return list;
+  }, [formData.image_url, formData.homepage_image_url, formData.gallery_urls]);
   
   const groupedFilters = useMemo(() => {
     return {
