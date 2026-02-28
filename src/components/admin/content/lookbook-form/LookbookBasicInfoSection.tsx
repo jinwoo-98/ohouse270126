@@ -4,9 +4,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
 
 interface LookbookBasicInfoSectionProps {
   formData: any;
@@ -72,15 +73,23 @@ export function LookbookBasicInfoSection({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label className="flex items-center gap-2"><AlignLeft className="w-3 h-3" /> Mô tả ngắn</Label>
-        <Textarea 
-          value={formData.description || ""} 
-          onChange={e => setFormData({...formData, description: e.target.value})} 
-          placeholder="Nhập đoạn giới thiệu ngắn về không gian này..." 
-          className="rounded-xl min-h-[100px] resize-none text-sm leading-relaxed"
-        />
-        <p className="text-[10px] text-muted-foreground italic">Hiển thị ngay trên ảnh chính ở trang chi tiết.</p>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="flex items-center gap-2"><AlignLeft className="w-3 h-3" /> Mô tả chi tiết</Label>
+          <AIContentAssistant 
+            contentType="product" 
+            contextTitle={formData.title} 
+            onInsert={(val) => setFormData({...formData, description: val})} 
+          />
+        </div>
+        <div className="min-h-[200px]">
+          <RichTextEditor 
+            value={formData.description || ""} 
+            onChange={val => setFormData({...formData, description: val})} 
+            placeholder="Nhập đoạn giới thiệu chi tiết về không gian này..." 
+          />
+        </div>
+        <p className="text-[10px] text-muted-foreground italic">Mô tả này sẽ hiển thị ở phần giới thiệu trang chi tiết Lookbook.</p>
       </div>
 
       <div className="space-y-2">

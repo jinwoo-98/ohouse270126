@@ -18,6 +18,7 @@ import { LookProductHorizontalScroll } from "@/components/inspiration/LookProduc
 import { LookProductVerticalList } from "@/components/inspiration/LookProductFullList";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -140,7 +141,7 @@ export default function LookDetailPage() {
     <>
       <Helmet>
         <title>{`${look.title} | Cảm Hứng OHOUSE`}</title>
-        <meta name="description" content={look.description || `Khám phá không gian ${look.title} với các sản phẩm nội thất cao cấp từ OHOUSE.`} />
+        <meta name="description" content={look.description?.replace(/<[^>]+>/g, '') || `Khám phá không gian ${look.title} với các sản phẩm nội thất cao cấp từ OHOUSE.`} />
         <meta property="og:title" content={look.title} />
         <meta property="og:image" content={look.image_url} />
         <meta property="og:type" content="website" />
@@ -172,9 +173,10 @@ export default function LookDetailPage() {
               <div className="lg:col-span-2 min-w-0 w-full space-y-6">
                 {look.description && (
                   <div className="bg-secondary/30 p-6 rounded-2xl border border-border/40">
-                    <p className="text-sm md:text-base text-muted-foreground leading-relaxed italic">
-                      "{look.description}"
-                    </p>
+                    <div 
+                      className="prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed italic"
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
+                    />
                   </div>
                 )}
                 
