@@ -66,33 +66,25 @@
 }
 
 @layer utilities {
-  /* GIẢI PHÁP TRIỆT ĐỂ CHO CHIỀU NGANG VÀ NGẮT DÒNG TIẾNG VIỆT */
+  /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT */
   .vn-text-final-fix {
-    /* 1. Ép buộc xuống dòng khi hết chiều ngang */
     white-space: normal !important;
-    
-    /* 2. Ngăn chặn việc tràn khung ngang */
-    overflow-wrap: break-word !important;
+    /* Ép buộc ngắt dòng theo từ, không ngắt giữa chừng */
+    word-break: keep-all !important;
+    overflow-wrap: anywhere !important;
     word-wrap: break-word !important;
     
-    /* 3. Chỉ ngắt dòng tại khoảng trắng (giữ nguyên từ) */
-    word-break: normal !important; 
-    
-    /* 4. Tắt các tính năng gây lỗi hiển thị chiều ngang */
     text-align: left !important;
     text-justify: none !important;
     hyphens: none !important;
-    
-    /* 5. Đảm bảo chiều cao dòng ổn định */
-    line-height: 1.6 !important;
+    line-height: 1.7 !important;
   }
 
-  /* Áp dụng tương tự cho tất cả các thẻ con bên trong */
   .vn-text-final-fix * {
-    white-space: normal !important;
-    overflow-wrap: break-word !important;
-    word-break: normal !important;
+    word-break: keep-all !important;
+    overflow-wrap: anywhere !important;
     text-align: left !important;
+    font-style: normal !important; /* Bỏ in nghiêng mặc định */
   }
 }
 
