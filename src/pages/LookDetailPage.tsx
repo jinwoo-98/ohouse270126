@@ -176,15 +176,9 @@ export default function LookDetailPage() {
                   <div className="relative w-full">
                     <div 
                       className={cn(
-                        "prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed italic transition-all duration-500 overflow-hidden",
+                        "prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed italic transition-all duration-500 overflow-hidden prose-word-break-normal",
                         !isExpanded ? "max-h-[72px]" : "max-h-none"
                       )}
-                      style={{ 
-                        wordBreak: 'normal', 
-                        overflowWrap: 'break-word',
-                        hyphens: 'none',
-                        WebkitHyphens: 'none'
-                      }}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                     />
                     

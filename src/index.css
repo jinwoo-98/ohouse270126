@@ -66,6 +66,16 @@
   }
 }
 
+@layer utilities {
+  /* Lớp CSS sửa lỗi ngắt đôi từ tiếng Việt */
+  .prose-word-break-normal {
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
+    -webkit-hyphens: none !important;
+  }
+}
+
 /* Custom Phone Input Styling */
 .luxury-phone-input .PhoneInput {
   @apply flex items-center gap-3 bg-secondary/20 p-1 rounded-xl border border-border/60 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all;
