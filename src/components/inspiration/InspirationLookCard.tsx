@@ -1,17 +1,19 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Heart } from "lucide-react";
+import { Plus, Heart, ShoppingBag } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatPrice, cn, getOptimizedImageUrl } from "@/lib/utils";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { Button } from "@/components/ui/button";
 
 interface InspirationLookCardProps {
   look: any;
   index: number;
   onQuickView: (product: any) => void;
+  onLookQuickView: (look: any) => void;
 }
 
-export function InspirationLookCard({ look, index, onQuickView }: InspirationLookCardProps) {
+export function InspirationLookCard({ look, index, onQuickView, onLookQuickView }: InspirationLookCardProps) {
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   const productsInLook = look.shop_look_items
@@ -29,10 +31,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
   const isFavorite = isInWishlist(lookAsProduct.id);
   const productCount = productsInLook.length;
 
-  // Sử dụng slug nếu có, nếu không thì dùng id
   const detailLink = `/y-tuong/${look.slug || look.id}`;
-  
-  // Ưu tiên ảnh trang chủ để có tỉ lệ hiển thị tốt nhất
   const displayImage = look.homepage_image_url || look.image_url;
 
   return (
@@ -43,7 +42,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
       transition={{ duration: 0.5, delay: index * 0.1 }}
       viewport={{ once: true }}
       layout
-      className="group flex flex-col gap-5"
+      className="group flex flex-col gap-3"
     >
       <div className="relative aspect-video md:aspect-[2/1] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
         <Link to={detailLink} className="block relative w-full h-full">
@@ -103,12 +102,14 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
           ))}
         </TooltipProvider>
       </div>
-      <div className="px-3 text-center">
-        <Link to={detailLink}>
-          <h3 className="font-bold text-charcoal text-lg group-hover:text-primary transition-colors leading-tight">{look.title}</h3>
-        </Link>
-        <p className="text-xs text-muted-foreground mt-1">{productCount} sản phẩm phối hợp</p>
-      </div>
+      
+      {/* Nút Xem nhanh sản phẩm thay thế cho phần text */}
+      <Button 
+        onClick={() => onLookQuickView(look)}
+        className="w-full h-12 rounded-xl bg-secondary/50 hover:bg-primary hover:text-white text-charcoal border border-border/40 shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest gap-2"
+      >
+        <ShoppingBag className="w-4 h-4" /> XEM NHANH SẢN PHẨM TRONG KHÔNG GIAN
+      </Button>
     </motion.div>
   );
 }
