@@ -134,25 +134,8 @@ export function InspirationToolbar({ lookCount, filterOptions, filters, updateFi
       <div className="container-luxury">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           
-          {/* Left: Count & Reset */}
-          <div className="flex items-center justify-between md:justify-start w-full md:w-auto gap-4">
-            <h2 className="text-sm md:text-base font-bold text-charcoal uppercase tracking-widest shrink-0">
-              {lookCount} Lookbooks
-            </h2>
-            
-            {isAnyFilterActive && (
-              <Button 
-                variant="ghost" 
-                onClick={onResetFilters}
-                className="h-9 px-3 text-[10px] font-bold uppercase tracking-widest text-destructive hover:bg-destructive/10 rounded-xl"
-              >
-                <RotateCcw className="w-3 h-3 mr-1" /> Reset Lọc
-              </Button>
-            )}
-          </div>
-
-          {/* Right: Filters (4 buttons) */}
-          <div className="flex justify-between md:justify-end gap-2 md:gap-3 w-full md:w-auto overflow-x-auto pb-1 no-scrollbar">
+          {/* Left: Filters (4 buttons) */}
+          <div className="flex justify-between md:justify-start gap-2 md:gap-3 w-full md:w-auto overflow-x-auto pb-1 no-scrollbar order-2 md:order-1">
             
             {/* 1. Không Gian (Category) */}
             <SpaceFilter 
@@ -190,6 +173,23 @@ export function InspirationToolbar({ lookCount, filterOptions, filters, updateFi
               filterKey="selectedColor"
               updateFilter={updateFilter}
             />
+          </div>
+
+          {/* Right: Count & Reset */}
+          <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-4 order-1 md:order-2">
+            {isAnyFilterActive && (
+              <Button 
+                variant="ghost" 
+                onClick={onResetFilters}
+                className="h-9 px-3 text-[10px] font-bold uppercase tracking-widest text-destructive hover:bg-destructive/10 rounded-xl"
+              >
+                <RotateCcw className="w-3 h-3 mr-1" /> Reset Lọc
+              </Button>
+            )}
+
+            <h2 className="text-sm md:text-base font-bold text-charcoal uppercase tracking-widest shrink-0">
+              {lookCount} Lookbooks
+            </h2>
           </div>
         </div>
       </div>
