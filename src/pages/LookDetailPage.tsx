@@ -176,9 +176,13 @@ export default function LookDetailPage() {
                   <div className="relative w-full bg-card p-6 rounded-2xl border border-border/40 shadow-subtle">
                     <div 
                       className={cn(
-                        "vn-text-fix text-muted-foreground italic transition-all duration-500 overflow-hidden prose prose-sm md:prose-base max-w-none",
-                        !isExpanded ? "max-h-[75px]" : "max-h-none"
+                        "vn-text-fix text-muted-foreground italic transition-all duration-500 overflow-hidden",
+                        !isExpanded ? "max-h-[4.8em]" : "max-h-none prose prose-sm md:prose-base max-w-none"
                       )}
+                      style={{ 
+                        // 4.8em = 3 dòng x 1.6 line-height. Đảm bảo cắt đúng dòng.
+                        maxHeight: !isExpanded ? "4.8em" : "none" 
+                      }}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                     />
                     

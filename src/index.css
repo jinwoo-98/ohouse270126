@@ -66,13 +66,29 @@
 }
 
 @layer utilities {
-  /* Giải pháp triệt để: Ngắt dòng tại khoảng trắng, không bao giờ cắt đôi từ */
+  /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT */
   .vn-text-fix {
-    word-break: normal !important;
+    /* Ngăn chặn việc chia đôi từ */
+    word-break: normal !important; 
     overflow-wrap: break-word !important;
     word-wrap: break-word !important;
+    
+    /* Tắt gạch nối tự động */
     hyphens: none !important;
-    line-height: 1.6 !important; /* Cố định chiều cao dòng để tính toán cắt dòng chuẩn */
+    -webkit-hyphens: none !important;
+    -moz-hyphens: none !important;
+    -ms-hyphens: none !important;
+    
+    /* Cố định chiều cao dòng để cắt dòng chính xác */
+    line-height: 1.6 !important;
+    text-align: left !important;
+  }
+
+  /* Áp dụng cho tất cả các thẻ con bên trong (p, span, v.v.) */
+  .vn-text-fix * {
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
   }
 }
 
