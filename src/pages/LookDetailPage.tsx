@@ -174,13 +174,16 @@ export default function LookDetailPage() {
               <div className="lg:col-span-2 min-w-0 w-full space-y-8">
                 {look.description && (
                   <div className="relative w-full overflow-hidden">
-                    <div 
-                      className={cn(
-                        "vn-text-final-fix text-muted-foreground transition-all duration-500 prose prose-sm md:prose-base max-w-none",
-                        !isExpanded ? "max-h-[100px]" : "max-h-none"
-                      )}
-                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
-                    />
+                    {/* Cố định chiều ngang 740px để khớp 1:1 với Editor */}
+                    <div className="max-w-[740px]">
+                      <div 
+                        className={cn(
+                          "vn-text-final-fix text-muted-foreground transition-all duration-500 prose prose-sm md:prose-base max-w-none",
+                          !isExpanded ? "max-h-[120px]" : "max-h-none"
+                        )}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
+                      />
+                    </div>
                     
                     {!isExpanded && (
                       <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent pointer-events-none" />
