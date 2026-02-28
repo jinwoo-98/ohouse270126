@@ -31,6 +31,9 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
 
   // Sử dụng slug nếu có, nếu không thì dùng id
   const detailLink = `/y-tuong/${look.slug || look.id}`;
+  
+  // Ưu tiên ảnh trang chủ để có tỉ lệ hiển thị tốt nhất
+  const displayImage = look.homepage_image_url || look.image_url;
 
   return (
     <motion.div
@@ -42,10 +45,10 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
       layout
       className="group flex flex-col gap-5"
     >
-      <div className="relative aspect-square rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
+      <div className="relative aspect-video md:aspect-[2/1] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
         <Link to={detailLink} className="block relative w-full h-full">
           <img 
-            src={getOptimizedImageUrl(look.image_url, { width: 800 })} 
+            src={getOptimizedImageUrl(displayImage, { width: 1000 })} 
             alt={look.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
@@ -65,7 +68,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
             )}
             title="Thêm vào yêu thích"
           >
-            <Heart className={cn("w-5 h-5", isFavorite && "fill-current")} />
+            <Heart className={cn("w-4 h-4", isFavorite && "fill-current")} />
           </button>
           
           <div className="absolute bottom-3 left-3 bg-charcoal/80 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest z-10">
@@ -75,7 +78,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
 
         <TooltipProvider>
           {look.shop_look_items
-            .filter((item: any) => item.target_image_url === look.image_url && item.products)
+            .filter((item: any) => item.target_image_url === displayImage && item.products)
             .map((item: any) => (
             <Tooltip key={item.id} delayDuration={0}>
               <TooltipTrigger asChild>
