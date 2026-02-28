@@ -14,9 +14,9 @@ export function HeaderDesktopNav() {
 
   return (
     <div className="hidden lg:block">
-      {/* Hàng 3: Menu phụ/dịch vụ (Bỏ border-b) */}
+      {/* Hàng 3: Menu phụ/dịch vụ - Tăng gap từ 6 lên 12 */}
       <div className="bg-card">
-        <div className="container-luxury flex items-center justify-center gap-6 h-9">
+        <div className="container-luxury flex items-center justify-center gap-12 h-9">
           {isLoading ? (
             <div className="h-4 w-96 bg-secondary/50 animate-pulse rounded" />
           ) : secondaryLinks.map((link, index) => (
@@ -33,10 +33,10 @@ export function HeaderDesktopNav() {
         </div>
       </div>
 
-      {/* Hàng 4: Menu sản phẩm chính (Bỏ shadow-sm để liền mạch) */}
+      {/* Hàng 4: Menu sản phẩm chính - Tăng gap từ 1 lên 8 và padding ngang từ 4 lên 6 */}
       <div className="bg-card">
         <div className="container-luxury">
-          <nav className="flex items-center justify-center gap-1">
+          <nav className="flex items-center justify-center gap-8">
             {isLoading ? (
               <div className="h-10 flex items-center gap-4">
                 {[1,2,3,4,5,6,7].map(i => <div key={i} className="w-20 h-4 bg-secondary animate-pulse rounded" />)}
@@ -51,7 +51,7 @@ export function HeaderDesktopNav() {
                 <Link 
                   to={item.href} 
                   className={cn(
-                    "flex items-center gap-1 px-4 py-4 text-[11px] font-bold tracking-[0.1em] transition-colors hover:text-primary uppercase",
+                    "flex items-center gap-1 px-6 py-4 text-[11px] font-bold tracking-[0.1em] transition-colors hover:text-primary uppercase",
                     item.isHighlight ? "text-destructive" : "text-charcoal/80"
                   )}
                 >
