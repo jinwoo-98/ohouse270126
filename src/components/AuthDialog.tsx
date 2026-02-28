@@ -15,7 +15,7 @@ import PhoneInput from 'react-phone-number-input';
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { E164Number } from 'libphonenumber-js/core';
 
-// hCaptcha Site Key của bạn
+// hCaptcha Site Key
 const HCAPTCHA_SITE_KEY = "0fac0b70-8cd8-4418-ab96-b4d8b37e5a4a";
 
 interface AuthDialogProps {
@@ -172,13 +172,15 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                   </div>
                 </div>
                 
-                <div className="flex flex-col items-center gap-4">
-                  <div className="scale-90 origin-center z-[120]">
+                <div className="flex flex-col items-center justify-center py-2">
+                  <div className="min-h-[78px] flex items-center justify-center">
                     <HCaptcha
                       sitekey={HCAPTCHA_SITE_KEY}
                       onVerify={(token) => setCaptchaToken(token)}
                       onExpire={() => setCaptchaToken(null)}
                       ref={hcaptchaRef}
+                      theme="light"
+                      size="normal"
                     />
                   </div>
                 </div>
