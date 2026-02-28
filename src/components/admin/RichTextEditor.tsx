@@ -175,7 +175,7 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
       </div>
 
       {/* Vùng chứa Editor: Giả lập chính xác khung nhìn trên Web */}
-      <div className="rich-editor-outer bg-secondary/10 p-4 md:p-10 rounded-2xl border border-dashed border-border/60 overflow-x-auto">
+      <div className="rich-editor-outer bg-secondary/10 p-4 md:p-6 rounded-2xl border border-dashed border-border/60 overflow-x-auto">
         <div className="rich-editor-wrapper bg-white border shadow-sm mx-auto w-[740px] min-w-[740px]">
           <ReactQuill 
             ref={quillRef}

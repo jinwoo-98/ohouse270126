@@ -218,7 +218,7 @@ export default function LookbookForm() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto pb-20">
+    <div className="max-w-7xl mx-auto pb-20">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" className="rounded-xl" asChild><Link to="/admin/content/looks"><ArrowLeft className="w-4 h-4" /></Link></Button>
@@ -252,7 +252,6 @@ export default function LookbookForm() {
           </div>
 
           <div className="lg:col-span-2 space-y-6">
-            {/* Ô soạn thảo mô tả được di chuyển sang đây để có không gian rộng rãi */}
             <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
