@@ -66,34 +66,37 @@
 }
 
 @layer utilities {
-  /* GIẢI PHÁP TRIỆT ĐỂ CUỐI CÙNG CHO TIẾNG VIỆT */
-  .vn-text-final-fix {
+  /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT - ÁP DỤNG TOÀN CỤC */
+  .vn-text-fix, 
+  .ql-editor, 
+  .rich-text-content {
     /* Ngăn chặn việc chia đôi từ */
     word-break: normal !important; 
     overflow-wrap: break-word !important;
     word-wrap: break-word !important;
     
-    /* Tắt gạch nối tự động */
+    /* Tắt gạch nối tự động của trình duyệt */
     hyphens: none !important;
     -webkit-hyphens: none !important;
     -moz-hyphens: none !important;
     -ms-hyphens: none !important;
     
-    /* Vô hiệu hóa căn đều, nguyên nhân chính gây xé từ */
+    /* Vô hiệu hóa căn đều (justify) - nguyên nhân chính gây xé từ */
     text-align: left !important;
     text-justify: none !important;
 
-    /* Cố định chiều cao dòng để tính toán cắt dòng chính xác */
+    /* Cố định chiều cao dòng */
     line-height: 1.6 !important;
   }
 
-  /* Áp dụng cho tất cả các thẻ con bên trong (p, span, v.v.) */
-  .vn-text-final-fix * {
+  /* Đảm bảo các thẻ con bên trong cũng tuân thủ */
+  .vn-text-fix *, 
+  .ql-editor *, 
+  .rich-text-content * {
     word-break: normal !important;
     overflow-wrap: break-word !important;
     hyphens: none !important;
     text-align: left !important;
-    text-justify: none !important;
   }
 }
 

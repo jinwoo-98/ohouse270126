@@ -181,6 +181,7 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
           modules={modules}
           formats={formats}
           placeholder={placeholder}
+          className="vn-text-fix" // Áp dụng fix ngay tại đây
         />
       </div>
 
@@ -213,6 +214,10 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
             font-family: 'Montserrat', sans-serif !important;
             font-size: 14px !important;
             line-height: 1.6 !important;
+            /* Ép quy tắc ngắt dòng tiếng Việt trong editor */
+            word-break: normal !important;
+            overflow-wrap: break-word !important;
+            text-align: left !important;
           }
           .rich-editor-wrapper .ql-container::-webkit-scrollbar { width: 8px; }
           .rich-editor-wrapper .ql-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
