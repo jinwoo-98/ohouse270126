@@ -9,6 +9,7 @@ import { LookProductVerticalItem } from "./LookProductVerticalItem";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface LookQuickViewSheetProps {
   look: any | null;
@@ -38,7 +39,7 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
       <SheetContent 
         side={isMobile ? "bottom" : "right"} 
         className={cn(
-          "p-0 flex flex-col z-[150] border-none shadow-elevated transition-all duration-500",
+          "p-0 flex flex-col z-[150] border-none shadow-elevated transition-all duration-500 [&>button]:hidden", // Ẩn nút X mặc định của shadcn
           isMobile ? "h-[85vh] rounded-t-[32px]" : "w-full sm:max-w-[500px]"
         )}
       >
@@ -51,7 +52,7 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
 
         {/* Header */}
         <div className="p-6 border-b border-border/40 bg-white sticky top-0 z-10 flex items-start justify-between">
-          <SheetHeader className="text-left">
+          <SheetHeader className="text-left pr-8">
             <SheetTitle className="text-lg font-bold text-charcoal uppercase tracking-widest">
               Sản phẩm trong không gian
             </SheetTitle>
@@ -60,9 +61,9 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
             </p>
           </SheetHeader>
           
-          {/* Nút đóng thủ công cho mobile nếu cần, mặc định SheetContent có nút X ở góc */}
-          <SheetClose className="p-2 hover:bg-secondary rounded-full transition-colors lg:hidden">
-            <X className="w-5 h-5 text-muted-foreground" />
+          {/* Nút đóng tùy chỉnh chuyên nghiệp */}
+          <SheetClose className="absolute right-4 top-6 p-2 bg-secondary/50 hover:bg-secondary rounded-full transition-all active:scale-90">
+            <X className="w-5 h-5 text-charcoal" />
           </SheetClose>
         </div>
 
@@ -103,5 +104,3 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
     </Sheet>
   );
 }
-
-import { cn } from "@/lib/utils";
