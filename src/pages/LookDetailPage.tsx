@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Loader2, ChevronRight, AlertTriangle } from "lucide-react";
+import { Loader2, ChevronRight, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -29,6 +29,7 @@ export default function LookDetailPage() {
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [currentImage, setCurrentImage] = useState<string>("");
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -170,13 +171,31 @@ export default function LookDetailPage() {
 
             <div className="grid lg:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto items-start">
               {/* Cột Trái: Mô tả & Gallery */}
-              <div className="lg:col-span-2 min-w-0 w-full space-y-6">
+              <div className="lg:col-span-2 min-w-0 w-full space-y-8">
                 {look.description && (
-                  <div className="bg-secondary/30 p-6 rounded-2xl border border-border/40">
+                  <div className="relative">
                     <div 
-                      className="prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed italic"
+                      className={cn(
+                        "prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed italic transition-all duration-500 overflow-hidden",
+                        !isExpanded ? "max-h-[100px]" : "max-h-none"
+                      )}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                     />
+                    
+                    {!isExpanded && (
+                      <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                    )}
+                    
+                    <button
+                      onClick={() => setIsExpanded(!isExpanded)}
+                      className="mt-2 text-primary font-bold text-[10px] uppercase tracking-widest flex items-center gap-1.5 hover:opacity-80 transition-all"
+                    >
+                      {isExpanded ? (
+                        <>Thu gọn <ChevronUp className="w-3.5 h-3.5" /></>
+                      ) : (
+                        <>Xem thêm nội dung <ChevronDown className="w-3.5 h-3.5" /></>
+                      )}
+                    </button>
                   </div>
                 )}
                 
