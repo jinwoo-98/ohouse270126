@@ -66,19 +66,13 @@
 }
 
 @layer utilities {
-  /* Giải pháp triệt để cho tiếng Việt: Ép buộc ngắt dòng tại khoảng trắng */
+  /* Giải pháp triệt để: Ngắt dòng tại khoảng trắng, không bao giờ cắt đôi từ */
   .vn-text-fix {
-    word-break: keep-all !important;
-    overflow-wrap: normal !important;
-    word-wrap: normal !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
     hyphens: none !important;
-    -webkit-hyphens: none !important;
-    line-break: strict !important;
-  }
-
-  .vn-text-fix * {
-    word-break: keep-all !important;
-    overflow-wrap: normal !important;
+    line-height: 1.6 !important; /* Cố định chiều cao dòng để tính toán cắt dòng chuẩn */
   }
 }
 

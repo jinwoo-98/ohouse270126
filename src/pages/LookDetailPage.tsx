@@ -173,22 +173,22 @@ export default function LookDetailPage() {
               {/* Cột Trái: Mô tả & Gallery */}
               <div className="lg:col-span-2 min-w-0 w-full space-y-6">
                 {look.description && (
-                  <div className="relative w-full">
+                  <div className="relative w-full bg-card p-6 rounded-2xl border border-border/40 shadow-subtle">
                     <div 
                       className={cn(
-                        "text-muted-foreground leading-relaxed italic transition-all duration-500 vn-text-fix",
-                        !isExpanded ? "line-clamp-3" : "prose prose-sm md:prose-base max-w-none"
+                        "vn-text-fix text-muted-foreground italic transition-all duration-500 overflow-hidden prose prose-sm md:prose-base max-w-none",
+                        !isExpanded ? "max-h-[75px]" : "max-h-none"
                       )}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                     />
                     
                     {!isExpanded && (
-                      <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                      <div className="absolute bottom-14 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none" />
                     )}
                     
                     <button
                       onClick={() => setIsExpanded(!isExpanded)}
-                      className="mt-3 text-primary font-bold text-[11px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1.5 px-3 bg-secondary/50 rounded-full shadow-sm"
+                      className="mt-4 text-primary font-bold text-[11px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1.5 px-3 bg-secondary/50 rounded-full shadow-sm"
                     >
                       {isExpanded ? (
                         <>Thu gọn <ChevronUp className="w-3.5 h-3.5" /></>
