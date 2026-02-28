@@ -2,12 +2,13 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, ArrowRight } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ShoppingBag, ArrowRight, X } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { LookProductVerticalItem } from "./LookProductVerticalItem";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LookQuickViewSheetProps {
   look: any | null;
@@ -17,6 +18,7 @@ interface LookQuickViewSheetProps {
 }
 
 export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }: LookQuickViewSheetProps) {
+  const isMobile = useIsMobile();
   const { addToCart } = useCart();
 
   if (!look) return null;
@@ -33,21 +35,38 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="w-full sm:max-w-[500px] p-0 flex flex-col z-[150] border-none shadow-elevated">
-        {/* Header đơn giản */}
-        <div className="p-6 border-b border-border/40 bg-white sticky top-0 z-10">
-          <SheetHeader>
-            <SheetTitle className="text-lg font-bold text-charcoal uppercase tracking-widest text-left">
+      <SheetContent 
+        side={isMobile ? "bottom" : "right"} 
+        className={cn(
+          "p-0 flex flex-col z-[150] border-none shadow-elevated transition-all duration-500",
+          isMobile ? "h-[85vh] rounded-t-[32px]" : "w-full sm:max-w-[500px]"
+        )}
+      >
+        {/* Drag Handle cho Mobile */}
+        {isMobile && (
+          <div className="w-full flex justify-center pt-3 pb-1 shrink-0">
+            <div className="w-12 h-1.5 bg-muted-foreground/20 rounded-full" />
+          </div>
+        )}
+
+        {/* Header */}
+        <div className="p-6 border-b border-border/40 bg-white sticky top-0 z-10 flex items-start justify-between">
+          <SheetHeader className="text-left">
+            <SheetTitle className="text-lg font-bold text-charcoal uppercase tracking-widest">
               Sản phẩm trong không gian
             </SheetTitle>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mt-1">
               {look.title} • {products.length} sản phẩm
             </p>
           </SheetHeader>
+          
+          {/* Nút đóng thủ công cho mobile nếu cần, mặc định SheetContent có nút X ở góc */}
+          <SheetClose className="p-2 hover:bg-secondary rounded-full transition-colors lg:hidden">
+            <X className="w-5 h-5 text-muted-foreground" />
+          </SheetClose>
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-secondary/5 p-6">
-          {/* Lưới sản phẩm 2 cột giống trang chi tiết */}
           <div className="grid grid-cols-2 gap-4">
             {products.map((product: any) => (
               <LookProductVerticalItem 
@@ -84,3 +103,5 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
     </Sheet>
   );
 }
+
+import { cn } from "@/lib/utils";

@@ -4,10 +4,10 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { 
   ShoppingBag, Heart, Minus, Plus, Loader2, Ruler, Info, FileText, 
-  ChevronRight, ChevronDown, ChevronUp, Star, MessageSquare, ArrowLeft 
+  ChevronRight, ChevronDown, ChevronUp, Star, MessageSquare, ArrowLeft, X 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,7 @@ import { StarRating } from "@/components/product/detail/ProductReviews";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface QuickViewSheetProps {
   product: any | null;
@@ -28,6 +29,7 @@ interface QuickViewSheetProps {
 type SheetView = 'details' | 'reviews';
 
 export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps) {
+  const isMobile = useIsMobile();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   
@@ -131,7 +133,26 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full sm:max-w-[580px] p-0 flex flex-col z-[150] border-none shadow-elevated">
+      <SheetContent 
+        side={isMobile ? "bottom" : "right"} 
+        className={cn(
+          "p-0 flex flex-col z-[150] border-none shadow-elevated transition-all duration-500",
+          isMobile ? "h-[85vh] rounded-t-[32px]" : "w-full sm:max-w-[580px]"
+        )}
+      >
+        {/* Drag Handle cho Mobile */}
+        {isMobile && (
+          <div className="w-full flex justify-center pt-3 pb-1 shrink-0">
+            <div className="w-12 h-1.5 bg-muted-foreground/20 rounded-full" />
+          </div>
+        )}
+
+        {/* Nút đóng nổi cho mobile */}
+        {isMobile && (
+          <SheetClose className="absolute right-4 top-4 z-50 p-2 bg-white/80 backdrop-blur-md rounded-full shadow-sm">
+            <X className="w-5 h-5 text-charcoal" />
+          </SheetClose>
+        )}
         
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto custom-scrollbar bg-background">
           <AnimatePresence mode="wait">
