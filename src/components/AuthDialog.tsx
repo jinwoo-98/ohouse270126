@@ -1,22 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, AtSign, Smartphone, AlertTriangle } from "lucide-react";
+import { Loader2, AtSign, Smartphone } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import PhoneInput from 'react-phone-number-input';
-import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { E164Number } from 'libphonenumber-js/core';
-
-// hCaptcha Site Key
-const HCAPTCHA_SITE_KEY = "0fac0b70-8cd8-4418-ab96-b4d8b37e5a4a";
 
 interface AuthDialogProps {
   isOpen: boolean;
@@ -30,8 +26,6 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
   const [isPhoneLoading, setIsPhoneLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const hcaptchaRef = useRef<HCaptcha>(null);
 
   useEffect(() => {
     if (user && isOpen) {
@@ -54,25 +48,15 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
       return;
     }
 
-    if (!captchaToken) {
-      toast.error("Vui lòng xác thực mã Captcha.");
-      return;
-    }
-
     setIsPhoneLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({ 
-        phone,
-        options: { captchaToken: captchaToken }
-      });
+      const { error } = await supabase.auth.signInWithOtp({ phone });
       if (error) throw error;
       setOtpSent(true);
       setResendCooldown(60);
       toast.success("Mã OTP đã được gửi thành công.");
     } catch (error: any) {
       toast.error("Lỗi: " + (error.message || "Không thể gửi OTP"));
-      hcaptchaRef.current?.resetCaptcha();
-      setCaptchaToken(null);
     } finally {
       setIsPhoneLoading(false);
     }
@@ -172,20 +156,7 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
                   </div>
                 </div>
                 
-                <div className="flex flex-col items-center justify-center py-2">
-                  <div className="min-h-[78px] flex items-center justify-center">
-                    <HCaptcha
-                      sitekey={HCAPTCHA_SITE_KEY}
-                      onVerify={(token) => setCaptchaToken(token)}
-                      onExpire={() => setCaptchaToken(null)}
-                      ref={hcaptchaRef}
-                      theme="light"
-                      size="normal"
-                    />
-                  </div>
-                </div>
-
-                <Button type="submit" disabled={isPhoneLoading || !phone || !captchaToken} className="w-full btn-hero h-12 shadow-gold rounded-xl text-[10px] font-bold">
+                <Button type="submit" disabled={isPhoneLoading || !phone} className="w-full btn-hero h-12 shadow-gold rounded-xl text-[10px] font-bold">
                   {isPhoneLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'GỬI MÃ XÁC THỰC OTP'}
                 </Button>
               </form>
