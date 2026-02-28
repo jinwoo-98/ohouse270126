@@ -42,7 +42,7 @@ export function InspirationLookCard({ look, index, onQuickView }: InspirationLoo
       layout
       className="group flex flex-col gap-5"
     >
-      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
+      <div className="relative aspect-square rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
         <Link to={detailLink} className="block relative w-full h-full">
           <img 
             src={getOptimizedImageUrl(look.image_url, { width: 800 })} 
