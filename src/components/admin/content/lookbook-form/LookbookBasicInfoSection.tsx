@@ -1,9 +1,10 @@
-import { Sparkles, Eye, Copy, AlertTriangle } from "lucide-react";
+import { Sparkles, Eye, Copy, AlertTriangle, AlignLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -69,11 +70,17 @@ export function LookbookBasicInfoSection({
             <Copy className="w-4 h-4" />
           </Button>
         </div>
-        {isSlugDuplicate ? (
-          <p className="text-[10px] text-destructive font-bold italic">Lỗi: Slug này đã được sử dụng. Vui lòng thay đổi Tên Lookbook.</p>
-        ) : (
-          <p className="text-[10px] text-muted-foreground italic">* Đường dẫn được tạo tự động và duy nhất dựa trên tên Lookbook.</p>
-        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2"><AlignLeft className="w-3 h-3" /> Mô tả ngắn</Label>
+        <Textarea 
+          value={formData.description || ""} 
+          onChange={e => setFormData({...formData, description: e.target.value})} 
+          placeholder="Nhập đoạn giới thiệu ngắn về không gian này..." 
+          className="rounded-xl min-h-[100px] resize-none text-sm leading-relaxed"
+        />
+        <p className="text-[10px] text-muted-foreground italic">Hiển thị ngay trên ảnh chính ở trang chi tiết.</p>
       </div>
 
       <div className="space-y-2">
@@ -92,7 +99,6 @@ export function LookbookBasicInfoSection({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-[10px] text-muted-foreground italic">Lookbook sẽ hiển thị ở cuối trang danh mục này.</p>
       </div>
 
       <div className="pt-6 border-t border-dashed">

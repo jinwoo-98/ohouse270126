@@ -140,7 +140,7 @@ export default function LookDetailPage() {
     <>
       <Helmet>
         <title>{`${look.title} | Cảm Hứng OHOUSE`}</title>
-        <meta name="description" content={`Khám phá không gian ${look.title} với các sản phẩm nội thất cao cấp từ OHOUSE. Ý tưởng thiết kế sang trọng cho ngôi nhà của bạn.`} />
+        <meta name="description" content={look.description || `Khám phá không gian ${look.title} với các sản phẩm nội thất cao cấp từ OHOUSE.`} />
         <meta property="og:title" content={look.title} />
         <meta property="og:image" content={look.image_url} />
         <meta property="og:type" content="website" />
@@ -165,30 +165,39 @@ export default function LookDetailPage() {
               className="text-center max-w-4xl mx-auto mb-12"
             >
               <h1 className="text-3xl md:text-4xl font-bold mb-4 text-charcoal">{look.title}</h1>
-              <p className="text-muted-foreground">
-                {`Khám phá ${visibleItems.length} sản phẩm trong không gian này và thêm vào giỏ hàng của bạn.`}
-              </p>
             </motion.div>
 
-            <div className="grid lg:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto">
-              <div className="lg:col-span-2 min-w-0 w-full overflow-hidden">
-                <ProductGallery 
-                  mainImage={look.image_url} 
-                  galleryImages={look.gallery_urls} 
-                  productName={look.title} 
-                  hotspots={lookHotspots}
-                  onHotspotClick={setQuickViewProduct}
-                  aspectRatio="aspect-[4/3]"
-                >
-                  {(currentImageUrl) => {
-                    useEffect(() => {
-                      setCurrentImage(currentImageUrl);
-                    }, [currentImageUrl]);
-                    return null;
-                  }}
-                </ProductGallery>
+            <div className="grid lg:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto items-start">
+              {/* Cột Trái: Mô tả & Gallery */}
+              <div className="lg:col-span-2 min-w-0 w-full space-y-6">
+                {look.description && (
+                  <div className="bg-secondary/30 p-6 rounded-2xl border border-border/40">
+                    <p className="text-sm md:text-base text-muted-foreground leading-relaxed italic">
+                      "{look.description}"
+                    </p>
+                  </div>
+                )}
+                
+                <div className="overflow-hidden">
+                  <ProductGallery 
+                    mainImage={look.image_url} 
+                    galleryImages={look.gallery_urls} 
+                    productName={look.title} 
+                    hotspots={lookHotspots}
+                    onHotspotClick={setQuickViewProduct}
+                    aspectRatio="aspect-[4/3]"
+                  >
+                    {(currentImageUrl) => {
+                      useEffect(() => {
+                        setCurrentImage(currentImageUrl);
+                      }, [currentImageUrl]);
+                      return null;
+                    }}
+                  </ProductGallery>
+                </div>
               </div>
 
+              {/* Cột Phải: Danh sách sản phẩm */}
               {visibleItems.length > 0 && (
                 <div className="lg:col-span-1 min-w-0 w-full hidden lg:block">
                   <LookProductList products={lookbookProducts} onQuickView={setQuickViewProduct} />

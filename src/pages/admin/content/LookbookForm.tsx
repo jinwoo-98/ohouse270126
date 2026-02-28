@@ -32,6 +32,7 @@ export default function LookbookForm() {
   const [formData, setFormData] = useState({
     title: "",
     slug: "",
+    description: "",
     category_id: "",
     image_url: "",
     gallery_urls: [] as string[],
@@ -115,6 +116,7 @@ export default function LookbookForm() {
     setFormData({
       title: lookData.title,
       slug: lookData.slug || slugify(lookData.title),
+      description: lookData.description || "",
       category_id: lookData.category_id,
       image_url: lookData.image_url,
       gallery_urls: lookData.gallery_urls || [],
@@ -146,6 +148,7 @@ export default function LookbookForm() {
     const payload = {
       title: formData.title,
       slug: formData.slug,
+      description: formData.description,
       category_id: formData.category_id,
       image_url: formData.image_url,
       gallery_urls: formData.gallery_urls,
