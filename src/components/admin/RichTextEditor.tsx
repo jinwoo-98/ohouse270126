@@ -83,7 +83,6 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
       const files = Array.from(input.files || []);
       if (files.length === 0) return;
 
-      // Validation
       for (const file of files) {
         if (!ALLOWED_TYPES.includes(file.type)) {
           toast.error(`Định dạng tệp "${file.name}" không được hỗ trợ.`);
@@ -150,6 +149,9 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
       handlers: {
         image: imageHandler
       }
+    },
+    clipboard: {
+      matchVisual: false // Ngăn chặn việc tự động thêm thẻ lạ khi dán
     }
   }), [contextTitle]);
 
@@ -172,58 +174,60 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
         </Button>
       </div>
 
-      <div className="rich-editor-wrapper bg-white border rounded-xl overflow-hidden shadow-sm">
-        <ReactQuill 
-          ref={quillRef}
-          theme="snow"
-          value={value}
-          onChange={onChange}
-          modules={modules}
-          formats={formats}
-          placeholder={placeholder}
-          className="vn-text-fix" // Áp dụng fix ngay tại đây
-        />
+      {/* Wrapper giới hạn chiều ngang 750px để khớp với web */}
+      <div className="rich-editor-outer bg-secondary/10 p-4 md:p-8 rounded-2xl border border-dashed border-border/60">
+        <div className="rich-editor-wrapper bg-white border rounded-xl overflow-hidden shadow-sm mx-auto max-w-[750px]">
+          <ReactQuill 
+            ref={quillRef}
+            theme="snow"
+            value={value}
+            onChange={onChange}
+            modules={modules}
+            formats={formats}
+            placeholder={placeholder}
+          />
+        </div>
       </div>
 
-      <div className="hidden">
-        <style>{`
-          .rich-editor-wrapper .quill {
-            height: 550px !important;
-            display: flex !important;
-            flex-direction: column !important;
-          }
-          .rich-editor-wrapper .ql-toolbar.ql-snow {
-            flex-shrink: 0 !important;
-            border: none !important;
-            border-bottom: 1px solid #f0f0f0 !important;
-            background: #fafafa !important;
-            z-index: 10 !important;
-          }
-          .rich-editor-wrapper .ql-container.ql-snow {
-            flex-grow: 1 !important;
-            overflow-y: auto !important;
-            border: none !important;
-            display: flex !important;
-            flex-direction: column !important;
-            height: auto !important;
-          }
-          .rich-editor-wrapper .ql-editor {
-            flex-grow: 1 !important;
-            min-height: 100% !important;
-            padding: 25px !important;
-            font-family: 'Montserrat', sans-serif !important;
-            font-size: 14px !important;
-            line-height: 1.6 !important;
-            /* Ép quy tắc ngắt dòng tiếng Việt trong editor */
-            word-break: normal !important;
-            overflow-wrap: break-word !important;
-            text-align: left !important;
-          }
-          .rich-editor-wrapper .ql-container::-webkit-scrollbar { width: 8px; }
-          .rich-editor-wrapper .ql-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
-          .rich-editor-wrapper .ql-editor img { max-width: 100%; border-radius: 12px; margin: 15px 0; }
-        `}</style>
-      </div>
+      <style>{`
+        .rich-editor-wrapper .quill {
+          height: 550px !important;
+          display: flex !important;
+          flex-direction: column !important;
+        }
+        .rich-editor-wrapper .ql-toolbar.ql-snow {
+          flex-shrink: 0 !important;
+          border: none !important;
+          border-bottom: 1px solid #f0f0f0 !important;
+          background: #fafafa !important;
+          z-index: 10 !important;
+        }
+        .rich-editor-wrapper .ql-container.ql-snow {
+          flex-grow: 1 !important;
+          overflow-y: auto !important;
+          border: none !important;
+          display: flex !important;
+          flex-direction: column !important;
+          height: auto !important;
+        }
+        .rich-editor-wrapper .ql-editor {
+          flex-grow: 1 !important;
+          min-height: 100% !important;
+          padding: 30px !important;
+          font-family: 'Montserrat', sans-serif !important;
+          font-size: 15px !important;
+          line-height: 1.7 !important;
+          
+          /* Ép quy tắc ngắt dòng tiếng Việt ngay trong editor */
+          white-space: normal !important;
+          word-break: keep-all !important;
+          overflow-wrap: break-word !important;
+          text-align: left !important;
+        }
+        .rich-editor-wrapper .ql-container::-webkit-scrollbar { width: 8px; }
+        .rich-editor-wrapper .ql-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        .rich-editor-wrapper .ql-editor img { max-width: 100%; border-radius: 12px; margin: 15px 0; }
+      `}</style>
 
       <Dialog open={isAltModalOpen} onOpenChange={setIsAltModalOpen}>
         <DialogContent className="max-w-2xl rounded-3xl p-0 overflow-hidden border-none shadow-elevated z-[160]">

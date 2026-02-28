@@ -71,7 +71,7 @@
     white-space: normal !important;
     /* Ép buộc ngắt dòng theo từ, không ngắt giữa chừng */
     word-break: keep-all !important;
-    overflow-wrap: anywhere !important;
+    overflow-wrap: break-word !important;
     word-wrap: break-word !important;
     
     text-align: left !important;
@@ -82,7 +82,7 @@
 
   .vn-text-final-fix * {
     word-break: keep-all !important;
-    overflow-wrap: anywhere !important;
+    overflow-wrap: break-word !important;
     text-align: left !important;
     font-style: normal !important; /* Bỏ in nghiêng mặc định */
   }
