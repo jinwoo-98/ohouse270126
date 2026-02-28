@@ -2,11 +2,10 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { ShoppingBag, X, ChevronRight, ArrowRight } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { ShoppingBag, ArrowRight } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { formatPrice } from "@/lib/utils";
+import { LookProductVerticalItem } from "./LookProductVerticalItem";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 
@@ -35,63 +34,30 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent side="right" className="w-full sm:max-w-[500px] p-0 flex flex-col z-[150] border-none shadow-elevated">
-        <div className="flex-1 overflow-y-auto custom-scrollbar bg-background">
-          {/* Header Image Section */}
-          <div className="relative aspect-video bg-secondary/20">
-            <img 
-              src={look.homepage_image_url || look.image_url} 
-              className="w-full h-full object-cover" 
-              alt={look.title} 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent" />
-            <div className="absolute bottom-6 left-8 right-8">
-              <Badge className="mb-3 bg-primary text-white border-none uppercase tracking-widest text-[9px]">
-                OHOUSE Inspiration
-              </Badge>
-              <SheetHeader>
-                <SheetTitle className="text-2xl font-bold text-white uppercase tracking-widest text-left leading-tight">
-                  {look.title}
-                </SheetTitle>
-                <SheetDescription className="text-cream/80 text-xs font-medium uppercase tracking-widest mt-2">
-                  {products.length} Sản phẩm trong không gian này
-                </SheetDescription>
-              </SheetHeader>
-            </div>
-          </div>
+        {/* Header đơn giản */}
+        <div className="p-6 border-b border-border/40 bg-white sticky top-0 z-10">
+          <SheetHeader>
+            <SheetTitle className="text-lg font-bold text-charcoal uppercase tracking-widest text-left">
+              Sản phẩm trong không gian
+            </SheetTitle>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mt-1">
+              {look.title} • {products.length} sản phẩm
+            </p>
+          </SheetHeader>
+        </div>
 
-          {/* Product List Section */}
-          <div className="p-6 md:p-8">
-            <div className="space-y-4">
-              {products.map((product: any) => (
-                <div 
-                  key={product.id} 
-                  className="group flex items-center gap-4 p-3 rounded-2xl bg-white border border-border/40 hover:border-primary/30 transition-all shadow-subtle cursor-pointer"
-                  onClick={() => onProductQuickView(product)}
-                >
-                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-secondary/30 shrink-0 border border-border/20">
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                  </div>
-                  <div className="flex-1 min-w-0 flex flex-col">
-                    <h5 className="font-bold text-sm text-charcoal truncate mb-1">{product.name}</h5>
-                    <p className="text-primary font-bold text-base">{formatPrice(product.price)}</p>
-                    <div className="mt-2 flex items-center text-[9px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">
-                      Xem chi tiết <ChevronRight className="w-3 h-3 ml-1" />
-                    </div>
-                  </div>
-                  <Button 
-                    size="icon" 
-                    variant="secondary" 
-                    className="h-10 w-10 rounded-xl shrink-0 hover:bg-primary hover:text-white transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart({ ...product, quantity: 1, image: product.image_url });
-                    }}
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-secondary/5 p-6">
+          {/* Lưới sản phẩm 2 cột giống trang chi tiết */}
+          <div className="grid grid-cols-2 gap-4">
+            {products.map((product: any) => (
+              <LookProductVerticalItem 
+                key={product.id} 
+                product={product} 
+                onQuickView={onProductQuickView} 
+                className="rounded-2xl shadow-sm border-none"
+                imageClassName="rounded-t-2xl"
+              />
+            ))}
           </div>
         </div>
 
@@ -110,7 +76,7 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
             onClick={onClose}
           >
             <Link to={`/y-tuong/${look.slug || look.id}`}>
-              Xem trang chi tiết không gian <ArrowRight className="w-3.5 h-3.5 ml-2" />
+              Xem chi tiết không gian <ArrowRight className="w-3.5 h-3.5 ml-2" />
             </Link>
           </Button>
         </div>
