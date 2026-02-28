@@ -173,29 +173,31 @@ export default function LookDetailPage() {
               {/* Cột Trái: Mô tả & Gallery */}
               <div className="lg:col-span-2 min-w-0 w-full space-y-6">
                 {look.description && (
-                  <div className="relative w-full bg-card p-6 rounded-2xl border border-border/40 shadow-subtle">
+                  <div className="relative w-full bg-card p-6 rounded-2xl border border-border/40 shadow-subtle overflow-hidden">
                     <div 
                       className={cn(
-                        "vn-text-final-fix text-muted-foreground italic transition-all duration-500 overflow-hidden prose prose-sm md:prose-base max-w-none",
+                        "vn-text-final-fix text-muted-foreground italic transition-all duration-500 prose prose-sm md:prose-base max-w-none",
                         !isExpanded ? "max-h-[120px]" : "max-h-none"
                       )}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                     />
                     
                     {!isExpanded && (
-                      <div className="absolute bottom-14 left-6 right-6 h-16 bg-gradient-to-t from-card via-card/80 to-transparent pointer-events-none" />
+                      <div className="absolute bottom-14 left-0 right-0 h-16 bg-gradient-to-t from-card via-card/80 to-transparent pointer-events-none" />
                     )}
                     
-                    <button
-                      onClick={() => setIsExpanded(!isExpanded)}
-                      className="mt-4 text-primary font-bold text-[11px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1.5 px-3 bg-secondary/50 rounded-full shadow-sm"
-                    >
-                      {isExpanded ? (
-                        <>Thu gọn <ChevronUp className="w-3.5 h-3.5" /></>
-                      ) : (
-                        <>Xem thêm nội dung <ChevronDown className="w-3.5 h-3.5" /></>
-                      )}
-                    </button>
+                    <div className="relative z-10 flex justify-start">
+                      <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="mt-4 text-primary font-bold text-[11px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1.5 px-3 bg-secondary/50 rounded-full shadow-sm"
+                      >
+                        {isExpanded ? (
+                          <>Thu gọn <ChevronUp className="w-3.5 h-3.5" /></>
+                        ) : (
+                          <>Xem thêm nội dung <ChevronDown className="w-3.5 h-3.5" /></>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 )}
                 
