@@ -53,10 +53,11 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
           {/* 
-            Sử dụng vn-text-fix (đã định nghĩa trong index.css) để đồng bộ với phần Đánh giá.
+            QUAN TRỌNG: Đã gỡ bỏ hoàn toàn lớp 'prose' 
+            Chỉ sử dụng vn-text-final-fix và max-w-[800px] để đảm bảo ngắt dòng tiếng Việt chuẩn
           */}
           <div 
-            className="vn-text-fix w-full max-w-[800px] mx-auto text-sm md:text-base text-muted-foreground leading-relaxed"
+            className="vn-text-final-fix w-full max-w-[800px] mx-auto text-sm md:text-base text-muted-foreground"
             dangerouslySetInnerHTML={{ __html: processedContent || "<p class='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>

@@ -66,63 +66,33 @@
 }
 
 @layer utilities {
-  /* CÔNG THỨC CHUẨN: Thay thế hoàn toàn 'prose' */
-  .vn-text-fix {
-    display: block !important;
-    text-align: left !important;
-    line-height: 1.7 !important;
-    
-    /* Ngăn chặn ngắt từ ở giữa */
+  /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT - NGĂN CHẶN CHIA ĐÔI TỪ */
+  .vn-text-final-fix, .vn-text-final-fix * {
+    /* Ép trình duyệt không bao giờ ngắt ở giữa từ */
     word-break: normal !important;
     overflow-wrap: break-word !important;
     word-wrap: break-word !important;
     
     /* Tắt tính năng tự động thêm dấu gạch ngang ngắt từ */
+    hyphens: none !important;
     -webkit-hyphens: none !important;
     -ms-hyphens: none !important;
-    hyphens: none !important;
-  }
-
-  /* Áp dụng cho tất cả các thẻ con bên trong để ghi đè mọi style khác */
-  .vn-text-fix *, 
-  .vn-text-fix p, 
-  .vn-text-fix span, 
-  .vn-text-fix li, 
-  .vn-text-fix h1, 
-  .vn-text-fix h2, 
-  .vn-text-fix h3 {
-    word-break: normal !important;
-    overflow-wrap: break-word !important;
-    hyphens: none !important;
+    
+    /* Luôn căn trái để ngắt dòng đẹp nhất trong tiếng Việt */
     text-align: left !important;
   }
 
-  /* Định dạng cơ bản cho nội dung Rich Text */
-  .vn-text-fix p { @apply mb-6; }
-  .vn-text-fix h1 { @apply text-2xl font-bold mb-6 mt-8 text-charcoal uppercase tracking-wider; }
-  .vn-text-fix h2 { @apply text-xl font-bold mb-4 mt-8 text-charcoal uppercase tracking-wider; }
-  .vn-text-fix h3 { @apply text-lg font-bold mb-4 mt-6 text-charcoal uppercase tracking-wider; }
-  .vn-text-fix ul { @apply list-disc pl-6 mb-6 space-y-2; }
-  .vn-text-fix ol { @apply list-decimal pl-6 mb-6 space-y-2; }
-  .vn-text-fix img { @apply rounded-2xl my-8 shadow-medium w-full h-auto object-cover; }
-  .vn-text-fix strong { @apply font-bold text-charcoal; }
-  .vn-text-fix a { @apply text-primary font-bold underline hover:opacity-80 transition-opacity; }
-
-  /* Modifier cho nền tối */
-  .vn-text-fix-invert,
-  .vn-text-fix-invert h1,
-  .vn-text-fix-invert h2,
-  .vn-text-fix-invert h3,
-  .vn-text-fix-invert strong {
-    color: hsl(var(--cream)) !important;
+  /* Định dạng nội dung rich text không dùng prose */
+  .vn-text-final-fix p { @apply mb-6 leading-relaxed; }
+  .vn-text-final-fix h1, .vn-text-final-fix h2, .vn-text-final-fix h3 { 
+    @apply font-bold text-charcoal uppercase tracking-wider mb-4 mt-8; 
   }
-  .vn-text-fix-invert p,
-  .vn-text-fix-invert li {
-    color: hsl(var(--taupe)) !important;
-  }
-  .vn-text-fix-invert a {
-    color: hsl(var(--primary)) !important;
-  }
+  .vn-text-final-fix h1 { @apply text-2xl; }
+  .vn-text-final-fix h2 { @apply text-xl; }
+  .vn-text-final-fix h3 { @apply text-lg; }
+  .vn-text-final-fix ul { @apply list-disc pl-6 mb-6 space-y-2; }
+  .vn-text-final-fix ol { @apply list-decimal pl-6 mb-6 space-y-2; }
+  .vn-text-final-fix img { @apply rounded-2xl my-8 shadow-medium w-full h-auto object-cover; }
 }
 
 /* Custom Phone Input Styling */
