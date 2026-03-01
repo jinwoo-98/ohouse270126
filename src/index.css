@@ -66,28 +66,14 @@
 }
 
 @layer utilities {
-  /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT - SAO CHÉP TỪ PHẦN ĐÁNH GIÁ */
-  .vn-text-final-fix {
-    display: block !important;
-    text-align: left !important;
-    line-height: 1.7 !important;
-    
-    /* KHÔNG bao giờ chặt đôi từ ở bất kỳ cấp độ nào */
+  /* CÔNG THỨC CHUẨN TỪ PHẦN ĐÁNH GIÁ: Ngăn chặn tuyệt đối việc chia đôi từ */
+  .vn-text-fix, .vn-text-fix * {
     word-break: normal !important;
     overflow-wrap: break-word !important;
-    word-wrap: break-word !important;
-    
-    /* Tắt tính năng tự động thêm dấu gạch ngang ngắt từ của trình duyệt */
+    hyphens: none !important;
     -webkit-hyphens: none !important;
     -ms-hyphens: none !important;
-    hyphens: none !important;
-  }
-
-  /* Áp dụng cho tất cả các thẻ con bên trong (p, span, li...) */
-  .vn-text-final-fix * {
-    word-break: normal !important;
-    overflow-wrap: break-word !important;
-    hyphens: none !important;
+    text-align: left !important;
   }
 }
 

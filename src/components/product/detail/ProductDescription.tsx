@@ -53,11 +53,11 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
           {/* 
-            QUAN TRỌNG: Loại bỏ lớp 'prose' vì nó gây ra lỗi hyphens (ngắt từ).
-            Sử dụng các lớp text cơ bản giống như phần Đánh giá.
+            LOẠI BỎ HOÀN TOÀN 'prose'. 
+            Sử dụng vn-text-fix và các lớp text cơ bản giống hệt phần Đánh giá.
           */}
           <div 
-            className="vn-text-final-fix w-full max-w-[800px] mx-auto text-sm md:text-base text-muted-foreground leading-relaxed"
+            className="vn-text-fix w-full max-w-[800px] mx-auto text-sm md:text-base text-muted-foreground leading-relaxed"
             dangerouslySetInnerHTML={{ __html: processedContent || "<p class='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>
@@ -93,7 +93,7 @@ export function ProductDescription({ description, product }: ProductDescriptionP
       </div>
 
       <style>{`
-        .vn-text-final-fix img {
+        .vn-text-fix img {
           width: 100% !important;
           max-width: 800px !important;
           height: auto !important;
@@ -102,10 +102,10 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           margin: 2rem auto !important;
           display: block;
         }
-        .vn-text-final-fix p {
+        .vn-text-fix p {
           margin-bottom: 1.5rem !important;
         }
-        .vn-text-final-fix h1, .vn-text-final-fix h2, .vn-text-final-fix h3 {
+        .vn-text-fix h1, .vn-text-fix h2, .vn-text-fix h3 {
           color: #1a1a1a;
           font-weight: 700;
           margin-top: 2rem;
@@ -113,17 +113,17 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
-        .vn-text-final-fix h1 { font-size: 1.5rem; }
-        .vn-text-final-fix h2 { font-size: 1.25rem; }
-        .vn-text-final-fix h3 { font-size: 1.1rem; }
+        .vn-text-fix h1 { font-size: 1.5rem; }
+        .vn-text-fix h2 { font-size: 1.25rem; }
+        .vn-text-fix h3 { font-size: 1.1rem; }
         
-        .vn-text-final-fix ul, .vn-text-final-fix ol {
+        .vn-text-fix ul, .vn-text-fix ol {
           margin-bottom: 1.5rem;
           padding-left: 1.5rem;
         }
-        .vn-text-final-fix ul { list-style-type: disc; }
-        .vn-text-final-fix ol { list-style-type: decimal; }
-        .vn-text-final-fix li { margin-bottom: 0.5rem; }
+        .vn-text-fix ul { list-style-type: disc; }
+        .vn-text-fix ol { list-style-type: decimal; }
+        .vn-text-fix li { margin-bottom: 0.5rem; }
       `}</style>
     </section>
   );

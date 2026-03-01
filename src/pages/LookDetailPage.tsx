@@ -175,9 +175,10 @@ export default function LookDetailPage() {
                 {look.description && (
                   <div className="w-full">
                     <div className="relative max-w-[740px]">
+                      {/* Áp dụng vn-text-fix và gỡ bỏ prose */}
                       <div 
                         className={cn(
-                          "vn-text-final-fix text-sm md:text-base text-muted-foreground transition-all duration-500 max-w-none overflow-hidden",
+                          "vn-text-fix text-sm md:text-base text-muted-foreground transition-all duration-500 max-w-none overflow-hidden",
                           !isExpanded ? "max-h-[82px]" : "max-h-none"
                         )}
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
