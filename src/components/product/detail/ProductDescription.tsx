@@ -52,9 +52,12 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           "max-w-none transition-all duration-1000 ease-in-out",
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
-          {/* Áp dụng vn-text-final-fix để đồng bộ với phần đánh giá */}
+          {/* 
+            QUAN TRỌNG: Loại bỏ lớp 'prose' vì nó gây ra lỗi hyphens (ngắt từ).
+            Sử dụng các lớp text cơ bản giống như phần Đánh giá.
+          */}
           <div 
-            className="rich-text-content vn-text-final-fix w-full max-w-[800px] mx-auto prose prose-lg prose-stone max-w-none text-muted-foreground"
+            className="vn-text-final-fix w-full max-w-[800px] mx-auto text-sm md:text-base text-muted-foreground leading-relaxed"
             dangerouslySetInnerHTML={{ __html: processedContent || "<p class='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>
@@ -90,14 +93,7 @@ export function ProductDescription({ description, product }: ProductDescriptionP
       </div>
 
       <style>{`
-        .rich-text-content {
-          /* Ép trình duyệt không bao giờ chặt đôi từ */
-          hyphens: none !important;
-          -webkit-hyphens: none !important;
-          word-break: normal !important;
-          overflow-wrap: break-word !important;
-        }
-        .rich-text-content img {
+        .vn-text-final-fix img {
           width: 100% !important;
           max-width: 800px !important;
           height: auto !important;
@@ -106,17 +102,28 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           margin: 2rem auto !important;
           display: block;
         }
-        .rich-text-content p {
-          /* Chuyển sang căn trái để ngắt dòng tự nhiên nhất */
-          text-align: left !important;
-          margin-bottom: 1.5rem !important;
-          word-break: normal !important;
-          overflow-wrap: break-word !important;
-        }
-        .rich-text-content ul, .rich-text-content ol {
-          text-align: left;
+        .vn-text-final-fix p {
           margin-bottom: 1.5rem !important;
         }
+        .vn-text-final-fix h1, .vn-text-final-fix h2, .vn-text-final-fix h3 {
+          color: #1a1a1a;
+          font-weight: 700;
+          margin-top: 2rem;
+          margin-bottom: 1rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .vn-text-final-fix h1 { font-size: 1.5rem; }
+        .vn-text-final-fix h2 { font-size: 1.25rem; }
+        .vn-text-final-fix h3 { font-size: 1.1rem; }
+        
+        .vn-text-final-fix ul, .vn-text-final-fix ol {
+          margin-bottom: 1.5rem;
+          padding-left: 1.5rem;
+        }
+        .vn-text-final-fix ul { list-style-type: disc; }
+        .vn-text-final-fix ol { list-style-type: decimal; }
+        .vn-text-final-fix li { margin-bottom: 0.5rem; }
       `}</style>
     </section>
   );

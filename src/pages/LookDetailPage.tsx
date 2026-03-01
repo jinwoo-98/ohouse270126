@@ -174,23 +174,20 @@ export default function LookDetailPage() {
               <div className="lg:col-span-2 min-w-0 w-full space-y-8">
                 {look.description && (
                   <div className="w-full">
-                    {/* Khung chứa văn bản có lớp phủ mờ */}
                     <div className="relative max-w-[740px]">
                       <div 
                         className={cn(
-                          "vn-text-final-fix text-muted-foreground transition-all duration-500 prose prose-sm md:prose-base max-w-none overflow-hidden",
+                          "vn-text-final-fix text-sm md:text-base text-muted-foreground transition-all duration-500 max-w-none overflow-hidden",
                           !isExpanded ? "max-h-[82px]" : "max-h-none"
                         )}
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                       />
                       
-                      {/* Lớp phủ mờ chỉ nằm trong khung văn bản */}
                       {!isExpanded && (
                         <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none" />
                       )}
                     </div>
                     
-                    {/* Nút bấm nằm ngoài vùng mờ */}
                     <div className="mt-3 flex justify-start">
                       <button
                         onClick={() => setIsExpanded(!isExpanded)}

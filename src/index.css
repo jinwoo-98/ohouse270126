@@ -66,32 +66,28 @@
 }
 
 @layer utilities {
-  /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT - NGĂN CHẶN CHIA ĐÔI TỪ */
+  /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT - SAO CHÉP TỪ PHẦN ĐÁNH GIÁ */
   .vn-text-final-fix {
     display: block !important;
     text-align: left !important;
     line-height: 1.7 !important;
     
-    /* QUAN TRỌNG: Ép trình duyệt không bao giờ ngắt ở giữa từ */
+    /* KHÔNG bao giờ chặt đôi từ ở bất kỳ cấp độ nào */
     word-break: normal !important;
     overflow-wrap: break-word !important;
     word-wrap: break-word !important;
     
-    /* Tắt tính năng tự động thêm dấu gạch ngang ngắt từ */
-    hyphens: none !important;
+    /* Tắt tính năng tự động thêm dấu gạch ngang ngắt từ của trình duyệt */
     -webkit-hyphens: none !important;
     -ms-hyphens: none !important;
-    
-    /* Tắt các tính năng cân bằng dòng có thể gây ngắt từ sai */
-    text-wrap: wrap !important;
+    hyphens: none !important;
   }
 
+  /* Áp dụng cho tất cả các thẻ con bên trong (p, span, li...) */
   .vn-text-final-fix * {
-    word-break: inherit !important;
-    overflow-wrap: inherit !important;
-    word-wrap: inherit !important;
-    hyphens: inherit !important;
-    text-wrap: inherit !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
   }
 }
 
