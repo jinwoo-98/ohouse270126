@@ -78,7 +78,7 @@ export default function ContentPage() {
                   </div>
                   
                   <div 
-                    className="vn-text-fix max-w-none text-muted-foreground leading-relaxed"
+                    className="vn-content-view text-muted-foreground"
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(pageData.content) }}
                   />
                 </>

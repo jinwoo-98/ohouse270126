@@ -47,18 +47,14 @@ export function ProductDescription({ description, product }: ProductDescriptionP
         <div className="w-16 h-1.5 bg-primary mt-6 rounded-full" />
       </div>
       
-      <div className="relative">
+      <div className="relative max-w-[800px] mx-auto w-full">
         <div className={cn(
-          "max-w-none transition-all duration-1000 ease-in-out",
+          "transition-all duration-1000 ease-in-out",
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
-          {/* 
-            QUAN TRỌNG: Đã gỡ bỏ hoàn toàn lớp 'prose' 
-            Chỉ sử dụng vn-text-final-fix và max-w-[800px] để đảm bảo ngắt dòng tiếng Việt chuẩn
-          */}
           <div 
-            className="vn-text-final-fix w-full max-w-[800px] mx-auto text-sm md:text-base text-muted-foreground"
-            dangerouslySetInnerHTML={{ __html: processedContent || "<p class='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
+            className="vn-content-view text-sm md:text-base text-muted-foreground"
+            dangerouslySetInnerHTML={{ __html: processedContent || "<p class='italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>
         

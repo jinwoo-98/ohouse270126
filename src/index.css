@@ -66,33 +66,37 @@
 }
 
 @layer utilities {
-  /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT - NGĂN CHẶN CHIA ĐÔI TỪ */
-  .vn-text-final-fix, .vn-text-final-fix * {
-    /* Ép trình duyệt không bao giờ ngắt ở giữa từ */
+  /* 
+     GIẢI PHÁP TỐI GIẢN CHO TIẾNG VIỆT:
+     Ép quy tắc ngắt dòng chuẩn và căn trái cho container và TẤT CẢ thẻ con bên trong.
+  */
+  .vn-content-view, .vn-content-view * {
+    text-align: left !important;
     word-break: normal !important;
     overflow-wrap: break-word !important;
-    word-wrap: break-word !important;
-    
-    /* Tắt tính năng tự động thêm dấu gạch ngang ngắt từ */
     hyphens: none !important;
     -webkit-hyphens: none !important;
     -ms-hyphens: none !important;
-    
-    /* Luôn căn trái để ngắt dòng đẹp nhất trong tiếng Việt */
-    text-align: left !important;
   }
 
-  /* Định dạng nội dung rich text không dùng prose */
-  .vn-text-final-fix p { @apply mb-6 leading-relaxed; }
-  .vn-text-final-fix h1, .vn-text-final-fix h2, .vn-text-final-fix h3 { 
+  .vn-content-view p { @apply mb-6 leading-relaxed; }
+  .vn-content-view h1, .vn-content-view h2, .vn-content-view h3 { 
     @apply font-bold text-charcoal uppercase tracking-wider mb-4 mt-8; 
   }
-  .vn-text-final-fix h1 { @apply text-2xl; }
-  .vn-text-final-fix h2 { @apply text-xl; }
-  .vn-text-final-fix h3 { @apply text-lg; }
-  .vn-text-final-fix ul { @apply list-disc pl-6 mb-6 space-y-2; }
-  .vn-text-final-fix ol { @apply list-decimal pl-6 mb-6 space-y-2; }
-  .vn-text-final-fix img { @apply rounded-2xl my-8 shadow-medium w-full h-auto object-cover; }
+  .vn-content-view h1 { @apply text-2xl; }
+  .vn-content-view h2 { @apply text-xl; }
+  .vn-content-view h3 { @apply text-lg; }
+  .vn-content-view ul { @apply list-disc pl-6 mb-6 space-y-2; }
+  .vn-content-view ol { @apply list-decimal pl-6 mb-6 space-y-2; }
+  .vn-content-view img { @apply rounded-2xl my-8 shadow-medium w-full h-auto object-cover; }
+  
+  /* Invert color scheme for dark backgrounds */
+  .vn-content-view-invert, .vn-content-view-invert * {
+    @apply text-cream/90;
+  }
+  .vn-content-view-invert h1, .vn-content-view-invert h2, .vn-content-view-invert h3 {
+    @apply text-white;
+  }
 }
 
 /* Custom Phone Input Styling */

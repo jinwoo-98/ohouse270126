@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, Clock, ArrowLeft, Facebook, Twitter, Link as LinkIcon, Loader2, User } from "lucide-react";
+import { Calendar, Clock, ArrowLeft, Facebook, Link as LinkIcon, Loader2, User } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -95,7 +95,7 @@ export default function NewsDetailPage() {
               )}
 
               <div 
-                className="vn-text-fix max-w-none text-foreground/80 leading-relaxed mb-10"
+                className="vn-content-view text-foreground/80"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
               />
 
@@ -113,7 +113,6 @@ export default function NewsDetailPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium mr-2 text-muted-foreground">Chia sẻ:</span>
                   <Button variant="outline" size="icon" className="rounded-full w-9 h-9"><Facebook className="w-4 h-4" /></Button>
-                  <Button variant="outline" size="icon" className="rounded-full w-9 h-9"><Twitter className="w-4 h-4" /></Button>
                   <Button variant="outline" size="icon" className="rounded-full w-9 h-9" onClick={handleShare}><LinkIcon className="w-4 h-4" /></Button>
                 </div>
               </div>

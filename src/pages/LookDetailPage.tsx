@@ -175,17 +175,16 @@ export default function LookDetailPage() {
                 {look.description && (
                   <div className="w-full">
                     <div className="relative max-w-[740px]">
-                      {/* QUAN TRỌNG: Gỡ bỏ hoàn toàn 'prose' và áp dụng vn-text-final-fix */}
                       <div 
                         className={cn(
-                          "vn-text-final-fix text-muted-foreground transition-all duration-500 max-w-none overflow-hidden",
+                          "vn-content-view text-muted-foreground transition-all duration-500 max-w-none overflow-hidden",
                           !isExpanded ? "max-h-[82px]" : "max-h-none"
                         )}
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                       />
                       
                       {!isExpanded && (
-                        <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none" />
+                        <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none" />
                       )}
                     </div>
                     

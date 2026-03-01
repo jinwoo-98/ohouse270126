@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight, Truck, RefreshCw, Shield, CreditCard, HelpCircle, FileText, Phone, Loader2 } from "lucide-react";
+import { ChevronRight, Truck, RefreshCw, Shield, CreditCard, HelpCircle, FileText, Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -93,7 +93,7 @@ export default function SupportPage() {
                       <h1 className="text-2xl md:text-3xl font-bold">{pageData.title}</h1>
                     </div>
                     <div 
-                      className="vn-text-fix max-w-none text-muted-foreground leading-relaxed"
+                      className="vn-content-view text-muted-foreground"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(pageData.content || '') }}
                     />
                   </>

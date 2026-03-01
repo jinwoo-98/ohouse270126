@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { 
   ShoppingBag, Heart, Minus, Plus, Loader2, Ruler, Info, FileText, 
-  ChevronRight, ChevronDown, ChevronUp, Star, MessageSquare, ArrowLeft, X 
+  Star, MessageSquare, ArrowLeft, X, ChevronDown, ChevronUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { StarRating } from "@/components/product/detail/ProductReviews";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -140,14 +140,12 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
           isMobile ? "h-[85vh] rounded-t-[32px]" : "w-full sm:max-w-[580px]"
         )}
       >
-        {/* Drag Handle cho Mobile */}
         {isMobile && (
           <div className="w-full flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-12 h-1.5 bg-muted-foreground/20 rounded-full" />
           </div>
         )}
 
-        {/* Nút đóng nổi cho mobile */}
         {isMobile && (
           <SheetClose className="absolute right-4 top-4 z-50 p-2 bg-white/80 backdrop-blur-md rounded-full shadow-sm">
             <X className="w-5 h-5 text-charcoal" />
@@ -261,7 +259,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                           {isDescriptionOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </CollapsibleTrigger>
                         <CollapsibleContent className="animate-accordion-down relative">
-                          <div className="prose prose-sm max-w-none text-muted-foreground rich-text-content-small pb-8" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }} />
+                          <div className="vn-content-view text-sm text-muted-foreground pb-8" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }} />
                           {isDescriptionOpen && (
                             <div className="flex justify-center pt-4 border-t border-dashed border-border/40">
                               <Button variant="ghost" size="sm" onClick={() => setIsDescriptionOpen(false)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 gap-2">
