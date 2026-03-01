@@ -69,23 +69,19 @@
   /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT */
   .vn-text-final-fix {
     white-space: normal !important;
-    /* Cho phép từ dài tự động ngắt để chống tràn layout */
-    word-break: break-word !important;
+    /* Ngắt dòng thông minh: chỉ ngắt tại khoảng trắng, không chia đôi từ */
     overflow-wrap: break-word !important;
     word-wrap: break-word !important;
+    word-break: normal !important;
     
     text-align: left !important;
-    text-justify: none !important;
-    hyphens: none !important;
     line-height: 1.7 !important;
   }
 
   .vn-text-final-fix * {
-    /* Kế thừa thuộc tính ngắt từ từ lớp cha */
-    word-break: inherit !important;
     overflow-wrap: inherit !important;
-    text-align: left !important;
-    font-style: normal !important;
+    word-break: inherit !important;
+    text-align: inherit !important;
   }
 }
 
