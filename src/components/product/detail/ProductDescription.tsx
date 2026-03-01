@@ -52,9 +52,9 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           "max-w-none transition-all duration-1000 ease-in-out",
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
-          {/* Loại bỏ flex để đảm bảo block layout tự động xuống dòng chuẩn xác */}
+          {/* Áp dụng vn-text-final-fix để đồng bộ với phần đánh giá */}
           <div 
-            className="rich-text-content w-full max-w-[800px] mx-auto prose prose-lg prose-stone max-w-none text-muted-foreground"
+            className="rich-text-content vn-text-final-fix w-full max-w-[800px] mx-auto prose prose-lg prose-stone max-w-none text-muted-foreground"
             dangerouslySetInnerHTML={{ __html: processedContent || "<p class='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>
@@ -91,14 +91,9 @@ export function ProductDescription({ description, product }: ProductDescriptionP
 
       <style>{`
         .rich-text-content {
-          display: block !important;
-          width: 100% !important;
-          max-width: 800px !important;
-          /* Ép văn bản luôn xuống dòng tại khoảng trắng */
-          white-space: normal !important;
-          word-break: normal !important;
-          overflow-wrap: break-word !important;
-          word-wrap: break-word !important;
+          /* Ép trình duyệt không bao giờ chặt đôi từ */
+          hyphens: none !important;
+          -webkit-hyphens: none !important;
         }
         .rich-text-content img {
           width: 100% !important;
@@ -110,21 +105,13 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           display: block;
         }
         .rich-text-content p {
-          width: 100% !important;
-          max-width: 100% !important;
-          text-align: center !important;
+          /* Chuyển sang căn trái để ngắt dòng tự nhiên nhất */
+          text-align: left !important;
           margin-bottom: 1.5rem !important;
-          /* Đảm bảo p không bị chặt đôi từ */
-          word-break: normal !important;
-          overflow-wrap: break-word !important;
         }
         .rich-text-content ul, .rich-text-content ol {
           text-align: left;
-          display: inline-block;
-          margin-left: auto;
-          margin-right: auto;
-          width: fit-content;
-          max-width: 100%;
+          margin-bottom: 1.5rem !important;
         }
       `}</style>
     </section>
