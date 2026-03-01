@@ -91,12 +91,14 @@ export function ProductDescription({ description, product }: ProductDescriptionP
 
       <style>{`
         .rich-text-content {
+          display: block !important;
           width: 100% !important;
           max-width: 800px !important;
-          /* Đảm bảo văn bản luôn xuống dòng */
+          /* Ép văn bản luôn xuống dòng tại khoảng trắng */
+          white-space: normal !important;
+          word-break: normal !important;
           overflow-wrap: break-word !important;
           word-wrap: break-word !important;
-          word-break: normal !important;
         }
         .rich-text-content img {
           width: 100% !important;
@@ -112,6 +114,9 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           max-width: 100% !important;
           text-align: center !important;
           margin-bottom: 1.5rem !important;
+          /* Đảm bảo p không bị chặt đôi từ */
+          word-break: normal !important;
+          overflow-wrap: break-word !important;
         }
         .rich-text-content ul, .rich-text-content ol {
           text-align: left;

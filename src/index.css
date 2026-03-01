@@ -68,20 +68,24 @@
 @layer utilities {
   /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT */
   .vn-text-final-fix {
+    display: block !important;
     white-space: normal !important;
-    /* Ngắt dòng thông minh: chỉ ngắt tại khoảng trắng, không chia đôi từ */
+    /* KHÔNG cho phép chặt đôi từ */
+    word-break: normal !important;
+    /* CHỈ cho phép ngắt dòng tại khoảng trắng */
     overflow-wrap: break-word !important;
     word-wrap: break-word !important;
-    word-break: normal !important;
     
     text-align: left !important;
     line-height: 1.7 !important;
+    hyphens: none !important;
   }
 
   .vn-text-final-fix * {
-    overflow-wrap: inherit !important;
     word-break: inherit !important;
-    text-align: inherit !important;
+    overflow-wrap: inherit !important;
+    word-wrap: inherit !important;
+    hyphens: inherit !important;
   }
 }
 
