@@ -306,7 +306,7 @@ export default function ProductDetailPage() {
                       </div>
                       {shippingPolicy && (
                         <div 
-                          className="mt-10 p-6 bg-secondary/30 rounded-2xl border border-border/40 prose prose-sm max-w-none text-muted-foreground" 
+                          className="mt-10 p-6 bg-secondary/30 rounded-2xl border border-border/40 vn-content-view text-muted-foreground" 
                           dangerouslySetInnerHTML={{ __html: sanitizeHtml(shippingPolicy) }} 
                         />
                       )}

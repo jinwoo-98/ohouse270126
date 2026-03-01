@@ -68,15 +68,28 @@
 @layer utilities {
   /* 
      GIẢI PHÁP TỐI GIẢN CHO TIẾNG VIỆT:
-     Ép quy tắc ngắt dòng chuẩn và căn trái cho container và TẤT CẢ thẻ con bên trong.
+     Ép quy tắc ngắt dòng chuẩn cho văn bản và loại bỏ hyphens (tự động gạch nối).
   */
-  .vn-content-view, .vn-content-view * {
+  .vn-content-view {
+    display: flow-root !important;
+    width: 100% !important;
     text-align: left !important;
+  }
+
+  .vn-content-view p, 
+  .vn-content-view span, 
+  .vn-content-view div,
+  .vn-content-view li,
+  .vn-content-view b,
+  .vn-content-view strong,
+  .vn-content-view em {
     word-break: normal !important;
-    overflow-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
     hyphens: none !important;
     -webkit-hyphens: none !important;
     -ms-hyphens: none !important;
+    white-space: normal !important;
+    text-wrap: wrap !important;
   }
 
   .vn-content-view p { @apply mb-6 leading-relaxed; }

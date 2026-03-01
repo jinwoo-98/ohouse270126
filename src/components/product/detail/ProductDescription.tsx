@@ -19,9 +19,13 @@ export function ProductDescription({ description, product }: ProductDescriptionP
     if (!description) return "";
 
     // 1. Sanitize content first
-    const sanitized = sanitizeHtml(description);
+    let sanitized = sanitizeHtml(description);
 
-    // 2. Process images for SEO
+    // 2. LỌC SẠCH KÝ TỰ ẨN (Zero-width spaces, soft hyphens...)
+    // Những ký tự này thường gây ra lỗi ngắt dòng sai quy tắc
+    sanitized = sanitized.replace(/[\u200B-\u200D\uFEFF]/g, '');
+
+    // 3. Process images for SEO
     const parser = new DOMParser();
     const doc = parser.parseFromString(sanitized, 'text/html');
     const images = doc.querySelectorAll('img');
@@ -49,7 +53,7 @@ export function ProductDescription({ description, product }: ProductDescriptionP
       
       <div className="relative max-w-[800px] mx-auto w-full">
         <div className={cn(
-          "transition-all duration-1000 ease-in-out",
+          "transition-[max-height] duration-700 ease-in-out", // Chỉ transition max-height, tránh transition-all gây lỗi tính toán dòng
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
           <div 
