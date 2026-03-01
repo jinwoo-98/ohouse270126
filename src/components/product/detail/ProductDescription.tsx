@@ -112,6 +112,10 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           text-align: center !important;
           margin-left: auto !important;
           margin-right: auto !important;
+          /* Thêm thuộc tính ngắt từ để chống tràn */
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+          word-break: break-word;
         }
         /* Đảm bảo các danh sách cũng được căn giữa nếu cần */
         .rich-text-content ul, .rich-text-content ol {

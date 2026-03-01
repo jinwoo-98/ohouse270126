@@ -69,8 +69,8 @@
   /* GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT */
   .vn-text-final-fix {
     white-space: normal !important;
-    /* Ép buộc ngắt dòng theo từ, không ngắt giữa chừng */
-    word-break: keep-all !important;
+    /* Cho phép từ dài tự động ngắt để chống tràn layout */
+    word-break: break-word !important;
     overflow-wrap: break-word !important;
     word-wrap: break-word !important;
     
@@ -81,8 +81,9 @@
   }
 
   .vn-text-final-fix * {
-    word-break: keep-all !important;
-    overflow-wrap: break-word !important;
+    /* Kế thừa thuộc tính ngắt từ từ lớp cha */
+    word-break: inherit !important;
+    overflow-wrap: inherit !important;
     text-align: left !important;
     font-style: normal !important;
   }
