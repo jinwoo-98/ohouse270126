@@ -93,7 +93,7 @@ export default function SupportPage() {
                       <h1 className="text-2xl md:text-3xl font-bold">{pageData.title}</h1>
                     </div>
                     <div 
-                      className="prose prose-stone max-w-none text-muted-foreground leading-relaxed"
+                      className="vn-text-fix max-w-none text-muted-foreground leading-relaxed"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(pageData.content || '') }}
                     />
                   </>

@@ -36,8 +36,7 @@ export function ShippingInfoDialog({ isOpen, onClose, title, content }: Shipping
 
         <div className="p-8 md:p-10 bg-white">
           <div 
-            className="prose prose-stone max-w-none text-muted-foreground leading-relaxed
-              prose-ul:list-disc prose-ul:pl-5 prose-li:mb-4 prose-a:text-primary prose-a:font-bold prose-a:underline"
+            className="vn-text-fix max-w-none text-muted-foreground leading-relaxed"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(content || "") }}
           />
           

@@ -119,7 +119,7 @@ export default function ProjectDetailPage() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="prose prose-lg prose-stone max-w-none"
+                className="vn-text-fix max-w-none"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.description) }}
               />
 

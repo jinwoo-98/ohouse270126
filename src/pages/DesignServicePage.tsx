@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { LayoutGrid, Zap, CheckCircle, Send, ArrowRight, Loader2, ChevronDown, ChevronUp, DollarSign, DraftingCompass } from "lucide-react";
+import { Building2, Users, MessageSquare, Briefcase, Phone, Mail, CheckCircle2, Loader2, Send, ChevronRight } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,300 +8,255 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { cn, getOptimizedImageUrl } from "@/lib/utils";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"; // Import Collapsible
+import { supabase } from "@/integrations/supabase/client";
 import { sanitizeHtml } from "@/lib/sanitize";
 
-const iconMap: Record<string, any> = { Zap, LayoutGrid, CheckCircle, DollarSign, DraftingCompass };
+const partnerTypes = [
+  { icon: Building2, title: "Đại Lý Phân Phối", desc: "Trở thành đối tác phân phối sản phẩm OHOUSE với chính sách chiết khấu hấp dẫn." },
+  { icon: Briefcase, title: "Dự Án Nhà Thầu", desc: "Hợp tác cung ứng nội thất cho các công trình căn hộ, khách sạn, văn phòng quy mô lớn." },
+  { icon: Users, title: "Kiến Trúc Sư", desc: "Chương trình cộng tác dành cho KTS và nhà thiết kế nội thất với thư viện 3D phong phú." },
+];
 
-interface Step {
-  icon_name: string;
-  title: string;
-  desc: string;
-}
-
-interface Option {
-  label: string;
-  value: string;
-}
-
-export default function DesignServicePage() {
+export default function CooperationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [pageContent, setPageContent] = useState<string | null>(null);
-  const [config, setConfig] = useState<{ hero_image_url: string | null, steps: Step[], room_options: Option[], budget_options: Option[] }>({
-    hero_image_url: null,
-    steps: [],
-    room_options: [],
-    budget_options: [],
-  });
-  const [isConfigLoading, setIsConfigLoading] = useState(true);
-  
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     email: "",
-    room: [] as string[], // Changed to array for multi-select
-    budget: "",
+    type: "",
     message: ""
   });
-  
-  const [isRoomCollapsibleOpen, setIsRoomCollapsibleOpen] = useState(false); // State cho Collapsible
 
   useEffect(() => {
     fetchPageContent();
-    fetchDesignConfig();
   }, []);
 
   const fetchPageContent = async () => {
     const { data } = await supabase
       .from('site_pages')
       .select('content')
-      .eq('slug', 'thiet-ke')
+      .eq('slug', 'hop-tac')
       .single();
     
     if (data?.content) {
       setPageContent(data.content);
     }
   };
-  
-  const fetchDesignConfig = async () => {
-    setIsConfigLoading(true);
-    try {
-      const { data } = await supabase
-        .from('design_service_config')
-        .select('*')
-        .single();
-        
-      if (data) {
-        setConfig({
-          hero_image_url: data.hero_image_url,
-          steps: data.steps || [],
-          room_options: data.room_options || [],
-          budget_options: data.budget_options || [],
-        });
-      }
-    } catch (e) {
-      console.error("Error fetching design config:", e);
-    } finally {
-      setIsConfigLoading(false);
-    }
-  };
-
-  const handleRoomToggle = (roomValue: string) => {
-    setFormData(prev => {
-      const currentRooms = prev.room;
-      if (currentRooms.includes(roomValue)) {
-        return { ...prev, room: currentRooms.filter(v => v !== roomValue) };
-      } else {
-        return { ...prev, room: [...currentRooms, roomValue] };
-      }
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.phone || formData.room.length === 0) {
-      toast.error("Vui lòng nhập họ tên, số điện thoại và chọn ít nhất một không gian.");
+    if (!formData.name || !formData.phone || !formData.type) {
+      toast.error("Vui lòng nhập đầy đủ Tên, Số điện thoại và Loại hình hợp tác.");
       return;
     }
 
     setIsLoading(true);
-    
-    // Format room selection for DB insertion
-    const roomString = formData.room.map(val => {
-      const option = config.room_options.find(o => o.value === val);
-      return option ? option.label : val;
-    }).join(", ");
-
     try {
       const { error } = await supabase
-        .from('design_requests')
+        .from('cooperation_requests')
         .insert({
           name: formData.name,
           phone: formData.phone,
           email: formData.email,
-          room_type: roomString, // Save as string of selected rooms
-          budget: formData.budget,
+          type: formData.type,
           message: formData.message
         });
 
       if (error) throw error;
       
-      toast.success("Đăng ký thành công! Kiến trúc sư của OHOUSE sẽ liên hệ với bạn sớm nhất.");
-      setFormData({ name: "", phone: "", email: "", room: [], budget: "", message: "" });
+      toast.success("Yêu cầu hợp tác đã được gửi! Bộ phận B2B của chúng tôi sẽ liên hệ trong vòng 24h.");
+      setFormData({ name: "", phone: "", email: "", type: "", message: "" });
     } catch (error: any) {
       toast.error("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
   };
-  
-  if (isConfigLoading) {
-    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
-  }
-
-  const selectedRoomLabels = formData.room.map(val => {
-    const option = config.room_options.find(o => o.value === val);
-    return option ? option.label : val;
-  });
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1">
-        {/* Text/Title Block */}
-        <section className="pt-24 pb-12 bg-background">
-          <div className="container-luxury max-w-4xl mx-auto text-center">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="px-4"
-            >
-              <h1 className="text-3xl md:text-5xl font-bold mb-4 text-charcoal">Thiết Kế Nội Thất Miễn Phí</h1>
-              <div className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+        {/* Breadcrumb */}
+        <div className="bg-secondary/50 py-3 border-b border-border/40">
+          <div className="container-luxury flex items-center gap-2 text-[10px] md:text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <Link to="/" className="hover:text-primary transition-colors">Trang chủ</Link>
+            <ChevronRight className="w-3 h-3" />
+            <span className="text-foreground">Hợp tác kinh doanh</span>
+          </div>
+        </div>
+
+        <section className="bg-charcoal text-cream py-16 md:py-24 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle,hsl(var(--primary))_0%,transparent_70%)]" />
+          </div>
+          
+          <div className="container-luxury text-center relative z-10">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <span className="text-primary font-bold uppercase tracking-[0.3em] text-xs mb-4 block">B2B & Partnerships</span>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">Hợp Tác Cùng OHOUSE</h1>
+              <div className="text-lg md:text-xl text-cream/80 max-w-2xl mx-auto leading-relaxed">
                 {pageContent ? (
                   <div 
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(pageContent) }} 
-                    className="prose prose-lg max-w-none text-muted-foreground prose-p:text-muted-foreground prose-ul:text-muted-foreground prose-li:text-muted-foreground"
+                    className="vn-text-fix vn-text-fix-invert max-w-none"
                   />
                 ) : (
-                  <p>Biến không gian sống trong mơ thành hiện thực với dịch vụ tư vấn 3D miễn phí từ OHOUSE</p>
+                  <p>Cùng nhau kiến tạo những không gian sống đẳng cấp và phát triển bền vững trong ngành nội thất cao cấp.</p>
                 )}
               </div>
             </motion.div>
           </div>
         </section>
 
-        {/* Image Block */}
-        <section className="pb-16">
+        <section className="py-20">
           <div className="container-luxury">
-            <div className="relative aspect-video overflow-hidden rounded-2xl shadow-xl">
-              {config.hero_image_url ? (
-                <img src={getOptimizedImageUrl(config.hero_image_url, { width: 1200 })} alt="Dịch vụ thiết kế miễn phí" className="w-full h-full object-cover img-zoom" />
-              ) : (
-                <div className="w-full h-full bg-secondary/50 flex items-center justify-center">
-                  <LayoutGrid className="w-16 h-16 text-muted-foreground/30" />
-                </div>
-              )}
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold mb-4">Các Hình Thức Hợp Tác</h2>
+              <div className="w-20 h-1 bg-primary mx-auto rounded-full"></div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {partnerTypes.map((type, index) => (
+                <motion.div
+                  key={type.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-card p-8 rounded-3xl border border-border/50 shadow-subtle hover:shadow-medium transition-all text-center group"
+                >
+                  <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <type.icon className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-4">{type.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {type.desc}
+                  </p>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="py-16 md:py-24">
+        <section className="py-20 bg-secondary/30">
           <div className="container-luxury">
-            <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">Quy Trình {config.steps.length} Bước Chuyên Nghiệp</h2>
-            <div className="grid md:grid-cols-4 gap-8">
-              {config.steps.map((step, index) => {
-                const Icon = iconMap[step.icon_name] || Zap;
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    className="text-center p-6 bg-secondary/50 rounded-lg shadow-subtle"
-                  >
-                    <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Icon className="w-8 h-8 text-primary" />
+            <div className="grid lg:grid-cols-2 gap-16">
+              <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+                <h2 className="text-3xl font-bold mb-8">Tại Sao Nên Hợp Tác Với OHOUSE?</h2>
+                <div className="space-y-6">
+                  {[
+                    { t: "Sản phẩm chất lượng cao", d: "Danh mục sản phẩm đa dạng từ các thương hiệu nội thất hàng đầu thế giới." },
+                    { t: "Chính sách chiết khấu tối ưu", d: "Đảm bảo lợi nhuận và quyền lợi cạnh tranh nhất cho các đối tác." },
+                    { t: "Hỗ trợ thiết kế & Kỹ thuật", d: "Cung cấp thư viện 3D, catalog và hỗ trợ kỹ thuật tận tình cho từng dự án." },
+                    { t: "Vận chuyển toàn quốc", d: "Hệ thống logistics chuyên nghiệp giúp giao hàng an toàn đến mọi miền tổ quốc." }
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex gap-4">
+                      <div className="shrink-0 w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mt-1">
+                        <CheckCircle2 className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-lg mb-1">{item.t}</h4>
+                        <p className="text-sm text-muted-foreground">{item.d}</p>
+                      </div>
                     </div>
-                    <h3 className="text-xl font-bold mb-2">{step.title}</h3>
-                    <p className="text-muted-foreground">{step.desc}</p>
-                  </motion.div>
-                );
-              })}
+                  ))}
+                </div>
+
+                <div className="mt-12 p-8 bg-charcoal text-cream rounded-3xl">
+                  <p className="text-sm text-taupe mb-2">Liên hệ bộ phận B2B trực tiếp</p>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-5 h-5 text-primary" />
+                      <span className="font-bold">0909 123 456 (Mr. Quang)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-5 h-5 text-primary" />
+                      <span className="font-bold">partnership@ohouse.vn</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, x: 30 }} 
+                whileInView={{ opacity: 1, x: 0 }} 
+                viewport={{ once: true }}
+                className="bg-card p-8 md:p-10 rounded-3xl shadow-elevated border border-border/40"
+              >
+                <h3 className="text-2xl font-bold mb-8">Đăng Ký Hợp Tác</h3>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Tên doanh nghiệp / cá nhân *</Label>
+                      <Input 
+                        placeholder="Nhập tên của bạn" 
+                        required 
+                        className="h-12 rounded-xl" 
+                        value={formData.name}
+                        onChange={e => setFormData({...formData, name: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Số điện thoại liên hệ *</Label>
+                      <Input 
+                        placeholder="Nhập SĐT" 
+                        required 
+                        className="h-12 rounded-xl" 
+                        value={formData.phone}
+                        onChange={e => setFormData({...formData, phone: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Địa chỉ Email</Label>
+                    <Input 
+                      type="email" 
+                      placeholder="email@congty.com" 
+                      className="h-12 rounded-xl" 
+                      value={formData.email}
+                      onChange={e => setFormData({...formData, email: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Loại hình hợp tác *</Label>
+                    <Select value={formData.type} onValueChange={val => setFormData({...formData, type: val})}>
+                      <SelectTrigger className="h-12 rounded-xl">
+                        <SelectValue placeholder="Chọn loại hình" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Đại lý Phân phối">Đại Lý Phân Phối</SelectItem>
+                        <SelectItem value="Nhà thầu Dự án">Nhà Thầu Dự Án</SelectItem>
+                        <SelectItem value="Kiến trúc sư">Kiến Trúc Sư / Thiết Kế</SelectItem>
+                        <SelectItem value="Khác">Khác</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Nội dung trao đổi</Label>
+                    <Textarea 
+                      placeholder="Mô tả sơ lược về dự án hoặc yêu cầu hợp tác của bạn..." 
+                      rows={5} 
+                      className="rounded-xl resize-none" 
+                      value={formData.message}
+                      onChange={e => setFormData({...formData, message: e.target.value})}
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full btn-hero h-14 text-sm font-bold shadow-gold" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Send className="w-5 h-5 mr-2" />}
+                    Gửi Yêu Cầu Hợp Tác
+                  </Button>
+                </form>
+              </motion.div>
             </div>
-          </div>
-        </section>
-
-        <section className="py-16 bg-cream">
-          <div className="container-luxury max-w-3xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">Đăng Ký Nhận Tư Vấn</h2>
-            <p className="text-muted-foreground text-center mb-8">
-              Vui lòng điền thông tin chi tiết để chúng tôi có thể phục vụ bạn tốt nhất.
-            </p>
-            <form onSubmit={handleSubmit} className="bg-card rounded-lg p-6 md:p-8 shadow-elevated space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Họ và tên *</Label>
-                  <Input id="name" placeholder="Nguyễn Văn A" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Số điện thoại *</Label>
-                  <Input id="phone" placeholder="0909 xxx xxx" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="your@email.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="room">Không gian cần thiết kế *</Label>
-                  <Collapsible open={isRoomCollapsibleOpen} onOpenChange={setIsRoomCollapsibleOpen}>
-                    <CollapsibleTrigger asChild>
-                      <div className="flex items-center justify-between w-full h-12 px-4 border border-input rounded-xl bg-background cursor-pointer hover:bg-secondary/50 transition-colors">
-                        <span className={cn("text-sm", formData.room.length > 0 ? "font-bold text-charcoal" : "text-muted-foreground")}>
-                          {formData.room.length > 0 ? `${formData.room.length} không gian đã chọn` : "Bấm để chọn không gian..."}
-                        </span>
-                        {isRoomCollapsibleOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                      </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="animate-accordion-down">
-                      <div className="p-4 border border-input rounded-xl bg-secondary/30 space-y-2 max-h-40 overflow-y-auto custom-scrollbar mt-2">
-                        {config.room_options.map(opt => (
-                          <label key={opt.value} className="flex items-center gap-3 cursor-pointer">
-                            <Checkbox 
-                              checked={formData.room.includes(opt.value)} 
-                              onCheckedChange={() => handleRoomToggle(opt.value)}
-                              className="data-[state=checked]:bg-primary"
-                            />
-                            <span className={cn("text-sm font-medium", formData.room.includes(opt.value) && "font-bold text-charcoal")}>{opt.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                  <p className="text-[10px] text-muted-foreground italic">Bạn có thể chọn nhiều không gian.</p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="budget">Ngân sách dự kiến</Label>
-                  <Select onValueChange={val => setFormData({...formData, budget: val})} value={formData.budget}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn ngân sách" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {config.budget_options.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="message">Mô tả yêu cầu</Label>
-                <Textarea 
-                  id="message" 
-                  placeholder="Mô tả phong cách, kích thước, hoặc bất kỳ yêu cầu đặc biệt nào..."
-                  rows={4}
-                  value={formData.message}
-                  onChange={e => setFormData({...formData, message: e.target.value})}
-                />
-              </div>
-
-              <Button type="submit" className="w-full btn-hero" disabled={isLoading}>
-                {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                Gửi Yêu Cầu Thiết Kế
-              </Button>
-            </form>
           </div>
         </section>
       </main>

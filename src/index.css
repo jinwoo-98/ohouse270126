@@ -66,7 +66,7 @@
 }
 
 @layer utilities {
-  /* CÔNG THỨC CHUẨN: Ngăn chặn tuyệt đối việc chia đôi từ tiếng Việt */
+  /* CÔNG THỨC CHUẨN: Thay thế hoàn toàn 'prose' */
   .vn-text-fix {
     display: block !important;
     text-align: left !important;
@@ -97,7 +97,7 @@
     text-align: left !important;
   }
 
-  /* Định dạng cơ bản cho nội dung Rich Text khi không dùng lớp 'prose' */
+  /* Định dạng cơ bản cho nội dung Rich Text */
   .vn-text-fix p { @apply mb-6; }
   .vn-text-fix h1 { @apply text-2xl font-bold mb-6 mt-8 text-charcoal uppercase tracking-wider; }
   .vn-text-fix h2 { @apply text-xl font-bold mb-4 mt-8 text-charcoal uppercase tracking-wider; }
@@ -107,6 +107,22 @@
   .vn-text-fix img { @apply rounded-2xl my-8 shadow-medium w-full h-auto object-cover; }
   .vn-text-fix strong { @apply font-bold text-charcoal; }
   .vn-text-fix a { @apply text-primary font-bold underline hover:opacity-80 transition-opacity; }
+
+  /* Modifier cho nền tối */
+  .vn-text-fix-invert,
+  .vn-text-fix-invert h1,
+  .vn-text-fix-invert h2,
+  .vn-text-fix-invert h3,
+  .vn-text-fix-invert strong {
+    color: hsl(var(--cream)) !important;
+  }
+  .vn-text-fix-invert p,
+  .vn-text-fix-invert li {
+    color: hsl(var(--taupe)) !important;
+  }
+  .vn-text-fix-invert a {
+    color: hsl(var(--primary)) !important;
+  }
 }
 
 /* Custom Phone Input Styling */

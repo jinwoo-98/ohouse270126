@@ -95,7 +95,7 @@ export default function NewsDetailPage() {
               )}
 
               <div 
-                className="prose prose-lg prose-stone max-w-none text-foreground/80 leading-relaxed mb-10"
+                className="vn-text-fix max-w-none text-foreground/80 leading-relaxed mb-10"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
               />
 

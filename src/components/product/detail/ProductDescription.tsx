@@ -53,7 +53,6 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
           {/* 
-            LOẠI BỎ HOÀN TOÀN 'prose'. 
             Sử dụng vn-text-fix (đã định nghĩa trong index.css) để đồng bộ với phần Đánh giá.
           */}
           <div 

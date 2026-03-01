@@ -103,7 +103,7 @@ export default function CooperationPage() {
                 {pageContent ? (
                   <div 
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(pageContent) }} 
-                    className="prose prose-lg prose-invert max-w-none text-cream/80 prose-p:text-cream/80 prose-ul:text-cream/80 prose-li:text-cream/80"
+                    className="vn-text-fix vn-text-fix-invert max-w-none"
                   />
                 ) : (
                   <p>Cùng nhau kiến tạo những không gian sống đẳng cấp và phát triển bền vững trong ngành nội thất cao cấp.</p>

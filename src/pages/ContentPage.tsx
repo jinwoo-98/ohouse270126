@@ -78,7 +78,7 @@ export default function ContentPage() {
                   </div>
                   
                   <div 
-                    className="prose prose-lg prose-stone max-w-none text-muted-foreground leading-relaxed"
+                    className="vn-text-fix max-w-none text-muted-foreground leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: sanitizeHtml(pageData.content) }}
                   />
                 </>
