@@ -14,6 +14,7 @@ interface RichTextEditorProps {
   onChange: (content: string) => void;
   placeholder?: string;
   contextTitle?: string; 
+  width?: number; // Thêm prop width để tùy chỉnh linh hoạt
 }
 
 interface ImageAltItem {
@@ -25,7 +26,7 @@ interface ImageAltItem {
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
-export function RichTextEditor({ value, onChange, placeholder, contextTitle }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, placeholder, contextTitle, width = 740 }: RichTextEditorProps) {
   const quillRef = useRef<ReactQuill>(null);
   const [isAltModalOpen, setIsAltModalOpen] = useState(false);
   const [imageList, setImageList] = useState<ImageAltItem[]>([]);
@@ -151,7 +152,7 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
       }
     },
     clipboard: {
-      matchVisual: false // Quan trọng: Xóa định dạng lạ khi dán văn bản
+      matchVisual: false 
     }
   }), [contextTitle]);
 
@@ -174,9 +175,11 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
         </Button>
       </div>
 
-      {/* Vùng chứa Editor: Giả lập chính xác khung nhìn trên Web */}
       <div className="rich-editor-outer bg-secondary/10 p-4 md:p-6 rounded-2xl border border-dashed border-border/60 overflow-x-auto">
-        <div className="rich-editor-wrapper bg-white border shadow-sm mx-auto w-[740px] min-w-[740px]">
+        <div 
+          className="rich-editor-wrapper bg-white border shadow-sm mx-auto"
+          style={{ width: `${width}px`, minWidth: `${width}px` }}
+        >
           <ReactQuill 
             ref={quillRef}
             theme="snow"
@@ -188,7 +191,7 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
           />
         </div>
         <p className="text-center text-[10px] text-muted-foreground mt-4 font-bold uppercase tracking-widest">
-          Khung soạn thảo tỉ lệ 1:1 (740px) - Văn bản sẽ ngắt dòng chính xác như trên Web
+          Khung soạn thảo tỉ lệ 1:1 ({width}px) - Văn bản & Ảnh sẽ hiển thị chính xác như trên Web
         </p>
       </div>
 
@@ -210,13 +213,12 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
           border: none !important;
         }
         .rich-editor-wrapper .ql-editor {
-          padding: 0 !important; /* Sát lề theo yêu cầu */
+          padding: 0 !important;
           font-family: 'Montserrat', sans-serif !important;
-          font-size: 16px !important; /* Khớp prose-base */
+          font-size: 16px !important;
           line-height: 1.7 !important;
-          color: #4b5563 !important; /* text-muted-foreground */
+          color: #4b5563 !important;
           
-          /* Ép quy tắc ngắt dòng tiếng Việt 1:1 */
           white-space: normal !important;
           word-break: keep-all !important;
           overflow-wrap: break-word !important;
@@ -227,7 +229,16 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
         }
         .rich-editor-wrapper .ql-container::-webkit-scrollbar { width: 6px; }
         .rich-editor-wrapper .ql-container::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
-        .rich-editor-wrapper .ql-editor img { max-width: 100%; border-radius: 12px; margin: 15px 0; }
+        
+        /* Ép ảnh luôn lấp đầy chiều ngang khung soạn thảo */
+        .rich-editor-wrapper .ql-editor img { 
+          width: 100% !important; 
+          height: auto !important;
+          border-radius: 12px; 
+          margin: 15px 0; 
+          display: block;
+          object-fit: cover;
+        }
       `}</style>
 
       <Dialog open={isAltModalOpen} onOpenChange={setIsAltModalOpen}>

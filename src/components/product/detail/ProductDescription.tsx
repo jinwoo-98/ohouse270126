@@ -52,8 +52,9 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           "max-w-none transition-all duration-1000 ease-in-out",
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
+          {/* Thiết lập max-width 800px và ép ảnh giãn 100% */}
           <div 
-            className="rich-text-content flex flex-col items-center text-center prose prose-lg prose-stone max-w-none text-muted-foreground"
+            className="rich-text-content flex flex-col items-center text-center prose prose-lg prose-stone max-w-[800px] mx-auto text-muted-foreground"
             dangerouslySetInnerHTML={{ __html: processedContent || "<p class='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>
@@ -87,6 +88,21 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           </Button>
         </div>
       </div>
+
+      <style>{`
+        /* Ép tất cả ảnh trong mô tả sản phẩm giãn lấp đầy 800px */
+        .rich-text-content img {
+          width: 100% !important;
+          height: auto !important;
+          object-fit: cover !important;
+          border-radius: 16px;
+          margin: 2rem 0 !important;
+        }
+        .rich-text-content p {
+          width: 100% !important;
+          text-align: center !important;
+        }
+      `}</style>
     </section>
   );
 }

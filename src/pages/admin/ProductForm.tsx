@@ -236,7 +236,7 @@ export default function ProductForm() {
   if (fetching) return <div className="flex items-center justify-center h-screen"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
 
   return (
-    <div className="max-w-6xl mx-auto pb-20">
+    <div className="max-w-7xl mx-auto pb-20">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="icon" className="rounded-xl" asChild><Link to="/admin/products"><ArrowLeft className="w-4 h-4" /></Link></Button>
@@ -323,6 +323,7 @@ export default function ProductForm() {
                       onChange={(val) => setFormData({...formData, description: val})} 
                       contextTitle={formData.name}
                       placeholder="Mô tả kỹ thuật, ưu điểm của sản phẩm..."
+                      width={800} // Thiết lập chuẩn 800px cho sản phẩm
                     />
                   </div>
                </div>
