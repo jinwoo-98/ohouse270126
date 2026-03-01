@@ -190,8 +190,9 @@ export function CategoryBottomContent({ categoryId, parentCategoryId, seoContent
 
       {seoContent && (
         <section className="py-12 border-t border-border/40">
+          {/* Gỡ bỏ hoàn toàn prose và áp dụng vn-text-fix */}
           <div 
-            className="rich-text-content prose prose-stone max-w-none text-muted-foreground prose-headings:text-charcoal prose-a:text-primary leading-relaxed"
+            className="vn-text-fix w-full max-w-none text-muted-foreground leading-relaxed"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(seoContent) }} 
           />
         </section>

@@ -66,15 +66,47 @@
 }
 
 @layer utilities {
-  /* CÔNG THỨC CHUẨN TỪ PHẦN ĐÁNH GIÁ: Ngăn chặn tuyệt đối việc chia đôi từ */
-  .vn-text-fix, .vn-text-fix * {
+  /* CÔNG THỨC CHUẨN: Ngăn chặn tuyệt đối việc chia đôi từ tiếng Việt */
+  .vn-text-fix {
+    display: block !important;
+    text-align: left !important;
+    line-height: 1.7 !important;
+    
+    /* Ngăn chặn ngắt từ ở giữa */
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+    
+    /* Tắt tính năng tự động thêm dấu gạch ngang ngắt từ */
+    -webkit-hyphens: none !important;
+    -ms-hyphens: none !important;
+    hyphens: none !important;
+  }
+
+  /* Áp dụng cho tất cả các thẻ con bên trong để ghi đè mọi style khác */
+  .vn-text-fix *, 
+  .vn-text-fix p, 
+  .vn-text-fix span, 
+  .vn-text-fix li, 
+  .vn-text-fix h1, 
+  .vn-text-fix h2, 
+  .vn-text-fix h3 {
     word-break: normal !important;
     overflow-wrap: break-word !important;
     hyphens: none !important;
-    -webkit-hyphens: none !important;
-    -ms-hyphens: none !important;
     text-align: left !important;
   }
+
+  /* Định dạng cơ bản cho nội dung Rich Text khi không dùng lớp 'prose' */
+  .vn-text-fix p { @apply mb-6; }
+  .vn-text-fix h1 { @apply text-2xl font-bold mb-6 mt-8 text-charcoal uppercase tracking-wider; }
+  .vn-text-fix h2 { @apply text-xl font-bold mb-4 mt-8 text-charcoal uppercase tracking-wider; }
+  .vn-text-fix h3 { @apply text-lg font-bold mb-4 mt-6 text-charcoal uppercase tracking-wider; }
+  .vn-text-fix ul { @apply list-disc pl-6 mb-6 space-y-2; }
+  .vn-text-fix ol { @apply list-decimal pl-6 mb-6 space-y-2; }
+  .vn-text-fix img { @apply rounded-2xl my-8 shadow-medium w-full h-auto object-cover; }
+  .vn-text-fix strong { @apply font-bold text-charcoal; }
+  .vn-text-fix a { @apply text-primary font-bold underline hover:opacity-80 transition-opacity; }
 }
 
 /* Custom Phone Input Styling */
