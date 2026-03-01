@@ -52,9 +52,9 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           "max-w-none transition-all duration-1000 ease-in-out",
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
-          {/* Thiết lập max-width 800px và ép ảnh giãn 100% */}
+          {/* Thiết lập w-full và max-w-none cho prose để max-w-[800px] có hiệu lực tuyệt đối */}
           <div 
-            className="rich-text-content flex flex-col items-center text-center prose prose-lg prose-stone max-w-[800px] mx-auto text-muted-foreground"
+            className="rich-text-content w-full max-w-[800px] mx-auto flex flex-col items-center text-center prose prose-lg prose-stone max-w-none text-muted-foreground"
             dangerouslySetInnerHTML={{ __html: processedContent || "<p class='text-center italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>
@@ -90,17 +90,35 @@ export function ProductDescription({ description, product }: ProductDescriptionP
       </div>
 
       <style>{`
+        /* Ép container chính không bao giờ vượt quá 800px */
+        .rich-text-content {
+          width: 100% !important;
+          max-width: 800px !important;
+        }
         /* Ép tất cả ảnh trong mô tả sản phẩm giãn lấp đầy 800px */
         .rich-text-content img {
           width: 100% !important;
+          max-width: 800px !important;
           height: auto !important;
           object-fit: cover !important;
           border-radius: 16px;
-          margin: 2rem 0 !important;
+          margin: 2rem auto !important;
+          display: block;
         }
+        /* Ép các đoạn văn bản luôn nằm trong khung 800px và căn giữa */
         .rich-text-content p {
           width: 100% !important;
+          max-width: 100% !important;
           text-align: center !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+        }
+        /* Đảm bảo các danh sách cũng được căn giữa nếu cần */
+        .rich-text-content ul, .rich-text-content ol {
+          text-align: left;
+          display: inline-block;
+          margin-left: auto;
+          margin-right: auto;
         }
       `}</style>
     </section>
