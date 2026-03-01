@@ -94,6 +94,8 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           /* Ép trình duyệt không bao giờ chặt đôi từ */
           hyphens: none !important;
           -webkit-hyphens: none !important;
+          word-break: normal !important;
+          overflow-wrap: break-word !important;
         }
         .rich-text-content img {
           width: 100% !important;
@@ -108,6 +110,8 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           /* Chuyển sang căn trái để ngắt dòng tự nhiên nhất */
           text-align: left !important;
           margin-bottom: 1.5rem !important;
+          word-break: normal !important;
+          overflow-wrap: break-word !important;
         }
         .rich-text-content ul, .rich-text-content ol {
           text-align: left;
