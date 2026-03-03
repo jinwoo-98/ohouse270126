@@ -12,7 +12,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, formatNumberWithDots, parseNumberFromDots } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ProductVariantsSectionProps {
@@ -115,9 +115,6 @@ export function ProductVariantsSection({
           return; // Dừng lại nếu không cập nhật được DB
         }
         toast.success(`Đã thêm "${valueToAdd}" vào hệ thống thuộc tính.`);
-        
-        // Cập nhật lại danh sách attributes trong ProductForm (nếu cần)
-        // Hiện tại, chúng ta chỉ cần cập nhật state local của tierConfig
       }
       
       // Sau đó mới cập nhật state local
@@ -131,9 +128,14 @@ export function ProductVariantsSection({
   };
 
   const updateVariantField = (index: number, field: string, value: any) => {
+    let finalValue = value;
+    if (field === 'price' || field === 'original_price') {
+      finalValue = parseNumberFromDots(value);
+    }
+
     setVariants(prev => {
       const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
+      next[index] = { ...next[index], [field]: finalValue };
       return next;
     });
   };
@@ -296,7 +298,7 @@ export function ProductVariantsSection({
                 </thead>
                 <tbody className="divide-y divide-border">
                   {variants.map((variant, idx) => (
-                    <tr key={idx} className="hover:bg-secondary/10 transition-colors">
+                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1.5">
                           {Object.entries(variant.tier_values).map(([k, v]: any) => (
@@ -308,16 +310,16 @@ export function ProductVariantsSection({
                       </td>
                       <td className="p-4">
                         <Input 
-                          type="number" 
-                          value={variant.price} 
+                          type="text" 
+                          value={formatNumberWithDots(variant.price)} 
                           onChange={e => updateVariantField(idx, 'price', e.target.value)} 
                           className="h-9 text-xs font-bold text-primary border-primary/20 focus:ring-1 bg-white" 
                         />
                       </td>
                       <td className="p-4">
                         <Input 
-                          type="number" 
-                          value={variant.original_price} 
+                          type="text" 
+                          value={formatNumberWithDots(variant.original_price)} 
                           onChange={e => updateVariantField(idx, 'original_price', e.target.value)} 
                           className="h-9 text-xs bg-white" 
                           placeholder="Gạch bỏ" 

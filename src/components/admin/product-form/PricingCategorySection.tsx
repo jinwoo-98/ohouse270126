@@ -10,6 +10,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { formatNumberWithDots, parseNumberFromDots } from "@/lib/utils";
 
 interface PricingCategorySectionProps {
   formData: any;
@@ -20,6 +21,11 @@ interface PricingCategorySectionProps {
 export function PricingCategorySection({ formData, setFormData, categories }: PricingCategorySectionProps) {
   const parentCategories = categories.filter(c => !c.parent_id);
 
+  const handlePriceChange = (field: string, value: string) => {
+    const rawValue = parseNumberFromDots(value);
+    setFormData({ ...formData, [field]: rawValue });
+  };
+
   return (
     <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6 border-l-4 border-l-primary">
       <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
@@ -29,9 +35,9 @@ export function PricingCategorySection({ formData, setFormData, categories }: Pr
         <div className="space-y-2">
           <Label className="text-[10px] font-bold uppercase text-muted-foreground">Giá bán lẻ (VND) *</Label>
           <Input 
-            type="number" 
-            value={formData.price} 
-            onChange={(e) => setFormData({...formData, price: e.target.value})} 
+            type="text" 
+            value={formatNumberWithDots(formData.price)} 
+            onChange={(e) => handlePriceChange('price', e.target.value)} 
             required 
             placeholder="Nhập giá bán..."
             className="h-12 rounded-xl font-bold text-primary text-lg focus:ring-1" 
@@ -40,9 +46,9 @@ export function PricingCategorySection({ formData, setFormData, categories }: Pr
         <div className="space-y-2">
           <Label className="text-[10px] font-bold uppercase text-muted-foreground">Giá gốc (Gạch bỏ)</Label>
           <Input 
-            type="number" 
-            value={formData.original_price} 
-            onChange={(e) => setFormData({...formData, original_price: e.target.value})} 
+            type="text" 
+            value={formatNumberWithDots(formData.original_price)} 
+            onChange={(e) => handlePriceChange('original_price', e.target.value)} 
             placeholder="Để trống nếu không có giá cũ..."
             className="h-12 rounded-xl" 
           />

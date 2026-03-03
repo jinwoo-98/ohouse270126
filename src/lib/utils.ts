@@ -10,6 +10,23 @@ export function formatPrice(price: number) {
 }
 
 /**
+ * Định dạng số với dấu chấm phân cách hàng nghìn (VD: 1.000.000)
+ */
+export function formatNumberWithDots(value: string | number | null | undefined): string {
+  if (value === null || value === undefined || value === "") return "";
+  const number = typeof value === 'string' ? value.replace(/\D/g, '') : Math.floor(Number(value)).toString();
+  if (!number) return "";
+  return number.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+/**
+ * Chuyển chuỗi có dấu chấm về số nguyên để lưu DB
+ */
+export function parseNumberFromDots(value: string): string {
+  return value.replace(/\./g, "").replace(/\D/g, "");
+}
+
+/**
  * Converts a string to a URL-friendly slug.
  */
 export function slugify(text: string) {
