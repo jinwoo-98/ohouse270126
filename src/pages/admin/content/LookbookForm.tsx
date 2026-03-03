@@ -11,7 +11,7 @@ import { useDebounce } from "use-debounce";
 import { useUnsavedWarning } from "@/hooks/useUnsavedWarning";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-// Import các components
+// Import các section
 import { LookbookBasicInfoSection } from "@/components/admin/content/lookbook-form/LookbookBasicInfoSection";
 import { LookbookFilterSection } from "@/components/admin/content/lookbook-form/LookbookFilterSection";
 import { LookbookMediaSection } from "@/components/admin/content/lookbook-form/LookbookMediaSection";
@@ -26,7 +26,7 @@ export default function LookbookForm() {
   const isEdit = !!id;
   const draftKey = `ohouse_draft_lookbook_${id || 'new'}`;
   
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [fetching, setFetching] = useState(isEdit);
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
