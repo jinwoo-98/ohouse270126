@@ -21,7 +21,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   
-  const [activeImage, setActiveImage] = useState(product.image_url);
+  const [activeImage, setActiveImage] = useState(product.image_url || '/placeholder.svg');
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   
   const isFavorite = isInWishlist(product.id);
@@ -61,6 +61,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = activeImage; // Quay lại ảnh gốc nếu lỗi tối ưu
+                }}
               />
             </AnimatePresence>
           </div>

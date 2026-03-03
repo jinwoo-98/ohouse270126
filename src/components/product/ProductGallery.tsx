@@ -28,7 +28,7 @@ interface ProductGalleryProps {
   onHotspotClick?: (product: any) => void;
   children?: (currentImageUrl: string) => React.ReactNode;
   product?: any; 
-  aspectRatio?: string; // Thêm prop này
+  aspectRatio?: string;
 }
 
 const swipeConfidenceThreshold = 10000;
@@ -45,10 +45,11 @@ export function ProductGallery({
   onHotspotClick, 
   children, 
   product,
-  aspectRatio = "aspect-square" // Mặc định là vuông
+  aspectRatio = "aspect-square"
 }: ProductGalleryProps) {
   const safeGallery = Array.isArray(galleryImages) ? galleryImages : [];
-  const allImages = [mainImage, ...safeGallery].filter(Boolean);
+  // Đảm bảo luôn có ít nhất 1 ảnh (dùng placeholder nếu mainImage trống)
+  const allImages = [mainImage || '/placeholder.svg', ...safeGallery].filter(Boolean);
   
   const [[page, direction], setPage] = useState([0, 0]);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -132,6 +133,9 @@ export function ProductGallery({
               className="w-full h-full object-cover pointer-events-none"
               draggable="false"
               loading={imageIndex === 0 ? "eager" : "lazy"}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = currentImageUrl; // Quay lại ảnh gốc nếu lỗi tối ưu
+              }}
             />
             <div 
                 className="absolute inset-0 cursor-zoom-in" 
@@ -190,7 +194,12 @@ export function ProductGallery({
                   : "border-transparent opacity-50 hover:opacity-100"
               )}
             >
-              <img src={getOptimizedImageUrl(img, { width: 150 })} alt={generateProductAltText(product || { name: productName, id: 'THUMB' }, idx)} className="w-full h-full object-cover" />
+              <img 
+                src={getOptimizedImageUrl(img, { width: 150 })} 
+                alt={generateProductAltText(product || { name: productName, id: 'THUMB' }, idx)} 
+                className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).src = img; }}
+              />
             </button>
           ))}
         </div>
@@ -213,6 +222,7 @@ export function ProductGallery({
                 src={getOptimizedImageUrl(currentImageUrl, { width: 1200 })} 
                 className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl"
                 alt={`${currentAlt} - Phóng to`}
+                onError={(e) => { (e.target as HTMLImageElement).src = currentImageUrl; }}
               />
               {hotspots.length > 0 && renderHotspots(true)}
             </div>
