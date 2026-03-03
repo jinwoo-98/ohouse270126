@@ -2,12 +2,21 @@ import DOMPurify from 'dompurify';
 
 /**
  * Sanitizes an HTML string to prevent XSS attacks while preserving safe tags and attributes.
- * Used before rendering content with dangerouslySetInnerHTML.
+ * Also cleans up hidden characters that cause word-breaking issues in Vietnamese.
  */
 export const sanitizeHtml = (html: string | null | undefined): string => {
   if (!html) return "";
   
-  return DOMPurify.sanitize(html, {
+  // 1. LỌC SẠCH KÝ TỰ ẨN VÀ KÝ TỰ ĐẶC BIỆT GÂY LỖI NGẮT DÒNG
+  // \u200B-\u200D: Zero-width spaces/joiners
+  // \uFEFF: BOM
+  // \u00AD: Soft hyphen (thủ phạm chính gây ngắt đôi từ)
+  let cleanHtml = html.replace(/[\u200B-\u200D\uFEFF\u00AD]/g, '');
+  
+  // Thay thế non-breaking space (&nbsp;) thành space thường để trình duyệt ngắt dòng đúng quy tắc
+  cleanHtml = cleanHtml.replace(/\u00A0/g, ' ');
+  
+  return DOMPurify.sanitize(cleanHtml, {
     ALLOWED_TAGS: [
       'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'p', 'a', 'ul', 'ol',
       'nl', 'li', 'b', 'i', 'strong', 'em', 'strike', 'code', 'hr', 'br', 'div',
@@ -19,18 +28,13 @@ export const sanitizeHtml = (html: string | null | undefined): string => {
 
 /**
  * Sanitizes tracking scripts to allow only necessary tags for analytics/tracking.
- * This is more permissive than sanitizeHtml as it allows <script>, <noscript>, and <iframe>,
- * but it strictly strips dangerous 'on*' event handlers to prevent XSS via attributes.
  */
 export const sanitizeTrackingScript = (html: string | null | undefined): string => {
   if (!html) return "";
   
   return DOMPurify.sanitize(html, {
-    // Explicitly allow tags common in tracking snippets
     ADD_TAGS: ['script', 'noscript', 'iframe'],
-    // Allow attributes required for tracking functionality
     ADD_ATTR: ['async', 'defer', 'frameborder', 'allow', 'allowfullscreen', 'target'],
-    // Strictly forbid any inline event handlers
     FORBID_ATTR: [
       'onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 
       'onchange', 'onsubmit', 'onmouseenter', 'onmouseleave', 'onkeydown', 'onkeyup'

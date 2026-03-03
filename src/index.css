@@ -67,8 +67,8 @@
 
 @layer utilities {
   /* 
-     GIẢI PHÁP TỐI GIẢN CHO TIẾNG VIỆT:
-     Ép quy tắc ngắt dòng chuẩn cho văn bản và loại bỏ hyphens (tự động gạch nối).
+     GIẢI PHÁP TỐI ƯU CHO TIẾNG VIỆT:
+     Sử dụng keep-all để đảm bảo không bao giờ ngắt đôi từ.
   */
   .vn-content-view {
     display: flow-root !important;
@@ -83,16 +83,18 @@
   .vn-content-view b,
   .vn-content-view strong,
   .vn-content-view em {
-    word-break: normal !important;
+    word-break: keep-all !important; /* Ngăn chặn ngắt đôi từ tuyệt đối */
     overflow-wrap: break-word !important;
     hyphens: none !important;
     -webkit-hyphens: none !important;
     -ms-hyphens: none !important;
-    white-space: normal !important;
-    text-wrap: wrap !important;
   }
 
-  .vn-content-view p { @apply mb-6 leading-relaxed; }
+  .vn-content-view p { 
+    @apply mb-6 leading-relaxed; 
+    white-space: pre-wrap !important; /* Giữ định dạng xuống dòng tự nhiên */
+  }
+  
   .vn-content-view h1, .vn-content-view h2, .vn-content-view h3 { 
     @apply font-bold text-charcoal uppercase tracking-wider mb-4 mt-8; 
   }
