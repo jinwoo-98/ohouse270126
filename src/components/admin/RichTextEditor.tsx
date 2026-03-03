@@ -3,11 +3,12 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Image as ImageIcon, Save, Settings2, X, Check } from "lucide-react";
+import { Image as ImageIcon, Save, Settings2, X, Check, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import imageCompression from "browser-image-compression";
 
 interface RichTextEditorProps {
   value: string;
@@ -23,7 +24,7 @@ interface ImageAltItem {
 }
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB cho file gốc
 
 export function RichTextEditor({ value, onChange, placeholder, contextTitle }: RichTextEditorProps) {
   const quillRef = useRef<ReactQuill>(null);
@@ -72,6 +73,39 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
     setImageList(prev => prev.map((item, i) => i === index ? { ...item, alt: newAlt } : item));
   };
 
+  const processAndUploadFile = async (file: File): Promise<string> => {
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+      fileType: "image/webp",
+      initialQuality: 0.8
+    };
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.webp`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('uploads')
+        .upload(fileName, compressedFile, {
+          contentType: "image/webp",
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('uploads')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error("Error processing image:", error);
+      throw new Error("Không thể xử lý hình ảnh.");
+    }
+  };
+
   const imageHandler = () => {
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
@@ -89,12 +123,12 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
           return;
         }
         if (file.size > MAX_FILE_SIZE) {
-          toast.error(`Tệp "${file.name}" quá lớn (tối đa 2MB).`);
+          toast.error(`Tệp "${file.name}" quá lớn (tối đa 5MB).`);
           return;
         }
       }
 
-      const toastId = toast.loading(`Đang tải lên ${files.length} ảnh...`);
+      const toastId = toast.loading(`Đang tối ưu hóa và tải lên ${files.length} ảnh...`);
 
       try {
         const quill = quillRef.current?.getEditor();
@@ -104,19 +138,11 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
         let currentIndex = range.index;
 
         for (const file of files) {
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
-          const { error } = await supabase.storage.from('uploads').upload(fileName, file, {
-            contentType: file.type,
-            upsert: false
-          });
-          
-          if (error) throw error;
-          
-          const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(fileName);
+          const publicUrl = await processAndUploadFile(file);
 
           quill.insertEmbed(currentIndex, 'image', publicUrl);
           
+          // Tự động gán Alt text sau khi chèn
           setTimeout(() => {
             const images = quill.root.querySelectorAll('img');
             const targetImg = Array.from(images).find(img => img.getAttribute('src') === publicUrl);
@@ -128,7 +154,7 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
           currentIndex += 1;
         }
 
-        toast.success("Đã chèn ảnh thành công.", { id: toastId });
+        toast.success("Đã tối ưu và chèn ảnh thành công.", { id: toastId });
       } catch (error: any) {
         toast.error("Lỗi khi tải ảnh: " + error.message, { id: toastId });
       }
