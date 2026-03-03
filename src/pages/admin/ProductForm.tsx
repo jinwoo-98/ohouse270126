@@ -219,19 +219,21 @@ export default function ProductForm() {
             variants={variants}
             setVariants={setVariants}
           />
-
-          <ProductMediaSection formData={formData} setFormData={setFormData} />
         </div>
 
         <div className="lg:col-span-1 space-y-8">
           <ProductStatusSection formData={formData} setFormData={setFormData} />
-          
-          <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Box className="w-4 h-4" /> 5. Gợi ý phối đồ
-            </h3>
-            <CrossSellSection formData={formData} setFormData={setFormData} allProducts={allProducts} />
-          </div>
+        </div>
+      </div>
+
+      <div className="space-y-8 mt-8">
+        <ProductMediaSection formData={formData} setFormData={setFormData} />
+        
+        <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
+            <Box className="w-4 h-4" /> 5. Gợi ý phối đồ
+          </h3>
+          <CrossSellSection formData={formData} setFormData={setFormData} allProducts={allProducts} />
         </div>
       </div>
     </div>

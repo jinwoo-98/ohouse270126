@@ -14,7 +14,6 @@ interface RichTextEditorProps {
   onChange: (content: string) => void;
   placeholder?: string;
   contextTitle?: string; 
-  width?: number; // Thêm prop width để tùy chỉnh linh hoạt
 }
 
 interface ImageAltItem {
@@ -26,7 +25,7 @@ interface ImageAltItem {
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
-export function RichTextEditor({ value, onChange, placeholder, contextTitle, width = 740 }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, placeholder, contextTitle }: RichTextEditorProps) {
   const quillRef = useRef<ReactQuill>(null);
   const [isAltModalOpen, setIsAltModalOpen] = useState(false);
   const [imageList, setImageList] = useState<ImageAltItem[]>([]);
@@ -175,24 +174,16 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle, wid
         </Button>
       </div>
 
-      <div className="rich-editor-outer bg-secondary/10 p-4 md:p-6 rounded-2xl border border-dashed border-border/60 overflow-x-auto">
-        <div 
-          className="rich-editor-wrapper bg-white border shadow-sm mx-auto"
-          style={{ width: `${width}px`, minWidth: `${width}px` }}
-        >
-          <ReactQuill 
-            ref={quillRef}
-            theme="snow"
-            value={value}
-            onChange={onChange}
-            modules={modules}
-            formats={formats}
-            placeholder={placeholder}
-          />
-        </div>
-        <p className="text-center text-[10px] text-muted-foreground mt-4 font-bold uppercase tracking-widest">
-          Khung soạn thảo tỉ lệ 1:1 ({width}px) - Văn bản & Ảnh sẽ hiển thị chính xác như trên Web
-        </p>
+      <div className="rich-editor-wrapper bg-white border shadow-sm">
+        <ReactQuill 
+          ref={quillRef}
+          theme="snow"
+          value={value}
+          onChange={onChange}
+          modules={modules}
+          formats={formats}
+          placeholder={placeholder}
+        />
       </div>
 
       <style>{`
@@ -213,7 +204,7 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle, wid
           border: none !important;
         }
         .rich-editor-wrapper .ql-editor {
-          padding: 0 !important;
+          padding: 2rem !important;
           font-family: 'Montserrat', sans-serif !important;
           font-size: 16px !important;
           line-height: 1.7 !important;
@@ -230,7 +221,6 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle, wid
         .rich-editor-wrapper .ql-container::-webkit-scrollbar { width: 6px; }
         .rich-editor-wrapper .ql-container::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
         
-        /* Ép ảnh luôn lấp đầy chiều ngang khung soạn thảo */
         .rich-editor-wrapper .ql-editor img { 
           width: 100% !important; 
           height: auto !important;
