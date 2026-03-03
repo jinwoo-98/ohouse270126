@@ -40,15 +40,17 @@ export function ImageUpload({
     try {
       const compressedFile = await imageCompression(file, options);
       
+      // Tạo tên tệp duy nhất bằng cách kết hợp tên gốc + chuỗi ngẫu nhiên
       const originalName = file.name.substring(0, file.name.lastIndexOf('.'));
-      const fileName = `${slugify(originalName)}.webp`;
+      const randomString = Math.random().toString(36).substring(2, 8);
+      const fileName = `${slugify(originalName)}-${randomString}.webp`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, compressedFile, {
           contentType: "image/webp",
-          upsert: true // Cho phép ghi đè
+          upsert: false 
         });
 
       if (uploadError) throw uploadError;
@@ -81,10 +83,14 @@ export function ImageUpload({
       }
 
       setIsUploading(true);
-      const toastId = toast.loading("Đang tối ưu hóa và tải ảnh lên...");
+      const toastId = toast.loading(`Đang tối ưu hóa và tải lên ${files.length} ảnh...`);
 
-      const uploadPromises = files.map(file => processAndUploadFile(file));
-      const urls = await Promise.all(uploadPromises);
+      // Xử lý từng file một để tránh quá tải trình duyệt và đảm bảo tính duy nhất
+      const urls: string[] = [];
+      for (const file of files) {
+        const url = await processAndUploadFile(file);
+        urls.push(url);
+      }
 
       if (multiple) {
         const currentUrls = Array.isArray(value) ? value : (value ? [value] : []);
@@ -93,7 +99,7 @@ export function ImageUpload({
         onChange(urls[0]);
       }
 
-      toast.success(`Đã tối ưu và tải lên thành công ${urls.length} ảnh!`, { id: toastId });
+      toast.success(`Đã tải lên thành công ${urls.length} ảnh!`, { id: toastId });
     } catch (error: any) {
       toast.error("Lỗi: " + error.message);
     } finally {
@@ -139,7 +145,7 @@ export function ImageUpload({
               {isUploading ? (
                 <>
                   <Loader2 className="w-8 h-8 mb-2 text-primary animate-spin" />
-                  <p className="text-[10px] text-muted-foreground font-medium">Đang tối ưu hóa...</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Đang xử lý...</p>
                 </>
               ) : (
                 <>
