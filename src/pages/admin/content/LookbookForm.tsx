@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ArrowLeft, Save, AlignLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea"; // Import Textarea
 import { toast } from "sonner";
 import { slugify, cn } from "@/lib/utils";
 
@@ -12,7 +13,6 @@ import { LookbookBasicInfoSection } from "@/components/admin/content/lookbook-fo
 import { LookbookFilterSection } from "@/components/admin/content/lookbook-form/LookbookFilterSection";
 import { LookbookMediaSection } from "@/components/admin/content/lookbook-form/LookbookMediaSection";
 import { LookbookHotspotManager } from "@/components/admin/content/lookbook-form/LookbookHotspotManager";
-import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { AIContentAssistant } from "@/components/admin/AIContentAssistant";
 
 export default function LookbookForm() {
@@ -263,10 +263,11 @@ export default function LookbookForm() {
                   onInsert={(val) => setFormData({...formData, description: val})} 
                 />
               </div>
-              <RichTextEditor 
+              <Textarea 
                 value={formData.description || ""} 
-                onChange={val => setFormData({...formData, description: val})} 
+                onChange={e => setFormData({...formData, description: e.target.value})} 
                 placeholder="Nhập đoạn giới thiệu chi tiết về không gian này..." 
+                className="rounded-xl min-h-[150px] resize-none leading-relaxed"
               />
               <p className="text-[10px] text-muted-foreground italic">Mô tả này sẽ hiển thị ở phần giới thiệu trang chi tiết Lookbook.</p>
             </div>

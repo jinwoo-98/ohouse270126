@@ -19,7 +19,6 @@ import { LookProductVerticalList } from "@/components/inspiration/LookProductFul
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
 import { sanitizeHtml } from "@/lib/sanitize";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -30,7 +29,7 @@ export default function LookDetailPage() {
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [currentImage, setCurrentImage] = useState<string>("");
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
-  const [isDescOpen, setIsDescOpen] = useState(false);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -175,21 +174,27 @@ export default function LookDetailPage() {
               <div className="lg:col-span-2 min-w-0 w-full space-y-8">
                 {look.description && (
                   <div className="w-full max-w-[740px]">
-                    <Collapsible open={isDescOpen} onOpenChange={setIsDescOpen} className="border-b border-border/50 pb-4">
-                      <CollapsibleTrigger className="flex items-center justify-between w-full group py-2 text-left">
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-4 h-4 text-primary" />
-                          <span className="text-[11px] font-bold uppercase tracking-widest text-charcoal">Mô tả không gian</span>
-                        </div>
-                        {isDescOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="pt-4 animate-accordion-down">
-                        <div 
-                          className="vn-content-view text-sm text-muted-foreground leading-relaxed"
-                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
-                        />
-                      </CollapsibleContent>
-                    </Collapsible>
+                    <div className={cn(
+                      "relative transition-all duration-500",
+                      !isDescExpanded ? "max-h-[100px] overflow-hidden" : "max-h-none"
+                    )}>
+                      <div 
+                        className="vn-content-view text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
+                      />
+                      {!isDescExpanded && (
+                        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent" />
+                      )}
+                    </div>
+                    {look.description?.length > 200 && (
+                      <button 
+                        onClick={() => setIsDescExpanded(!isDescExpanded)}
+                        className="text-primary font-bold text-[10px] uppercase tracking-widest mt-2 flex items-center gap-1"
+                      >
+                        {isDescExpanded ? "Thu gọn" : "Xem thêm"}
+                        {isDescExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                      </button>
+                    )}
                   </div>
                 )}
                 
