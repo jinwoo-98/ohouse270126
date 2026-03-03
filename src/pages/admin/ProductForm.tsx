@@ -231,7 +231,7 @@ export default function ProductForm() {
         
         <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
           <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-            <Box className="w-4 h-4" /> 5. Gợi ý phối đồ
+            <Box className="w-4 h-4" /> Gợi ý phối đồ
           </h3>
           <CrossSellSection formData={formData} setFormData={setFormData} allProducts={allProducts} />
         </div>

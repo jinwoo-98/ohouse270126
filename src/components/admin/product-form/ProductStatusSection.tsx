@@ -13,7 +13,7 @@ export function ProductStatusSection({ formData, setFormData }: ProductStatusSec
     <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-8">
       <div className="space-y-4">
         <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-          <Layers className="w-4 h-4" /> 3. Trạng thái & Badge
+          <Layers className="w-4 h-4" /> Trạng thái & Badge
         </h3>
         <div className="grid grid-cols-1 gap-3">
           <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
@@ -33,7 +33,7 @@ export function ProductStatusSection({ formData, setFormData }: ProductStatusSec
 
       <div className="space-y-4 pt-6 border-t border-dashed">
         <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-          <TrendingUp className="w-4 h-4" /> 4. Chỉ số ảo (Marketing)
+          <TrendingUp className="w-4 h-4" /> Chỉ số ảo (Marketing)
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">

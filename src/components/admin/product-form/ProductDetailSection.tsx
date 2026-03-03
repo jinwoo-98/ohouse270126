@@ -33,7 +33,7 @@ export function ProductDetailSection({
   return (
     <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-8">
       <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-        <Info className="w-4 h-4" /> 1. Thông tin & Thuộc tính
+        <Info className="w-4 h-4" /> Thông tin & Thuộc tính
       </h3>
       
       <div className="grid gap-6">
@@ -103,21 +103,6 @@ export function ProductDetailSection({
                         </label>
                       ))}
                     </div>
-                    {hasSelection && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => {
-                          const next = { ...productAttrs };
-                          delete next[attr.id];
-                          // Cần truyền ngược lại state thông qua một hàm reset hoặc xử lý đặc biệt
-                          // Ở đây đơn giản là bỏ chọn từng cái nếu cần, hoặc để user tự bỏ
-                        }}
-                        className="w-full text-[10px] font-bold uppercase text-destructive hover:bg-destructive/5"
-                      >
-                        Xóa lựa chọn
-                      </Button>
-                    )}
                   </div>
                 </PopoverContent>
               </Popover>

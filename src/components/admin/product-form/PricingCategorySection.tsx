@@ -1,4 +1,4 @@
-import { Layers, Settings2, Zap, Plus, Trash2, X } from "lucide-react";
+import { Layers, Settings2, Zap, Plus, Trash2, X, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { 
@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNumberWithDots, parseNumberFromDots, cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface PricingCategorySectionProps {
@@ -50,7 +49,7 @@ export function PricingCategorySection({
     }
   }, [formData.category_id, categories]);
 
-  // Logic sinh biến thể (từ ProductVariantsSection cũ)
+  // Logic sinh biến thể
   useEffect(() => {
     const validTiers = tierConfig.filter(t => t.name && t.values.length > 0);
     if (validTiers.length === 0) {
@@ -93,7 +92,7 @@ export function PricingCategorySection({
     setTierConfig([...tierConfig, { name: "", values: [] }]);
   };
 
-  const addValueToTier = async (index: number, val?: string) => {
+  const addValueToTier = (index: number, val?: string) => {
     const valueToAdd = (val || tempValue[index] || "").trim();
     if (!valueToAdd) return;
 
@@ -120,10 +119,10 @@ export function PricingCategorySection({
   return (
     <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-10">
       <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-        <Layers className="w-4 h-4" /> 2. Danh mục & Giá bán
+        <Layers className="w-4 h-4" /> Danh mục & Giá bán
       </h3>
 
-      {/* 2.1 Danh mục */}
+      {/* Danh mục */}
       <div className="space-y-4">
         <Label className="text-[10px] font-bold uppercase text-muted-foreground">Phân loại danh mục</Label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -155,7 +154,7 @@ export function PricingCategorySection({
         </div>
       </div>
 
-      {/* 2.2 Cấu hình Phân loại */}
+      {/* Cấu hình Phân loại */}
       <div className="space-y-6 pt-6 border-t border-dashed">
         <div className="flex items-center justify-between">
           <Label className="text-[10px] font-bold uppercase text-muted-foreground">Phân loại sản phẩm (Màu sắc, Kích thước...)</Label>
@@ -170,45 +169,106 @@ export function PricingCategorySection({
           </Button>
         </div>
 
-        {tierConfig.map((tier, idx) => (
-          <div key={idx} className="p-5 bg-secondary/30 rounded-2xl border border-border/50 relative animate-fade-in">
-            <button type="button" onClick={() => {
-              const n = [...tierConfig]; n.splice(idx, 1); setTierConfig(n);
-            }} className="absolute top-4 right-4 p-1 text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></button>
-            
-            <div className="grid md:grid-cols-2 gap-4 mb-4">
-              <Select value={tier.name} onValueChange={(val) => {
-                const n = [...tierConfig]; n[idx].name = val; setTierConfig(n);
-              }}>
-                <SelectTrigger className="h-10 bg-white rounded-xl"><SelectValue placeholder="Chọn nhóm (Màu, Size...)" /></SelectTrigger>
-                <SelectContent>{attributes.map(a => <SelectItem key={a.id} value={a.name}>{a.name}</SelectItem>)}</SelectContent>
-              </Select>
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="Nhập giá trị..." 
-                  className="h-10 bg-white rounded-xl"
-                  value={tempValue[idx] || ""}
-                  onChange={(e) => setTempValue({ ...tempValue, [idx]: e.target.value })}
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addValueToTier(idx))}
-                />
-                <Button type="button" size="icon" variant="secondary" onClick={() => addValueToTier(idx)} className="h-10 w-10 rounded-xl shrink-0"><Plus className="w-4 h-4" /></Button>
+        {tierConfig.map((tier, idx) => {
+          const selectedAttr = attributes.find(a => a.name === tier.name);
+          const availableOptions = selectedAttr?.options || [];
+
+          return (
+            <div key={idx} className="p-6 bg-secondary/30 rounded-2xl border border-border/50 relative animate-fade-in">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-primary text-white border-none h-6 px-3">Cấp {idx + 1}</Badge>
+                  <span className="text-xs font-bold text-charcoal uppercase tracking-wider">Cấu hình nhóm</span>
+                </div>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => {
+                    const n = [...tierConfig]; n.splice(idx, 1); setTierConfig(n);
+                  }} 
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div className="space-y-2">
+                  <Label className="text-[9px] uppercase font-bold text-muted-foreground">Tên nhóm phân loại</Label>
+                  <Select value={tier.name} onValueChange={(val) => {
+                    const n = [...tierConfig]; n[idx].name = val; setTierConfig(n);
+                  }}>
+                    <SelectTrigger className="h-11 bg-white rounded-xl"><SelectValue placeholder="Chọn nhóm (Màu, Size...)" /></SelectTrigger>
+                    <SelectContent>{attributes.map(a => <SelectItem key={a.id} value={a.name}>{a.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[9px] uppercase font-bold text-muted-foreground">Thêm giá trị mới</Label>
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="Nhập giá trị..." 
+                      className="h-11 bg-white rounded-xl"
+                      value={tempValue[idx] || ""}
+                      onChange={(e) => setTempValue({ ...tempValue, [idx]: e.target.value })}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addValueToTier(idx))}
+                    />
+                    <Button type="button" size="icon" variant="secondary" onClick={() => addValueToTier(idx)} className="h-11 w-11 rounded-xl shrink-0"><Plus className="w-4 h-4" /></Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gợi ý giá trị từ thuộc tính */}
+              {availableOptions.length > 0 && (
+                <div className="space-y-3 mb-6">
+                  <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Gợi ý từ hệ thống:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {availableOptions.map((opt: string) => {
+                      const isSelected = tier.values.includes(opt);
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => addValueToTier(idx, opt)}
+                          disabled={isSelected}
+                          className={cn(
+                            "px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border",
+                            isSelected 
+                              ? "bg-primary/10 border-primary/20 text-primary opacity-50 cursor-default" 
+                              : "bg-white border-border hover:border-primary/40 text-charcoal"
+                          )}
+                        >
+                          {opt} {isSelected && <Check className="w-2.5 h-2.5 inline ml-1" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Giá trị đã chọn:</p>
+                <div className="flex flex-wrap gap-2">
+                  {tier.values.length === 0 ? (
+                    <span className="text-[10px] text-muted-foreground italic">Chưa có giá trị nào được chọn.</span>
+                  ) : (
+                    tier.values.map((val: string) => (
+                      <Badge key={val} variant="outline" className="bg-white gap-2 h-8 px-3 rounded-xl border-primary/20 shadow-sm">
+                        <span className="text-[11px] font-bold text-charcoal">{val}</span>
+                        <button type="button" onClick={() => {
+                          const n = [...tierConfig]; n[idx].values = n[idx].values.filter((v: any) => v !== val); setTierConfig(n);
+                        }} className="text-muted-foreground hover:text-destructive transition-colors"><X className="w-3 h-3" /></button>
+                      </Badge>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {tier.values.map((val: string) => (
-                <Badge key={val} variant="outline" className="bg-white gap-2 h-7 px-2 rounded-lg border-primary/20">
-                  <span className="text-[11px] font-bold">{val}</span>
-                  <button type="button" onClick={() => {
-                    const n = [...tierConfig]; n[idx].values = n[idx].values.filter((v: any) => v !== val); setTierConfig(n);
-                  }}><X className="w-3 h-3" /></button>
-                </Badge>
-              ))}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* 2.3 Giá bán */}
+      {/* Giá bán */}
       <div className="pt-6 border-t border-dashed">
         {!hasVariants ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
