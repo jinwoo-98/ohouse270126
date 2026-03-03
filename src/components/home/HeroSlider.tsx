@@ -3,7 +3,7 @@ import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { getOptimizedImageUrl } from "@/lib/utils";
+import { getOptimizedImageUrl, cn } from "@/lib/utils";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { Helmet } from "react-helmet-async";
 
@@ -109,11 +109,12 @@ export function HeroSlider() {
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
-                  className={`max-w-2xl relative z-10 pointer-events-auto ${
+                  className={cn(
+                    "max-w-2xl relative z-10 pointer-events-auto",
                     slide.text_align === 'left' ? 'mr-auto text-left' : 
                     slide.text_align === 'right' ? 'ml-auto text-right' : 
                     'mx-auto text-center'
-                  }`}
+                  )}
                   style={{ color: slide.text_color || '#ffffff' }}
                 >
                   {slide.subtitle && (
@@ -122,14 +123,16 @@ export function HeroSlider() {
                     </span>
                   )}
                   
-                  {/* Điều chỉnh kích thước tiêu đề Banner: Giảm từ 7xl xuống 6xl ở màn hình lớn */}
                   <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight whitespace-pre-line">
                     {slide.title}
                   </h1>
                   
                   {slide.description && (
                     <div 
-                      className="text-sm md:text-lg mb-6 md:mb-8 max-w-lg leading-relaxed px-4 md:px-0 opacity-90 rich-text-content"
+                      className={cn(
+                        "text-sm md:text-lg mb-6 md:mb-8 max-w-lg leading-relaxed px-4 md:px-0 opacity-90 rich-text-content",
+                        slide.text_align === 'center' ? 'mx-auto' : (slide.text_align === 'right' ? 'ml-auto' : 'mr-auto')
+                      )}
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.description) }}
                     />
                   )}
