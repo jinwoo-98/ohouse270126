@@ -1,22 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Save, Loader2, Box } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Box, RotateCcw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { slugify } from "@/lib/utils";
+import { useUnsavedWarning } from "@/hooks/useUnsavedWarning";
 
-// Import các section đã tối ưu
+// Import các section
 import { ProductDetailSection } from "@/components/admin/product-form/ProductDetailSection";
 import { PricingCategorySection } from "@/components/admin/product-form/PricingCategorySection";
 import { ProductStatusSection } from "@/components/admin/product-form/ProductStatusSection";
 import { ProductMediaSection } from "@/components/admin/product-form/ProductMediaSection";
 import { CrossSellSection } from "@/components/admin/product-form/CrossSellSection";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function ProductForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = !!id;
+  const draftKey = `ohouse_draft_product_${id || 'new'}`;
   
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEdit);
@@ -27,6 +30,8 @@ export default function ProductForm() {
   const [tierConfig, setTierConfig] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
   const [productAttrs, setProductAttrs] = useState<Record<string, string[]>>({});
+  const [isDirty, setIsDirty] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -51,15 +56,39 @@ export default function ProductForm() {
     bought_together_ids: [] as string[]
   });
 
+  // Kích hoạt cảnh báo rời trang
+  useUnsavedWarning(isDirty);
+
   useEffect(() => {
     fetchInitialData();
+    // Kiểm tra xem có bản nháp trong localStorage không
+    const savedDraft = localStorage.getItem(draftKey);
+    if (savedDraft) {
+      setHasDraft(true);
+    }
   }, [id]);
+
+  // Tự động lưu bản nháp khi có thay đổi
+  useEffect(() => {
+    if (isDirty) {
+      const draftData = {
+        formData,
+        tierConfig,
+        variants,
+        productAttrs,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(draftKey, JSON.stringify(draftData));
+    }
+  }, [formData, tierConfig, variants, productAttrs, isDirty, draftKey]);
 
   useEffect(() => {
     if (formData.name && !isEdit) {
       setFormData(prev => ({ ...prev, slug: slugify(formData.name) }));
     }
-  }, [formData.name, isEdit]);
+    // Đánh dấu là đã thay đổi dữ liệu
+    if (!fetching) setIsDirty(true);
+  }, [formData.name, isEdit, fetching]);
 
   const fetchInitialData = async () => {
     setFetching(true);
@@ -75,6 +104,8 @@ export default function ProductForm() {
     
     if (isEdit) await fetchProduct();
     setFetching(false);
+    // Reset isDirty sau khi load dữ liệu từ server
+    setTimeout(() => setIsDirty(false), 500);
   };
 
   const fetchProduct = async () => {
@@ -110,7 +141,27 @@ export default function ProductForm() {
     }
   };
 
+  const restoreDraft = () => {
+    const savedDraft = localStorage.getItem(draftKey);
+    if (savedDraft) {
+      const { formData: dForm, tierConfig: dTier, variants: dVar, productAttrs: dAttr } = JSON.parse(savedDraft);
+      setFormData(dForm);
+      setTierConfig(dTier);
+      setVariants(dVar);
+      setProductAttrs(dAttr);
+      setHasDraft(false);
+      setIsDirty(true);
+      toast.success("Đã khôi phục bản nháp thành công!");
+    }
+  };
+
+  const clearDraft = () => {
+    localStorage.removeItem(draftKey);
+    setHasDraft(false);
+  };
+
   const handleAttributeChange = (attrId: string, value: any, isMulti: boolean) => {
+    setIsDirty(true);
     setProductAttrs(prev => {
       const current = prev[attrId] || [];
       if (isMulti) {
@@ -179,6 +230,10 @@ export default function ProductForm() {
         }));
       if (attrPayloads.length > 0) await supabase.from('product_attributes').insert(attrPayloads);
 
+      // Xóa bản nháp sau khi lưu thành công
+      localStorage.removeItem(draftKey);
+      setIsDirty(false);
+      
       toast.success("Đã lưu sản phẩm thành công!");
       navigate("/admin/products");
     } catch (error: any) {
@@ -197,16 +252,39 @@ export default function ProductForm() {
           <Button variant="outline" size="icon" className="rounded-xl" asChild><Link to="/admin/products"><ArrowLeft className="w-4 h-4" /></Link></Button>
           <h1 className="text-2xl font-bold">{isEdit ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}</h1>
         </div>
-        <Button onClick={handleSubmit} disabled={loading} className="btn-hero px-10 rounded-xl shadow-gold">
-          {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Lưu sản phẩm
-        </Button>
+        <div className="flex items-center gap-3">
+          {isDirty && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest animate-pulse mr-2">Đã thay đổi (Chưa lưu)</span>}
+          <Button onClick={handleSubmit} disabled={loading} className="btn-hero px-10 rounded-xl shadow-gold">
+            {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Lưu sản phẩm
+          </Button>
+        </div>
       </div>
+
+      {hasDraft && (
+        <Alert className="mb-8 bg-amber-50 border-amber-200 rounded-2xl shadow-sm animate-fade-in">
+          <AlertCircle className="h-5 w-5 text-amber-600" />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
+            <div>
+              <AlertTitle className="text-amber-800 font-bold">Phát hiện bản nháp chưa hoàn tất!</AlertTitle>
+              <AlertDescription className="text-amber-700 text-xs">
+                Hệ thống tìm thấy dữ liệu bạn đã nhập trước đó nhưng chưa lưu. Bạn có muốn khôi phục lại không?
+              </AlertDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={clearDraft} className="text-amber-800 hover:bg-amber-100 text-[10px] font-bold uppercase">Bỏ qua</Button>
+              <Button size="sm" onClick={restoreDraft} className="bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[10px] font-bold uppercase gap-2">
+                <RotateCcw className="w-3.5 h-3.5" /> Khôi phục ngay
+              </Button>
+            </div>
+          </div>
+        </Alert>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <ProductDetailSection 
             formData={formData} 
-            setFormData={setFormData} 
+            setFormData={(data) => { setFormData(data); setIsDirty(true); }} 
             availableAttributes={allAttributes} 
             productAttrs={productAttrs} 
             handleAttributeChange={handleAttributeChange}
@@ -214,29 +292,29 @@ export default function ProductForm() {
 
           <PricingCategorySection 
             formData={formData} 
-            setFormData={setFormData} 
+            setFormData={(data) => { setFormData(data); setIsDirty(true); }} 
             categories={categories} 
             attributes={allAttributes}
             tierConfig={tierConfig}
-            setTierConfig={setTierConfig}
+            setTierConfig={(config) => { setTierConfig(config); setIsDirty(true); }}
             variants={variants}
-            setVariants={setVariants}
+            setVariants={(v) => { setVariants(v); setIsDirty(true); }}
           />
         </div>
 
         <div className="lg:col-span-1 space-y-8">
-          <ProductStatusSection formData={formData} setFormData={setFormData} />
+          <ProductStatusSection formData={formData} setFormData={(data) => { setFormData(data); setIsDirty(true); }} />
         </div>
       </div>
 
       <div className="space-y-8 mt-8">
-        <ProductMediaSection formData={formData} setFormData={setFormData} />
+        <ProductMediaSection formData={formData} setFormData={(data) => { setFormData(data); setIsDirty(true); }} />
         
         <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
           <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
             <Box className="w-4 h-4" /> Gợi ý phối đồ
           </h3>
-          <CrossSellSection formData={formData} setFormData={setFormData} allProducts={allProducts} />
+          <CrossSellSection formData={formData} setFormData={(data) => { setFormData(data); setIsDirty(true); }} allProducts={allProducts} />
         </div>
       </div>
     </div>
