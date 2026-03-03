@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/comp
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { supabase } from "@/integrations/supabase/client";
-import { cn, formatPrice, generateProductAltText } from "@/lib/utils";
+import { cn, formatPrice, generateProductAltText, wrapWordsInSpans } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { StarRating } from "@/components/product/detail/ProductReviews";
@@ -107,6 +107,11 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
 
   const displayPrice = activeVariant ? activeVariant.price : product?.price;
   const displayOriginalPrice = activeVariant ? activeVariant.original_price : product?.original_price;
+
+  const processedDescription = useMemo(() => {
+    if (!product?.description) return "";
+    return wrapWordsInSpans(sanitizeHtml(product.description));
+  }, [product?.description]);
 
   if (!product) return null;
 
@@ -259,7 +264,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                           {isDescriptionOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </CollapsibleTrigger>
                         <CollapsibleContent className="animate-accordion-down relative">
-                          <div className="vn-content-view text-sm text-muted-foreground pb-8" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }} />
+                          <div className="vn-content-view text-sm text-muted-foreground pb-8 w-full overflow-hidden" dangerouslySetInnerHTML={{ __html: processedDescription }} />
                           {isDescriptionOpen && (
                             <div className="flex justify-center pt-4 border-t border-dashed border-border/40">
                               <Button variant="ghost" size="sm" onClick={() => setIsDescriptionOpen(false)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 gap-2">
