@@ -90,8 +90,7 @@ export default function ProductForm() {
     if (formData.name && !isEdit && !isRestoring.current) {
       setFormData(prev => ({ ...prev, slug: slugify(formData.name) }));
     }
-    if (!fetching && !isRestoring.current) setIsDirty(true);
-  }, [formData.name, isEdit, fetching]);
+  }, [formData.name, isEdit]);
 
   const fetchInitialData = async () => {
     setFetching(true);
@@ -109,9 +108,7 @@ export default function ProductForm() {
     setFetching(false);
     
     // Reset isDirty sau khi load dữ liệu từ server để không tự lưu bản nháp ngay lập tức
-    setTimeout(() => {
-      setIsDirty(false);
-    }, 1000);
+    setIsDirty(false);
   };
 
   const fetchProduct = async () => {
