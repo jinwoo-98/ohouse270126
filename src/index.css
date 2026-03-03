@@ -100,6 +100,17 @@
   .vn-content-view-invert h1, .vn-content-view-invert h2, .vn-content-view-invert h3 {
     @apply text-white;
   }
+
+  /* Sửa lỗi căn lề cho nội dung từ trình soạn thảo */
+  .vn-content-view .ql-align-center {
+    text-align: center;
+  }
+  .vn-content-view .ql-align-right {
+    text-align: right;
+  }
+  .vn-content-view .ql-align-justify {
+    text-align: justify;
+  }
 }
 
 /* Custom Phone Input Styling */

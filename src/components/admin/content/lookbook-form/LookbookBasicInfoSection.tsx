@@ -1,4 +1,4 @@
-import { Sparkles, Eye, Copy, AlertTriangle } from "lucide-react";
+import { Sparkles, Eye, Copy, AlertTriangle, Loader2, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
@@ -7,18 +7,20 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+type SlugStatus = 'idle' | 'checking' | 'available' | 'taken';
+
 interface LookbookBasicInfoSectionProps {
   formData: any;
   setFormData: (data: any) => void;
   categories: any[];
-  isSlugDuplicate?: boolean;
+  slugStatus: SlugStatus;
 }
 
 export function LookbookBasicInfoSection({ 
   formData, 
   setFormData, 
   categories,
-  isSlugDuplicate
+  slugStatus
 }: LookbookBasicInfoSectionProps) {
   const parentCategories = categories.filter(c => !c.parent_id && c.menu_location === 'main');
 
@@ -26,6 +28,19 @@ export function LookbookBasicInfoSection({
     if (!formData.slug) return;
     navigator.clipboard.writeText(formData.slug);
     toast.success("Đã sao chép đường dẫn!");
+  };
+
+  const renderSlugStatus = () => {
+    switch (slugStatus) {
+      case 'checking':
+        return <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Loader2 className="w-3 h-3 animate-spin" /> Đang kiểm tra...</div>;
+      case 'available':
+        return <div className="flex items-center gap-1.5 text-xs text-green-600"><CheckCircle2 className="w-3.5 h-3.5" /> Có thể sử dụng</div>;
+      case 'taken':
+        return <div className="flex items-center gap-1.5 text-xs text-destructive"><AlertTriangle className="w-3.5 h-3.5" /> Đường dẫn đã tồn tại</div>;
+      default:
+        return <p className="text-xs text-muted-foreground">Sẽ được tạo tự động từ tên.</p>;
+    }
   };
 
   return (
@@ -38,25 +53,19 @@ export function LookbookBasicInfoSection({
       </div>
       
       <div className="space-y-2">
-        <Label className={cn(isSlugDuplicate && "text-destructive")}>
-          Đường dẫn (Slug) {isSlugDuplicate && "- ĐÃ TỒN TẠI"}
-        </Label>
+        <Label>Đường dẫn (Slug)</Label>
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Input 
               value={formData.slug} 
-              readOnly
+              onChange={(e) => setFormData({...formData, slug: e.target.value})}
               placeholder="Tự động tạo từ tên..." 
               className={cn(
-                "h-11 rounded-xl font-mono text-xs transition-all bg-secondary/30 cursor-not-allowed",
-                isSlugDuplicate ? "border-destructive ring-1 ring-destructive bg-destructive/5" : ""
+                "h-11 rounded-xl font-mono text-xs transition-all bg-secondary/30",
+                slugStatus === 'taken' && "border-destructive ring-1 ring-destructive bg-destructive/5",
+                slugStatus === 'available' && "border-green-500 ring-1 ring-green-500/50 bg-green-50"
               )}
             />
-            {isSlugDuplicate && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
-                <AlertTriangle className="w-4 h-4" />
-              </div>
-            )}
           </div>
           <Button 
             type="button" 
@@ -69,6 +78,7 @@ export function LookbookBasicInfoSection({
             <Copy className="w-4 h-4" />
           </Button>
         </div>
+        <div className="h-4 mt-1.5 px-1">{renderSlugStatus()}</div>
       </div>
 
       <div className="space-y-2">

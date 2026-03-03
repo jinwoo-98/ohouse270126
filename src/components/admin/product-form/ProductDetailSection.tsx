@@ -1,4 +1,4 @@
-import { Info, ListFilter, ChevronDown, Check, Copy } from "lucide-react";
+import { Info, ListFilter, ChevronDown, Check, Copy, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+
+type SlugStatus = 'idle' | 'checking' | 'available' | 'taken';
 
 interface ProductDetailSectionProps {
   formData: any;
@@ -14,6 +18,7 @@ interface ProductDetailSectionProps {
   availableAttributes: any[];
   productAttrs: Record<string, any>;
   handleAttributeChange: (attrId: string, value: any, isMulti: boolean) => void;
+  slugStatus: SlugStatus;
 }
 
 export function ProductDetailSection({ 
@@ -21,7 +26,8 @@ export function ProductDetailSection({
   setFormData, 
   availableAttributes, 
   productAttrs, 
-  handleAttributeChange 
+  handleAttributeChange,
+  slugStatus
 }: ProductDetailSectionProps) {
   
   const handleCopySlug = () => {
@@ -30,10 +36,23 @@ export function ProductDetailSection({
     toast.success("Đã sao chép đường dẫn!");
   };
 
+  const renderSlugStatus = () => {
+    switch (slugStatus) {
+      case 'checking':
+        return <div className="flex items-center gap-1.5 text-xs text-muted-foreground"><Loader2 className="w-3 h-3 animate-spin" /> Đang kiểm tra...</div>;
+      case 'available':
+        return <div className="flex items-center gap-1.5 text-xs text-green-600"><CheckCircle2 className="w-3.5 h-3.5" /> Có thể sử dụng</div>;
+      case 'taken':
+        return <div className="flex items-center gap-1.5 text-xs text-destructive"><AlertTriangle className="w-3.5 h-3.5" /> Đường dẫn đã tồn tại</div>;
+      default:
+        return <p className="text-xs text-muted-foreground">Sẽ được tạo tự động từ tên sản phẩm.</p>;
+    }
+  };
+
   return (
     <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-8">
       <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-        <Info className="w-4 h-4" /> Thông tin & Thuộc tính
+        <Info className="w-4 h-4" /> Thông tin & Mô tả
       </h3>
       
       <div className="grid gap-6">
@@ -54,12 +73,36 @@ export function ProductDetailSection({
               value={formData.slug} 
               onChange={(e) => setFormData({...formData, slug: e.target.value})}
               placeholder="sofa-da-y-cao-cap"
-              className="h-11 rounded-xl font-mono text-xs bg-secondary/30"
+              className={cn(
+                "h-11 rounded-xl font-mono text-xs bg-secondary/30",
+                slugStatus === 'taken' && "border-destructive focus-visible:ring-destructive/50",
+                slugStatus === 'available' && "border-green-500 focus-visible:ring-green-500/50"
+              )}
             />
             <Button type="button" variant="outline" size="icon" onClick={handleCopySlug} className="h-11 w-11 rounded-xl shrink-0">
               <Copy className="w-4 h-4" />
             </Button>
           </div>
+          <div className="h-4 mt-1.5 px-1">{renderSlugStatus()}</div>
+        </div>
+        
+        <div className="space-y-2">
+          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả ngắn</Label>
+          <Textarea 
+            value={formData.short_description} 
+            onChange={(e) => setFormData({...formData, short_description: e.target.value})}
+            placeholder="Tóm tắt ngắn gọn, hấp dẫn hiển thị ở đầu trang..."
+            className="rounded-xl min-h-[100px]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả chi tiết sản phẩm</Label>
+          <RichTextEditor 
+            value={formData.description} 
+            onChange={(content) => setFormData({ ...formData, description: content })}
+            contextTitle={formData.name}
+          />
         </div>
       </div>
 
@@ -77,6 +120,7 @@ export function ProductDetailSection({
               <Popover key={attr.id}>
                 <PopoverTrigger asChild>
                   <Button 
+                    type="button"
                     variant="outline" 
                     className={cn(
                       "h-10 px-4 rounded-xl text-xs font-bold gap-2 transition-all",

@@ -1,11 +1,10 @@
-"use client";
-
 import { useState } from "react";
 import { Upload, X, Loader2, Files } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import imageCompression from "browser-image-compression";
+import { slugify } from "@/lib/utils";
 
 interface ImageUploadProps {
   value?: string | string[];
@@ -16,9 +15,8 @@ interface ImageUploadProps {
   aspectRatio?: "aspect-video" | "aspect-square" | "aspect-[2/1]" | "aspect-[4/3]";
 }
 
-// Allowed image MIME types for security
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // Tăng giới hạn file gốc lên 5MB vì chúng ta sẽ nén nó
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export function ImageUpload({ 
   value, 
@@ -31,29 +29,26 @@ export function ImageUpload({
   const [isUploading, setIsUploading] = useState(false);
 
   const processAndUploadFile = async (file: File): Promise<string> => {
-    // 1. Cấu hình nén và chuyển đổi sang WebP
     const options = {
-      maxSizeMB: 1,            // Dung lượng tối đa sau nén (~1MB)
-      maxWidthOrHeight: 1920,  // Kích thước tối đa (Full HD)
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
       useWebWorker: true,
-      fileType: "image/webp",  // Ép kiểu sang WebP
-      initialQuality: 0.8      // Chất lượng 80%
+      fileType: "image/webp",
+      initialQuality: 0.8
     };
 
     try {
-      // 2. Thực hiện nén và chuyển đổi
       const compressedFile = await imageCompression(file, options);
       
-      // 3. Tạo tên file mới với đuôi .webp
-      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.webp`;
+      const originalName = file.name.substring(0, file.name.lastIndexOf('.'));
+      const fileName = `${slugify(originalName)}.webp`;
       const filePath = `${fileName}`;
 
-      // 4. Tải tệp đã xử lý lên Supabase
       const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(filePath, compressedFile, {
           contentType: "image/webp",
-          upsert: false
+          upsert: true // Cho phép ghi đè
         });
 
       if (uploadError) throw uploadError;
@@ -74,7 +69,6 @@ export function ImageUpload({
       const files = Array.from(e.target.files || []);
       if (files.length === 0) return;
 
-      // Kiểm tra định dạng file gốc
       for (const file of files) {
         if (!ALLOWED_TYPES.includes(file.type)) {
           toast.error(`Định dạng tệp "${file.name}" không được hỗ trợ.`);

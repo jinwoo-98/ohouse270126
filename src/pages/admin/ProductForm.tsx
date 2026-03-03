@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Save, Loader2, Box, RotateCcw, AlertCircle } from "lucide-react";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { slugify } from "@/lib/utils";
 import { useUnsavedWarning } from "@/hooks/useUnsavedWarning";
+import { useDebounce } from "use-debounce";
 
 // Import các section
 import { ProductDetailSection } from "@/components/admin/product-form/ProductDetailSection";
@@ -14,6 +15,8 @@ import { ProductStatusSection } from "@/components/admin/product-form/ProductSta
 import { ProductMediaSection } from "@/components/admin/product-form/ProductMediaSection";
 import { CrossSellSection } from "@/components/admin/product-form/CrossSellSection";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+type SlugStatus = 'idle' | 'checking' | 'available' | 'taken';
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -33,8 +36,8 @@ export default function ProductForm() {
   const [isDirty, setIsDirty] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   
-  // Cờ để kiểm soát việc tự động lưu, tránh ghi đè khi đang khôi phục
   const isRestoring = useRef(false);
+  const [slugStatus, setSlugStatus] = useState<SlugStatus>('idle');
 
   const [formData, setFormData] = useState({
     name: "",
@@ -59,21 +62,19 @@ export default function ProductForm() {
     bought_together_ids: [] as string[]
   });
 
-  // Kích hoạt cảnh báo rời trang
+  const [debouncedSlug] = useDebounce(formData.slug, 500);
+
   useUnsavedWarning(isDirty);
 
   useEffect(() => {
     fetchInitialData();
-    // Kiểm tra xem có bản nháp trong localStorage không
     const savedDraft = localStorage.getItem(draftKey);
     if (savedDraft) {
       setHasDraft(true);
     }
   }, [id]);
 
-  // Tự động lưu bản nháp khi có thay đổi
   useEffect(() => {
-    // Chỉ lưu nếu dữ liệu đã bị thay đổi và KHÔNG phải đang trong quá trình khôi phục hoặc đang tải dữ liệu gốc
     if (isDirty && !isRestoring.current && !fetching) {
       const draftData = {
         formData,
@@ -87,10 +88,36 @@ export default function ProductForm() {
   }, [formData, tierConfig, variants, productAttrs, isDirty, draftKey, fetching]);
 
   useEffect(() => {
-    if (formData.name && !isEdit && !isRestoring.current) {
-      setFormData(prev => ({ ...prev, slug: slugify(formData.name) }));
+    if (formData.name && !isRestoring.current) {
+      const newSlug = slugify(formData.name);
+      if (newSlug !== formData.slug) {
+        setFormData(prev => ({ ...prev, slug: newSlug }));
+        setSlugStatus('idle');
+      }
     }
-  }, [formData.name, isEdit]);
+  }, [formData.name]);
+
+  useEffect(() => {
+    const checkSlug = async () => {
+      if (!debouncedSlug) {
+        setSlugStatus('idle');
+        return;
+      }
+      setSlugStatus('checking');
+      
+      const query = supabase.from('products').select('id').eq('slug', debouncedSlug);
+      if (isEdit) query.neq('id', id);
+      
+      const { data, error } = await query.limit(1);
+
+      if (error) {
+        setSlugStatus('idle');
+        return;
+      }
+      setSlugStatus(data.length > 0 ? 'taken' : 'available');
+    };
+    checkSlug();
+  }, [debouncedSlug, id, isEdit]);
 
   const fetchInitialData = async () => {
     setFetching(true);
@@ -106,8 +133,6 @@ export default function ProductForm() {
     
     if (isEdit) await fetchProduct();
     setFetching(false);
-    
-    // Reset isDirty sau khi load dữ liệu từ server để không tự lưu bản nháp ngay lập tức
     setIsDirty(false);
   };
 
@@ -147,24 +172,16 @@ export default function ProductForm() {
   const restoreDraft = () => {
     const savedDraft = localStorage.getItem(draftKey);
     if (savedDraft) {
-      isRestoring.current = true; // Bật cờ khôi phục để chặn auto-save ghi đè
-      
+      isRestoring.current = true;
       const { formData: dForm, tierConfig: dTier, variants: dVar, productAttrs: dAttr } = JSON.parse(savedDraft);
-      
       setFormData(dForm);
       setTierConfig(dTier);
       setVariants(dVar);
       setProductAttrs(dAttr);
-      
       setHasDraft(false);
       setIsDirty(true);
-      
       toast.success("Đã khôi phục bản nháp thành công!");
-      
-      // Tắt cờ khôi phục sau khi các state đã cập nhật xong hoàn toàn
-      setTimeout(() => {
-        isRestoring.current = false;
-      }, 1500);
+      setTimeout(() => { isRestoring.current = false; }, 1500);
     }
   };
 
@@ -188,6 +205,10 @@ export default function ProductForm() {
   const handleSubmit = async () => {
     if (!formData.name || !formData.category_id) {
       toast.error("Vui lòng nhập Tên và chọn Danh mục.");
+      return;
+    }
+    if (slugStatus === 'taken') {
+      toast.error("Đường dẫn (slug) đã tồn tại. Vui lòng chọn tên khác.");
       return;
     }
 
@@ -229,7 +250,7 @@ export default function ProductForm() {
           tier_values: v.tier_values,
           price: parseFloat(v.price),
           original_price: v.original_price ? parseFloat(v.original_price) : null,
-          stock: 999, // Luôn để số lượng lớn cho hàng đặt
+          stock: 999,
           sku: v.sku
         })));
       }
@@ -244,7 +265,6 @@ export default function ProductForm() {
         }));
       if (attrPayloads.length > 0) await supabase.from('product_attributes').insert(attrPayloads);
 
-      // Xóa bản nháp sau khi lưu thành công
       localStorage.removeItem(draftKey);
       setIsDirty(false);
       
@@ -268,7 +288,7 @@ export default function ProductForm() {
         </div>
         <div className="flex items-center gap-3">
           {isDirty && <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest animate-pulse mr-2">Đã thay đổi (Chưa lưu)</span>}
-          <Button onClick={handleSubmit} disabled={loading} className="btn-hero px-10 rounded-xl shadow-gold">
+          <Button onClick={handleSubmit} disabled={loading || slugStatus === 'taken' || slugStatus === 'checking'} className="btn-hero px-10 rounded-xl shadow-gold">
             {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} Lưu sản phẩm
           </Button>
         </div>
@@ -302,6 +322,7 @@ export default function ProductForm() {
             availableAttributes={allAttributes} 
             productAttrs={productAttrs} 
             handleAttributeChange={handleAttributeChange}
+            slugStatus={slugStatus}
           />
 
           <PricingCategorySection 
