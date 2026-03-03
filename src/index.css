@@ -84,7 +84,7 @@
   .vn-content-view strong,
   .vn-content-view em {
     word-break: normal !important;
-    overflow-wrap: anywhere !important;
+    overflow-wrap: break-word !important;
     hyphens: none !important;
     -webkit-hyphens: none !important;
     -ms-hyphens: none !important;
