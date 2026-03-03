@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -95,6 +95,7 @@ export default function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [fetchingProfile, setFetchingProfile] = useState(true);
+  const hasFetched = useRef(false);
 
   const fetchProfile = async () => {
     if (!user) {
@@ -103,7 +104,11 @@ export default function AdminLayout() {
       return;
     }
 
-    setFetchingProfile(true);
+    // Chỉ hiện loader nếu chưa từng lấy dữ liệu thành công
+    if (!hasFetched.current) {
+      setFetchingProfile(true);
+    }
+
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -112,7 +117,10 @@ export default function AdminLayout() {
         .single();
       
       if (error && error.code !== 'PGRST116') throw error;
-      setUserProfile(data || { role: 'user' });
+      
+      const profileData = data || { role: 'user' };
+      setUserProfile(profileData);
+      hasFetched.current = true;
     } catch (err) {
       console.error("Unexpected error:", err);
       setUserProfile({ role: 'user' });
@@ -121,9 +129,12 @@ export default function AdminLayout() {
     }
   };
 
+  // Sử dụng user?.id để tránh re-fetch khi object user thay đổi nhưng ID vẫn vậy
   useEffect(() => {
-    if (!authLoading) fetchProfile();
-  }, [user, authLoading]);
+    if (!authLoading) {
+      fetchProfile();
+    }
+  }, [user?.id, authLoading]);
 
   useEffect(() => {
     if (!fetchingProfile && userProfile?.role === 'editor') {
@@ -137,6 +148,7 @@ export default function AdminLayout() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUserProfile(null);
+    hasFetched.current = false;
     navigate("/admin");
   };
 
@@ -162,7 +174,8 @@ export default function AdminLayout() {
     );
   }
 
-  if (fetchingProfile) {
+  // Chỉ hiển thị loader toàn trang khi chưa có dữ liệu profile
+  if (fetchingProfile && !userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
