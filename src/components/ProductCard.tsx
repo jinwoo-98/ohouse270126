@@ -21,17 +21,15 @@ export function ProductCard({ product, className }: ProductCardProps) {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   
-  const [activeImage, setActiveImage] = useState(product.image_url || '/placeholder.svg');
+  const originalImage = product.image_url || '/placeholder.svg';
+  const [imgSrc, setImgSrc] = useState(getOptimizedImageUrl(originalImage, { width: 400 }));
+  const [imgSrcSet, setImgSrcSet] = useState(generateImageSrcSet(originalImage, [300, 400, 600]));
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
   
   const isFavorite = isInWishlist(product.id);
   const smartAlt = generateProductAltText(product);
 
-  // --- Responsive Image Optimization ---
-  const imageWidths = [300, 400, 600];
   const imageSizes = "(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw";
-  const srcSet = generateImageSrcSet(activeImage, imageWidths);
-  // --- End Optimization ---
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -42,6 +40,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
     } else {
       navigate(`/san-pham/${targetSlug}`);
     }
+  };
+
+  // Hàm xử lý khi ảnh tối ưu bị lỗi (do chưa bật Pro plan)
+  const handleImageError = () => {
+    setImgSrc(originalImage); // Quay lại ảnh gốc
+    setImgSrcSet(""); // Xóa srcset để trình duyệt không cố tải ảnh lỗi
   };
 
   return (
@@ -58,9 +62,9 @@ export function ProductCard({ product, className }: ProductCardProps) {
           <div className="block h-full w-full">
             <AnimatePresence mode="wait">
               <motion.img 
-                key={activeImage}
-                src={getOptimizedImageUrl(activeImage, { width: 400 })} 
-                srcSet={srcSet}
+                key={imgSrc}
+                src={imgSrc} 
+                srcSet={imgSrcSet || undefined}
                 sizes={imageSizes}
                 alt={smartAlt} 
                 loading="lazy"
@@ -69,9 +73,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = activeImage; // Quay lại ảnh gốc nếu lỗi tối ưu
-                }}
+                onError={handleImageError}
               />
             </AnimatePresence>
           </div>

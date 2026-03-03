@@ -19,14 +19,14 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   
+  const originalImage = product.image_url || '/placeholder.svg';
+  const [imgSrc, setImgSrc] = useState(getOptimizedImageUrl(originalImage, { width: 400 }));
+  const [imgSrcSet, setImgSrcSet] = useState(generateImageSrcSet(originalImage, [300, 400, 600]));
+  
   const isFavorite = isInWishlist(product.id);
   const smartAlt = generateProductAltText(product);
 
-  // --- Responsive Image Optimization ---
-  const imageWidths = [300, 400, 600];
   const imageSizes = "(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw";
-  const srcSet = generateImageSrcSet(product.image_url, imageWidths);
-  // --- End Optimization ---
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,6 +39,11 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
     }
   };
 
+  const handleImageError = () => {
+    setImgSrc(originalImage);
+    setImgSrcSet("");
+  };
+
   return (
     <div 
       className="group flex flex-col bg-card rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-medium h-full border border-border/40 cursor-pointer"
@@ -46,11 +51,12 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
     >
       <Link to={`/san-pham/${product.slug || product.id}`} onClick={(e) => isMobile && e.preventDefault()} className="relative aspect-square overflow-hidden bg-secondary/15 shrink-0 rounded-t-2xl">
         <img 
-          src={getOptimizedImageUrl(product.image_url, { width: 400 })} 
-          srcSet={srcSet}
+          src={imgSrc} 
+          srcSet={imgSrcSet || undefined}
           sizes={imageSizes}
           alt={smartAlt} 
           className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+          onError={handleImageError}
         />
 
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">

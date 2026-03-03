@@ -65,13 +65,16 @@ export function generateProductAltText(product: any, index: number = 0) {
 
 /**
  * Generates an optimized image URL using Supabase Image Transformation.
+ * Note: This requires Supabase Pro plan. Fallbacks to original URL if not available.
  */
 export function getOptimizedImageUrl(url: string | null | undefined, options: { width: number; height?: number; quality?: number; format?: 'webp' }) {
   if (!url) return '/placeholder.svg';
-  if (!url.includes('supabase.co')) return url;
-  if (!url.includes('/object/public/')) return url;
+  
+  // Nếu không phải ảnh từ Supabase hoặc không nằm trong bucket public, trả về URL gốc
+  if (!url.includes('supabase.co') || !url.includes('/object/public/')) return url;
 
   try {
+    // Chuyển đổi sang endpoint render để tối ưu dung lượng
     const transformedUrl = url.replace('/object/public/', '/render/image/public/');
     const params = new URLSearchParams();
     params.append('width', String(options.width));
@@ -86,10 +89,10 @@ export function getOptimizedImageUrl(url: string | null | undefined, options: { 
 }
 
 /**
- * Generates a `srcSet` string for responsive images using Supabase Image Transformation.
+ * Generates a `srcSet` string for responsive images.
  */
-export function generateImageSrcSet(url: string, widths: number[]): string {
-  if (!url || !url.includes('supabase.co')) {
+export function generateImageSrcSet(url: string | null | undefined, widths: number[]): string {
+  if (!url || !url.includes('supabase.co') || !url.includes('/object/public/')) {
     return '';
   }
   return widths
@@ -111,8 +114,6 @@ export function sanitizeUrl(url: string | null | undefined): string {
 
 /**
  * GIẢI PHÁP CUỐI CÙNG: Bọc mỗi từ trong một thẻ span để trình duyệt không thể ngắt đôi từ.
- * @param htmlString Chuỗi HTML đầu vào.
- * @returns Chuỗi HTML với mỗi từ đã được bọc trong thẻ span.
  */
 export function wrapWordsInSpans(htmlString: string): string {
   if (typeof DOMParser === 'undefined' || !htmlString) return htmlString;
@@ -125,7 +126,6 @@ export function wrapWordsInSpans(htmlString: string): string {
       const textContent = node.textContent || '';
       if (textContent.trim().length > 0) {
         const fragment = doc.createDocumentFragment();
-        // Tách theo khoảng trắng nhưng giữ lại khoảng trắng trong mảng
         const parts = textContent.split(/(\s+)/); 
         
         parts.forEach(part => {
@@ -135,7 +135,6 @@ export function wrapWordsInSpans(htmlString: string): string {
             span.textContent = part;
             fragment.appendChild(span);
           } else {
-            // Giữ nguyên các khoảng trắng
             fragment.appendChild(doc.createTextNode(part));
           }
         });
