@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Textarea } from "@/components/ui/textarea";
-import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
 type SlugStatus = 'idle' | 'checking' | 'available' | 'taken';
 
@@ -52,7 +50,7 @@ export function ProductDetailSection({
   return (
     <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-8">
       <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-        <Info className="w-4 h-4" /> Thông tin & Mô tả
+        <Info className="w-4 h-4" /> Thông tin
       </h3>
       
       <div className="grid gap-6">
@@ -84,25 +82,6 @@ export function ProductDetailSection({
             </Button>
           </div>
           <div className="h-4 mt-1.5 px-1">{renderSlugStatus()}</div>
-        </div>
-        
-        <div className="space-y-2">
-          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả ngắn</Label>
-          <Textarea 
-            value={formData.short_description} 
-            onChange={(e) => setFormData({...formData, short_description: e.target.value})}
-            placeholder="Tóm tắt ngắn gọn, hấp dẫn hiển thị ở đầu trang..."
-            className="rounded-xl min-h-[100px]"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Mô tả chi tiết sản phẩm</Label>
-          <RichTextEditor 
-            value={formData.description} 
-            onChange={(content) => setFormData({ ...formData, description: content })}
-            contextTitle={formData.name}
-          />
         </div>
       </div>
 
