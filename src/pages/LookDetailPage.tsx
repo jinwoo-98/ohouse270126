@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Loader2, ChevronRight, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ChevronRight, AlertTriangle, ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -19,6 +19,7 @@ import { LookProductVerticalList } from "@/components/inspiration/LookProductFul
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export default function LookDetailPage() {
   const { id } = useParams();
@@ -29,7 +30,7 @@ export default function LookDetailPage() {
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [currentImage, setCurrentImage] = useState<string>("");
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isDescOpen, setIsDescOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -173,33 +174,22 @@ export default function LookDetailPage() {
               {/* Cột Trái: Mô tả & Gallery */}
               <div className="lg:col-span-2 min-w-0 w-full space-y-8">
                 {look.description && (
-                  <div className="w-full">
-                    <div className="relative max-w-[740px]">
-                      <div 
-                        className={cn(
-                          "vn-content-view text-muted-foreground transition-all duration-500 max-w-none overflow-hidden",
-                          !isExpanded ? "max-h-[82px]" : "max-h-none"
-                        )}
-                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
-                      />
-                      
-                      {!isExpanded && (
-                        <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none" />
-                      )}
-                    </div>
-                    
-                    <div className="mt-3 flex justify-start">
-                      <button
-                        onClick={() => setIsExpanded(!isExpanded)}
-                        className="text-primary font-bold text-[10px] uppercase tracking-widest flex items-center gap-1.5 hover:text-primary/80 transition-colors py-1.5 px-3 bg-secondary/50 rounded-lg shadow-sm border border-border/40"
-                      >
-                        {isExpanded ? (
-                          <>Thu gọn <ChevronUp className="w-3.5 h-3.5" /></>
-                        ) : (
-                          <>Xem thêm nội dung <ChevronDown className="w-3.5 h-3.5" /></>
-                        )}
-                      </button>
-                    </div>
+                  <div className="w-full max-w-[740px]">
+                    <Collapsible open={isDescOpen} onOpenChange={setIsDescOpen} className="border-b border-border/50 pb-4">
+                      <CollapsibleTrigger className="flex items-center justify-between w-full group py-2 text-left">
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-4 h-4 text-primary" />
+                          <span className="text-[11px] font-bold uppercase tracking-widest text-charcoal">Mô tả không gian</span>
+                        </div>
+                        {isDescOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="pt-4 animate-accordion-down">
+                        <div 
+                          className="vn-content-view text-sm text-muted-foreground leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
+                        />
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                 )}
                 
