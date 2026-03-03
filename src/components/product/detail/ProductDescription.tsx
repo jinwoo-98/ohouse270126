@@ -17,26 +17,8 @@ export function ProductDescription({ description, product }: ProductDescriptionP
   // Logic xử lý Alt ảnh tự động cho nội dung bài viết và sanitize HTML
   const processedContent = useMemo(() => {
     if (!description) return "";
-
-    // 1. Sanitize content first
-    let sanitized = sanitizeHtml(description);
-
-    // 2. LỌC SẠCH KÝ TỰ ẨN (Zero-width spaces, soft hyphens...)
-    // Những ký tự này thường gây ra lỗi ngắt dòng sai quy tắc
-    sanitized = sanitized.replace(/[\u200B-\u200D\uFEFF]/g, '');
-
-    // 3. Process images for SEO
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(sanitized, 'text/html');
-    const images = doc.querySelectorAll('img');
-
-    images.forEach((img, index) => {
-      const newAlt = generateProductAltText(product, index);
-      img.setAttribute('alt', newAlt);
-    });
-
-    return doc.body.innerHTML;
-  }, [description, product]);
+    return sanitizeHtml(description);
+  }, [description]);
 
   return (
     <section className="mb-20 scroll-mt-28" id="description">
@@ -53,11 +35,11 @@ export function ProductDescription({ description, product }: ProductDescriptionP
       
       <div className="relative max-w-[800px] mx-auto w-full">
         <div className={cn(
-          "transition-[max-height] duration-700 ease-in-out", // Chỉ transition max-height, tránh transition-all gây lỗi tính toán dòng
+          "transition-[max-height] duration-700 ease-in-out", 
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
           <div 
-            className="vn-content-view text-sm md:text-base text-muted-foreground"
+            className="vn-content-view text-sm md:text-base text-muted-foreground whitespace-pre-wrap"
             dangerouslySetInnerHTML={{ __html: processedContent || "<p class='italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>

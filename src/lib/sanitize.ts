@@ -8,11 +8,8 @@ export const sanitizeHtml = (html: string | null | undefined): string => {
   if (!html) return "";
   
   // 1. LỌC SẠCH KÝ TỰ ẨN VÀ KÝ TỰ ĐẶC BIỆT GÂY LỖI NGẮT DÒNG
-  // \u200B-\u200D: Zero-width spaces/joiners
-  // \uFEFF: BOM
-  // \u00AD: Soft hyphen (thủ phạm chính gây ngắt đôi từ)
-  // \u2028-\u2029: Line/Paragraph separators
-  let cleanHtml = html.replace(/[\u200B-\u200D\uFEFF\u00AD\u2028\u2029]/g, '');
+  // Bao gồm: Zero-width spaces, Soft hyphen, Line/Paragraph separators, Word Joiner (\u2060)
+  let cleanHtml = html.replace(/[\u200B-\u200D\uFEFF\u00AD\u2028\u2029\u2060-\u206F]/g, '');
   
   // Thay thế non-breaking space (&nbsp;) thành space thường để trình duyệt ngắt dòng đúng quy tắc
   cleanHtml = cleanHtml.replace(/\u00A0/g, ' ');
