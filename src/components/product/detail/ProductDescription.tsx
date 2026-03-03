@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn, generateProductAltText } from "@/lib/utils";
+import { cn, formatVietnameseText } from "@/lib/utils";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 interface ProductDescriptionProps {
@@ -14,10 +14,11 @@ interface ProductDescriptionProps {
 export function ProductDescription({ description, product }: ProductDescriptionProps) {
   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
-  // Logic xử lý Alt ảnh tự động cho nội dung bài viết và sanitize HTML
   const processedContent = useMemo(() => {
     if (!description) return "";
-    return sanitizeHtml(description);
+    const sanitized = sanitizeHtml(description);
+    // Áp dụng giải pháp chèn ký tự ẩn để chống ngắt từ triệt để
+    return formatVietnameseText(sanitized);
   }, [description]);
 
   return (
@@ -39,7 +40,7 @@ export function ProductDescription({ description, product }: ProductDescriptionP
           !isDescExpanded ? "max-h-[500px] overflow-hidden" : "max-h-none"
         )}>
           <div 
-            className="vn-content-view text-sm md:text-base text-muted-foreground whitespace-pre-wrap"
+            className="vn-content-view text-sm md:text-base text-muted-foreground"
             dangerouslySetInnerHTML={{ __html: processedContent || "<p class='italic'>Thông tin mô tả đang được cập nhật...</p>" }} 
           />
         </div>

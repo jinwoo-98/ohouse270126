@@ -68,32 +68,17 @@
 @layer utilities {
   /* 
      GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT:
-     Sử dụng pre-wrap và text-wrap: pretty để trình duyệt ngắt dòng thông minh, không ngắt đôi từ.
+     Lỗi ngắt từ được xử lý bằng Javascript, chỉ giữ lại CSS cơ bản để đảm bảo hiển thị đẹp.
   */
   .vn-content-view {
-    display: block !important;
-    width: 100% !important;
     text-align: left !important;
-    /* Ép quy tắc ngắt dòng chuẩn cho toàn bộ container */
-    white-space: pre-wrap !important;
+    line-height: 1.8;
     word-break: normal !important;
     overflow-wrap: break-word !important;
-    text-wrap: pretty !important;
-  }
-
-  /* Áp dụng cho tất cả các thẻ con bên trong để không bỏ sót bất kỳ văn bản nào */
-  .vn-content-view * {
-    word-break: normal !important;
-    overflow-wrap: break-word !important;
-    word-wrap: break-word !important;
-    hyphens: none !important;
-    -webkit-hyphens: none !important;
-    -ms-hyphens: none !important;
   }
 
   .vn-content-view p { 
-    @apply mb-6 leading-relaxed; 
-    display: block !important;
+    @apply mb-6; 
   }
   
   .vn-content-view h1, .vn-content-view h2, .vn-content-view h3 { 

@@ -65,15 +65,10 @@ export function generateProductAltText(product: any, index: number = 0) {
 
 /**
  * Generates an optimized image URL using Supabase Image Transformation.
- * Fallback to original URL if transformation is not possible.
  */
 export function getOptimizedImageUrl(url: string | null | undefined, options: { width: number; height?: number; quality?: number; format?: 'webp' }) {
   if (!url) return '/placeholder.svg';
-  
-  // Nếu không phải ảnh từ Supabase, trả về URL gốc
   if (!url.includes('supabase.co')) return url;
-
-  // Kiểm tra xem URL có chứa cấu trúc /object/public/ không
   if (!url.includes('/object/public/')) return url;
 
   try {
@@ -86,7 +81,7 @@ export function getOptimizedImageUrl(url: string | null | undefined, options: { 
     
     return `${transformedUrl}?${params.toString()}`;
   } catch (e) {
-    return url; // Trả về URL gốc nếu có lỗi xử lý chuỗi
+    return url;
   }
 }
 
@@ -100,4 +95,38 @@ export function sanitizeUrl(url: string | null | undefined): string {
     return trimmedUrl;
   }
   return "#";
+}
+
+/**
+ * GIẢI PHÁP MẠNH MẼ CHO LỖI NGẮT TỪ TIẾNG VIỆT.
+ * Chèn ký tự Zero-Width Space (&#8203;) vào giữa các ký tự.
+ */
+const insertZeroWidthSpaces = (text: string): string => {
+  return text.split('').join('&#8203;');
+};
+
+/**
+ * Duyệt qua cây DOM của chuỗi HTML và xử lý các nút văn bản để chống ngắt từ.
+ */
+export function formatVietnameseText(htmlString: string): string {
+  if (typeof DOMParser === 'undefined' || !htmlString) return htmlString;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, 'text/html');
+
+  const walk = (node: Node) => {
+    if (node.nodeType === 3) { // Text node
+      const textContent = node.textContent || '';
+      if (textContent.trim().length > 0) {
+        const newNode = doc.createElement('span');
+        newNode.innerHTML = insertZeroWidthSpaces(textContent);
+        node.parentNode?.replaceChild(newNode, node);
+      }
+    } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+      Array.from(node.childNodes).forEach(walk);
+    }
+  };
+
+  walk(doc.body);
+  return doc.body.innerHTML;
 }
