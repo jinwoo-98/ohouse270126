@@ -86,6 +86,18 @@ export function getOptimizedImageUrl(url: string | null | undefined, options: { 
 }
 
 /**
+ * Generates a `srcSet` string for responsive images using Supabase Image Transformation.
+ */
+export function generateImageSrcSet(url: string, widths: number[]): string {
+  if (!url || !url.includes('supabase.co')) {
+    return '';
+  }
+  return widths
+    .map(w => `${getOptimizedImageUrl(url, { width: w, quality: 75, format: 'webp' })} ${w}w`)
+    .join(', ');
+}
+
+/**
  * Sanitizes a URL to prevent XSS attacks.
  */
 export function sanitizeUrl(url: string | null | undefined): string {

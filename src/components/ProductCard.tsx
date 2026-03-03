@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Heart, ShoppingBag, Eye } from "lucide-react";
-import { cn, formatPrice, getOptimizedImageUrl, generateProductAltText } from "@/lib/utils";
+import { cn, formatPrice, getOptimizedImageUrl, generateProductAltText, generateImageSrcSet } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +26,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
   
   const isFavorite = isInWishlist(product.id);
   const smartAlt = generateProductAltText(product);
+
+  // --- Responsive Image Optimization ---
+  const imageWidths = [300, 400, 600];
+  const imageSizes = "(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw";
+  const srcSet = generateImageSrcSet(activeImage, imageWidths);
+  // --- End Optimization ---
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -54,6 +60,8 @@ export function ProductCard({ product, className }: ProductCardProps) {
               <motion.img 
                 key={activeImage}
                 src={getOptimizedImageUrl(activeImage, { width: 400 })} 
+                srcSet={srcSet}
+                sizes={imageSizes}
                 alt={smartAlt} 
                 loading="lazy"
                 initial={{ opacity: 0 }}

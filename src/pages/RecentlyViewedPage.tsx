@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
+import { generateImageSrcSet, getOptimizedImageUrl } from "@/lib/utils";
 
 interface Product {
   id: string | number;
@@ -36,6 +37,9 @@ export default function RecentlyViewedPage() {
   function formatPrice(price: number) {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
   }
+
+  const imageWidths = [300, 400, 600];
+  const imageSizes = "(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw";
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -69,34 +73,36 @@ export default function RecentlyViewedPage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {products.map((product, index) => (
+              {products.map((item, index) => (
                 <motion.div
-                  key={product.id}
+                  key={item.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className="group card-luxury bg-card"
                 >
-                  <Link to={`/san-pham/${product.slug || product.id}`} className="block relative aspect-square overflow-hidden">
+                  <Link to={`/san-pham/${item.slug || item.id}`} className="block relative aspect-square overflow-hidden">
                     <img 
-                      src={product.image} 
-                      alt={product.name} 
+                      src={getOptimizedImageUrl(item.image, { width: 400 })}
+                      srcSet={generateImageSrcSet(item.image, imageWidths)}
+                      sizes={imageSizes}
+                      alt={item.name} 
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                     />
                   </Link>
                   <div className="p-4">
-                    <Link to={`/san-pham/${product.slug || product.id}`}>
+                    <Link to={`/san-pham/${item.slug || item.id}`}>
                       <h3 className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors h-10 mb-2">
-                        {product.name}
+                        {item.name}
                       </h3>
                     </Link>
                     <div className="flex items-center justify-between mt-auto">
-                      <p className="text-primary font-bold">{formatPrice(product.price)}</p>
+                      <p className="text-primary font-bold">{formatPrice(item.price)}</p>
                       <Button 
                         size="icon" 
                         variant="secondary" 
                         className="h-8 w-8 rounded-full"
-                        onClick={() => addToCart({ ...product, quantity: 1 })}
+                        onClick={() => addToCart({ ...item, quantity: 1 })}
                       >
                         <ShoppingBag className="w-4 h-4" />
                       </Button>

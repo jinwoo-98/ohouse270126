@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Heart, ShoppingBag, Eye } from "lucide-react";
-import { cn, formatPrice, generateProductAltText } from "@/lib/utils";
+import { cn, formatPrice, generateProductAltText, getOptimizedImageUrl, generateImageSrcSet } from "@/lib/utils";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +21,12 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
   
   const isFavorite = isInWishlist(product.id);
   const smartAlt = generateProductAltText(product);
+
+  // --- Responsive Image Optimization ---
+  const imageWidths = [300, 400, 600];
+  const imageSizes = "(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw";
+  const srcSet = generateImageSrcSet(product.image_url, imageWidths);
+  // --- End Optimization ---
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -40,7 +46,9 @@ export function ProductCarouselItem({ product, onQuickView }: ProductCarouselIte
     >
       <Link to={`/san-pham/${product.slug || product.id}`} onClick={(e) => isMobile && e.preventDefault()} className="relative aspect-square overflow-hidden bg-secondary/15 shrink-0 rounded-t-2xl">
         <img 
-          src={product.image_url} 
+          src={getOptimizedImageUrl(product.image_url, { width: 400 })} 
+          srcSet={srcSet}
+          sizes={imageSizes}
           alt={smartAlt} 
           className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
         />

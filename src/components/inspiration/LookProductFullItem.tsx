@@ -5,7 +5,7 @@ import { Eye, ShoppingBag, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
-import { formatPrice, cn, getOptimizedImageUrl, generateProductAltText } from "@/lib/utils";
+import { formatPrice, cn, getOptimizedImageUrl, generateProductAltText, generateImageSrcSet } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LookProductFullItemProps {
@@ -19,6 +19,12 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
   const navigate = useNavigate();
   const isFavorite = isInWishlist(product.id);
   const smartAlt = generateProductAltText(product);
+
+  // --- Responsive Image Optimization ---
+  const imageWidths = [300, 400, 600];
+  const imageSizes = "(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw";
+  const srcSet = generateImageSrcSet(product.image_url, imageWidths);
+  // --- End Optimization ---
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,6 +44,8 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
       <div className="relative aspect-square overflow-hidden bg-secondary/30 shrink-0">
         <img 
           src={getOptimizedImageUrl(product.image_url, { width: 400 })} 
+          srcSet={srcSet}
+          sizes={imageSizes}
           alt={smartAlt} 
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
         />
