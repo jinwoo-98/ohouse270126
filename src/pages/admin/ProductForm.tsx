@@ -39,7 +39,7 @@ export default function ProductForm() {
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
-    price: "", // Đã sửa từ "0" thành ""
+    price: "", 
     original_price: "",
     description: "",
     short_description: "",
@@ -229,7 +229,7 @@ export default function ProductForm() {
           tier_values: v.tier_values,
           price: parseFloat(v.price),
           original_price: v.original_price ? parseFloat(v.original_price) : null,
-          stock: parseInt(v.stock),
+          stock: 999, // Luôn để số lượng lớn cho hàng đặt
           sku: v.sku
         })));
       }

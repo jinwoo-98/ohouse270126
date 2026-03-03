@@ -72,9 +72,9 @@ export function PricingCategorySection({
       const existing = variants.find(v => JSON.stringify(v.tier_values) === JSON.stringify(combo));
       return existing || {
         tier_values: combo,
-        price: formData.price || "", // Đã sửa từ "0" thành ""
+        price: formData.price || "",
         original_price: formData.original_price || "",
-        stock: 10,
+        stock: 999, // Mặc định số lượng lớn cho hàng đặt
         sku: ""
       };
     });
@@ -303,9 +303,8 @@ export function PricingCategorySection({
                   <thead className="bg-gray-50 text-muted-foreground font-bold uppercase tracking-wider border-b">
                     <tr>
                       <th className="p-4">Phân loại</th>
-                      <th className="p-4 w-40 text-primary">Giá bán *</th>
-                      <th className="p-4 w-32">Giá gốc</th>
-                      <th className="p-4 w-24 text-center">Kho</th>
+                      <th className="p-4 w-48 text-primary">Giá bán *</th>
+                      <th className="p-4 w-48">Giá gốc</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -318,9 +317,8 @@ export function PricingCategorySection({
                             ))}
                           </div>
                         </td>
-                        <td className="p-4"><Input type="text" value={formatNumberWithDots(v.price)} onChange={e => updateVariantField(idx, 'price', e.target.value)} className="h-8 text-xs font-bold text-primary" /></td>
-                        <td className="p-4"><Input type="text" value={formatNumberWithDots(v.original_price)} onChange={e => updateVariantField(idx, 'original_price', e.target.value)} className="h-8 text-xs" /></td>
-                        <td className="p-4"><Input type="number" value={v.stock} onChange={e => updateVariantField(idx, 'stock', e.target.value)} className="h-8 text-xs text-center" /></td>
+                        <td className="p-4"><Input type="text" value={formatNumberWithDots(v.price)} onChange={e => updateVariantField(idx, 'price', e.target.value)} className="h-10 text-sm font-bold text-primary rounded-lg" /></td>
+                        <td className="p-4"><Input type="text" value={formatNumberWithDots(v.original_price)} onChange={e => updateVariantField(idx, 'original_price', e.target.value)} className="h-10 text-sm rounded-lg" /></td>
                       </tr>
                     ))}
                   </tbody>
