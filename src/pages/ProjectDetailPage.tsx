@@ -110,9 +110,9 @@ export default function ProjectDetailPage() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="rounded-2xl overflow-hidden shadow-elevated mb-12"
+                className="rounded-2xl overflow-hidden shadow-elevated mb-12 aspect-video bg-secondary/20"
               >
-                <img src={getOptimizedImageUrl(project.image_url, { width: 1200 })} alt={project.title} className="w-full h-auto object-cover" />
+                <img src={getOptimizedImageUrl(project.image_url, { width: 1200 })} alt={project.title} className="w-full h-full object-cover" />
               </motion.div>
 
               <motion.div 

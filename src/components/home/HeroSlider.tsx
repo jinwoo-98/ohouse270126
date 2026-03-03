@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { Helmet } from "react-helmet-async";
 
 const swipeConfidenceThreshold = 10000;
 const swipePower = (offset: number, velocity: number) => {
@@ -83,11 +84,22 @@ export function HeroSlider() {
       >
         {slides.map((slide, index) => (
           <div key={slide.id} className="relative h-full w-full flex-shrink-0">
+            {index === 0 && (
+              <Helmet>
+                <link
+                  rel="preload"
+                  as="image"
+                  href={getOptimizedImageUrl(slide.image_url, { width: 1920, quality: 85 })}
+                />
+              </Helmet>
+            )}
             <img
               src={getOptimizedImageUrl(slide.image_url, { width: 1920, quality: 85 })}
               alt={slide.title}
               className="absolute h-full w-full object-cover pointer-events-none"
               draggable="false"
+              loading={index === 0 ? "eager" : "lazy"}
+              fetchPriority={index === 0 ? "high" : "auto"}
             />
             <div className="absolute inset-0 bg-black/10 pointer-events-none" />
             

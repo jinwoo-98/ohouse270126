@@ -54,7 +54,7 @@ export default function NewsPage() {
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-16">
                   <Link to={`/tin-tuc/${featured.id}`} className="group block">
                     <div className="grid md:grid-cols-2 gap-8 bg-card rounded-3xl overflow-hidden shadow-subtle hover:shadow-medium transition-all">
-                      <div className="aspect-[16/10] md:aspect-auto img-zoom overflow-hidden bg-secondary/30">
+                      <div className="aspect-[16/10] md:aspect-[2/1] img-zoom overflow-hidden bg-secondary/30">
                         <img src={getOptimizedImageUrl(featured.image_url, { width: 1000 })} alt={featured.title} className="w-full h-full object-cover" />
                       </div>
                       <div className="p-8 md:p-12 flex flex-col justify-center">
