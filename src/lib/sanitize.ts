@@ -11,7 +11,8 @@ export const sanitizeHtml = (html: string | null | undefined): string => {
   // \u200B-\u200D: Zero-width spaces/joiners
   // \uFEFF: BOM
   // \u00AD: Soft hyphen (thủ phạm chính gây ngắt đôi từ)
-  let cleanHtml = html.replace(/[\u200B-\u200D\uFEFF\u00AD]/g, '');
+  // \u2028-\u2029: Line/Paragraph separators
+  let cleanHtml = html.replace(/[\u200B-\u200D\uFEFF\u00AD\u2028\u2029]/g, '');
   
   // Thay thế non-breaking space (&nbsp;) thành space thường để trình duyệt ngắt dòng đúng quy tắc
   cleanHtml = cleanHtml.replace(/\u00A0/g, ' ');

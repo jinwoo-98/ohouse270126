@@ -67,8 +67,8 @@
 
 @layer utilities {
   /* 
-     GIẢI PHÁP TỐI ƯU CHO TIẾNG VIỆT:
-     Sử dụng keep-all để đảm bảo không bao giờ ngắt đôi từ.
+     GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT:
+     Ngăn chặn ngắt đôi từ bằng cách ép quy tắc normal và break-word cho toàn bộ nội dung.
   */
   .vn-content-view {
     display: flow-root !important;
@@ -76,15 +76,11 @@
     text-align: left !important;
   }
 
-  .vn-content-view p, 
-  .vn-content-view span, 
-  .vn-content-view div,
-  .vn-content-view li,
-  .vn-content-view b,
-  .vn-content-view strong,
-  .vn-content-view em {
-    word-break: keep-all !important; /* Ngăn chặn ngắt đôi từ tuyệt đối */
+  /* Áp dụng cho tất cả các thẻ con bên trong để không bỏ sót bất kỳ văn bản nào */
+  .vn-content-view * {
+    word-break: normal !important;
     overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
     hyphens: none !important;
     -webkit-hyphens: none !important;
     -ms-hyphens: none !important;
@@ -92,7 +88,6 @@
 
   .vn-content-view p { 
     @apply mb-6 leading-relaxed; 
-    white-space: pre-wrap !important; /* Giữ định dạng xuống dòng tự nhiên */
   }
   
   .vn-content-view h1, .vn-content-view h2, .vn-content-view h3 { 

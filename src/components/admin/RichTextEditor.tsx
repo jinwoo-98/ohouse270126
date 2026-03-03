@@ -210,8 +210,8 @@ export function RichTextEditor({ value, onChange, placeholder, contextTitle }: R
           line-height: 1.7 !important;
           color: #4b5563 !important;
           
-          white-space: pre-wrap !important;
-          word-break: keep-all !important;
+          white-space: normal !important;
+          word-break: normal !important;
           overflow-wrap: break-word !important;
           text-align: left !important;
         }
