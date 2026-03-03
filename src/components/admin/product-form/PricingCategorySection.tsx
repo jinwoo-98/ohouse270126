@@ -73,7 +73,7 @@ export function PricingCategorySection({
       return existing || {
         tier_values: combo,
         price: formData.price || "0",
-        original_price: "",
+        original_price: formData.original_price || "",
         stock: 10,
         sku: ""
       };
@@ -82,7 +82,7 @@ export function PricingCategorySection({
     if (JSON.stringify(newVariants.map(v => v.tier_values)) !== JSON.stringify(variants.map(v => v.tier_values))) {
       setVariants(newVariants);
     }
-  }, [tierConfig, formData.price]);
+  }, [tierConfig, formData.price, formData.original_price]);
 
   const addTier = () => {
     if (tierConfig.length >= 3) {
@@ -295,7 +295,7 @@ export function PricingCategorySection({
           <div className="space-y-4 animate-fade-in">
             <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex items-center gap-3">
               <Settings2 className="w-5 h-5 text-primary" />
-              <p className="text-xs font-medium text-charcoal">Giá hiển thị trên web sẽ lấy từ <b>biến thể đầu tiên</b> trong bảng bên dưới.</p>
+              <p className="text-xs font-medium text-charcoal">Giá bán và Giá gốc hiển thị trên web sẽ lấy từ <b>biến thể đầu tiên</b> trong bảng bên dưới.</p>
             </div>
             <div className="border border-border rounded-2xl overflow-hidden shadow-sm bg-white">
               <div className="overflow-x-auto">

@@ -129,14 +129,17 @@ export default function ProductForm() {
     setLoading(true);
     
     let finalPrice = parseFloat(formData.price) || 0;
+    let finalOriginalPrice = formData.original_price ? parseFloat(formData.original_price) : null;
+
     if (tierConfig.length > 0 && variants.length > 0) {
       finalPrice = parseFloat(variants[0].price) || 0;
+      finalOriginalPrice = variants[0].original_price ? parseFloat(variants[0].original_price) : null;
     }
 
     const payload = {
       ...formData,
       price: finalPrice,
-      original_price: formData.original_price ? parseFloat(formData.original_price) : null,
+      original_price: finalOriginalPrice,
       display_order: parseInt(formData.display_order),
       fake_sold: parseInt(formData.fake_sold),
       fake_review_count: parseInt(formData.fake_review_count),
