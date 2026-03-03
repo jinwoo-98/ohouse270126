@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Upload, X, Loader2, Files } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
   value?: string | string[];
@@ -11,13 +12,21 @@ interface ImageUploadProps {
   disabled?: boolean;
   bucket?: string;
   multiple?: boolean;
+  aspectRatio?: "aspect-video" | "aspect-square" | "aspect-[2/1]" | "aspect-[4/3]";
 }
 
 // Allowed image MIME types for security
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
-export function ImageUpload({ value, onChange, disabled, bucket = "uploads", multiple = false }: ImageUploadProps) {
+export function ImageUpload({ 
+  value, 
+  onChange, 
+  disabled, 
+  bucket = "uploads", 
+  multiple = false,
+  aspectRatio = "aspect-video"
+}: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
 
   const uploadFile = async (file: File): Promise<string> => {
@@ -90,7 +99,10 @@ export function ImageUpload({ value, onChange, disabled, bucket = "uploads", mul
   return (
     <div className="w-full">
       {!multiple && value && typeof value === 'string' ? (
-        <div className="relative aspect-video w-full max-w-sm rounded-2xl overflow-hidden border border-border bg-secondary/20 group">
+        <div className={cn(
+          "relative w-full max-w-sm rounded-2xl overflow-hidden border border-border bg-secondary/20 group",
+          aspectRatio
+        )}>
           <img src={value} alt="Uploaded" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <button
@@ -105,20 +117,23 @@ export function ImageUpload({ value, onChange, disabled, bucket = "uploads", mul
         </div>
       ) : (
         <div className="flex items-center justify-center w-full">
-          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-2xl cursor-pointer bg-secondary/5 hover:bg-secondary/10 hover:border-primary/40 transition-all group">
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+          <label className={cn(
+            "flex flex-col items-center justify-center w-full border-2 border-dashed border-border rounded-2xl cursor-pointer bg-secondary/5 hover:bg-secondary/10 hover:border-primary/40 transition-all group",
+            aspectRatio === "aspect-square" ? "aspect-square max-w-[200px]" : "h-32"
+          )}>
+            <div className="flex flex-col items-center justify-center p-4 text-center">
               {isUploading ? (
                 <>
                   <Loader2 className="w-8 h-8 mb-2 text-primary animate-spin" />
-                  <p className="text-xs text-muted-foreground font-medium">Đang xử lý...</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Đang xử lý...</p>
                 </>
               ) : (
                 <>
                   <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                     {multiple ? <Files className="w-5 h-5 text-primary" /> : <Upload className="w-5 h-5 text-primary" />}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-bold text-primary">Nhấn để tải {multiple ? "nhiều ảnh" : "ảnh"}</span>
+                  <p className="text-[10px] text-muted-foreground">
+                    <span className="font-bold text-primary">Tải {multiple ? "nhiều ảnh" : "ảnh"}</span>
                   </p>
                 </>
               )}
