@@ -1,18 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Save, Loader2, Info, ImageIcon, Layers, Box, Settings2, ListFilter } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Box } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { slugify, cn } from "@/lib/utils";
+import { slugify } from "@/lib/utils";
 
 // Import các section đã tối ưu
 import { ProductDetailSection } from "@/components/admin/product-form/ProductDetailSection";
 import { PricingCategorySection } from "@/components/admin/product-form/PricingCategorySection";
 import { ProductStatusSection } from "@/components/admin/product-form/ProductStatusSection";
 import { ProductMediaSection } from "@/components/admin/product-form/ProductMediaSection";
-import { ProductVariantsSection } from "@/components/admin/product-form/ProductVariantsSection";
 import { CrossSellSection } from "@/components/admin/product-form/CrossSellSection";
 
 export default function ProductForm() {
@@ -29,7 +27,6 @@ export default function ProductForm() {
   const [tierConfig, setTierConfig] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
   const [productAttrs, setProductAttrs] = useState<Record<string, string[]>>({});
-  const [isSlugDuplicate, setIsSlugDuplicate] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -131,7 +128,6 @@ export default function ProductForm() {
 
     setLoading(true);
     
-    // Logic giá thông minh: Nếu có phân loại, lấy giá của phân loại đầu tiên
     let finalPrice = parseFloat(formData.price) || 0;
     if (tierConfig.length > 0 && variants.length > 0) {
       finalPrice = parseFloat(variants[0].price) || 0;
@@ -158,7 +154,6 @@ export default function ProductForm() {
       if (pError) throw pError;
       productId = pResult.id;
 
-      // Sync Variants
       await supabase.from('product_variants').delete().eq('product_id', productId);
       if (tierConfig.length > 0 && variants.length > 0) {
         await supabase.from('product_variants').insert(variants.map(v => ({
@@ -171,7 +166,6 @@ export default function ProductForm() {
         })));
       }
 
-      // Sync Attributes
       await supabase.from('product_attributes').delete().eq('product_id', productId);
       const attrPayloads = Object.entries(productAttrs)
         .filter(([, values]) => values.length > 0)
@@ -206,7 +200,6 @@ export default function ProductForm() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* Cột trái: Các thông tin chính */}
         <div className="lg:col-span-2 space-y-8">
           <ProductDetailSection 
             formData={formData} 
@@ -220,28 +213,22 @@ export default function ProductForm() {
             formData={formData} 
             setFormData={setFormData} 
             categories={categories} 
-            hasVariants={tierConfig.length > 0}
-          />
-
-          <ProductVariantsSection 
-            attributes={allAttributes} 
-            tierConfig={tierConfig} 
-            setTierConfig={setTierConfig} 
-            variants={variants} 
-            setVariants={setVariants} 
-            basePrice={formData.price} 
+            attributes={allAttributes}
+            tierConfig={tierConfig}
+            setTierConfig={setTierConfig}
+            variants={variants}
+            setVariants={setVariants}
           />
 
           <ProductMediaSection formData={formData} setFormData={setFormData} />
         </div>
 
-        {/* Cột phải: Trạng thái & Marketing */}
         <div className="lg:col-span-1 space-y-8">
           <ProductStatusSection formData={formData} setFormData={setFormData} />
           
           <div className="bg-white p-6 rounded-3xl border shadow-sm space-y-6">
             <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-              <Box className="w-4 h-4" /> 6. Gợi ý phối đồ
+              <Box className="w-4 h-4" /> 5. Gợi ý phối đồ
             </h3>
             <CrossSellSection formData={formData} setFormData={setFormData} allProducts={allProducts} />
           </div>
