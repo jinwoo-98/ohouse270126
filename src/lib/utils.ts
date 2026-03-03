@@ -11,11 +11,12 @@ export function formatPrice(price: number) {
 
 /**
  * Định dạng số với dấu chấm phân cách hàng nghìn (VD: 1.000.000)
+ * Đã sửa: Trả về chuỗi rỗng nếu giá trị là 0 hoặc trống để ô nhập liệu sạch sẽ hơn.
  */
 export function formatNumberWithDots(value: string | number | null | undefined): string {
-  if (value === null || value === undefined || value === "") return "";
+  if (value === null || value === undefined || value === "" || value === 0 || value === "0") return "";
   const number = typeof value === 'string' ? value.replace(/\D/g, '') : Math.floor(Number(value)).toString();
-  if (!number) return "";
+  if (!number || number === "0") return "";
   return number.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 

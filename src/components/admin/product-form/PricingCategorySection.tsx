@@ -72,7 +72,7 @@ export function PricingCategorySection({
       const existing = variants.find(v => JSON.stringify(v.tier_values) === JSON.stringify(combo));
       return existing || {
         tier_values: combo,
-        price: formData.price || "0",
+        price: formData.price || "", // Đã sửa từ "0" thành ""
         original_price: formData.original_price || "",
         stock: 10,
         sku: ""

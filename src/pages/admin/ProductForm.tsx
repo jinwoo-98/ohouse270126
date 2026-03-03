@@ -39,7 +39,7 @@ export default function ProductForm() {
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
-    price: "",
+    price: "", // Đã sửa từ "0" thành ""
     original_price: "",
     description: "",
     short_description: "",
