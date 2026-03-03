@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn, formatVietnameseText } from "@/lib/utils";
+import { cn, wrapWordsInSpans } from "@/lib/utils";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 interface ProductDescriptionProps {
@@ -17,8 +17,8 @@ export function ProductDescription({ description, product }: ProductDescriptionP
   const processedContent = useMemo(() => {
     if (!description) return "";
     const sanitized = sanitizeHtml(description);
-    // Áp dụng giải pháp chèn ký tự ẩn để chống ngắt từ triệt để
-    return formatVietnameseText(sanitized);
+    // Áp dụng giải pháp bọc từ để chống ngắt dòng triệt để
+    return wrapWordsInSpans(sanitized);
   }, [description]);
 
   return (

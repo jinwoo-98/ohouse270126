@@ -98,17 +98,11 @@ export function sanitizeUrl(url: string | null | undefined): string {
 }
 
 /**
- * GIẢI PHÁP MẠNH MẼ CHO LỖI NGẮT TỪ TIẾNG VIỆT.
- * Chèn ký tự Zero-Width Space (&#8203;) vào giữa các ký tự.
+ * GIẢI PHÁP CUỐI CÙNG: Bọc mỗi từ trong một thẻ span để trình duyệt không thể ngắt đôi từ.
+ * @param htmlString Chuỗi HTML đầu vào.
+ * @returns Chuỗi HTML với mỗi từ đã được bọc trong thẻ span.
  */
-const insertZeroWidthSpaces = (text: string): string => {
-  return text.split('').join('&#8203;');
-};
-
-/**
- * Duyệt qua cây DOM của chuỗi HTML và xử lý các nút văn bản để chống ngắt từ.
- */
-export function formatVietnameseText(htmlString: string): string {
+export function wrapWordsInSpans(htmlString: string): string {
   if (typeof DOMParser === 'undefined' || !htmlString) return htmlString;
 
   const parser = new DOMParser();
@@ -118,9 +112,23 @@ export function formatVietnameseText(htmlString: string): string {
     if (node.nodeType === 3) { // Text node
       const textContent = node.textContent || '';
       if (textContent.trim().length > 0) {
-        const newNode = doc.createElement('span');
-        newNode.innerHTML = insertZeroWidthSpaces(textContent);
-        node.parentNode?.replaceChild(newNode, node);
+        const fragment = doc.createDocumentFragment();
+        // Tách theo khoảng trắng nhưng giữ lại khoảng trắng trong mảng
+        const parts = textContent.split(/(\s+)/); 
+        
+        parts.forEach(part => {
+          if (part.trim().length > 0) {
+            const span = doc.createElement('span');
+            span.className = 'word-wrapper';
+            span.textContent = part;
+            fragment.appendChild(span);
+          } else {
+            // Giữ nguyên các khoảng trắng
+            fragment.appendChild(doc.createTextNode(part));
+          }
+        });
+        
+        node.parentNode?.replaceChild(fragment, node);
       }
     } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
       Array.from(node.childNodes).forEach(walk);

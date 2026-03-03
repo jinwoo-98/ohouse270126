@@ -66,15 +66,15 @@
 }
 
 @layer utilities {
-  /* 
-     GIẢI PHÁP TRIỆT ĐỂ CHO TIẾNG VIỆT:
-     Lỗi ngắt từ được xử lý bằng Javascript, chỉ giữ lại CSS cơ bản để đảm bảo hiển thị đẹp.
-  */
   .vn-content-view {
     text-align: left !important;
     line-height: 1.8;
-    word-break: normal !important;
-    overflow-wrap: break-word !important;
+  }
+
+  /* Bắt buộc mỗi từ là một khối không thể phá vỡ */
+  .word-wrapper {
+    display: inline-block;
+    white-space: nowrap;
   }
 
   .vn-content-view p { 
@@ -91,7 +91,6 @@
   .vn-content-view ol { @apply list-decimal pl-6 mb-6 space-y-2; }
   .vn-content-view img { @apply rounded-2xl my-8 shadow-medium w-full h-auto object-cover; }
   
-  /* Invert color scheme for dark backgrounds */
   .vn-content-view-invert, .vn-content-view-invert * {
     @apply text-cream/90;
   }
