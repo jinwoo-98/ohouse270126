@@ -5,7 +5,7 @@ export function useUnsavedWarning(isDirty: boolean) {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirty) {
         e.preventDefault();
-        e.returnValue = ''; // Hiển thị hộp thoại cảnh báo mặc định của trình duyệt
+        e.returnValue = ''; 
       }
     };
 

@@ -11,6 +11,8 @@ import ScrollToTop from "./components/ScrollToTop";
 import { FloatingActions } from "./components/layout/FloatingActions";
 import { TrackingScripts } from "./components/TrackingScripts";
 import { PageLoader } from "./components/layout/PageLoader";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { HelmetProvider } from "react-helmet-async";
 
 // Lazy load public pages
 const Index = lazy(() => import("./pages/Index"));
@@ -67,7 +69,7 @@ import TrackingManager from "./pages/admin/TrackingManager";
 import ShowroomManager from "./pages/admin/ShowroomManager";
 import ShowroomForm from "./pages/admin/ShowroomForm";
 import DesignServiceConfig from "./pages/admin/DesignServiceConfig";
-import AdminAccount from "./pages/admin/AdminAccount"; // Import mới
+import AdminAccount from "./pages/admin/AdminAccount";
 
 // Homepage Sub-pages
 import SlidePage from "./pages/admin/homepage/SlidePage.tsx";
@@ -82,7 +84,16 @@ import LookbookManagerPage from "./pages/admin/content/LookbookManagerPage.tsx";
 import LookbookForm from "./pages/admin/content/LookbookForm.tsx";
 import LookbookFilterPage from "./pages/admin/content/LookbookFilterPage.tsx";
 
-const queryClient = new QueryClient();
+// Cấu hình QueryClient quan trọng: Tắt refetchOnWindowFocus
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // Ngăn chặn việc tự động tải lại dữ liệu khi quay lại tab
+      retry: 1,
+      staleTime: 5 * 60 * 1000,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

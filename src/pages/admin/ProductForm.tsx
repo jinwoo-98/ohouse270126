@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Save, Loader2, Box, RotateCcw, AlertCircle } from "lucide-react";
@@ -32,6 +32,9 @@ export default function ProductForm() {
   const [productAttrs, setProductAttrs] = useState<Record<string, string[]>>({});
   const [isDirty, setIsDirty] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
+  
+  // Cờ để kiểm soát việc tự động lưu, tránh ghi đè khi đang khôi phục
+  const isRestoring = useRef(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -70,7 +73,8 @@ export default function ProductForm() {
 
   // Tự động lưu bản nháp khi có thay đổi
   useEffect(() => {
-    if (isDirty) {
+    // Chỉ lưu nếu dữ liệu đã bị thay đổi và KHÔNG phải đang trong quá trình khôi phục hoặc đang tải dữ liệu gốc
+    if (isDirty && !isRestoring.current && !fetching) {
       const draftData = {
         formData,
         tierConfig,
@@ -80,14 +84,13 @@ export default function ProductForm() {
       };
       localStorage.setItem(draftKey, JSON.stringify(draftData));
     }
-  }, [formData, tierConfig, variants, productAttrs, isDirty, draftKey]);
+  }, [formData, tierConfig, variants, productAttrs, isDirty, draftKey, fetching]);
 
   useEffect(() => {
-    if (formData.name && !isEdit) {
+    if (formData.name && !isEdit && !isRestoring.current) {
       setFormData(prev => ({ ...prev, slug: slugify(formData.name) }));
     }
-    // Đánh dấu là đã thay đổi dữ liệu
-    if (!fetching) setIsDirty(true);
+    if (!fetching && !isRestoring.current) setIsDirty(true);
   }, [formData.name, isEdit, fetching]);
 
   const fetchInitialData = async () => {
@@ -104,8 +107,11 @@ export default function ProductForm() {
     
     if (isEdit) await fetchProduct();
     setFetching(false);
-    // Reset isDirty sau khi load dữ liệu từ server
-    setTimeout(() => setIsDirty(false), 500);
+    
+    // Reset isDirty sau khi load dữ liệu từ server để không tự lưu bản nháp ngay lập tức
+    setTimeout(() => {
+      setIsDirty(false);
+    }, 1000);
   };
 
   const fetchProduct = async () => {
@@ -144,14 +150,24 @@ export default function ProductForm() {
   const restoreDraft = () => {
     const savedDraft = localStorage.getItem(draftKey);
     if (savedDraft) {
+      isRestoring.current = true; // Bật cờ khôi phục để chặn auto-save ghi đè
+      
       const { formData: dForm, tierConfig: dTier, variants: dVar, productAttrs: dAttr } = JSON.parse(savedDraft);
+      
       setFormData(dForm);
       setTierConfig(dTier);
       setVariants(dVar);
       setProductAttrs(dAttr);
+      
       setHasDraft(false);
       setIsDirty(true);
+      
       toast.success("Đã khôi phục bản nháp thành công!");
+      
+      // Tắt cờ khôi phục sau khi các state đã cập nhật xong hoàn toàn
+      setTimeout(() => {
+        isRestoring.current = false;
+      }, 1500);
     }
   };
 
@@ -161,6 +177,7 @@ export default function ProductForm() {
   };
 
   const handleAttributeChange = (attrId: string, value: any, isMulti: boolean) => {
+    if (isRestoring.current) return;
     setIsDirty(true);
     setProductAttrs(prev => {
       const current = prev[attrId] || [];
@@ -284,7 +301,7 @@ export default function ProductForm() {
         <div className="lg:col-span-2 space-y-8">
           <ProductDetailSection 
             formData={formData} 
-            setFormData={(data) => { setFormData(data); setIsDirty(true); }} 
+            setFormData={(data) => { setFormData(data); if (!isRestoring.current && !fetching) setIsDirty(true); }} 
             availableAttributes={allAttributes} 
             productAttrs={productAttrs} 
             handleAttributeChange={handleAttributeChange}
@@ -292,29 +309,29 @@ export default function ProductForm() {
 
           <PricingCategorySection 
             formData={formData} 
-            setFormData={(data) => { setFormData(data); setIsDirty(true); }} 
+            setFormData={(data) => { setFormData(data); if (!isRestoring.current && !fetching) setIsDirty(true); }} 
             categories={categories} 
             attributes={allAttributes}
             tierConfig={tierConfig}
-            setTierConfig={(config) => { setTierConfig(config); setIsDirty(true); }}
+            setTierConfig={(config) => { setTierConfig(config); if (!isRestoring.current && !fetching) setIsDirty(true); }}
             variants={variants}
-            setVariants={(v) => { setVariants(v); setIsDirty(true); }}
+            setVariants={(v) => { setVariants(v); if (!isRestoring.current && !fetching) setIsDirty(true); }}
           />
         </div>
 
         <div className="lg:col-span-1 space-y-8">
-          <ProductStatusSection formData={formData} setFormData={(data) => { setFormData(data); setIsDirty(true); }} />
+          <ProductStatusSection formData={formData} setFormData={(data) => { setFormData(data); if (!isRestoring.current && !fetching) setIsDirty(true); }} />
         </div>
       </div>
 
       <div className="space-y-8 mt-8">
-        <ProductMediaSection formData={formData} setFormData={(data) => { setFormData(data); setIsDirty(true); }} />
+        <ProductMediaSection formData={formData} setFormData={(data) => { setFormData(data); if (!isRestoring.current && !fetching) setIsDirty(true); }} />
         
         <div className="bg-white p-8 rounded-3xl border shadow-sm space-y-6">
           <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2">
             <Box className="w-4 h-4" /> Gợi ý phối đồ
           </h3>
-          <CrossSellSection formData={formData} setFormData={(data) => { setFormData(data); setIsDirty(true); }} allProducts={allProducts} />
+          <CrossSellSection formData={formData} setFormData={(data) => { setFormData(data); if (!isRestoring.current && !fetching) setIsDirty(true); }} allProducts={allProducts} />
         </div>
       </div>
     </div>
