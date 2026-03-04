@@ -121,9 +121,16 @@ export default function ProductForm() {
 
   const fetchInitialData = async () => {
     setFetching(true);
+    
+    // Tạo query cho products một cách an toàn để tránh lỗi UUID khi id là undefined
+    let productsQuery = supabase.from('products').select('id, name, image_url').limit(1000);
+    if (id) {
+      productsQuery = productsQuery.neq('id', id);
+    }
+
     const [cats, prods, attrs] = await Promise.all([
       supabase.from('categories').select('*').order('display_order'),
-      supabase.from('products').select('id, name, image_url').neq('id', id || 'new').limit(1000),
+      productsQuery,
       supabase.from('attributes').select('*').order('name')
     ]);
     

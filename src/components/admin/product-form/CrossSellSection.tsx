@@ -17,9 +17,16 @@ export function CrossSellSection({ formData, setFormData, allProducts }: CrossSe
   const [searchTerm, setSearchTerm] = useState("");
   const [activeType, setActiveType] = useState<'perfect' | 'bought' | null>(null);
 
-  const filteredProducts = allProducts.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Hàm loại bỏ dấu tiếng Việt để tìm kiếm thông minh hơn
+  const removeAccents = (str: string) => {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  };
+
+  const filteredProducts = allProducts.filter(p => {
+    const productName = p.name ? removeAccents(p.name) : "";
+    const search = removeAccents(searchTerm);
+    return productName.includes(search);
+  });
 
   const handleSelect = (type: 'perfect_match_ids' | 'bought_together_ids', id: string) => {
     if (!formData[type].includes(id)) {
@@ -83,7 +90,7 @@ export function CrossSellSection({ formData, setFormData, allProducts }: CrossSe
               <p className="text-[10px] text-muted-foreground font-medium italic">Sản phẩm kết hợp tạo thành bộ sưu tập</p>
             </div>
           </div>
-          <Popover open={activeType === 'perfect'} onOpenChange={(open) => setActiveType(open ? 'perfect' : null)}>
+          <Popover open={activeType === 'perfect'} onOpenChange={(open) => { setActiveType(open ? 'perfect' : null); if (open) setSearchTerm(""); }}>
             <PopoverTrigger asChild>
               <Button variant="outline" className="h-10 px-6 rounded-xl text-[10px] font-bold uppercase tracking-widest gap-2">
                 <Plus className="w-3.5 h-3.5" /> Chọn sản phẩm
@@ -98,7 +105,9 @@ export function CrossSellSection({ formData, setFormData, allProducts }: CrossSe
               </div>
               <ScrollArea className="h-[300px] p-2">
                 <div className="grid gap-1">
-                  {filteredProducts.map(p => (
+                  {filteredProducts.length === 0 ? (
+                    <p className="text-center py-10 text-xs text-muted-foreground italic">Không tìm thấy sản phẩm nào.</p>
+                  ) : filteredProducts.map(p => (
                     <div key={p.id} onClick={() => handleSelect('perfect_match_ids', p.id)} className="flex items-center gap-3 p-2 hover:bg-secondary/50 rounded-xl cursor-pointer transition-colors group">
                       <img src={p.image_url} className="w-10 h-10 rounded-lg object-cover" />
                       <span className="text-xs font-bold text-charcoal flex-1 truncate">{p.name}</span>
@@ -122,7 +131,7 @@ export function CrossSellSection({ formData, setFormData, allProducts }: CrossSe
               <p className="text-[10px] text-muted-foreground font-medium italic">Sản phẩm phụ kiện, bổ sung giá tốt</p>
             </div>
           </div>
-          <Popover open={activeType === 'bought'} onOpenChange={(open) => setActiveType(open ? 'bought' : null)}>
+          <Popover open={activeType === 'bought'} onOpenChange={(open) => { setActiveType(open ? 'bought' : null); if (open) setSearchTerm(""); }}>
             <PopoverTrigger asChild>
               <Button variant="outline" className="h-10 px-6 rounded-xl text-[10px] font-bold uppercase tracking-widest gap-2">
                 <Plus className="w-3.5 h-3.5" /> Chọn sản phẩm
@@ -137,7 +146,9 @@ export function CrossSellSection({ formData, setFormData, allProducts }: CrossSe
               </div>
               <ScrollArea className="h-[300px] p-2">
                 <div className="grid gap-1">
-                  {filteredProducts.map(p => (
+                  {filteredProducts.length === 0 ? (
+                    <p className="text-center py-10 text-xs text-muted-foreground italic">Không tìm thấy sản phẩm nào.</p>
+                  ) : filteredProducts.map(p => (
                     <div key={p.id} onClick={() => handleSelect('bought_together_ids', p.id)} className="flex items-center gap-3 p-2 hover:bg-secondary/50 rounded-xl cursor-pointer transition-colors group">
                       <img src={p.image_url} className="w-10 h-10 rounded-lg object-cover" />
                       <span className="text-xs font-bold text-charcoal flex-1 truncate">{p.name}</span>
