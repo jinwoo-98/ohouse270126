@@ -18,6 +18,7 @@ export function ShopTheLookCard({ look, onQuickView }: ShopTheLookCardProps) {
           src={getOptimizedImageUrl(look.image_url, { width: 1000 })} 
           alt={look.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          onError={(e) => { (e.target as HTMLImageElement).src = look.image_url; }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-transparent" />
       </Link>

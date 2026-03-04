@@ -201,6 +201,7 @@ export function ShopTheLook() {
                           className="w-full h-full object-cover pointer-events-none"
                           loading="lazy"
                           draggable="false"
+                          onError={(e) => { (e.target as HTMLImageElement).src = displayImage; }}
                         />
                       </div>
                       

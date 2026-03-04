@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, Eye, Plus, ArrowRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatPrice, cn } from "@/lib/utils";
+import { formatPrice, cn, getOptimizedImageUrl } from "@/lib/utils";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { Button } from "@/components/ui/button";
 
@@ -44,9 +44,10 @@ export function SimilarLookbookCard({ look, index, onQuickView }: SimilarLookboo
       <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-subtle group-hover:shadow-elevated transition-all duration-500">
         <Link to={detailLink} className="block relative w-full h-full">
           <img 
-            src={look.image_url} 
+            src={getOptimizedImageUrl(look.image_url, { width: 600 })} 
             alt={look.title} 
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+            onError={(e) => { (e.target as HTMLImageElement).src = look.image_url; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/30 to-transparent" />
           

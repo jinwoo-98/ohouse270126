@@ -50,6 +50,7 @@ export function InspirationLookCard({ look, index, onQuickView, onLookQuickView 
             src={getOptimizedImageUrl(displayImage, { width: 1000 })} 
             alt={look.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            onError={(e) => { (e.target as HTMLImageElement).src = displayImage; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent" />
           
@@ -103,7 +104,6 @@ export function InspirationLookCard({ look, index, onQuickView, onLookQuickView 
         </TooltipProvider>
       </div>
       
-      {/* Nút Xem nhanh sản phẩm thay thế cho phần text */}
       <Button 
         onClick={() => onLookQuickView(look)}
         className="w-full h-12 rounded-xl bg-secondary/50 hover:bg-primary hover:text-white text-charcoal border border-border/40 shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest gap-2"
