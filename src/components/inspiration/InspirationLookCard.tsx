@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { formatPrice, cn, getOptimizedImageUrl } from "@/lib/utils";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { Button } from "@/components/ui/button";
+import { useMemo } from "react";
 
 interface InspirationLookCardProps {
   look: any;
@@ -16,20 +17,23 @@ interface InspirationLookCardProps {
 export function InspirationLookCard({ look, index, onQuickView, onLookQuickView }: InspirationLookCardProps) {
   const { toggleWishlist, isInWishlist } = useWishlist();
 
-  const productsInLook = look.shop_look_items
-    .filter((item: any) => item.products)
-    .map((item: any) => item.products);
+  const uniqueProducts = useMemo(() => {
+    const products = look.shop_look_items
+      ?.filter((item: any) => item.products)
+      .map((item: any) => item.products) || [];
+    return Array.from(new Map(products.map((p: any) => [p.id, p])).values()) as any[];
+  }, [look.shop_look_items]);
 
   const lookAsProduct = {
     id: look.id,
     name: look.title,
-    price: productsInLook[0]?.price || 0,
+    price: uniqueProducts[0]?.price || 0,
     image: look.image_url,
     slug: look.slug,
   };
   
   const isFavorite = isInWishlist(lookAsProduct.id);
-  const productCount = productsInLook.length;
+  const productCount = uniqueProducts.length;
 
   const detailLink = `/y-tuong/${look.slug || look.id}`;
   const displayImage = look.homepage_image_url || look.image_url;
@@ -95,10 +99,12 @@ export function InspirationLookCard({ look, index, onQuickView, onLookQuickView 
                   <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="bg-charcoal text-cream border-none p-3 rounded-xl shadow-elevated">
-                <p className="font-bold text-[10px] uppercase tracking-wider">{item.products.name}</p>
-                <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
-              </TooltipContent>
+              {item.products && (
+                <TooltipContent className="bg-charcoal text-cream border-none p-3 rounded-xl shadow-elevated">
+                  <p className="font-bold text-[10px] uppercase tracking-wider">{item.products.name}</p>
+                  <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
+                </TooltipContent>
+              )}
             </Tooltip>
           ))}
         </TooltipProvider>

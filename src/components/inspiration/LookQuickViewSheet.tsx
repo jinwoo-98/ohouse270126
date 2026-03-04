@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingBag, ArrowRight, X } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
@@ -22,15 +22,19 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
   const isMobile = useIsMobile();
   const { addToCart } = useCart();
 
+  const uniqueProducts = useMemo(() => {
+    if (!look) return [];
+    const products = look.shop_look_items
+      ?.filter((item: any) => item.products)
+      .map((item: any) => item.products) || [];
+    return Array.from(new Map(products.map((p: any) => [p.id, p])).values());
+  }, [look]);
+
   if (!look) return null;
 
-  const products = look.shop_look_items
-    ?.filter((item: any) => item.products)
-    .map((item: any) => item.products) || [];
-
   const handleAddAllToCart = () => {
-    products.forEach((p: any) => addToCart({ ...p, quantity: 1, image: p.image_url }));
-    toast.success(`Đã thêm ${products.length} sản phẩm vào giỏ hàng.`);
+    uniqueProducts.forEach((p: any) => addToCart({ ...p, quantity: 1, image: p.image_url }));
+    toast.success(`Đã thêm ${uniqueProducts.length} sản phẩm vào giỏ hàng.`);
     onClose();
   };
 
@@ -39,29 +43,26 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
       <SheetContent 
         side={isMobile ? "bottom" : "right"} 
         className={cn(
-          "p-0 flex flex-col z-[150] border-none shadow-elevated transition-all duration-500 [&>button]:hidden", // Ẩn nút X mặc định của shadcn
+          "p-0 flex flex-col z-[150] border-none shadow-elevated transition-all duration-500 [&>button]:hidden",
           isMobile ? "h-[85vh] rounded-t-[32px]" : "w-full sm:max-w-[500px]"
         )}
       >
-        {/* Drag Handle cho Mobile */}
         {isMobile && (
           <div className="w-full flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-12 h-1.5 bg-muted-foreground/20 rounded-full" />
           </div>
         )}
 
-        {/* Header */}
         <div className="p-6 border-b border-border/40 bg-white sticky top-0 z-10 flex items-start justify-between">
           <SheetHeader className="text-left pr-8">
             <SheetTitle className="text-lg font-bold text-charcoal uppercase tracking-widest">
               Sản phẩm trong không gian
             </SheetTitle>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mt-1">
-              {look.title} • {products.length} sản phẩm
+              {look.title} • {uniqueProducts.length} sản phẩm
             </p>
           </SheetHeader>
           
-          {/* Nút đóng tùy chỉnh chuyên nghiệp */}
           <SheetClose className="absolute right-4 top-6 p-2 bg-secondary/50 hover:bg-secondary rounded-full transition-all active:scale-90">
             <X className="w-5 h-5 text-charcoal" />
           </SheetClose>
@@ -69,7 +70,7 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
 
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-secondary/5 p-6">
           <div className="grid grid-cols-2 gap-4">
-            {products.map((product: any) => (
+            {uniqueProducts.map((product: any) => (
               <LookProductVerticalItem 
                 key={product.id} 
                 product={product} 
@@ -81,7 +82,6 @@ export function LookQuickViewSheet({ look, isOpen, onClose, onProductQuickView }
           </div>
         </div>
 
-        {/* Footer Actions */}
         <div className="p-6 bg-white border-t border-border/40 sticky bottom-0 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] space-y-3">
           <Button 
             className="w-full btn-hero h-14 rounded-2xl shadow-gold text-xs font-bold"

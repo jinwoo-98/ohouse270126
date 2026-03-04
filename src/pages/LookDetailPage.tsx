@@ -90,7 +90,11 @@ export default function LookDetailPage() {
     return look.shop_look_items?.filter((item: any) => item.products) || [];
   }, [look]);
   
-  const lookbookProducts = useMemo(() => visibleItems.map((item: any) => item.products).filter(Boolean), [visibleItems]);
+  // Lọc sản phẩm duy nhất dựa trên ID
+  const lookbookProducts = useMemo(() => {
+    const products = visibleItems.map((item: any) => item.products).filter(Boolean);
+    return Array.from(new Map(products.map((p: any) => [p.id, p])).values()) as any[];
+  }, [visibleItems]);
 
   const lookHotspots = useMemo(() => {
     if (!look?.shop_look_items) return [];
@@ -250,7 +254,7 @@ export default function LookDetailPage() {
                 {categories.map(cat => (
                   <Button
                     key={cat.slug}
-                    variant={activeCategorySlug === cat.slug ? 'default' : 'outline'}
+                    variant={activeCategorySlug === 'all' ? 'outline' : (activeCategorySlug === cat.slug ? 'default' : 'outline')}
                     size="sm"
                     onClick={() => setActiveCategorySlug(cat.slug)}
                     className={cn(

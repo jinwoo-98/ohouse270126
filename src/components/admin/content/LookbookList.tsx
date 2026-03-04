@@ -141,26 +141,31 @@ export function LookbookList({ searchTerm }: LookbookListProps) {
                 </AccordionTrigger>
                 <AccordionContent className="pt-4 pl-8">
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {childLooks.map(look => (
-                      <div key={look.id} className="bg-white rounded-2xl border shadow-sm overflow-hidden group">
-                        <div className="relative aspect-square">
-                          <img src={look.image_url} className="w-full h-full object-cover" alt={look.title} />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
-                            <Button size="sm" variant="secondary" asChild>
-                              <Link to={`/admin/content/looks/edit/${look.id}`}><Edit className="w-4 h-4 mr-2" /> Chỉnh sửa</Link>
-                            </Button>
+                    {childLooks.map(look => {
+                      // Đếm sản phẩm duy nhất
+                      const uniqueProductCount = new Set(look.shop_look_items?.map((i: any) => i.product_id)).size;
+                      
+                      return (
+                        <div key={look.id} className="bg-white rounded-2xl border shadow-sm overflow-hidden group">
+                          <div className="relative aspect-square">
+                            <img src={look.image_url} className="w-full h-full object-cover" alt={look.title} />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity">
+                              <Button size="sm" variant="secondary" asChild>
+                                <Link to={`/admin/content/looks/edit/${look.id}`}><Edit className="w-4 h-4 mr-2" /> Chỉnh sửa</Link>
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="p-4 text-center flex flex-col items-center">
+                            <h3 className="font-bold text-sm line-clamp-1">{look.title}</h3>
+                            <code className="text-[10px] text-muted-foreground block mt-1 font-mono">/{look.slug || look.id}</code>
+                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                              <LinkIcon className="w-3 h-3" /> {uniqueProductCount} sản phẩm
+                            </p>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 mt-3" onClick={() => setDeleteId(look.id)}><Trash2 className="w-4 h-4" /></Button>
                           </div>
                         </div>
-                        <div className="p-4 text-center flex flex-col items-center">
-                          <h3 className="font-bold text-sm line-clamp-1">{look.title}</h3>
-                          <code className="text-[10px] text-muted-foreground block mt-1 font-mono">/{look.slug || look.id}</code>
-                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                            <LinkIcon className="w-3 h-3" /> {look.shop_look_items?.length || 0} sản phẩm
-                          </p>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 mt-3" onClick={() => setDeleteId(look.id)}><Trash2 className="w-4 h-4" /></Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </AccordionContent>
               </AccordionItem>
