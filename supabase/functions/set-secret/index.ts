@@ -5,17 +5,22 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
+  // Xử lý yêu cầu preflight OPTIONS từ trình duyệt
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // 1. Verify Authentication (JWT)
+    console.log("[set-secret] Nhận yêu cầu mới");
+
+    // 1. Kiểm tra Header Authorization
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
+      console.error("[set-secret] Thiếu header Authorization");
       return new Response(JSON.stringify({ error: "No authorization header" }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -26,20 +31,21 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 
-    // Create client with user's JWT to verify identity
+    // Tạo client với JWT của người dùng để xác minh danh tính
     const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } }
     })
 
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
     if (userError || !user) {
+      console.error("[set-secret] Token không hợp lệ:", userError?.message);
       return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
-    // 2. Verify Authorization (Check for 'admin' role in profiles)
+    // 2. Kiểm tra quyền Admin trong bảng profiles
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
@@ -48,14 +54,14 @@ serve(async (req) => {
       .single()
 
     if (profileError || profile?.role !== 'admin') {
-      console.error(`[set-secret] Unauthorized access attempt by ${user.email}`)
+      console.error(`[set-secret] Truy cập trái phép từ: ${user.email}`);
       return new Response(JSON.stringify({ error: "Unauthorized: Admin access required" }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
-    // 3. Process Request
+    // 3. Xử lý lưu Secret
     const { key, value } = await req.json()
     if (!key || !value) {
       return new Response(JSON.stringify({ error: "Missing key or value" }), { 
@@ -70,14 +76,14 @@ serve(async (req) => {
 
     if (error) throw error
 
-    console.log(`[set-secret] Secret "${key}" updated successfully by admin: ${user.email}`)
+    console.log(`[set-secret] Đã cập nhật secret "${key}" bởi admin: ${user.email}`)
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
-    console.error("[set-secret] Error:", error.message)
+    console.error("[set-secret] Lỗi hệ thống:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
