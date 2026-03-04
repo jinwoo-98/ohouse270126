@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { toast } from "sonner";
-import { Loader2, Save, Globe, MapPin, Phone, Mail, Clock, Share2, Truck, AlertCircle, ShieldCheck } from "lucide-react";
+import { Loader2, Save, Globe, MapPin, Phone, Mail, Clock, Share2, Truck, ShieldCheck, Sparkles, KeyRound } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
 export default function GeneralSettings() {
   const [loading, setLoading] = useState(false);
+  const [savingKey, setSavingKey] = useState(false);
+  const [geminiKey, setGeminiKey] = useState("");
   const [settings, setSettings] = useState({
     site_name: "",
     logo_url: "",
@@ -54,44 +54,37 @@ export default function GeneralSettings() {
     }
   };
 
-  const validateUrl = (url: string) => {
-    if (!url) return true;
-    const trimmed = url.trim();
-    // Allow only safe protocols: http, https, mailto, tel
-    return /^(https?|mailto|tel):/i.test(trimmed) || trimmed.startsWith('/') || trimmed.startsWith('#');
+  const handleSaveGeminiKey = async () => {
+    if (!geminiKey) {
+      toast.error("Vui lòng nhập API Key.");
+      return;
+    }
+    setSavingKey(true);
+    try {
+      const { error } = await supabase.functions.invoke('set-secret', {
+        body: { key: 'GEMINI_API_KEY', value: geminiKey }
+      });
+      if (error) throw error;
+      toast.success("Đã lưu Gemini API Key thành công!");
+      setGeminiKey("");
+    } catch (e: any) {
+      toast.error("Lỗi lưu API Key: " + e.message);
+    } finally {
+      setSavingKey(false);
+    }
   };
 
   const handleSave = async () => {
-    // Validate all URL fields
-    const urlFields = ['facebook_url', 'zalo_url', 'youtube_url', 'tiktok_url', 'moit_url'];
-    for (const field of urlFields) {
-      if (!validateUrl((settings as any)[field])) {
-        toast.error(`Đường dẫn ${field} không hợp lệ. Vui lòng sử dụng http:// hoặc https://`);
-        return;
-      }
-    }
-
     setLoading(true);
-    
-    const payload = {
-      ...settings,
-      updated_at: new Date()
-    };
-
+    const payload = { ...settings, updated_at: new Date() };
     const { data: existing } = await supabase.from('site_settings').select('id').single();
-    
     const { error } = existing
       ? await supabase.from('site_settings').update(payload).eq('id', existing.id)
       : await supabase.from('site_settings').insert(payload);
 
     setLoading(false);
-
-    if (error) {
-      console.error("Supabase error:", error);
-      toast.error("Lỗi khi lưu cấu hình: " + error.message);
-    } else {
-      toast.success("Đã lưu thông tin cấu hình!");
-    }
+    if (error) toast.error("Lỗi khi lưu cấu hình: " + error.message);
+    else toast.success("Đã lưu thông tin cấu hình!");
   };
 
   return (
@@ -99,17 +92,19 @@ export default function GeneralSettings() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-2 flex items-center gap-2">
           <Globe className="w-6 h-6 text-primary" />
-          Cấu Hình Chung & Liên Hệ
+          Cấu Hình Hệ Thống
         </h1>
-        <p className="text-muted-foreground">Quản lý thông tin hiển thị trên Header, Footer và trang Liên hệ.</p>
+        <p className="text-muted-foreground">Quản lý thông tin website và các tích hợp AI.</p>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
         <TabsList className="bg-white border p-1 rounded-xl h-12 w-full justify-start overflow-x-auto">
           <TabsTrigger value="general" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Thông tin chung</TabsTrigger>
-          <TabsTrigger value="contact" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Liên hệ & Địa chỉ</TabsTrigger>
+          <TabsTrigger value="ai" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase gap-2">
+            <Sparkles className="w-3.5 h-3.5" /> Cấu hình AI
+          </TabsTrigger>
+          <TabsTrigger value="contact" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Liên hệ</TabsTrigger>
           <TabsTrigger value="social" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Mạng xã hội</TabsTrigger>
-          <TabsTrigger value="shipping" className="rounded-lg h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Chính sách SP</TabsTrigger>
         </TabsList>
 
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
@@ -119,162 +114,70 @@ export default function GeneralSettings() {
                 <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
                   <Globe className="w-4 h-4" /> Nhận diện thương hiệu
                 </h3>
-                
                 <div className="grid md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <Label>Logo Website</Label>
-                    <ImageUpload 
-                      value={settings.logo_url} 
-                      onChange={(url) => setSettings({...settings, logo_url: url as string})} 
-                    />
+                    <ImageUpload value={settings.logo_url} onChange={(url) => setSettings({...settings, logo_url: url as string})} />
                   </div>
-                  
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Tên Website (Tiêu đề trang)</Label>
-                      <Input 
-                        value={settings.site_name} 
-                        onChange={(e) => setSettings({...settings, site_name: e.target.value})} 
-                        className="h-12"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Tên Website</Label>
+                    <Input value={settings.site_name} onChange={(e) => setSettings({...settings, site_name: e.target.value})} className="h-12" />
                   </div>
                 </div>
               </div>
+            </div>
+          </TabsContent>
 
-              <div className="pt-8 border-t border-border/50 space-y-6">
-                <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2 mb-4">
-                  <ShieldCheck className="w-4 h-4" /> Chứng nhận pháp lý (Bộ Công Thương)
-                </h3>
-                
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <Label>Logo Chứng nhận</Label>
-                    <ImageUpload 
-                      value={settings.moit_logo_url} 
-                      onChange={(url) => setSettings({...settings, moit_logo_url: url as string})} 
-                    />
-                    <p className="text-[10px] text-muted-foreground italic">Tải lên logo "Đã thông báo" hoặc "Đã đăng ký".</p>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Đường dẫn chứng nhận (Link)</Label>
-                      <Input 
-                        value={settings.moit_url} 
-                        onChange={(e) => setSettings({...settings, moit_url: e.target.value})} 
-                        placeholder="https://online.gov.vn/Home/WebDetails/..."
-                        className="h-12 font-mono text-sm"
-                      />
-                      <p className="text-[10px] text-muted-foreground italic">Dán link chi tiết từ cổng thông tin Bộ Công Thương.</p>
-                    </div>
-                  </div>
+          <TabsContent value="ai" className="mt-0 space-y-8">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 border-b pb-4">
+                <div className="p-2 bg-primary/10 rounded-lg text-primary"><Sparkles className="w-5 h-5" /></div>
+                <div>
+                  <h3 className="font-bold text-sm uppercase tracking-widest text-charcoal">Google Gemini AI</h3>
+                  <p className="text-[10px] text-muted-foreground font-medium italic">Tự động sinh nội dung đánh giá sản phẩm chân thực.</p>
                 </div>
+              </div>
+              
+              <div className="space-y-4 max-w-xl">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
+                    <KeyRound className="w-3.5 h-3.5" /> Gemini API Key
+                  </Label>
+                  <Input 
+                    type="password"
+                    placeholder="Dán API Key từ Google AI Studio..."
+                    value={geminiKey}
+                    onChange={(e) => setGeminiKey(e.target.value)}
+                    className="h-12 rounded-xl"
+                  />
+                  <p className="text-[10px] text-muted-foreground italic">
+                    Lấy key tại <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary underline">Google AI Studio</a>.
+                  </p>
+                </div>
+                <Button onClick={handleSaveGeminiKey} disabled={savingKey} className="btn-hero h-11 px-8 rounded-xl shadow-gold">
+                  {savingKey ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                  Lưu API Key
+                </Button>
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="contact" className="mt-0 space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
-              <MapPin className="w-4 h-4" /> Thông tin liên hệ
-            </h3>
-
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Phone className="w-3 h-3" /> Hotline</Label>
-                <Input 
-                  value={settings.phone} 
-                  onChange={(e) => setSettings({...settings, phone: e.target.value})} 
-                  className="h-12 font-mono"
-                />
+                <Label>Hotline</Label>
+                <Input value={settings.phone} onChange={(e) => setSettings({...settings, phone: e.target.value})} className="h-12" />
               </div>
               <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Mail className="w-3 h-3" /> Email hỗ trợ</Label>
-                <Input 
-                  value={settings.email} 
-                  onChange={(e) => setSettings({...settings, email: e.target.value})} 
-                  className="h-12 font-mono"
-                />
+                <Label>Email</Label>
+                <Input value={settings.email} onChange={(e) => setSettings({...settings, email: e.target.value})} className="h-12" />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Clock className="w-3 h-3" /> Giờ làm việc</Label>
-              <Input 
-                value={settings.working_hours} 
-                onChange={(e) => setSettings({...settings, working_hours: e.target.value})} 
-                placeholder="VD: 8:00 - 21:00 (Tất cả các ngày)"
-                className="h-12"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2"><MapPin className="w-3 h-3" /> Địa chỉ trụ sở / Showroom chính (Hiển thị Footer)</Label>
-              <Input 
-                value={settings.address} 
-                onChange={(e) => setSettings({...settings, address: e.target.value})} 
-                className="h-12"
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="social" className="mt-0 space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
-              <Share2 className="w-4 h-4" /> Liên kết mạng xã hội
-            </h3>
-
-            <div className="grid gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0"><Share2 className="w-5 h-5" /></div>
-                <div className="flex-1 space-y-1">
-                  <Label>Facebook Fanpage</Label>
-                  <Input value={settings.facebook_url} onChange={(e) => setSettings({...settings, facebook_url: e.target.value})} placeholder="https://facebook.com/..." />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center text-white shrink-0"><Share2 className="w-5 h-5" /></div>
-                <div className="flex-1 space-y-1">
-                  <Label>Zalo OA</Label>
-                  <Input value={settings.zalo_url} onChange={(e) => setSettings({...settings, zalo_url: e.target.value})} placeholder="https://zalo.me/..." />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-red-600 flex items-center justify-center text-white shrink-0"><Share2 className="w-5 h-5" /></div>
-                <div className="flex-1 space-y-1">
-                  <Label>YouTube Channel</Label>
-                  <Input value={settings.youtube_url} onChange={(e) => setSettings({...settings, youtube_url: e.target.value})} placeholder="https://youtube.com/..." />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center text-white shrink-0"><Share2 className="w-5 h-5" /></div>
-                <div className="flex-1 space-y-1">
-                  <Label>TikTok Channel</Label>
-                  <Input value={settings.tiktok_url} onChange={(e) => setSettings({...settings, tiktok_url: e.target.value})} placeholder="https://tiktok.com/..." />
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="shipping" className="mt-0 space-y-6">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2 mb-6">
-              <Truck className="w-4 h-4" /> Tóm tắt Vận chuyển & Đổi trả
-            </h3>
-            <div className="space-y-2">
-              <Label>Nội dung hiển thị cuối trang chi tiết sản phẩm</Label>
-              <RichTextEditor 
-                value={settings.shipping_policy_summary} 
-                onChange={(val) => setSettings({...settings, shipping_policy_summary: val})}
-                placeholder="Nhập tóm tắt chính sách vận chuyển, đổi trả..."
-              />
             </div>
           </TabsContent>
 
           <div className="pt-8 mt-8 border-t border-border flex justify-end">
             <Button onClick={handleSave} disabled={loading} className="btn-hero h-12 px-8 shadow-gold">
-              {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
               Lưu Cấu Hình
             </Button>
           </div>

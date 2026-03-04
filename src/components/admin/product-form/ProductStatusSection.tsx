@@ -1,7 +1,11 @@
-import { Layers, TrendingUp, Star, ShoppingBag, Clock } from "lucide-react";
+import { Layers, TrendingUp, Star, ShoppingBag, Clock, Sparkles, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useState } from "react";
 
 interface ProductStatusSectionProps {
   formData: any;
@@ -9,6 +13,48 @@ interface ProductStatusSectionProps {
 }
 
 export function ProductStatusSection({ formData, setFormData }: ProductStatusSectionProps) {
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerateReviews = async () => {
+    const count = parseInt(formData.fake_review_count);
+    const rating = parseFloat(formData.fake_rating);
+
+    if (!formData.id) {
+      toast.error("Vui lòng lưu sản phẩm trước khi tạo đánh giá.");
+      return;
+    }
+
+    if (!count || count <= 0) {
+      toast.error("Vui lòng nhập số lượng đánh giá ảo cần tạo.");
+      return;
+    }
+
+    setIsGenerating(true);
+    const toastId = toast.loading("AI đang viết đánh giá chân thực...");
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-reviews', {
+        body: {
+          productId: formData.id,
+          productName: formData.name,
+          count,
+          rating
+        }
+      });
+
+      if (error) throw error;
+      
+      toast.success(`Đã tạo thành công ${data.count} đánh giá bằng AI!`, { id: toastId });
+    } catch (e: any) {
+      toast.error("Lỗi: " + e.message, { 
+        id: toastId,
+        description: "Hãy kiểm tra Gemini API Key trong phần Cài đặt hệ thống." 
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="bg-white p-6 rounded-3xl shadow-sm border border-border space-y-8">
       <div className="space-y-4">
@@ -60,6 +106,22 @@ export function ProductStatusSection({ formData, setFormData }: ProductStatusSec
             </Label>
             <Input type="number" value={formData.display_order} onChange={e=>setFormData({...formData, display_order: e.target.value})} className="h-10 rounded-lg" />
           </div>
+        </div>
+        
+        <div className="pt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="w-full h-12 rounded-xl border-primary/30 text-primary font-bold text-xs uppercase tracking-widest gap-2 hover:bg-primary/5"
+            onClick={handleGenerateReviews}
+            disabled={isGenerating}
+          >
+            {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            Tạo nội dung đánh giá AI
+          </Button>
+          <p className="text-[9px] text-muted-foreground mt-2 italic text-center">
+            * AI sẽ viết nội dung dựa trên số lượng và điểm sao ở trên.
+          </p>
         </div>
       </div>
     </div>
