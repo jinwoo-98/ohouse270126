@@ -76,12 +76,6 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
     <div className="flex flex-col gap-8 text-left">
       {/* Header Info */}
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Badge variant="secondary" className="bg-primary/10 text-primary uppercase tracking-widest text-[9px] font-bold border-none">
-            {product.category_id?.replace(/-/g, ' ')}
-          </Badge>
-          {product.is_new && <Badge className="bg-blue-600 text-[9px] h-5 font-bold uppercase">Mới</Badge>}
-        </div>
         <h1 className="text-3xl md:text-4xl font-display font-bold text-charcoal leading-tight">{product.name}</h1>
         
         {/* Rating Section */}
@@ -91,11 +85,20 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
           <span className="text-xs text-muted-foreground">{product.fake_review_count || reviewsCount} đánh giá</span>
         </div>
 
-        <div className="flex items-baseline gap-4">
-          <span className="text-3xl font-bold text-primary">{formatPrice(displayPrice)}</span>
-          {displayOriginalPrice && (
-            <span className="text-sm text-muted-foreground line-through decoration-destructive/30">{formatPrice(displayOriginalPrice)}</span>
+        <div className="space-y-3">
+          {/* Chuyển thẻ trạng thái xuống đây */}
+          {product.is_new && (
+            <Badge className="bg-blue-600 text-[9px] h-5 font-bold uppercase tracking-widest border-none px-2">
+              Sản phẩm mới
+            </Badge>
           )}
+          
+          <div className="flex items-baseline gap-4">
+            <span className="text-3xl font-bold text-primary">{formatPrice(displayPrice)}</span>
+            {displayOriginalPrice && (
+              <span className="text-sm text-muted-foreground line-through decoration-destructive/30">{formatPrice(displayOriginalPrice)}</span>
+            )}
+          </div>
         </div>
       </div>
 
