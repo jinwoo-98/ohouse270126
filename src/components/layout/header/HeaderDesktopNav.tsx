@@ -14,7 +14,7 @@ export function HeaderDesktopNav() {
 
   return (
     <div className="hidden lg:block">
-      {/* Hàng 3: Menu phụ/dịch vụ - Tăng gap từ 6 lên 12 */}
+      {/* Hàng 3: Menu phụ/dịch vụ */}
       <div className="bg-card">
         <div className="container-luxury flex items-center justify-center gap-12 h-9">
           {isLoading ? (
@@ -23,7 +23,7 @@ export function HeaderDesktopNav() {
             <React.Fragment key={link.name}>
               <Link 
                 to={link.href} 
-                className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+                className="text-[13px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
               >
                 {link.name}
               </Link>
@@ -33,7 +33,7 @@ export function HeaderDesktopNav() {
         </div>
       </div>
 
-      {/* Hàng 4: Menu sản phẩm chính - Tăng gap từ 1 lên 8 và padding ngang từ 4 lên 6 */}
+      {/* Hàng 4: Menu sản phẩm chính */}
       <div className="bg-card">
         <div className="container-luxury">
           <nav className="flex items-center justify-center gap-8">
@@ -51,7 +51,7 @@ export function HeaderDesktopNav() {
                 <Link 
                   to={item.href} 
                   className={cn(
-                    "flex items-center gap-1 px-6 py-4 text-[11px] font-bold tracking-[0.1em] transition-colors hover:text-primary uppercase",
+                    "flex items-center gap-1 px-6 py-4 text-[13px] font-bold tracking-[0.1em] transition-colors hover:text-primary uppercase",
                     item.isHighlight ? "text-destructive" : "text-charcoal/80"
                   )}
                 >
@@ -71,7 +71,7 @@ export function HeaderDesktopNav() {
                           <Link 
                             key={subItem.name} 
                             to={subItem.href} 
-                            className="block px-4 py-3 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-primary/5 hover:text-primary transition-colors" 
+                            className="block px-4 py-3 text-[11px] font-bold uppercase tracking-wider rounded-xl hover:bg-primary/5 hover:text-primary transition-colors" 
                             onClick={() => setActiveDropdown(null)}
                           >
                             {subItem.name}

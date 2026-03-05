@@ -60,7 +60,7 @@ export function HeaderSearch({ onOpenMobileMenu }: HeaderSearchProps) {
         <Search className="absolute left-3 w-4 h-4 text-muted-foreground" />
         <Input 
           placeholder="Tìm sản phẩm..." 
-          className="pl-10 pr-4 h-10 text-sm bg-secondary/50 border-0 focus-visible:ring-1"
+          className="pl-10 pr-4 h-10 text-[13px] bg-secondary/50 border-0 focus-visible:ring-1"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => setIsSearchFocused(true)}

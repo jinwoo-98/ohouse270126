@@ -71,7 +71,7 @@ export function HeaderTopBanner() {
   return (
     <>
       <div className="bg-primary text-primary-foreground overflow-hidden w-full" style={{ color: textColor }}>
-        <div className="container-luxury flex items-center justify-between h-10 text-[10px] md:text-xs">
+        <div className="container-luxury flex items-center justify-between h-10 text-[12px]">
           <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
             <div className="relative h-6 flex-1 max-w-full md:max-w-[450px] overflow-hidden">
               <AnimatePresence mode="wait">
