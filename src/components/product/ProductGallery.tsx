@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { ChevronLeft, ChevronRight, ZoomIn, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn, getOptimizedImageUrl, formatPrice, generateProductAltText, generateImageSrcSet } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -178,15 +178,6 @@ export function ProductGallery({
         {hotspots.length > 0 && renderHotspots(false)}
         
         {typeof children === 'function' && children(currentImageUrl)}
-
-        <div className="absolute top-4 right-4 z-20">
-          <button 
-            onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
-            className="p-2.5 bg-white/90 backdrop-blur-md rounded-xl shadow-elevated hover:bg-primary hover:text-white transition-all text-charcoal"
-          >
-            <ZoomIn className="w-5 h-5" />
-          </button>
-        </div>
 
         {allImages.length > 1 && (
           <>
