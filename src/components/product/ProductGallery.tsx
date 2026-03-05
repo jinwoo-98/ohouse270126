@@ -123,7 +123,7 @@ export function ProductGallery({
                 setPage([idx, idx > imageIndex ? 1 : -1]);
               }}
               className={cn(
-                "relative w-16 h-16 md:w-full md:aspect-square rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
+                "relative aspect-square w-16 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
                 imageIndex === idx 
                   ? "border-primary ring-2 ring-primary/10" 
                   : "border-transparent opacity-50 hover:opacity-100"
