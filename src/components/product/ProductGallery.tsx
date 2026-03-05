@@ -192,13 +192,13 @@ export function ProductGallery({
           <>
             <button 
               onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-              className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 flex items-center justify-center group shadow-medium"
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-16 bg-white/80 backdrop-blur-md rounded-r-xl text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 flex items-center justify-center group shadow-medium md:opacity-0 md:group-hover:opacity-100"
             >
               <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); paginate(1); }}
-              className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-md rounded-full text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 flex items-center justify-center group shadow-medium"
+              className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-16 bg-white/80 backdrop-blur-md rounded-l-xl text-charcoal hover:bg-primary hover:text-white transition-all duration-300 z-10 flex items-center justify-center group shadow-medium md:opacity-0 md:group-hover:opacity-100"
             >
               <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
             </button>
