@@ -11,7 +11,8 @@ import {
   Clock,
   Trash2,
   AlertCircle,
-  HelpCircle
+  HelpCircle,
+  CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,7 +108,7 @@ export default function MarketingTools() {
   const [targetId, setTargetId] = useState("all");
   const [updateZeroOnly, setUpdateZeroOnly] = useState(false);
   const [deleteOldReviews, setDeleteOldReviews] = useState(true);
-  const [randomizeWidely, setRandomizeWidely] = useState(false); // New state for wide randomization
+  const [randomizeWidely, setRandomizeWidely] = useState(false);
 
   const [confirmType, setConfirmType] = useState<'stats' | 'reviews' | null>(null);
 
@@ -215,7 +216,7 @@ export default function MarketingTools() {
 
   const handleGenerateReviews = async () => {
     const daysBack = parseInt(stats.review_days_back) || 60;
-    const toastId = toast.loading("Khởi động Engine v2: Đang phân tích danh mục sản phẩm...");
+    const toastId = toast.loading("Đang khởi tạo dữ liệu đánh giá từ bộ mẫu có sẵn...");
     setReviewLoading(true);
     try {
       let query = supabase.from('products').select('id, name, fake_review_count, fake_rating');
@@ -224,13 +225,12 @@ export default function MarketingTools() {
 
       const { data: products } = await query;
       if (!products || products.length === 0) { 
-        toast.error("Không tìm thấy sản phẩm mục tiêu để sinh nội dung.", { id: toastId }); 
+        toast.error("Không tìm thấy sản phẩm mục tiêu.", { id: toastId }); 
         return; 
       }
 
       for (const p of products) {
         if (deleteOldReviews) {
-          toast.loading(`Đang dọn dẹp dữ liệu cũ cho: ${p.name}...`, { id: toastId });
           await supabase.from('reviews').delete().eq('product_id', p.id);
         }
 
@@ -261,7 +261,6 @@ export default function MarketingTools() {
         }
 
         if (newReviews.length > 0) {
-          toast.loading(`Đang chèn ${newReviews.length} đánh giá mới cho: ${p.name}...`, { id: toastId });
           await supabase.from('reviews').insert(newReviews);
           
           const { count: realTotal } = await supabase
@@ -275,9 +274,9 @@ export default function MarketingTools() {
           }).eq('id', p.id);
         }
       }
-      toast.success(`Hoàn tất! Đã xử lý ${products.length} sản phẩm.`, { id: toastId });
+      toast.success(`Hoàn tất! Đã tạo đánh giá mẫu cho ${products.length} sản phẩm.`, { id: toastId });
     } catch (e: any) { 
-      toast.error("Lỗi Engine: " + e.message, { id: toastId }); 
+      toast.error("Lỗi: " + e.message, { id: toastId }); 
     } finally { 
       setReviewLoading(false); 
       setConfirmType(null);
@@ -376,10 +375,10 @@ export default function MarketingTools() {
               </div>
 
               <div className="bg-charcoal p-8 rounded-3xl border shadow-elevated text-cream">
-                 <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2"><MessageSquareQuote className="w-5 h-5" /> 3. Nội dung đánh giá thực tế (Engine v2)</h3>
+                 <h3 className="text-sm font-bold uppercase tracking-widest text-primary mb-6 flex items-center gap-2"><MessageSquareQuote className="w-5 h-5" /> 3. Tạo đánh giá từ mẫu có sẵn (Không cần AI)</h3>
                 
                 <div className="space-y-4 mb-8">
-                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sinh nội dung dựa trên 3 cấp độ: Ngắn (40%), Trung bình (45%) và Dài (15%) để đảm bảo tính tự nhiên tối đa.</p>
+                  <p className="text-sm text-taupe leading-relaxed">Hệ thống sẽ tự động ghép nối các câu đánh giá tiếng Việt chuyên về nội thất đã được biên soạn sẵn. Phương án này <b>không tốn phí API</b> và hoạt động ngay lập tức.</p>
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
@@ -406,7 +405,7 @@ export default function MarketingTools() {
                 </div>
 
                 <Button onClick={() => setConfirmType('reviews')} disabled={reviewLoading} variant="outline" className="w-full h-14 border-primary/40 hover:bg-primary text-primary hover:text-white rounded-2xl text-sm font-bold uppercase">
-                  {reviewLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} Sinh nội dung đánh giá thực tế hàng loạt
+                  {reviewLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5 mr-2" />} Bắt đầu tạo đánh giá từ mẫu
                 </Button>
               </div>
             </div>
@@ -429,9 +428,9 @@ export default function MarketingTools() {
         onClose={() => setConfirmType(null)}
         onConfirm={handleGenerateReviews}
         variant="warning"
-        title="Xác nhận sinh nội dung AI"
-        description={`Hệ thống sẽ tự động tạo các bài đánh giá thực tế. ${deleteOldReviews ? 'Dữ liệu đánh giá cũ sẽ bị xóa hoàn toàn.' : ''} Quá trình này có thể mất vài phút.`}
-        confirmText="Bắt đầu Engine Engine v2"
+        title="Xác nhận tạo đánh giá mẫu"
+        description={`Hệ thống sẽ tự động tạo các bài đánh giá từ bộ mẫu nội thất tiếng Việt. ${deleteOldReviews ? 'Dữ liệu đánh giá cũ sẽ bị xóa hoàn toàn.' : ''}`}
+        confirmText="Xác nhận thực hiện"
       />
     </div>
   );
