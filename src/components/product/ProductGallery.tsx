@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, ZoomIn, X } from "lucide-react";
-import { cn, getOptimizedImageUrl, formatPrice, generateProductAltText } from "@/lib/utils";
+import { cn, getOptimizedImageUrl, formatPrice, generateProductAltText, generateImageSrcSet } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -48,7 +48,6 @@ export function ProductGallery({
   aspectRatio = "aspect-square"
 }: ProductGalleryProps) {
   const safeGallery = Array.isArray(galleryImages) ? galleryImages : [];
-  // Đảm bảo luôn có ít nhất 1 ảnh (dùng placeholder nếu mainImage trống)
   const allImages = [mainImage || '/placeholder.svg', ...safeGallery].filter(Boolean);
   
   const [[page, direction], setPage] = useState([0, 0]);
@@ -101,18 +100,51 @@ export function ProductGallery({
               <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
             </button>
           </TooltipTrigger>
-          <TooltipContent side={isLightbox ? "bottom" : "top"} className="bg-charcoal text-cream border-none p-3 rounded-xl shadow-elevated">
-            <p className="font-bold text-[10px] uppercase tracking-wider">{item.product.name}</p>
-            <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.product.price)}</p>
-          </TooltipContent>
+          {item.product && (
+            <TooltipContent side={isLightbox ? "bottom" : "top"} className="bg-charcoal text-cream border-none p-3 rounded-xl shadow-elevated">
+              <p className="font-bold text-[10px] uppercase tracking-wider">{item.product.name}</p>
+              <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.product.price)}</p>
+            </TooltipContent>
+          )}
         </Tooltip>
       ))}
     </TooltipProvider>
   );
 
   return (
-    <div className="w-full max-w-full space-y-4 select-none">
-      <div className={cn("relative w-full bg-white rounded-2xl md:rounded-3xl overflow-hidden border border-border/40 shadow-subtle group", aspectRatio)}>
+    <div className="w-full max-w-full select-none flex flex-col md:flex-row gap-4">
+      {/* Thumbnails: Dọc bên trái trên desktop, ngang trên mobile */}
+      {allImages.length > 1 && (
+        <div className="flex md:flex-col gap-2.5 overflow-x-auto md:overflow-y-auto no-scrollbar order-2 md:order-1 w-full md:w-20 lg:w-24 shrink-0 py-1">
+          {allImages.map((img, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                setPage([idx, idx > imageIndex ? 1 : -1]);
+              }}
+              className={cn(
+                "relative w-16 h-16 md:w-full md:aspect-square rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
+                imageIndex === idx 
+                  ? "border-primary ring-2 ring-primary/10" 
+                  : "border-transparent opacity-50 hover:opacity-100"
+              )}
+            >
+              <img 
+                src={getOptimizedImageUrl(img, { width: 150 })} 
+                alt={generateProductAltText(product || { name: productName, id: 'THUMB' }, idx)} 
+                className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).src = img; }}
+              />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Main Image Container */}
+      <div className={cn(
+        "relative flex-1 bg-white rounded-2xl overflow-hidden border border-border/40 shadow-subtle group order-1 md:order-2", 
+        aspectRatio
+      )}>
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={page}
@@ -134,7 +166,7 @@ export function ProductGallery({
               draggable="false"
               loading={imageIndex === 0 ? "eager" : "lazy"}
               onError={(e) => {
-                (e.target as HTMLImageElement).src = currentImageUrl; // Quay lại ảnh gốc nếu lỗi tối ưu
+                (e.target as HTMLImageElement).src = currentImageUrl;
               }}
             />
             <div 
@@ -178,32 +210,6 @@ export function ProductGallery({
           {imageIndex + 1} / {allImages.length}
         </div>
       </div>
-
-      {allImages.length > 1 && (
-        <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1 w-full">
-          {allImages.map((img, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                setPage([idx, idx > imageIndex ? 1 : -1]);
-              }}
-              className={cn(
-                "relative w-16 h-16 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white",
-                imageIndex === idx 
-                  ? "border-primary ring-2 ring-primary/10" 
-                  : "border-transparent opacity-50 hover:opacity-100"
-              )}
-            >
-              <img 
-                src={getOptimizedImageUrl(img, { width: 150 })} 
-                alt={generateProductAltText(product || { name: productName, id: 'THUMB' }, idx)} 
-                className="w-full h-full object-cover"
-                onError={(e) => { (e.target as HTMLImageElement).src = img; }}
-              />
-            </button>
-          ))}
-        </div>
-      )}
 
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
         <DialogContent 
