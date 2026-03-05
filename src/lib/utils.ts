@@ -10,8 +10,16 @@ export function formatPrice(price: number) {
 }
 
 /**
+ * Tự động tạo mã SKU từ ID sản phẩm (Lấy 8 ký tự đầu của UUID)
+ */
+export function generateSKU(id: string) {
+  if (!id) return "";
+  const shortId = id.split('-')[0].toUpperCase();
+  return `OH-${shortId}`;
+}
+
+/**
  * Định dạng số với dấu chấm phân cách hàng nghìn (VD: 1.000.000)
- * Đã sửa: Trả về chuỗi rỗng nếu giá trị là 0 hoặc trống để ô nhập liệu sạch sẽ hơn.
  */
 export function formatNumberWithDots(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === "" || value === 0 || value === "0") return "";
@@ -66,16 +74,13 @@ export function generateProductAltText(product: any, index: number = 0) {
 
 /**
  * Generates an optimized image URL using Supabase Image Transformation.
- * Note: This requires Supabase Pro plan. Fallbacks to original URL if not available.
  */
 export function getOptimizedImageUrl(url: string | null | undefined, options: { width: number; height?: number; quality?: number; format?: 'webp' }) {
   if (!url) return '/placeholder.svg';
   
-  // Nếu không phải ảnh từ Supabase hoặc không nằm trong bucket public, trả về URL gốc
   if (!url.includes('supabase.co') || !url.includes('/object/public/')) return url;
 
   try {
-    // Chuyển đổi sang endpoint render để tối ưu dung lượng
     const transformedUrl = url.replace('/object/public/', '/render/image/public/');
     const params = new URLSearchParams();
     params.append('width', String(options.width));
@@ -114,7 +119,7 @@ export function sanitizeUrl(url: string | null | undefined): string {
 }
 
 /**
- * GIẢI PHÁP CUỐI CÙNG: Bọc mỗi từ trong một thẻ span để trình duyệt không thể ngắt đôi từ.
+ * Bọc mỗi từ trong một thẻ span để trình duyệt không thể ngắt đôi từ.
  */
 export function wrapWordsInSpans(htmlString: string): string {
   if (typeof DOMParser === 'undefined' || !htmlString) return htmlString;

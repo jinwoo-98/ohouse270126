@@ -20,7 +20,7 @@ import { useProductRelations } from "@/hooks/useProductRelations";
 import { useSimilarProducts } from "@/hooks/useSimilarProducts";
 import { Helmet } from "react-helmet-async";
 import { useSeo } from "@/hooks/useSeo";
-import { generateProductAltText } from "@/lib/utils";
+import { generateProductAltText, generateSKU } from "@/lib/utils";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 export default function ProductDetailPage() {
@@ -210,12 +210,13 @@ export default function ProductDetailPage() {
                 </div>
               ))}
               <ChevronRight className="w-2.5 h-2.5 opacity-50 shrink-0" />
-              <span className="text-foreground font-bold truncate max-w-[120px] sm:max-w-none">{product.name}</span>
+              <span className="text-foreground font-bold truncate max-w-[120px] sm:max-w-none">
+                {generateSKU(product.id)}
+              </span>
             </div>
           </div>
 
           <div className="container-luxury py-6 md:py-12">
-            {/* Cập nhật grid ratio: 1.2fr cho Gallery (~900px) và 1fr cho Info (~750px) */}
             <div className="grid lg:grid-cols-[1.2fr_1fr] gap-8 md:gap-12 lg:gap-20 overflow-hidden">
               <div className="min-w-0 w-full overflow-hidden">
                 <ProductGallery 
