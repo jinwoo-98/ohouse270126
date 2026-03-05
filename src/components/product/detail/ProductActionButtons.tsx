@@ -127,6 +127,7 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
               </div>
               <DialogTitle className="text-lg font-bold uppercase tracking-widest">Thư Viện Hình Ảnh</DialogTitle>
             </div>
+            <button onClick={() => setIsMediaOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5" /></button>
           </div>
           <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar bg-white">
             <div className="grid grid-cols-2 gap-4 md:gap-6">
@@ -154,6 +155,7 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
               </div>
               <DialogTitle className="text-lg font-bold uppercase tracking-widest">Thông Số Kích Thước</DialogTitle>
             </div>
+            <button onClick={() => setIsDimensionsOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5" /></button>
           </div>
           <div className="p-8 bg-white flex items-center justify-center">
             <div className="rounded-2xl overflow-hidden border border-border/40 shadow-subtle max-w-full">
@@ -165,7 +167,7 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
 
       {/* 3. Dialog Lookbook */}
       <Dialog open={isLookbookOpen} onOpenChange={setIsLookbookOpen}>
-        <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] p-0 overflow-hidden border-none rounded-[32px] shadow-elevated z-[160]">
+        <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] p-0 overflow-hidden border-none rounded-[32px] shadow-elevated z-[160] [&>button]:hidden">
           {lookbook && (
             <div className="flex flex-col md:flex-row h-full">
               {/* Left: Lookbook Image with Hotspots */}
