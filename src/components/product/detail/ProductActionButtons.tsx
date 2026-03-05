@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Images, Ruler, Sparkles, Loader2, X, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,21 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
 
   const allImages = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
 
+  // Lọc sản phẩm duy nhất cho danh sách Lookbook
+  const uniqueLookbookProducts = useMemo(() => {
+    if (!lookbook?.shop_look_items) return [];
+    const seen = new Set();
+    return lookbook.shop_look_items
+      .filter((item: any) => {
+        if (!item.products) return false;
+        const pid = item.products.id || item.product_id;
+        if (seen.has(pid)) return false;
+        seen.add(pid);
+        return true;
+      })
+      .map((item: any) => item.products);
+  }, [lookbook]);
+
   const fetchLookbook = async () => {
     if (lookbook) {
       setIsLookbookOpen(true);
@@ -33,7 +48,6 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
 
     setLoadingLook(true);
     try {
-      // Tìm lookbook chứa sản phẩm này
       const { data: itemData } = await supabase
         .from('shop_look_items')
         .select('look_id')
@@ -57,7 +71,6 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
         setLookbook(lookData);
         setIsLookbookOpen(true);
       } else {
-        // Nếu không có lookbook cụ thể, tìm lookbook cùng danh mục
         const { data: catLook } = await supabase
           .from('shop_looks')
           .select(`
@@ -76,7 +89,6 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
           setLookbook(catLook);
           setIsLookbookOpen(true);
         } else {
-          // Thông báo nếu không tìm thấy cảm hứng nào
           alert("Hiện chưa có không gian phối đồ mẫu cho sản phẩm này.");
         }
       }
@@ -137,6 +149,7 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
                     src={getOptimizedImageUrl(img, { width: 600 })} 
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                     alt={`${product.name} - ${idx + 1}`} 
+                    onError={(e) => { (e.target as HTMLImageElement).src = img; }}
                   />
                 </div>
               ))}
@@ -157,9 +170,16 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
             </div>
             <button onClick={() => setIsDimensionsOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5" /></button>
           </div>
-          <div className="p-8 bg-white flex items-center justify-center">
-            <div className="rounded-2xl overflow-hidden border border-border/40 shadow-subtle max-w-full">
-              <img src={product.dimension_image_url} alt="Kích thước sản phẩm" className="max-w-full h-auto" />
+          <div className="p-8 bg-white flex items-center justify-center min-h-[300px]">
+            <div className="rounded-2xl overflow-hidden border border-border/40 shadow-subtle max-w-full relative">
+              <img 
+                src={product.dimension_image_url} 
+                alt="Kích thước sản phẩm" 
+                className="max-w-full h-auto" 
+                loading="eager"
+                // @ts-ignore
+                fetchpriority="high"
+              />
             </div>
           </div>
         </DialogContent>
@@ -170,7 +190,6 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
         <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] p-0 overflow-hidden border-none rounded-[32px] shadow-elevated z-[160] [&>button]:hidden">
           {lookbook && (
             <div className="flex flex-col md:flex-row h-full">
-              {/* Left: Lookbook Image with Hotspots */}
               <div className="flex-1 relative bg-secondary/20 min-h-[300px] md:min-h-0">
                 <img src={lookbook.image_url} className="w-full h-full object-cover" alt={lookbook.title} />
                 <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent pointer-events-none" />
@@ -208,19 +227,16 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
                 </TooltipProvider>
               </div>
 
-              {/* Right: Product List */}
               <div className="w-full md:w-[400px] bg-white flex flex-col border-l border-border/40">
                 <div className="p-6 border-b border-border/40 flex items-center justify-between">
                   <h3 className="font-bold text-sm uppercase tracking-widest text-charcoal">Sản phẩm trong ảnh</h3>
                   <button onClick={() => setIsLookbookOpen(false)} className="p-2 hover:bg-secondary rounded-full transition-colors"><X className="w-4 h-4" /></button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-secondary/5">
-                  {lookbook.shop_look_items
-                    ?.filter((item: any) => item.products)
-                    .map((item: any) => (
+                  {uniqueLookbookProducts.map((p: any) => (
                     <HorizontalProductCard 
-                      key={item.id} 
-                      product={item.products} 
+                      key={p.id} 
+                      product={p} 
                       onClose={() => setIsLookbookOpen(false)} 
                     />
                   ))}
