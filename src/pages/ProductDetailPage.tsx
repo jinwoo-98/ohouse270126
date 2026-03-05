@@ -211,7 +211,7 @@ export default function ProductDetailPage() {
               ))}
               <ChevronRight className="w-2.5 h-2.5 opacity-50 shrink-0" />
               <span className="text-foreground font-bold truncate max-w-[120px] sm:max-w-none">
-                {generateSKU(product.id)}
+                SKU: {generateSKU(product.id)}
               </span>
             </div>
           </div>
