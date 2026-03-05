@@ -88,7 +88,7 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
         <div className="flex items-center gap-3">
           <StarRating rating={product.fake_rating || 5} size="w-4 h-4" />
           <span className="text-sm font-bold text-charcoal">{product.fake_rating || "5.0"}</span>
-          <span className="text-xs text-muted-foreground">({product.fake_review_count || reviewsCount} đánh giá)</span>
+          <span className="text-xs text-muted-foreground">{product.fake_review_count || reviewsCount} đánh giá</span>
         </div>
 
         <div className="flex items-baseline gap-4">
