@@ -215,7 +215,8 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="container-luxury py-6 md:py-12">
-            <div className="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-24 overflow-hidden">
+            {/* Cập nhật grid ratio: 1.2fr cho Gallery (~900px) và 1fr cho Info (~750px) */}
+            <div className="grid lg:grid-cols-[1.2fr_1fr] gap-8 md:gap-12 lg:gap-20 overflow-hidden">
               <div className="min-w-0 w-full overflow-hidden">
                 <ProductGallery 
                   mainImage={product.image_url} 
@@ -224,7 +225,7 @@ export default function ProductDetailPage() {
                   product={product}
                 />
               </div>
-              <div className="min-w-0 w-full px-1 md:px-0">
+              <div className="min-w-0 w-full px-1 md:px-0 max-w-2xl">
                 <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
               </div>
             </div>
