@@ -140,10 +140,9 @@ export function ProductGallery({
         </div>
       )}
 
-      {/* Main Image Container */}
+      {/* Main Image Container: Luôn là aspect-square (1:1) */}
       <div className={cn(
-        "relative flex-1 bg-white rounded-2xl overflow-hidden border border-border/40 shadow-subtle group order-1 md:order-2", 
-        aspectRatio
+        "relative flex-1 bg-white rounded-2xl overflow-hidden border border-border/40 shadow-subtle group order-1 md:order-2 aspect-square"
       )}>
         <AnimatePresence initial={false} custom={direction}>
           <motion.div

@@ -215,123 +215,121 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="container-luxury py-6 md:py-12">
-            <div className="max-w-6xl mx-auto">
-              <div className="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-20 overflow-hidden">
-                <div className="min-w-0 w-full overflow-hidden">
-                  <ProductGallery 
-                    mainImage={product.image_url} 
-                    galleryImages={product.gallery_urls} 
-                    productName={product.name} 
-                    product={product}
-                  />
-                </div>
-                <div className="min-w-0 w-full px-1 md:px-0">
-                  <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
-                </div>
+            <div className="grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-24 overflow-hidden">
+              <div className="min-w-0 w-full overflow-hidden">
+                <ProductGallery 
+                  mainImage={product.image_url} 
+                  galleryImages={product.gallery_urls} 
+                  productName={product.name} 
+                  product={product}
+                />
+              </div>
+              <div className="min-w-0 w-full px-1 md:px-0">
+                <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
+              </div>
+            </div>
+            
+            <div className="mt-12 md:mt-24 space-y-24">
+              <div id="description">
+                <ProductDescription 
+                  description={product.description} 
+                  product={product} 
+                />
               </div>
               
-              <div className="mt-12 md:mt-24 space-y-24">
-                <div id="description">
-                  <ProductDescription 
-                    description={product.description} 
-                    product={product} 
-                  />
-                </div>
-                
-                <div id="reviews">
-                  <ProductReviews 
-                    reviews={reviews} 
-                    product={product} 
-                    displayRating={product.fake_rating || 5} 
-                    displayReviewCount={product.fake_review_count || reviews.length}
-                    onSubmitReview={handleSubmitReview}
-                  />
-                </div>
-
-                <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
-
-                {perfectMatch.length > 0 && (
-                  <div id="inspiration">
-                    <ProductHorizontalScroll 
-                      products={perfectMatch} 
-                      title="Bộ Sưu Tập Hoàn Hảo" 
-                      onQuickView={setQuickViewProduct} 
-                    />
-                  </div>
-                )}
-
-                {boughtTogether.length > 0 && (
-                  <ProductHorizontalScroll products={boughtTogether} title="Gợi Ý Mua Kèm" onQuickView={setQuickViewProduct} />
-                )}
-
-                <div id="related">
-                  <ProductHorizontalScroll products={similarProducts} title="Sản Phẩm Tương Tự" onQuickView={setQuickViewProduct} />
-                </div>
-
-                <RecentlyViewed />
-
-                <section id="shipping-info" className="py-12 md:py-16 border-t border-border/60">
-                  <div className="grid lg:grid-cols-3 gap-12">
-                    <div className="lg:col-span-2">
-                      <div className="flex items-center gap-3 mb-8">
-                        <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                          <Truck className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl font-bold uppercase tracking-widest text-charcoal">Vận Chuyển & Đổi Trả</h2>
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Thông tin hỗ trợ khách hàng</p>
-                        </div>
-                      </div>
-                      <div className="grid md:grid-cols-2 gap-10">
-                        <div className="space-y-4">
-                          <h3 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Chính Sách Giao Hàng
-                          </h3>
-                          <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
-                            <p>• <strong>Miễn phí vận chuyển</strong> cho đơn hàng từ 5.000.000đ tại nội thành TP.HCM và Hà Nội.</p>
-                            <p>• Thời gian giao hàng từ <strong>2 - 5 ngày làm việc</strong> đối với các sản phẩm có sẵn.</p>
-                            <p>• Hỗ trợ lắp đặt chuyên nghiệp tại nhà bởi đội ngũ kỹ thuật của OHOUSE.</p>
-                          </div>
-                        </div>
-                        <div className="space-y-4">
-                          <h3 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Chính Sách Đổi Trả
-                          </h3>
-                          <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
-                            <p>• Đổi trả trong vòng <strong>30 ngày</strong> nếu phát hiện lỗi từ nhà sản xuất.</p>
-                            <p>• Sản phẩm đổi trả phải còn nguyên vẹn, không trầy xước và đầy đủ phụ kiện đi kèm.</p>
-                            <p>• Hoàn tiền nhanh chóng qua phương thức chuyển khoản trong vòng 3-5 ngày làm việc.</p>
-                          </div>
-                        </div>
-                      </div>
-                      {shippingPolicy && (
-                        <div 
-                          className="mt-10 p-6 bg-secondary/30 rounded-2xl border border-border/40 vn-content-view text-muted-foreground" 
-                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(shippingPolicy) }} 
-                        />
-                      )}
-                    </div>
-                    <div className="space-y-4">
-                      <div className="bg-secondary/30 p-8 rounded-[32px] text-charcoal shadow-subtle border border-border/40 h-full">
-                        <h3 className="font-bold mb-6 text-sm uppercase tracking-widest flex items-center gap-3 text-primary"><ShieldCheck className="w-5 h-5" /> Cam kết OHOUSE</h3>
-                        <ul className="space-y-5">
-                          {[
-                            { icon: ShieldCheck, t: "Bảo hành 2 năm", d: "Hỗ trợ kỹ thuật trọn đời" },
-                            { icon: RotateCw, t: "30 ngày đổi trả", d: "An tâm tuyệt đối khi mua sắm" },
-                            { icon: CreditCard, t: "Trả góp 0%", d: "Thủ tục nhanh qua thẻ tín dụng" },
-                            { icon: Truck, t: "Lắp đặt miễn phí", d: "Tận tâm trong từng chi tiết" }
-                          ].map((item, i) => (
-                            <li key={i} className="flex gap-4">
-                              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 border border-border/40 shadow-sm"><item.icon className="w-5 h-5 text-primary" /></div>
-                              <div><p className="text-xs font-bold uppercase tracking-wider">{item.t}</p><p className="text-[10px] text-muted-foreground mt-1">{item.d}</p></div>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </section>
+              <div id="reviews">
+                <ProductReviews 
+                  reviews={reviews} 
+                  product={product} 
+                  displayRating={product.fake_rating || 5} 
+                  displayReviewCount={product.fake_review_count || reviews.length}
+                  onSubmitReview={handleSubmitReview}
+                />
               </div>
+
+              <ProductQnA productName={product.name} onOpenChat={() => setIsAIChatOpen(true)} />
+
+              {perfectMatch.length > 0 && (
+                <div id="inspiration">
+                  <ProductHorizontalScroll 
+                    products={perfectMatch} 
+                    title="Bộ Sưu Tập Hoàn Hảo" 
+                    onQuickView={setQuickViewProduct} 
+                  />
+                </div>
+              )}
+
+              {boughtTogether.length > 0 && (
+                <ProductHorizontalScroll products={boughtTogether} title="Gợi Ý Mua Kèm" onQuickView={setQuickViewProduct} />
+              )}
+
+              <div id="related">
+                <ProductHorizontalScroll products={similarProducts} title="Sản Phẩm Tương Tự" onQuickView={setQuickViewProduct} />
+              </div>
+
+              <RecentlyViewed />
+
+              <section id="shipping-info" className="py-12 md:py-16 border-t border-border/60">
+                <div className="grid lg:grid-cols-3 gap-12">
+                  <div className="lg:col-span-2">
+                    <div className="flex items-center gap-3 mb-8">
+                      <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                        <Truck className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold uppercase tracking-widest text-charcoal">Vận Chuyển & Đổi Trả</h2>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Thông tin hỗ trợ khách hàng</p>
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-10">
+                      <div className="space-y-4">
+                        <h3 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Chính Sách Giao Hàng
+                        </h3>
+                        <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                          <p>• <strong>Miễn phí vận chuyển</strong> cho đơn hàng từ 5.000.000đ tại nội thành TP.HCM và Hà Nội.</p>
+                          <p>• Thời gian giao hàng từ <strong>2 - 5 ngày làm việc</strong> đối với các sản phẩm có sẵn.</p>
+                          <p>• Hỗ trợ lắp đặt chuyên nghiệp tại nhà bởi đội ngũ kỹ thuật của OHOUSE.</p>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <h3 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Chính Sách Đổi Trả
+                        </h3>
+                        <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                          <p>• Đổi trả trong vòng <strong>30 ngày</strong> nếu phát hiện lỗi từ nhà sản xuất.</p>
+                          <p>• Sản phẩm đổi trả phải còn nguyên vẹn, không trầy xước và đầy đủ phụ kiện đi kèm.</p>
+                          <p>• Hoàn tiền nhanh chóng qua phương thức chuyển khoản trong vòng 3-5 ngày làm việc.</p>
+                        </div>
+                      </div>
+                    </div>
+                    {shippingPolicy && (
+                      <div 
+                        className="mt-10 p-6 bg-secondary/30 rounded-2xl border border-border/40 vn-content-view text-muted-foreground" 
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(shippingPolicy) }} 
+                      />
+                    )}
+                  </div>
+                  <div className="space-y-4">
+                    <div className="bg-secondary/30 p-8 rounded-[32px] text-charcoal shadow-subtle border border-border/40 h-full">
+                      <h3 className="font-bold mb-6 text-sm uppercase tracking-widest flex items-center gap-3 text-primary"><ShieldCheck className="w-5 h-5" /> Cam kết OHOUSE</h3>
+                      <ul className="space-y-5">
+                        {[
+                          { icon: ShieldCheck, t: "Bảo hành 2 năm", d: "Hỗ trợ kỹ thuật trọn đời" },
+                          { icon: RotateCw, t: "30 ngày đổi trả", d: "An tâm tuyệt đối khi mua sắm" },
+                          { icon: CreditCard, t: "Trả góp 0%", d: "Thủ tục nhanh qua thẻ tín dụng" },
+                          { icon: Truck, t: "Lắp đặt miễn phí", d: "Tận tâm trong từng chi tiết" }
+                        ].map((item, i) => (
+                          <li key={i} className="flex gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 border border-border/40 shadow-sm"><item.icon className="w-5 h-5 text-primary" /></div>
+                            <div><p className="text-xs font-bold uppercase tracking-wider">{item.t}</p><p className="text-[10px] text-muted-foreground mt-1">{item.d}</p></div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         </main>
