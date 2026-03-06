@@ -149,7 +149,8 @@ export function ProductGallery({
                 setPage([idx, idx > imageIndex ? 1 : -1]);
               }}
               className={cn(
-                "relative aspect-square w-16 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
+                "relative w-16 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
+                aspectRatio, // Sử dụng cùng tỉ lệ với ảnh chính
                 imageIndex === idx 
                   ? "border-primary ring-2 ring-primary/10" 
                   : "border-transparent opacity-50 hover:opacity-100"
