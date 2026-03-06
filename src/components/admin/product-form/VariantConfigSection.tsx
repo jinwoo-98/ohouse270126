@@ -21,12 +21,12 @@ interface VariantTier {
 }
 
 interface VariantConfigSectionProps {
-  attributes: any[]; // Danh sách từ bảng variant_options
+  variantOptions: any[]; // Danh sách từ bảng variant_options
   tierConfig: VariantTier[];
   setTierConfig: (config: VariantTier[]) => void;
 }
 
-export function VariantConfigSection({ attributes, tierConfig, setTierConfig }: VariantConfigSectionProps) {
+export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig }: VariantConfigSectionProps) {
   const [tempValue, setTempValue] = useState<Record<number, string>>({});
 
   const addTier = () => {
@@ -92,8 +92,8 @@ export function VariantConfigSection({ attributes, tierConfig, setTierConfig }: 
       )}
 
       {tierConfig.map((tier, idx) => {
-        const matchedAttr = attributes.find(a => a.name.toLowerCase() === tier.name.toLowerCase());
-        const suggestions = matchedAttr?.options || [];
+        const matchedOpt = variantOptions.find(a => a.name.toLowerCase() === tier.name.toLowerCase());
+        const suggestions = matchedOpt?.options || [];
 
         return (
           <div key={idx} className="p-6 bg-secondary/30 rounded-2xl border border-border/50 relative animate-fade-in">
@@ -122,9 +122,9 @@ export function VariantConfigSection({ attributes, tierConfig, setTierConfig }: 
                   className="h-11 bg-white rounded-xl font-bold"
                 />
                 
-                {/* Gợi ý nhanh tên nhóm */}
+                {/* Gợi ý nhanh tên nhóm từ variant_options */}
                 <div className="flex flex-wrap gap-1.5">
-                  {attributes.map(a => (
+                  {variantOptions.map(a => (
                     <button
                       key={a.id}
                       type="button"

@@ -31,6 +31,7 @@ export default function ProductForm() {
   const [categories, setCategories] = useState<any[]>([]);
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [allAttributes, setAllAttributes] = useState<any[]>([]);
+  const [allVariantOptions, setAllVariantOptions] = useState<any[]>([]); 
   
   const [tierConfig, setTierConfig] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
@@ -130,7 +131,6 @@ export default function ProductForm() {
       const tier = tiers[index];
       let res: any[] = [];
       tier.values.forEach((val: any) => {
-        // Sử dụng val.label thay vì val nếu val là object
         const label = typeof val === 'object' ? val.label : val;
         res = res.concat(generateCombinations(tiers, index + 1, { ...current, [tier.name]: label }));
       });
@@ -164,15 +164,17 @@ export default function ProductForm() {
       productsQuery = productsQuery.neq('id', id);
     }
 
-    const [cats, prods, attrs] = await Promise.all([
+    const [cats, prods, attrs, varOpts] = await Promise.all([
       supabase.from('categories').select('*').order('display_order'),
       productsQuery,
-      supabase.from('attributes').select('*').order('name')
+      supabase.from('attributes').select('*').order('name'),
+      supabase.from('variant_options').select('*').order('name')
     ]);
     
     setCategories(cats.data || []);
     setAllProducts(prods.data || []);
     setAllAttributes(attrs.data || []);
+    setAllVariantOptions(varOpts.data || []); 
     
     if (isEdit) await fetchProduct();
     setFetching(false);
@@ -377,7 +379,7 @@ export default function ProductForm() {
           />
 
           <VariantConfigSection
-            attributes={allAttributes}
+            variantOptions={allVariantOptions} 
             tierConfig={tierConfig}
             setTierConfig={(config) => { setTierConfig(config); if (!isRestoring.current && !fetching) setIsDirty(true); }}
           />
