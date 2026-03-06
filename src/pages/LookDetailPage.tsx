@@ -90,6 +90,7 @@ export default function LookDetailPage() {
   const galleryConfig = useMemo(() => {
     if (!look) return { main: "", gallery: [], ratio: "aspect-[4/3]" };
     
+    // Ưu tiên ảnh chính 4:3 nếu có gallery
     if (look.image_url) {
       return {
         main: look.image_url,
@@ -98,6 +99,7 @@ export default function LookDetailPage() {
       };
     }
     
+    // Nếu chỉ có ảnh trang chủ thì dùng tỉ lệ 2:1
     if (look.homepage_image_url) {
       return {
         main: look.homepage_image_url,
@@ -198,7 +200,7 @@ export default function LookDetailPage() {
               <h1 className="text-3xl md:text-5xl font-bold mb-4 text-charcoal">{look.title}</h1>
             </motion.div>
 
-            <div className="grid lg:grid-cols-[1.5fr_1fr] xl:grid-cols-[2fr_1fr] gap-8 md:gap-12 items-start">
+            <div className="grid lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-8 md:gap-12 items-start">
               <div className="min-w-0 w-full space-y-8">
                 {look.description && (
                   <div className="w-full">
@@ -226,7 +228,8 @@ export default function LookDetailPage() {
                   </div>
                 )}
                 
-                <div className="overflow-hidden">
+                {/* Khung ảnh chính giới hạn 1100px */}
+                <div className="overflow-hidden max-w-[1100px]">
                   <ProductGallery 
                     mainImage={galleryConfig.main} 
                     galleryImages={galleryConfig.gallery} 
@@ -238,7 +241,7 @@ export default function LookDetailPage() {
                     disableZoom={true}
                     hideCounter={true}
                     showHotspots={showHotspots}
-                    thumbnailPosition="bottom" // Chuyển ảnh phụ xuống dưới
+                    thumbnailPosition="bottom"
                     onImageClick={() => {
                       setShowHotspots(!showHotspots);
                       setActiveProductId(null);
@@ -246,7 +249,6 @@ export default function LookDetailPage() {
                   >
                     {(currentImageUrl) => (
                       <>
-                        {/* Nút Yêu thích (Góc trên phải) */}
                         <button 
                           onClick={(e) => { 
                             e.stopPropagation(); 
@@ -262,7 +264,6 @@ export default function LookDetailPage() {
                           <Heart className={cn("w-5 h-5", isFavorite && "fill-current")} />
                         </button>
 
-                        {/* Nút Chuyển đổi Hotspot (Góc dưới phải) */}
                         <button 
                           onClick={(e) => { e.stopPropagation(); setShowHotspots(!showHotspots); setActiveProductId(null); }}
                           className="absolute bottom-4 right-4 z-30 w-10 h-10 rounded-full bg-charcoal/80 backdrop-blur-md text-white flex items-center justify-center hover:bg-primary transition-all shadow-medium"
