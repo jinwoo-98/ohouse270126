@@ -144,7 +144,6 @@ export function ProductGallery({
             style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
           >
             {/* Nút Hotspot chính - Kích thước 36px (w-9 h-9) */}
-            {/* Thêm class 'group' vào đây để hiệu ứng hover chỉ tác động nội bộ nút này */}
             <button
               className="group relative w-9 h-9 -ml-[18px] -mt-[18px] rounded-full bg-primary/40 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
               onMouseEnter={() => {
@@ -159,8 +158,8 @@ export function ProductGallery({
               {/* Vòng tròn trắng ở tâm */}
               <div className="w-4 h-4 rounded-full bg-white transition-all duration-300 group-hover:scale-90" />
               
-              {/* Viền trắng chỉ hiện khi hover vào CHÍNH NÚT NÀY */}
-              <div className="absolute inset-0 rounded-full border-white opacity-0 group-hover:opacity-100 group-hover:border-[3px] transition-all duration-300" />
+              {/* Viền trắng 1px chỉ hiện khi hover vào CHÍNH NÚT NÀY */}
+              <div className="absolute inset-0 rounded-full border-white opacity-0 group-hover:opacity-100 group-hover:border-[1px] transition-all duration-300" />
             </button>
 
             {/* Bảng thông tin Popup */}
@@ -181,9 +180,9 @@ export function ProductGallery({
                     onActiveHotspotChange?.(null);
                   }}
                 >
-                  {/* Đường nối từ tâm nút lên bảng (Vị trí 21px từ mép trái bảng để khớp với tâm nút) */}
+                  {/* Đường nối 1px từ tâm nút lên bảng */}
                   <div 
-                    className="absolute top-full w-[2px] h-12 bg-white pointer-events-none shadow-sm z-50" 
+                    className="absolute top-full w-[1px] h-12 bg-white pointer-events-none shadow-sm z-50" 
                     style={{ left: '21px', transform: 'translateX(-50%)' }}
                   />
 
