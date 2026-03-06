@@ -196,31 +196,35 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               <div className="h-full flex flex-col md:flex-row">
                 {activeLook ? (
                   <>
-                    {/* Thumbnails List (Left) - Bao gồm cả Lookbook đang xem */}
-                    <div className="w-24 bg-secondary/20 border-r border-border/40 flex flex-col gap-3 p-4 overflow-y-auto no-scrollbar shrink-0">
+                    {/* Thumbnails List (Left) - Đồng bộ style với ProductGallery */}
+                    <div className="flex md:flex-col gap-2.5 overflow-x-auto md:overflow-y-auto no-scrollbar shrink-0 w-full md:w-20 lg:w-24 p-4 bg-secondary/10 border-r border-border/40">
                       {allProductLooks.map((look, idx) => (
                         <button
                           key={look.id}
                           onClick={() => setActiveLookIndex(idx)}
                           className={cn(
-                            "relative aspect-square w-full rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white shadow-sm",
+                            "relative aspect-square w-16 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
                             activeLookIndex === idx 
-                              ? "border-primary ring-2 ring-primary/10 scale-105 z-10" 
-                              : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
+                              ? "border-primary ring-2 ring-primary/10" 
+                              : "border-transparent opacity-50 hover:opacity-100"
                           )}
                         >
                           <img 
                             src={getOptimizedImageUrl(look.square_image_url || look.image_url, { width: 150 })} 
                             className="w-full h-full object-cover" 
                             alt={look.title} 
+                            onError={(e) => { (e.target as HTMLImageElement).src = look.image_url; }}
                           />
                         </button>
                       ))}
                     </div>
 
                     {/* Main Square Image (Center) - Bo góc theo setup admin */}
-                    <div className="flex-1 relative bg-secondary/20 flex items-center justify-center p-8">
-                      <div className="relative aspect-square h-full max-h-[800px] rounded-[32px] overflow-hidden shadow-elevated border border-border/40 bg-white">
+                    <div className="flex-1 relative bg-secondary/5 flex items-center justify-center p-8">
+                      <div 
+                        className="relative aspect-square h-full max-h-[800px] overflow-hidden shadow-elevated border border-border/40 bg-white"
+                        style={{ borderRadius: 'var(--radius)' }}
+                      >
                         <AnimatePresence mode="wait">
                           <motion.img 
                             key={activeLook.id}
@@ -230,19 +234,10 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                             src={activeLook.square_image_url || activeLook.image_url} 
                             className="w-full h-full object-cover" 
                             alt={activeLook.title} 
+                            onError={(e) => { (e.target as HTMLImageElement).src = activeLook.image_url; }}
                           />
                         </AnimatePresence>
-                        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent pointer-events-none" />
                         
-                        <div className="absolute top-8 left-10 z-20">
-                          <Badge className="bg-primary text-white border-none uppercase tracking-widest text-[10px] px-4 py-1.5 shadow-gold">
-                            Cảm hứng không gian
-                          </Badge>
-                          <h2 className="text-3xl md:text-4xl font-bold text-white mt-4 drop-shadow-md uppercase tracking-tight">
-                            {activeLook.title}
-                          </h2>
-                        </div>
-
                         <TooltipProvider>
                           {activeLook.shop_look_items
                             ?.filter((item: any) => item.target_image_url === (activeLook.square_image_url || activeLook.image_url) && item.products)
