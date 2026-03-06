@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Check, Tag, Lightbulb } from "lucide-react";
+import { Plus, Trash2, Check, Tag, Lightbulb, X, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,7 @@ interface VariantTier {
 }
 
 interface VariantConfigSectionProps {
-  variantOptions: any[]; // Danh sách từ bảng variant_options
+  variantOptions: any[]; 
   tierConfig: VariantTier[];
   setTierConfig: (config: VariantTier[]) => void;
 }
@@ -112,7 +112,7 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
               </Button>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-8 mb-6">
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
               <div className="space-y-3">
                 <Label className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Tên nhóm phân loại</Label>
                 <Input 
@@ -122,7 +122,6 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
                   className="h-11 bg-white rounded-xl font-bold"
                 />
                 
-                {/* Gợi ý nhanh tên nhóm từ variant_options */}
                 <div className="flex flex-wrap gap-1.5">
                   {variantOptions.map(a => (
                     <button
@@ -153,7 +152,6 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
                   <Button type="button" size="icon" variant="secondary" onClick={() => addValueToTier(idx)} className="h-11 w-11 rounded-xl shrink-0"><Plus className="w-4 h-4" /></Button>
                 </div>
 
-                {/* Gợi ý nhanh giá trị từ nhóm đã chọn */}
                 {suggestions.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     <div className="flex items-center gap-1 text-[9px] font-bold text-primary uppercase mr-1">
@@ -182,29 +180,42 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
             </div>
 
             <div className="space-y-4 pt-6 border-t border-dashed border-border/40">
-              <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Danh sách giá trị & Ảnh minh họa:</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Danh sách giá trị & Ảnh minh họa:</p>
+                <p className="text-[9px] text-primary font-bold italic">* Ảnh này sẽ hiển thị khi khách hàng chọn phân loại tương ứng.</p>
+              </div>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {tier.values.map((v, vIdx) => (
-                  <div key={vIdx} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border/60 shadow-sm group">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-secondary/30 shrink-0 border border-dashed border-border/60 relative">
+                  <div key={vIdx} className="relative flex flex-col bg-white rounded-2xl border border-border/60 shadow-sm group overflow-hidden animate-fade-in">
+                    {/* Image Area */}
+                    <div className="aspect-square bg-secondary/30 border-b border-dashed border-border/60 relative">
                       <ImageUpload 
                         value={v.image_url || ""} 
                         onChange={(url) => updateValueImage(idx, vIdx, url as string)}
                         aspectRatio="aspect-square"
                       />
+                      {!v.image_url && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                          <ImageIcon className="w-6 h-6" />
+                        </div>
+                      )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-charcoal truncate">{v.label}</p>
-                      <p className="text-[9px] text-muted-foreground italic mt-0.5">
-                        {v.image_url ? "Đã có ảnh" : "Chưa có ảnh"}
+                    
+                    {/* Label Area - Clearly underneath */}
+                    <div className="p-2.5 text-center bg-gray-50/50">
+                      <p className="text-[11px] font-bold text-charcoal truncate leading-tight" title={v.label}>
+                        {v.label}
                       </p>
                     </div>
+
+                    {/* Remove Button */}
                     <button 
                       type="button" 
                       onClick={() => removeValue(idx, vIdx)}
-                      className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1.5 right-1.5 p-1.5 bg-destructive/10 text-destructive hover:bg-destructive hover:text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
                 ))}
