@@ -236,7 +236,7 @@ export default function ProductDetailPage() {
                   product={product} 
                   attributes={attributes} 
                   reviewsCount={reviews.length}
-                  onVariantChange={(variant) => {
+                  onVariantChange={({ variant }) => {
                     if (variant && variant.gallery_urls && variant.gallery_urls.length > 0) {
                       setActiveGallery({ main: variant.gallery_urls[0], thumbs: variant.gallery_urls.slice(1) });
                     } else {

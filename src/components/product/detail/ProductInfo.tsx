@@ -17,7 +17,7 @@ interface ProductInfoProps {
   product: any;
   attributes: any[];
   reviewsCount: number;
-  onVariantChange: (variant: any | null) => void;
+  onVariantChange: (data: { variant: any | null, selectedValues: Record<string, string> }) => void;
 }
 
 export function ProductInfo({ product, attributes, reviewsCount, onVariantChange }: ProductInfoProps) {
@@ -52,8 +52,8 @@ export function ProductInfo({ product, attributes, reviewsCount, onVariantChange
   }, [variants, selectedValues, tierConfig]);
 
   useEffect(() => {
-    onVariantChange(activeVariant);
-  }, [activeVariant, onVariantChange]);
+    onVariantChange({ variant: activeVariant, selectedValues });
+  }, [activeVariant, selectedValues, onVariantChange]);
 
   const displayPrice = activeVariant ? activeVariant.price : product.price;
   const displayOriginalPrice = activeVariant ? activeVariant.original_price : product.original_price;
