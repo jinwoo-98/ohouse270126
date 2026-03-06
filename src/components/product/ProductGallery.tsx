@@ -165,10 +165,10 @@ export function ProductGallery({
                   initial={{ opacity: 0, y: 10, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                  className="absolute bottom-full left-0 -translate-x-[21px] mb-12 flex items-center shadow-elevated rounded-xl overflow-hidden z-40"
+                  className="absolute bottom-full left-0 -translate-x-[42px] mb-12 flex items-center shadow-elevated rounded-xl overflow-hidden z-40"
                 >
-                  {/* Đường nối 2px từ tâm nút lên bảng (Vị trí 21px từ mép trái bảng để khớp với tâm nút) */}
-                  <div className="absolute top-full left-[21px] -translate-x-1/2 w-[2px] h-12 bg-white pointer-events-none shadow-sm" />
+                  {/* Đường nối từ tâm nút lên bảng (Vị trí 42px từ mép trái bảng để khớp với tâm nút) */}
+                  <div className="absolute top-full left-[42px] -translate-x-1/2 w-[2px] h-12 bg-primary pointer-events-none shadow-sm" />
 
                   {/* Phần thông tin (143x72px) */}
                   <div className="w-[143px] h-[72px] bg-white p-3 flex flex-col justify-center text-left border-r border-border/40">
