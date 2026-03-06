@@ -147,19 +147,23 @@ export function ProductGallery({
             <button
               className="group relative w-8 h-8 -ml-4 -mt-4 rounded-full bg-primary/40 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
               onMouseEnter={() => {
+                // Cập nhật trạng thái khi di chuột vào
                 setActiveHotspotId(item.id);
                 onActiveHotspotChange?.(item.product.id);
               }}
-              onMouseLeave={() => {
-                setActiveHotspotId(null);
-                onActiveHotspotChange?.(null);
-              }}
+              // Loại bỏ onMouseLeave để giữ trạng thái "dính"
             >
               {/* Vòng tròn trắng ở tâm - 12px, thu nhỏ còn 8px khi hover (scale 0.67) */}
-              <div className="w-3 h-3 rounded-full bg-white transition-all duration-300 group-hover:scale-[0.67]" />
+              <div className={cn(
+                "w-3 h-3 rounded-full bg-white transition-all duration-300",
+                isActive ? "scale-[0.67]" : "scale-100"
+              )} />
               
-              {/* Viền trắng 2px chỉ hiện khi hover */}
-              <div className="absolute inset-0 rounded-full border-white opacity-0 group-hover:opacity-100 group-hover:border-[2px] transition-all duration-300" />
+              {/* Viền trắng 2px hiện khi đang active */}
+              <div className={cn(
+                "absolute inset-0 rounded-full border-white transition-all duration-300",
+                isActive ? "opacity-100 border-[2px]" : "opacity-0 border-0"
+              )} />
             </button>
 
             {/* Bảng thông tin Popup */}
@@ -171,18 +175,10 @@ export function ProductGallery({
                   exit={{ opacity: 0, y: 10, scale: 0.9 }}
                   className="absolute bottom-full left-0 mb-12 flex items-center shadow-elevated rounded-xl overflow-visible z-50 bg-white"
                   style={{ left: '-21px' }} // Mép trái dịch sang trái 21px so với tâm nút
-                  onMouseEnter={() => {
-                    setActiveHotspotId(item.id);
-                    onActiveHotspotChange?.(item.product.id);
-                  }}
-                  onMouseLeave={() => {
-                    setActiveHotspotId(null);
-                    onActiveHotspotChange?.(null);
-                  }}
                 >
-                  {/* Đường nối 2px từ tâm nút lên bảng */}
+                  {/* Đường nối 1px sắc nét từ tâm nút lên bảng */}
                   <div 
-                    className="absolute top-full w-[2px] h-12 bg-white pointer-events-none shadow-sm z-50" 
+                    className="absolute top-full w-[1px] h-12 bg-white pointer-events-none shadow-sm z-50" 
                     style={{ left: '21px', transform: 'translateX(-50%)' }}
                   />
 
