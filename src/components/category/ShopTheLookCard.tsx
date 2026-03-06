@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Plus } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatPrice, getOptimizedImageUrl } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronRight as ArrowIcon } from "lucide-react";
+import { formatPrice, getOptimizedImageUrl, cn } from "@/lib/utils";
 
 interface ShopTheLookCardProps {
   look: any;
@@ -9,6 +10,7 @@ interface ShopTheLookCardProps {
 }
 
 export function ShopTheLookCard({ look, onQuickView }: ShopTheLookCardProps) {
+  const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
   const detailLink = `/y-tuong/${look.slug || look.id}`;
 
   return (
@@ -23,34 +25,68 @@ export function ShopTheLookCard({ look, onQuickView }: ShopTheLookCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-transparent" />
       </Link>
       
-      {/* Hotspots Overlay */}
-      <TooltipProvider>
-        {look.shop_look_items
-          .filter((item: any) => item.target_image_url === look.image_url && item.products)
-          .map((item: any) => (
-          <Tooltip key={item.id} delayDuration={0}>
-            <TooltipTrigger asChild>
+      {/* Hotspots Overlay với hiệu ứng dính và line 1px */}
+      {look.shop_look_items
+        ?.filter((item: any) => item.target_image_url === look.image_url && item.products)
+        .map((item: any) => {
+          const isActive = activeHotspotId === item.id;
+          return (
+            <div 
+              key={item.id}
+              className="absolute z-30 transition-all duration-500"
+              style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
+            >
               <button
-                className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot"
-                style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                onClick={(e) => { 
-                  e.preventDefault(); 
-                  e.stopPropagation(); 
-                  if (item.products) onQuickView(item.products);
-                }}
+                className="group relative w-8 h-8 -ml-4 -mt-4 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
+                onMouseEnter={() => setActiveHotspotId(item.id)}
               >
-                {/* Đổi màu nền mờ sang đen */}
-                <span className="absolute w-full h-full rounded-full bg-black/40 animate-ping opacity-100 group-hover/dot:hidden" />
-                <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
+                <div className={cn(
+                  "w-3 h-3 rounded-full bg-white transition-all duration-300",
+                  isActive ? "scale-[0.67]" : "scale-100"
+                )} />
+                <div className={cn(
+                  "absolute inset-0 rounded-full border-white transition-all duration-300",
+                  isActive ? "opacity-100 border-[1px]" : "opacity-0 border-0"
+                )} />
               </button>
-            </TooltipTrigger>
-            <TooltipContent className="bg-charcoal text-cream border-none p-3 rounded-xl shadow-elevated">
-              <p className="font-bold text-[10px] uppercase tracking-wider">{item.products.name}</p>
-              <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
-            </TooltipContent>
-          </Tooltip>
-        ))}
-      </TooltipProvider>
+
+              <AnimatePresence>
+                {isActive && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                    className="absolute bottom-full left-0 mb-12 flex items-center shadow-elevated rounded-xl overflow-visible z-50 bg-white"
+                    style={{ left: '-21px' }}
+                  >
+                    <div 
+                      className="absolute top-full w-[1px] h-12 bg-white pointer-events-none shadow-sm z-50" 
+                      style={{ left: '21px', transform: 'translateX(-50%)' }}
+                    />
+                    <div className="w-[143px] h-[72px] bg-white p-3 flex flex-col justify-center text-left border-r border-border/40 rounded-l-xl">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground truncate mb-1">
+                        {item.products.category_id?.replace(/-/g, ' ') || "Sản phẩm"}
+                      </p>
+                      <p className="text-sm font-bold text-primary truncate">
+                        {formatPrice(item.products.price)}
+                      </p>
+                    </div>
+                    <button
+                      className="w-[24px] h-[72px] bg-white flex items-center justify-center text-primary hover:bg-primary/5 transition-colors rounded-r-xl"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        onQuickView(item.products);
+                      }}
+                    >
+                      <ArrowIcon className="w-4 h-4" />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
     </div>
   );
 }
