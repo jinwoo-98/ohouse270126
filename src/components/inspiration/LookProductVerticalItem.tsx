@@ -1,5 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { formatPrice, cn } from "@/lib/utils";
+import { formatPrice, cn, getOptimizedImageUrl } from "@/lib/utils";
 
 interface LookProductVerticalItemProps {
   product: any;
@@ -7,7 +10,7 @@ interface LookProductVerticalItemProps {
   className?: string;
   imageClassName?: string;
   infoClassName?: string;
-  isActive?: boolean; // Thêm prop
+  isActive?: boolean;
 }
 
 export function LookProductVerticalItem({ 
@@ -19,6 +22,13 @@ export function LookProductVerticalItem({
   isActive 
 }: LookProductVerticalItemProps) {
   
+  const originalImage = product.image_url || '/placeholder.svg';
+  const [imgSrc, setImgSrc] = useState(getOptimizedImageUrl(originalImage, { width: 300 }));
+
+  const handleImageError = () => {
+    setImgSrc(originalImage);
+  };
+
   return (
     <div 
       className={cn(
@@ -33,7 +43,12 @@ export function LookProductVerticalItem({
         "relative aspect-square overflow-hidden bg-secondary/30 shrink-0", 
         imageClassName
       )}>
-        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+        <img 
+          src={imgSrc} 
+          alt={product.name} 
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+          onError={handleImageError}
+        />
         
         <div className="absolute inset-0 bg-charcoal/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center" />
       </Link>

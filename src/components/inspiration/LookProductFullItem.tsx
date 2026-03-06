@@ -1,9 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, ShoppingBag, Heart } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useCart } from "@/contexts/CartContext";
+import { Eye, Heart } from "lucide-react";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { formatPrice, cn, getOptimizedImageUrl, generateProductAltText, generateImageSrcSet } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -17,23 +16,27 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
   const isMobile = useIsMobile();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
+  
+  const originalImage = product.image_url || '/placeholder.svg';
+  const [imgSrc, setImgSrc] = useState(getOptimizedImageUrl(originalImage, { width: 400 }));
+  const [imgSrcSet, setImgSrcSet] = useState(generateImageSrcSet(originalImage, [300, 400, 600]));
+  
   const isFavorite = isInWishlist(product.id);
   const smartAlt = generateProductAltText(product);
-
-  // --- Responsive Image Optimization ---
-  const imageWidths = [300, 400, 600];
   const imageSizes = "(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw";
-  const srcSet = generateImageSrcSet(product.image_url, imageWidths);
-  // --- End Optimization ---
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    
     if (isMobile) {
       onQuickView(product);
     } else {
       navigate(`/san-pham/${product.slug || product.id}`);
     }
+  };
+
+  const handleImageError = () => {
+    setImgSrc(originalImage);
+    setImgSrcSet("");
   };
 
   return (
@@ -43,11 +46,12 @@ export function LookProductFullItem({ product, onQuickView }: LookProductFullIte
     >
       <div className="relative aspect-square overflow-hidden bg-secondary/30 shrink-0">
         <img 
-          src={getOptimizedImageUrl(product.image_url, { width: 400 })} 
-          srcSet={srcSet}
+          src={imgSrc} 
+          srcSet={imgSrcSet || undefined}
           sizes={imageSizes}
           alt={smartAlt} 
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+          onError={handleImageError}
         />
         
         <button 
