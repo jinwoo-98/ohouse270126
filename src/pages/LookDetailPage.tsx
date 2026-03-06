@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Loader2, ChevronRight, AlertTriangle, ChevronDown, ChevronUp, FileText } from "lucide-react";
+import { Loader2, ChevronRight, AlertTriangle, ChevronDown, ChevronUp, FileText, Heart, Eye, EyeOff } from "lucide-react";
 import { QuickViewSheet } from "@/components/QuickViewSheet";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -19,16 +19,19 @@ import { LookProductVerticalList } from "@/components/inspiration/LookProductFul
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 export default function LookDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [look, setLook] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [showHotspots, setShowHotspots] = useState(true);
 
   useEffect(() => {
     if (id) {
@@ -83,11 +86,9 @@ export default function LookDetailPage() {
     }
   };
 
-  // Logic xác định ảnh hiển thị và tỉ lệ khung hình
   const galleryConfig = useMemo(() => {
     if (!look) return { main: "", gallery: [], ratio: "aspect-[4/3]" };
     
-    // Nếu có ảnh chính, dùng ảnh chính và gallery phụ tỉ lệ 4:3
     if (look.image_url) {
       return {
         main: look.image_url,
@@ -96,7 +97,6 @@ export default function LookDetailPage() {
       };
     }
     
-    // Nếu không có ảnh chính, dùng ảnh trang chủ tỉ lệ 2:1
     if (look.homepage_image_url) {
       return {
         main: look.homepage_image_url,
@@ -143,6 +143,8 @@ export default function LookDetailPage() {
     look?.id, 
     look?.category_id
   );
+
+  const isFavorite = look ? isInWishlist(look.id) : false;
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
@@ -195,9 +197,7 @@ export default function LookDetailPage() {
               <h1 className="text-3xl md:text-5xl font-bold mb-4 text-charcoal">{look.title}</h1>
             </motion.div>
 
-            {/* Grid Layout: Loại bỏ max-w-6xl để mở rộng lề như trang chủ */}
             <div className="grid lg:grid-cols-[1.5fr_1fr] xl:grid-cols-[2fr_1fr] gap-8 md:gap-12 items-start">
-              {/* Cột Trái: Mô tả & Gallery (Tăng kích thước hiển thị) */}
               <div className="min-w-0 w-full space-y-8">
                 {look.description && (
                   <div className="w-full">
@@ -233,11 +233,43 @@ export default function LookDetailPage() {
                     hotspots={lookHotspots}
                     onHotspotClick={setQuickViewProduct}
                     aspectRatio={galleryConfig.ratio}
-                  />
+                    disableZoom={true}
+                    hideCounter={true}
+                    showHotspots={showHotspots}
+                    onImageClick={() => setShowHotspots(!showHotspots)}
+                  >
+                    {() => (
+                      <>
+                        {/* Nút Yêu thích (Góc trên phải) */}
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            toggleWishlist({ id: look.id, name: look.title, price: 0, image: look.image_url || look.homepage_image_url, slug: look.slug }); 
+                          }}
+                          className={cn(
+                            "absolute top-4 right-4 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-medium backdrop-blur-md",
+                            isFavorite 
+                              ? "bg-primary text-white" 
+                              : "bg-white/80 text-charcoal hover:bg-primary hover:text-white"
+                          )}
+                        >
+                          <Heart className={cn("w-5 h-5", isFavorite && "fill-current")} />
+                        </button>
+
+                        {/* Nút Chuyển đổi Hotspot (Góc dưới phải) */}
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setShowHotspots(!showHotspots); }}
+                          className="absolute bottom-4 right-4 z-30 w-10 h-10 rounded-full bg-charcoal/80 backdrop-blur-md text-white flex items-center justify-center hover:bg-primary transition-all shadow-medium"
+                          title={showHotspots ? "Ẩn sản phẩm" : "Hiện sản phẩm"}
+                        >
+                          {showHotspots ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </>
+                    )}
+                  </ProductGallery>
                 </div>
               </div>
 
-              {/* Cột Phải: Danh sách sản phẩm */}
               {visibleItems.length > 0 && (
                 <div className="min-w-0 w-full hidden lg:block">
                   <LookProductList products={lookbookProducts} onQuickView={setQuickViewProduct} />

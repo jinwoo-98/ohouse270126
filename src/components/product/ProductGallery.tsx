@@ -30,6 +30,10 @@ interface ProductGalleryProps {
   children?: (currentImageUrl: string) => React.ReactNode;
   product?: any; 
   aspectRatio?: string;
+  disableZoom?: boolean; // Tùy chọn tắt zoom
+  hideCounter?: boolean; // Tùy chọn ẩn bộ đếm
+  showHotspots?: boolean; // Trạng thái hiển thị hotspot từ bên ngoài
+  onImageClick?: () => void; // Sự kiện khi nhấp vào ảnh
 }
 
 const swipeConfidenceThreshold = 10000;
@@ -46,7 +50,11 @@ export function ProductGallery({
   onHotspotClick, 
   children, 
   product,
-  aspectRatio = "aspect-square"
+  aspectRatio = "aspect-square",
+  disableZoom = false,
+  hideCounter = false,
+  showHotspots = true,
+  onImageClick
 }: ProductGalleryProps) {
   const safeGallery = Array.isArray(galleryImages) ? galleryImages : [];
   const allImages = [mainImage || '/placeholder.svg', ...safeGallery].filter(Boolean);
@@ -84,7 +92,7 @@ export function ProductGallery({
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isZoomed || !containerRef.current) return;
+    if (disableZoom || !isZoomed || !containerRef.current) return;
     
     const { left, top, width, height } = containerRef.current.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
@@ -93,7 +101,14 @@ export function ProductGallery({
     setZoomPos({ x, y });
   };
 
-  const toggleZoom = (e: React.MouseEvent) => {
+  const handleContainerClick = (e: React.MouseEvent) => {
+    if (onImageClick) {
+      onImageClick();
+      return;
+    }
+
+    if (disableZoom) return;
+
     e.stopPropagation();
     if (!isZoomed && containerRef.current) {
       const { left, top, width, height } = containerRef.current.getBoundingClientRect();
@@ -114,7 +129,7 @@ export function ProductGallery({
             <button
               className={cn(
                 "absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot pointer-events-auto",
-                isZoomed && "opacity-0 pointer-events-none" 
+                (isZoomed || !showHotspots) && "opacity-0 pointer-events-none scale-0" 
               )}
               style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
               onClick={(e) => { 
@@ -150,7 +165,7 @@ export function ProductGallery({
               }}
               className={cn(
                 "relative w-16 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
-                aspectRatio, // Sử dụng cùng tỉ lệ với ảnh chính
+                aspectRatio, 
                 imageIndex === idx 
                   ? "border-primary ring-2 ring-primary/10" 
                   : "border-transparent opacity-50 hover:opacity-100"
@@ -173,10 +188,10 @@ export function ProductGallery({
         className={cn(
           "relative flex-1 bg-white rounded-2xl overflow-hidden border border-border/40 shadow-subtle group order-1 md:order-2",
           aspectRatio,
-          isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
+          !disableZoom ? (isZoomed ? "cursor-zoom-out" : "cursor-zoom-in") : "cursor-default"
         )}
         onMouseMove={handleMouseMove}
-        onClick={toggleZoom}
+        onClick={handleContainerClick}
       >
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
@@ -211,7 +226,7 @@ export function ProductGallery({
           </motion.div>
         </AnimatePresence>
 
-        {!isZoomed && hotspots.length > 0 && renderHotspots()}
+        {renderHotspots()}
         
         {typeof children === 'function' && children(currentImageUrl)}
 
@@ -232,7 +247,7 @@ export function ProductGallery({
           </>
         )}
         
-        {!isZoomed && (
+        {!isZoomed && !hideCounter && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-charcoal/80 backdrop-blur-md px-3 py-1.5 rounded-full text-white text-[10px] font-bold uppercase tracking-widest border border-white/10 z-10">
             {imageIndex + 1} / {allImages.length}
           </div>
