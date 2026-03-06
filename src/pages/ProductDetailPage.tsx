@@ -22,7 +22,7 @@ import { Helmet } from "react-helmet-async";
 import { useSeo } from "@/hooks/useSeo";
 import { generateProductAltText, generateSKU } from "@/lib/utils";
 import { sanitizeHtml } from "@/lib/sanitize";
-import { ProductActionButtons } from "@/components/product/detail/ProductActionButtons"; // Import mới
+import { ProductActionButtons } from "@/components/product/detail/ProductActionButtons";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -85,7 +85,6 @@ export default function ProductDetailPage() {
       if (error) throw error;
       setProduct(data);
       
-      // Ghi lại lịch sử xem
       trackProductView({ 
         id: data.id, 
         name: data.name, 
@@ -226,8 +225,7 @@ export default function ProductDetailPage() {
                   productName={product.name} 
                   product={product}
                 />
-                {/* Bộ nút chức năng mới */}
-                <ProductActionButtons product={product} onQuickView={setQuickViewProduct} />
+                <ProductActionButtons product={product} reviews={reviews} onQuickView={setQuickViewProduct} />
               </div>
               <div className="min-w-0 w-full px-1 md:px-0 max-w-2xl">
                 <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
