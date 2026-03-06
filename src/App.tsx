@@ -70,6 +70,7 @@ import ShowroomManager from "./pages/admin/ShowroomManager";
 import ShowroomForm from "./pages/admin/ShowroomForm";
 import DesignServiceConfig from "./pages/admin/DesignServiceConfig";
 import AdminAccount from "./pages/admin/AdminAccount";
+import VariantOptionPage from "./pages/admin/VariantOptionPage";
 
 // Homepage Sub-pages
 import SlidePage from "./pages/admin/homepage/SlidePage.tsx";
@@ -84,11 +85,10 @@ import LookbookManagerPage from "./pages/admin/content/LookbookManagerPage.tsx";
 import LookbookForm from "./pages/admin/content/LookbookForm.tsx";
 import LookbookFilterPage from "./pages/admin/content/LookbookFilterPage.tsx";
 
-// Cấu hình QueryClient quan trọng: Tắt refetchOnWindowFocus
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, // Ngăn chặn việc tự động tải lại dữ liệu khi quay lại tab
+      refetchOnWindowFocus: false, 
       retry: 1,
       staleTime: 5 * 60 * 1000,
     },
@@ -172,6 +172,7 @@ const App = () => (
                     <Route path="attributes" element={<AttributeManager />} />
                     <Route path="attributes/new" element={<AttributeForm />} />
                     <Route path="attributes/edit/:id" element={<AttributeForm />} />
+                    <Route path="variant-options" element={<VariantOptionPage />} />
                     <Route path="reviews" element={<ReviewManager />} />
                     
                     <Route path="customers" element={<CustomerHub />} /> 

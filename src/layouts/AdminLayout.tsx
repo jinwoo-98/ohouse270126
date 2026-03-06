@@ -10,8 +10,6 @@ import {
   X,
   Loader2,
   ClipboardList,
-  LayoutGrid,
-  Lock,
   Files,
   Newspaper,
   Briefcase,
@@ -28,7 +26,9 @@ import {
   MapPin,
   Zap,
   Search,
-  UserCircle
+  UserCircle,
+  Tag,
+  Lock // Thêm Lock vào đây
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,7 +52,8 @@ const menuGroups = [
       { id: 'orders', title: "Đơn hàng", icon: ClipboardList, href: "/admin/orders" },
       { id: 'products', title: "Sản phẩm", icon: ShoppingBag, href: "/admin/products" },
       { id: 'categories', title: "Danh mục", icon: FolderTree, href: "/admin/categories" },
-      { id: 'attributes', title: "Thuộc tính SP", icon: ListFilter, href: "/admin/attributes" },
+      { id: 'attributes', title: "Thuộc tính lọc", icon: ListFilter, href: "/admin/attributes" },
+      { id: 'variant-options', title: "Phân loại biến thể", icon: Tag, href: "/admin/variant-options" },
       { id: 'reviews', title: "Đánh giá", icon: Star, href: "/admin/reviews" },
     ]
   },
@@ -104,7 +105,6 @@ export default function AdminLayout() {
       return;
     }
 
-    // Chỉ hiện loader nếu chưa từng lấy dữ liệu thành công
     if (!hasFetched.current) {
       setFetchingProfile(true);
     }
@@ -129,7 +129,6 @@ export default function AdminLayout() {
     }
   };
 
-  // Sử dụng user?.id để tránh re-fetch khi object user thay đổi nhưng ID vẫn vậy
   useEffect(() => {
     if (!authLoading) {
       fetchProfile();
@@ -174,7 +173,6 @@ export default function AdminLayout() {
     );
   }
 
-  // Chỉ hiển thị loader toàn trang khi chưa có dữ liệu profile
   if (fetchingProfile && !userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
