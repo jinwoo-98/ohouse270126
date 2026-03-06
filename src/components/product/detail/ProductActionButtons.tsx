@@ -149,7 +149,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               <div className="h-full flex flex-col md:flex-row">
                 {activeLook ? (
                   <>
-                    {/* Thumbnails (Left) - Tăng kích thước lên 1.5 lần (w-36) */}
+                    {/* Thumbnails (Left) - Sử dụng ảnh vuông 1:1 và kích thước lớn */}
                     <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto no-scrollbar shrink-0 w-full md:w-32 lg:w-36 p-6 bg-white">
                       {allProductLooks.map((look, idx) => (
                         <button
