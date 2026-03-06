@@ -196,29 +196,31 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               <div className="h-full flex flex-col md:flex-row">
                 {activeLook ? (
                   <>
-                    {/* Thumbnails List (Left) */}
-                    {allProductLooks.length > 1 && (
-                      <div className="w-24 bg-secondary/20 border-r border-border/40 flex flex-col gap-3 p-4 overflow-y-auto no-scrollbar shrink-0">
-                        {allProductLooks.map((look, idx) => (
-                          <button
-                            key={look.id}
-                            onClick={() => setActiveLookIndex(idx)}
-                            className={cn(
-                              "relative aspect-square w-full rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white",
-                              activeLookIndex === idx 
-                                ? "border-primary ring-2 ring-primary/10" 
-                                : "border-transparent opacity-50 hover:opacity-100"
-                            )}
-                          >
-                            <img src={look.square_image_url || look.image_url} className="w-full h-full object-cover" alt={look.title} />
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                    {/* Thumbnails List (Left) - Bao gồm cả Lookbook đang xem */}
+                    <div className="w-24 bg-secondary/20 border-r border-border/40 flex flex-col gap-3 p-4 overflow-y-auto no-scrollbar shrink-0">
+                      {allProductLooks.map((look, idx) => (
+                        <button
+                          key={look.id}
+                          onClick={() => setActiveLookIndex(idx)}
+                          className={cn(
+                            "relative aspect-square w-full rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white shadow-sm",
+                            activeLookIndex === idx 
+                              ? "border-primary ring-2 ring-primary/10 scale-105 z-10" 
+                              : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
+                          )}
+                        >
+                          <img 
+                            src={getOptimizedImageUrl(look.square_image_url || look.image_url, { width: 150 })} 
+                            className="w-full h-full object-cover" 
+                            alt={look.title} 
+                          />
+                        </button>
+                      ))}
+                    </div>
 
-                    {/* Main Square Image (Center) */}
+                    {/* Main Square Image (Center) - Bo góc theo setup admin */}
                     <div className="flex-1 relative bg-secondary/20 flex items-center justify-center p-8">
-                      <div className="relative aspect-square h-full max-h-[800px] rounded-[32px] overflow-hidden shadow-elevated border border-border/40">
+                      <div className="relative aspect-square h-full max-h-[800px] rounded-[32px] overflow-hidden shadow-elevated border border-border/40 bg-white">
                         <AnimatePresence mode="wait">
                           <motion.img 
                             key={activeLook.id}
