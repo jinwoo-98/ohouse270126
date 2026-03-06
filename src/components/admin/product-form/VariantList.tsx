@@ -1,15 +1,17 @@
-import { Settings2, Image as ImageIcon } from "lucide-react";
+import { Settings2, Image as ImageIcon, Camera } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { formatNumberWithDots, parseNumberFromDots } from "@/lib/utils";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { Button } from "@/components/ui/button";
 
 interface VariantListProps {
   variants: any[];
   setVariants: React.Dispatch<React.SetStateAction<any[]>>;
+  onEditGallery: (variantIndex: number) => void;
 }
 
-export function VariantList({ variants, setVariants }: VariantListProps) {
+export function VariantList({ variants, setVariants, onEditGallery }: VariantListProps) {
   const updateVariantField = (index: number, field: string, value: any) => {
     let finalValue = value;
     if (field === 'price' || field === 'original_price') {
@@ -38,6 +40,7 @@ export function VariantList({ variants, setVariants }: VariantListProps) {
                 <th className="p-4 w-40 text-primary">Giá bán *</th>
                 <th className="p-4 w-40">Giá gốc</th>
                 <th className="p-4 w-32">SKU</th>
+                <th className="p-4 w-32">Gallery</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -62,6 +65,12 @@ export function VariantList({ variants, setVariants }: VariantListProps) {
                   <td className="p-4"><Input type="text" value={formatNumberWithDots(v.price)} onChange={e => updateVariantField(idx, 'price', e.target.value)} className="h-10 text-sm font-bold text-primary rounded-lg" /></td>
                   <td className="p-4"><Input type="text" value={formatNumberWithDots(v.original_price)} onChange={e => updateVariantField(idx, 'original_price', e.target.value)} className="h-10 text-sm rounded-lg" /></td>
                   <td className="p-4"><Input type="text" value={v.sku} onChange={e => updateVariantField(idx, 'sku', e.target.value)} className="h-10 text-sm rounded-lg font-mono" /></td>
+                  <td className="p-4">
+                    <Button type="button" variant="outline" size="sm" onClick={() => onEditGallery(idx)} className="h-9 gap-2 text-xs">
+                      <Camera className="w-3 h-3" />
+                      ({(v.gallery_urls || []).length})
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>

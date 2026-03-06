@@ -38,6 +38,7 @@ export default function ProductDetailPage() {
   
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+  const [activeGallery, setActiveGallery] = useState<{ main: string, thumbs: string[] }>({ main: '', thumbs: [] });
 
   const { seo } = useSeo({
     title: product ? `${product.name} | OHOUSE` : undefined,
@@ -85,6 +86,9 @@ export default function ProductDetailPage() {
       if (error) throw error;
       setProduct(data);
       
+      const initialGallery = [data.image_url, ...(data.gallery_urls || [])].filter(Boolean);
+      setActiveGallery({ main: initialGallery[0] || '', thumbs: initialGallery.slice(1) });
+
       trackProductView({ 
         id: data.id, 
         name: data.name, 
@@ -220,15 +224,26 @@ export default function ProductDetailPage() {
             <div className="grid lg:grid-cols-[1.2fr_1fr] gap-8 md:gap-12 lg:gap-20 overflow-hidden">
               <div className="min-w-0 w-full overflow-hidden">
                 <ProductGallery 
-                  mainImage={product.image_url} 
-                  galleryImages={product.gallery_urls} 
+                  mainImage={activeGallery.main} 
+                  galleryImages={activeGallery.thumbs} 
                   productName={product.name} 
                   product={product}
                 />
                 <ProductActionButtons product={product} reviews={reviews} onQuickView={setQuickViewProduct} />
               </div>
               <div className="min-w-0 w-full px-1 md:px-0 max-w-2xl">
-                <ProductInfo product={product} attributes={attributes} reviewsCount={reviews.length} />
+                <ProductInfo 
+                  product={product} 
+                  attributes={attributes} 
+                  reviewsCount={reviews.length}
+                  onVariantChange={(variant) => {
+                    if (variant && variant.gallery_urls && variant.gallery_urls.length > 0) {
+                      setActiveGallery({ main: variant.gallery_urls[0], thumbs: variant.gallery_urls.slice(1) });
+                    } else {
+                      setActiveGallery({ main: product.image_url, thumbs: product.gallery_urls || [] });
+                    }
+                  }}
+                />
               </div>
             </div>
             

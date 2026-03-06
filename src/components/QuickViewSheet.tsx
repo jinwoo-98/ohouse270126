@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/comp
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { supabase } from "@/integrations/supabase/client";
-import { cn, formatPrice, generateProductAltText, wrapWordsInSpans } from "@/lib/utils";
+import { cn, formatPrice, generateProductAltText, wrapWordsInSpans, getOptimizedImageUrl } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { StarRating } from "@/components/product/detail/ProductReviews";
@@ -41,6 +41,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   const [attributes, setAttributes] = useState<any[]>([]);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [activeImage, setActiveImage] = useState("");
+  const [activeGallery, setActiveGallery] = useState<string[]>([]);
 
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
@@ -48,17 +49,13 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const gallery = useMemo(() => {
-    if (!product) return [];
-    return [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
-  }, [product]);
-
   useEffect(() => {
     if (isOpen && product) {
       setActiveView('details');
       setQuantity(1);
       setSelectedValues({});
       setActiveImage(product.image_url);
+      setActiveGallery([product.image_url, ...(product.gallery_urls || [])].filter(Boolean));
       setIsDescriptionOpen(false);
       setIsDimensionsOpen(false);
       setIsSpecsOpen(false);
@@ -104,6 +101,17 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     if (!allSelected) return null;
     return variants.find(v => Object.entries(v.tier_values).every(([key, val]) => selectedValues[key] === val));
   }, [variants, selectedValues, tierConfig]);
+
+  useEffect(() => {
+    if (activeVariant && activeVariant.gallery_urls && activeVariant.gallery_urls.length > 0) {
+      setActiveGallery(activeVariant.gallery_urls);
+      setActiveImage(activeVariant.gallery_urls[0]);
+    } else if (product) {
+      const defaultGallery = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
+      setActiveGallery(defaultGallery);
+      setActiveImage(product.image_url);
+    }
+  }, [activeVariant, product]);
 
   const displayPrice = activeVariant ? activeVariant.price : product?.price;
   const displayOriginalPrice = activeVariant ? activeVariant.original_price : product?.original_price;
@@ -176,9 +184,9 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                   </div>
                 </div>
 
-                {gallery.length > 1 && (
+                {activeGallery.length > 1 && (
                   <div className="flex gap-2 px-6 py-4 overflow-x-auto no-scrollbar bg-white border-b border-border/40">
-                    {gallery.map((img, idx) => (
+                    {activeGallery.map((img, idx) => (
                       <button
                         key={idx}
                         onClick={() => setActiveImage(img)}

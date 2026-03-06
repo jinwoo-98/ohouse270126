@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatPrice, getOptimizedImageUrl } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
@@ -17,9 +17,10 @@ interface ProductInfoProps {
   product: any;
   attributes: any[];
   reviewsCount: number;
+  onVariantChange: (variant: any | null) => void;
 }
 
-export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoProps) {
+export function ProductInfo({ product, attributes, reviewsCount, onVariantChange }: ProductInfoProps) {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   
@@ -49,6 +50,10 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
     if (!allSelected) return null;
     return variants.find(v => Object.entries(v.tier_values).every(([key, val]) => selectedValues[key] === val));
   }, [variants, selectedValues, tierConfig]);
+
+  useEffect(() => {
+    onVariantChange(activeVariant);
+  }, [activeVariant, onVariantChange]);
 
   const displayPrice = activeVariant ? activeVariant.price : product.price;
   const displayOriginalPrice = activeVariant ? activeVariant.original_price : product.original_price;

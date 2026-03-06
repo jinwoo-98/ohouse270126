@@ -17,6 +17,7 @@ import { CrossSellSection } from "@/components/admin/product-form/CrossSellSecti
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { VariantConfigSection } from "@/components/admin/product-form/VariantConfigSection";
 import { VariantList } from "@/components/admin/product-form/VariantList";
+import { VariantGalleryManager } from "@/components/admin/product-form/VariantGalleryManager";
 
 type SlugStatus = 'idle' | 'checking' | 'available' | 'taken';
 
@@ -41,6 +42,7 @@ export default function ProductForm() {
   
   const isRestoring = useRef(false);
   const [slugStatus, setSlugStatus] = useState<SlugStatus>('idle');
+  const [editingVariantIndex, setEditingVariantIndex] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -117,7 +119,6 @@ export default function ProductForm() {
     checkSlug();
   }, [debouncedSlug, id, isEdit]);
 
-  // Logic sinh biến thể
   useEffect(() => {
     if (isRestoring.current) return;
     const validTiers = tierConfig.filter(t => t.name && t.values.length > 0);
@@ -247,6 +248,18 @@ export default function ProductForm() {
     });
   };
 
+  const handleEditGallery = (index: number) => {
+    setEditingVariantIndex(index);
+  };
+
+  const handleSaveVariantGallery = (galleryUrls: string[]) => {
+    if (editingVariantIndex === null) return;
+    const newVariants = [...variants];
+    newVariants[editingVariantIndex].gallery_urls = galleryUrls;
+    setVariants(newVariants);
+    setIsDirty(true);
+  };
+
   const handleSubmit = async () => {
     if (!formData.name || !formData.category_id) {
       toast.error("Vui lòng nhập Tên và chọn Danh mục.");
@@ -297,7 +310,8 @@ export default function ProductForm() {
           original_price: v.original_price ? parseFloat(v.original_price) : null,
           stock: 999,
           sku: v.sku,
-          image_url: v.image_url || null
+          image_url: v.image_url || null,
+          gallery_urls: v.gallery_urls || null
         })));
       }
 
@@ -388,6 +402,7 @@ export default function ProductForm() {
             <VariantList
               variants={variants}
               setVariants={(v) => { setVariants(v); if (!isRestoring.current && !fetching) setIsDirty(true); }}
+              onEditGallery={handleEditGallery}
             />
           )}
         </div>
@@ -407,6 +422,13 @@ export default function ProductForm() {
           <CrossSellSection formData={formData} setFormData={(data) => { setFormData(data); if (!isRestoring.current && !fetching) setIsDirty(true); }} allProducts={allProducts} />
         </div>
       </div>
+
+      <VariantGalleryManager
+        isOpen={editingVariantIndex !== null}
+        onClose={() => setEditingVariantIndex(null)}
+        variant={editingVariantIndex !== null ? variants[editingVariantIndex] : null}
+        onSave={handleSaveVariantGallery}
+      />
     </div>
   );
 }
