@@ -143,15 +143,22 @@ export function ProductGallery({
             )}
             style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
           >
-            {/* Nút Hotspot chính */}
+            {/* Nút Hotspot chính - Kích thước 36px (w-9 h-9) */}
             <button
-              className="group relative w-8 h-8 -ml-4 -mt-4 rounded-full bg-primary/30 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
+              className="group relative w-9 h-9 -ml-[18px] -mt-[18px] rounded-full bg-primary/40 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
               onMouseEnter={() => {
                 setActiveHotspotId(item.id);
                 onActiveHotspotChange?.(item.product.id);
               }}
+              onMouseLeave={() => {
+                setActiveHotspotId(null);
+                onActiveHotspotChange?.(null);
+              }}
             >
-              <div className="w-4 h-4 rounded-full bg-white transition-all duration-300 group-hover:w-[14px] group-hover:h-[14px]" />
+              {/* Vòng tròn trắng ở tâm */}
+              <div className="w-4 h-4 rounded-full bg-white transition-all duration-300 group-hover:scale-90" />
+              
+              {/* Viền trắng chỉ hiện khi hover vào CHÍNH NÚT NÀY */}
               <div className="absolute inset-0 rounded-full border-white opacity-0 group-hover:opacity-100 group-hover:border-[3px] transition-all duration-300" />
             </button>
 
@@ -162,8 +169,16 @@ export function ProductGallery({
                   initial={{ opacity: 0, y: 10, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                  className="absolute bottom-full mb-12 flex items-center shadow-elevated rounded-xl overflow-visible z-50 bg-white"
+                  className="absolute bottom-full left-0 mb-12 flex items-center shadow-elevated rounded-xl overflow-visible z-50 bg-white"
                   style={{ left: '-21px' }} // Mép trái dịch sang trái 21px so với tâm nút
+                  onMouseEnter={() => {
+                    setActiveHotspotId(item.id);
+                    onActiveHotspotChange?.(item.product.id);
+                  }}
+                  onMouseLeave={() => {
+                    setActiveHotspotId(null);
+                    onActiveHotspotChange?.(null);
+                  }}
                 >
                   {/* Đường nối từ tâm nút lên bảng (Vị trí 21px từ mép trái bảng để khớp với tâm nút) */}
                   <div 
