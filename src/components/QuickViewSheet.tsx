@@ -107,14 +107,14 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   useEffect(() => {
     if (!displayProduct) return;
 
-    // 1. Ưu tiên Gallery của Biến thể đầy đủ (Tổ hợp)
+    // 1. Ưu tiên cao nhất: Gallery của Biến thể tổ hợp (nếu có ảnh)
     if (activeVariant && activeVariant.gallery_urls && activeVariant.gallery_urls.length > 0) {
       setActiveGallery(activeVariant.gallery_urls);
       setActiveImage(activeVariant.gallery_urls[0]);
       return;
     }
 
-    // 2. Ưu tiên Gallery của Giá trị phân loại vừa chọn (ví dụ: chọn màu Đỏ)
+    // 2. Ưu tiên tiếp theo: Gallery của giá trị vừa được click
     if (lastSelectedTier) {
       const tier = tierConfig.find((t: any) => t.name === lastSelectedTier);
       const selectedVal = selectedValues[lastSelectedTier];
@@ -125,14 +125,30 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
         setActiveImage(valueConfig.gallery_urls[0]);
         return;
       } else if (valueConfig?.image_url) {
-        // Nếu chỉ có 1 ảnh đại diện cho giá trị đó
         setActiveGallery([valueConfig.image_url]);
         setActiveImage(valueConfig.image_url);
         return;
       }
     }
 
-    // 3. Mặc định: Gallery của sản phẩm
+    // 3. Ưu tiên dự phòng: Kiểm tra các giá trị đang chọn khác xem có cái nào có gallery không
+    for (const tierName in selectedValues) {
+      const tier = tierConfig.find((t: any) => t.name === tierName);
+      const val = selectedValues[tierName];
+      const vConfig = tier?.values.find((v: any) => v.label === val);
+      
+      if (vConfig?.gallery_urls && vConfig.gallery_urls.length > 0) {
+        setActiveGallery(vConfig.gallery_urls);
+        setActiveImage(vConfig.gallery_urls[0]);
+        return;
+      } else if (vConfig?.image_url) {
+        setActiveGallery([vConfig.image_url]);
+        setActiveImage(vConfig.image_url);
+        return;
+      }
+    }
+
+    // 4. Mặc định: Gallery của sản phẩm gốc
     const defaultGallery = [displayProduct.image_url, ...(displayProduct.gallery_urls || [])].filter(Boolean);
     setActiveGallery(defaultGallery);
     setActiveImage(displayProduct.image_url);
@@ -356,7 +372,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                         </CollapsibleTrigger>
                         <CollapsibleContent className="pb-4 animate-accordion-down">
                           <div className="rounded-2xl overflow-hidden border border-border/40 bg-white p-2">
-                            <img src={displayProduct.dimension_image_url} alt={`${displayProduct.name} - Kích thước`} className="w-full h-auto object-contain" />
+                            <img src={product.dimension_image_url} alt={`${product.name} - Kích thước`} className="w-full h-auto object-contain" />
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
