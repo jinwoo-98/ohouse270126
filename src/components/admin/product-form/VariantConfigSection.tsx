@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Tag, Lightbulb, X, ImageIcon, Images } from "lucide-react";
+import { Plus, Trash2, Tag, Lightbulb, X, ImageIcon, Images, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface VariantValue {
   label: string;
@@ -43,16 +44,32 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
   const updateTierName = (index: number, name: string) => {
     const newConfig = [...tierConfig];
     newConfig[index].name = name;
+    // Khi đổi tên nhóm, xóa các giá trị cũ để tránh nhầm lẫn
+    newConfig[index].values = [];
     setTierConfig(newConfig);
   };
 
-  const addValueToTier = (index: number, val?: string) => {
-    const labelToAdd = (val || tempValue[index] || "").trim();
-    if (!labelToAdd) return;
-
+  const toggleValueToTier = (index: number, label: string) => {
     const newConfig = [...tierConfig];
-    if (!newConfig[index].values.some(v => v.label === labelToAdd)) {
-      newConfig[index].values = [...newConfig[index].values, { label: labelToAdd, image_url: "", gallery_urls: [] }];
+    const existingIdx = newConfig[index].values.findIndex(v => v.label === label);
+    
+    if (existingIdx > -1) {
+      // Nếu đã có thì xóa đi (toggle)
+      newConfig[index].values.splice(existingIdx, 1);
+    } else {
+      // Nếu chưa có thì thêm mới
+      newConfig[index].values.push({ label, image_url: "", gallery_urls: [] });
+    }
+    setTierConfig(newConfig);
+  };
+
+  const addManualValue = (index: number) => {
+    const label = (tempValue[index] || "").trim();
+    if (!label) return;
+    
+    const newConfig = [...tierConfig];
+    if (!newConfig[index].values.some(v => v.label === label)) {
+      newConfig[index].values.push({ label, image_url: "", gallery_urls: [] });
       setTierConfig(newConfig);
     }
     setTempValue({ ...tempValue, [index]: "" });
@@ -88,9 +105,15 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
         </Button>
       </div>
 
+      {tierConfig.length === 0 && (
+        <div className="py-12 border-2 border-dashed border-border/60 rounded-2xl text-center bg-secondary/10">
+          <p className="text-xs text-muted-foreground italic">Sản phẩm này chưa có phân loại. Nhấn nút phía trên để bắt đầu.</p>
+        </div>
+      )}
+
       {tierConfig.map((tier, idx) => {
-        const matchedOpt = variantOptions.find(a => a.name.toLowerCase() === tier.name.toLowerCase());
-        const suggestions = matchedOpt?.options || [];
+        const matchedOpt = variantOptions.find(a => a.name === tier.name);
+        const availableValues = matchedOpt?.options || [];
 
         return (
           <div key={idx} className="p-6 bg-secondary/30 rounded-2xl border border-border/50 relative animate-fade-in">
@@ -111,64 +134,102 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
             
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               <div className="space-y-3">
-                <Label className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Tên nhóm phân loại</Label>
-                <Input 
-                  value={tier.name} 
-                  onChange={(e) => updateTierName(idx, e.target.value)}
-                  placeholder="VD: Màu sắc, Kích thước..."
-                  className="h-11 bg-white rounded-xl font-bold"
-                />
+                <Label className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Chọn tên nhóm phân loại</Label>
+                <Select value={tier.name} onValueChange={(val) => updateTierName(idx, val)}>
+                  <SelectTrigger className="h-11 bg-white rounded-xl font-bold">
+                    <SelectValue placeholder="Chọn nhóm (Màu sắc, Kích thước...)" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {variantOptions.map(opt => (
+                      <SelectItem key={opt.id} value={opt.name}>{opt.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-3">
-                <Label className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Thêm giá trị</Label>
+                <Label className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Thêm giá trị khác (Nếu cần)</Label>
                 <div className="flex gap-2">
                   <Input 
-                    placeholder="Nhập giá trị..." 
+                    placeholder="Nhập giá trị mới..." 
                     className="h-11 bg-white rounded-xl"
                     value={tempValue[idx] || ""}
                     onChange={(e) => setTempValue({ ...tempValue, [idx]: e.target.value })}
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addValueToTier(idx))}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addManualValue(idx))}
                   />
-                  <Button type="button" size="icon" variant="secondary" onClick={() => addValueToTier(idx)} className="h-11 w-11 rounded-xl shrink-0"><Plus className="w-4 h-4" /></Button>
+                  <Button type="button" size="icon" variant="secondary" onClick={() => addManualValue(idx)} className="h-11 w-11 rounded-xl shrink-0"><Plus className="w-4 h-4" /></Button>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {tier.values.map((v, vIdx) => (
-                <div key={vIdx} className="relative flex flex-col bg-white rounded-2xl border border-border/60 shadow-sm group overflow-hidden animate-fade-in">
-                  <div className="aspect-square bg-secondary/30 border-b border-dashed border-border/60 relative">
-                    <ImageUpload 
-                      value={v.image_url || ""} 
-                      onChange={(url) => updateValueField(idx, vIdx, 'image_url', url as string)}
-                      aspectRatio="aspect-square"
-                    />
-                  </div>
-                  
-                  <div className="p-2 space-y-2 bg-gray-50/50">
-                    <p className="text-[11px] font-bold text-charcoal truncate text-center">{v.label}</p>
-                    <Button 
-                      type="button"
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setEditingGallery({ tierIdx: idx, valIdx: vIdx })}
-                      className="w-full h-7 text-[9px] font-bold uppercase gap-1.5 rounded-lg border-primary/20 text-primary hover:bg-primary/5"
-                    >
-                      <Images className="w-3 h-3" />
-                      Gallery ({(v.gallery_urls || []).length})
-                    </Button>
-                  </div>
-
-                  <button 
-                    type="button" 
-                    onClick={() => removeValue(idx, vIdx)}
-                    className="absolute top-1.5 right-1.5 p-1.5 bg-destructive/10 text-destructive hover:bg-destructive hover:text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
+            {/* Danh sách giá trị có sẵn để chọn nhanh */}
+            {tier.name && availableValues.length > 0 && (
+              <div className="space-y-3 mb-8 p-4 bg-white/50 rounded-xl border border-white/50">
+                <Label className="text-[9px] font-bold uppercase text-primary tracking-widest flex items-center gap-2">
+                  <Lightbulb className="w-3.5 h-3.5" /> Click để chọn nhanh các giá trị có sẵn:
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {availableValues.map((val: string) => {
+                    const isSelected = tier.values.some(v => v.label === val);
+                    return (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => toggleValueToTier(idx, val)}
+                        className={cn(
+                          "px-4 py-1.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-2",
+                          isSelected 
+                            ? "bg-primary text-white border-primary shadow-sm" 
+                            : "bg-white text-charcoal border-border hover:border-primary/40"
+                        )}
+                      >
+                        {val}
+                        {isSelected && <Check className="w-3 h-3" />}
+                      </button>
+                    );
+                  })}
                 </div>
-              ))}
+              </div>
+            )}
+
+            <div className="space-y-4 pt-6 border-t border-dashed border-border/40">
+              <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Cấu hình ảnh cho từng giá trị:</p>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {tier.values.map((v, vIdx) => (
+                  <div key={vIdx} className="relative flex flex-col bg-white rounded-2xl border border-border/60 shadow-sm group overflow-hidden animate-fade-in">
+                    <div className="aspect-square bg-secondary/30 border-b border-dashed border-border/60 relative">
+                      <ImageUpload 
+                        value={v.image_url || ""} 
+                        onChange={(url) => updateValueField(idx, vIdx, 'image_url', url as string)}
+                        aspectRatio="aspect-square"
+                      />
+                    </div>
+                    
+                    <div className="p-2 space-y-2 bg-gray-50/50">
+                      <p className="text-[11px] font-bold text-charcoal truncate text-center">{v.label}</p>
+                      <Button 
+                        type="button"
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setEditingGallery({ tierIdx: idx, valIdx: vIdx })}
+                        className="w-full h-7 text-[9px] font-bold uppercase gap-1.5 rounded-lg border-primary/20 text-primary hover:bg-primary/5"
+                      >
+                        <Images className="w-3 h-3" />
+                        Gallery ({(v.gallery_urls || []).length})
+                      </Button>
+                    </div>
+
+                    <button 
+                      type="button" 
+                      onClick={() => removeValue(idx, vIdx)}
+                      className="absolute top-1.5 right-1.5 p-1.5 bg-destructive/10 text-destructive hover:bg-destructive hover:text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         );
