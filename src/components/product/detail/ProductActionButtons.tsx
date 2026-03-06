@@ -1,29 +1,37 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Images, Ruler, Sparkles, Loader2, X, ShoppingBag } from "lucide-react";
+import { Images, Ruler, Sparkles, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { getOptimizedImageUrl, formatPrice } from "@/lib/utils";
+import { getOptimizedImageUrl, formatPrice, cn } from "@/lib/utils";
 import { HorizontalProductCard } from "./HorizontalProductCard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { motion } from "framer-motion";
 
 interface ProductActionButtonsProps {
   product: any;
   onQuickView?: (product: any) => void;
 }
 
+type TabType = 'media' | 'dimensions' | 'lookbook';
+
 export function ProductActionButtons({ product, onQuickView }: ProductActionButtonsProps) {
-  const [isMediaOpen, setIsMediaOpen] = useState(false);
-  const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
-  const [isLookbookOpen, setIsLookbookOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('media');
   
   const [lookbook, setLookbook] = useState<any>(null);
   const [loadingLook, setLoadingLook] = useState(false);
 
   const allImages = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
+
+  const tabs = [
+    { id: 'media' as TabType, label: "Toàn bộ media", icon: Images },
+    { id: 'dimensions' as TabType, label: "Thông số kích thước", icon: Ruler, disabled: !product.dimension_image_url },
+    { id: 'lookbook' as TabType, label: "Phối đồ Lookbook", icon: Sparkles },
+  ];
 
   // Lọc sản phẩm duy nhất cho danh sách Lookbook
   const uniqueLookbookProducts = useMemo(() => {
@@ -41,11 +49,7 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
   }, [lookbook]);
 
   const fetchLookbook = async () => {
-    if (lookbook) {
-      setIsLookbookOpen(true);
-      return;
-    }
-
+    if (lookbook) return;
     setLoadingLook(true);
     try {
       const { data: itemData } = await supabase
@@ -58,39 +62,19 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
       if (itemData) {
         const { data: lookData } = await supabase
           .from('shop_looks')
-          .select(`
-            *,
-            shop_look_items (
-              *,
-              products:product_id (*)
-            )
-          `)
+          .select(`*, shop_look_items (*, products:product_id (*))`)
           .eq('id', itemData.look_id)
           .single();
-        
         setLookbook(lookData);
-        setIsLookbookOpen(true);
       } else {
         const { data: catLook } = await supabase
           .from('shop_looks')
-          .select(`
-            *,
-            shop_look_items (
-              *,
-              products:product_id (*)
-            )
-          `)
+          .select(`*, shop_look_items (*, products:product_id (*))`)
           .eq('category_id', product.category_id)
           .eq('is_active', true)
           .limit(1)
           .maybeSingle();
-        
-        if (catLook) {
-          setLookbook(catLook);
-          setIsLookbookOpen(true);
-        } else {
-          alert("Hiện chưa có không gian phối đồ mẫu cho sản phẩm này.");
-        }
+        if (catLook) setLookbook(catLook);
       }
     } catch (e) {
       console.error(e);
@@ -99,156 +83,169 @@ export function ProductActionButtons({ product, onQuickView }: ProductActionButt
     }
   };
 
+  const handleOpenTab = (tab: TabType) => {
+    setActiveTab(tab);
+    setIsOpen(true);
+    if (tab === 'lookbook') fetchLookbook();
+  };
+
   return (
     <div className="flex items-center justify-center gap-3 mt-6">
-      <Button 
-        variant="outline" 
-        onClick={() => setIsMediaOpen(true)}
-        className="h-11 px-5 rounded-xl border-border/60 bg-white hover:bg-secondary/50 text-[10px] font-bold uppercase tracking-widest gap-2 shadow-sm"
-      >
-        <Images className="w-4 h-4 text-primary" /> Toàn bộ media
-      </Button>
-
-      {product.dimension_image_url && (
+      {tabs.map((tab) => (
         <Button 
+          key={tab.id}
           variant="outline" 
-          onClick={() => setIsDimensionsOpen(true)}
-          className="h-11 px-5 rounded-xl border-border/60 bg-white hover:bg-secondary/50 text-[10px] font-bold uppercase tracking-widest gap-2 shadow-sm"
+          onClick={() => handleOpenTab(tab.id)}
+          disabled={tab.disabled}
+          className={cn(
+            "h-11 px-5 rounded-xl border-border/60 bg-white hover:bg-secondary/50 text-[10px] font-bold uppercase tracking-widest gap-2 shadow-sm transition-all",
+            tab.id === 'lookbook' && "border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
+          )}
         >
-          <Ruler className="w-4 h-4 text-primary" /> Kích thước
+          <tab.icon className="w-4 h-4" /> {tab.label}
         </Button>
-      )}
+      ))}
 
-      <Button 
-        variant="outline" 
-        onClick={fetchLookbook}
-        disabled={loadingLook}
-        className="h-11 px-5 rounded-xl border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest gap-2 shadow-sm"
-      >
-        {loadingLook ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-        Phối đồ Lookbook
-      </Button>
-
-      {/* 1. Dialog Toàn bộ Media */}
-      <Dialog open={isMediaOpen} onOpenChange={setIsMediaOpen}>
-        <DialogContent className="max-w-3xl max-h-[85vh] p-0 overflow-hidden border-none rounded-[32px] shadow-elevated z-[160]">
-          <div className="bg-charcoal p-6 text-white flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                <Images className="w-5 h-5" />
-              </div>
-              <DialogTitle className="text-lg font-bold uppercase tracking-widest">Thư Viện Hình Ảnh</DialogTitle>
-            </div>
-            <button onClick={() => setIsMediaOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5" /></button>
-          </div>
-          <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar bg-white">
-            <div className="grid grid-cols-2 gap-4 md:gap-6">
-              {allImages.map((img, idx) => (
-                <div key={idx} className="aspect-square rounded-2xl overflow-hidden border border-border/40 bg-secondary/10 group">
-                  <img 
-                    src={getOptimizedImageUrl(img, { width: 600 })} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                    alt={`${product.name} - ${idx + 1}`} 
-                    onError={(e) => { (e.target as HTMLImageElement).src = img; }}
-                  />
-                </div>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="max-w-[1700px] w-[95vw] h-[983px] max-h-[95vh] p-0 overflow-hidden border-none rounded-[32px] shadow-elevated z-[160] flex flex-col [&>button]:hidden">
+          {/* Header: 64px */}
+          <div className="h-[64px] bg-charcoal flex items-center justify-between px-8 shrink-0 border-b border-white/10">
+            <div className="flex items-center h-full">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  disabled={tab.disabled}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    if (tab.id === 'lookbook') fetchLookbook();
+                  }}
+                  className={cn(
+                    "h-full px-6 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.15em] transition-all relative group",
+                    activeTab === tab.id ? "text-primary" : "text-white/60 hover:text-white",
+                    tab.disabled && "opacity-30 cursor-not-allowed"
+                  )}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <motion.div layoutId="activeTab" className="absolute bottom-0 left-6 right-6 h-0.5 bg-primary" />
+                  )}
+                </button>
               ))}
             </div>
+            <button 
+              onClick={() => setIsOpen(false)} 
+              className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-primary transition-all"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* 2. Dialog Kích thước */}
-      <Dialog open={isDimensionsOpen} onOpenChange={setIsDimensionsOpen}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden border-none rounded-[32px] shadow-elevated z-[160]">
-          <div className="bg-charcoal p-6 text-white flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
-                <Ruler className="w-5 h-5" />
-              </div>
-              <DialogTitle className="text-lg font-bold uppercase tracking-widest">Thông Số Kích Thước</DialogTitle>
-            </div>
-            <button onClick={() => setIsDimensionsOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5" /></button>
-          </div>
-          <div className="p-8 bg-white flex items-center justify-center min-h-[300px]">
-            <div className="rounded-2xl overflow-hidden border border-border/40 shadow-subtle max-w-full relative">
-              <img 
-                src={product.dimension_image_url} 
-                alt="Kích thước sản phẩm" 
-                className="max-w-full h-auto" 
-                loading="eager"
-                // @ts-ignore
-                fetchpriority="high"
-              />
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* 3. Dialog Lookbook */}
-      <Dialog open={isLookbookOpen} onOpenChange={setIsLookbookOpen}>
-        <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] p-0 overflow-hidden border-none rounded-[32px] shadow-elevated z-[160] [&>button]:hidden">
-          {lookbook && (
-            <div className="flex flex-col md:flex-row h-full">
-              <div className="flex-1 relative bg-secondary/20 min-h-[300px] md:min-h-0">
-                <img src={lookbook.image_url} className="w-full h-full object-cover" alt={lookbook.title} />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent pointer-events-none" />
-                
-                <div className="absolute top-6 left-8 z-20">
-                  <Badge className="bg-primary text-white border-none uppercase tracking-widest text-[10px] px-4 py-1.5 shadow-gold">
-                    Cảm hứng không gian
-                  </Badge>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mt-3 drop-shadow-md uppercase tracking-tight">
-                    {lookbook.title}
-                  </h2>
-                </div>
-
-                <TooltipProvider>
-                  {lookbook.shop_look_items
-                    ?.filter((item: any) => item.target_image_url === lookbook.image_url && item.products)
-                    .map((item: any) => (
-                    <Tooltip key={item.id} delayDuration={0}>
-                      <TooltipTrigger asChild>
-                        <button
-                          className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-30 group/dot"
-                          style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                          onClick={() => onQuickView?.(item.products)}
-                        >
-                          <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
-                          <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent className="bg-charcoal text-white border-none p-3 rounded-xl shadow-elevated">
-                        <p className="font-bold text-[10px] uppercase tracking-wider">{item.products.name}</p>
-                        <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.products.price)}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-                </TooltipProvider>
-              </div>
-
-              <div className="w-full md:w-[400px] bg-white flex flex-col border-l border-border/40">
-                <div className="p-6 border-b border-border/40 flex items-center justify-between">
-                  <h3 className="font-bold text-sm uppercase tracking-widest text-charcoal">Sản phẩm trong ảnh</h3>
-                  <button onClick={() => setIsLookbookOpen(false)} className="p-2 hover:bg-secondary rounded-full transition-colors"><X className="w-4 h-4" /></button>
-                </div>
-                <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-secondary/5">
-                  {uniqueLookbookProducts.map((p: any) => (
-                    <HorizontalProductCard 
-                      key={p.id} 
-                      product={p} 
-                      onClose={() => setIsLookbookOpen(false)} 
-                    />
+          {/* Content: 919px */}
+          <div className="flex-1 h-[919px] bg-white overflow-hidden">
+            {activeTab === 'media' && (
+              <div className="h-full p-8 md:p-12 overflow-y-auto custom-scrollbar">
+                <div className="grid grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
+                  {allImages.map((img, idx) => (
+                    <div key={idx} className="aspect-square rounded-3xl overflow-hidden border border-border/40 bg-secondary/10 group shadow-sm">
+                      <img 
+                        src={getOptimizedImageUrl(img, { width: 800 })} 
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                        alt={`${product.name} - ${idx + 1}`} 
+                        onError={(e) => { (e.target as HTMLImageElement).src = img; }}
+                      />
+                    </div>
                   ))}
                 </div>
-                <div className="p-6 bg-white border-t border-border/40">
-                  <Button className="w-full btn-hero h-12 rounded-xl shadow-gold text-[10px] font-bold" asChild>
-                    <a href={`/y-tuong/${lookbook.slug || lookbook.id}`}>XEM CHI TIẾT KHÔNG GIAN</a>
-                  </Button>
+              </div>
+            )}
+
+            {activeTab === 'dimensions' && (
+              <div className="h-full flex items-center justify-center p-12 bg-secondary/5">
+                <div className="max-w-4xl w-full bg-white p-4 rounded-[32px] shadow-medium border border-border/40 relative overflow-hidden">
+                  <img 
+                    src={product.dimension_image_url} 
+                    alt="Kích thước sản phẩm" 
+                    className="w-full h-auto object-contain" 
+                    loading="eager"
+                  />
                 </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {activeTab === 'lookbook' && (
+              <div className="h-full flex flex-col md:flex-row">
+                {loadingLook ? (
+                  <div className="flex-1 flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>
+                ) : lookbook ? (
+                  <>
+                    <div className="flex-1 relative bg-secondary/20">
+                      <img src={lookbook.image_url} className="w-full h-full object-cover" alt={lookbook.title} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent pointer-events-none" />
+                      
+                      <div className="absolute top-8 left-10 z-20">
+                        <Badge className="bg-primary text-white border-none uppercase tracking-widest text-[10px] px-4 py-1.5 shadow-gold">
+                          Cảm hứng không gian
+                        </Badge>
+                        <h2 className="text-3xl md:text-4xl font-bold text-white mt-4 drop-shadow-md uppercase tracking-tight">
+                          {lookbook.title}
+                        </h2>
+                      </div>
+
+                      <TooltipProvider>
+                        {lookbook.shop_look_items
+                          ?.filter((item: any) => item.target_image_url === lookbook.image_url && item.products)
+                          .map((item: any) => (
+                          <Tooltip key={item.id} delayDuration={0}>
+                            <TooltipTrigger asChild>
+                              <button
+                                className="absolute w-10 h-10 -ml-5 -mt-5 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-30 group/dot"
+                                style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
+                                onClick={() => onQuickView?.(item.products)}
+                              >
+                                <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
+                                <span className="relative w-6 h-6 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-charcoal text-white border-none p-4 rounded-2xl shadow-elevated">
+                              <p className="font-bold text-xs uppercase tracking-wider">{item.products.name}</p>
+                              <p className="text-primary font-bold text-sm mt-1">{formatPrice(item.products.price)}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
+                      </TooltipProvider>
+                    </div>
+
+                    <div className="w-full md:w-[450px] bg-white flex flex-col border-l border-border/40">
+                      <div className="p-8 border-b border-border/40">
+                        <h3 className="font-bold text-sm uppercase tracking-widest text-charcoal">Sản phẩm trong ảnh</h3>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold mt-1">{uniqueLookbookProducts.length} sản phẩm phối hợp</p>
+                      </div>
+                      <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-secondary/5">
+                        {uniqueLookbookProducts.map((p: any) => (
+                          <HorizontalProductCard 
+                            key={p.id} 
+                            product={p} 
+                            onClose={() => setIsOpen(false)} 
+                          />
+                        ))}
+                      </div>
+                      <div className="p-8 bg-white border-t border-border/40">
+                        <Button className="w-full btn-hero h-14 rounded-2xl shadow-gold text-xs font-bold" asChild>
+                          <a href={`/y-tuong/${lookbook.slug || lookbook.id}`}>XEM CHI TIẾT KHÔNG GIAN</a>
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-12">
+                    <Sparkles className="w-16 h-16 text-muted-foreground/20 mb-4" />
+                    <p className="text-muted-foreground italic">Hiện chưa có không gian phối đồ mẫu cho sản phẩm này.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
