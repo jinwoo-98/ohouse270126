@@ -1,24 +1,24 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Link } from "react-router-dom";
-import { 
-  ShoppingBag, Heart, Minus, Plus, Loader2, Ruler, Info, FileText, 
-  Star, MessageSquare, ArrowLeft, X, ChevronDown, ChevronUp, Check
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
+import { Minus, Plus, Loader2, MessageSquare, X } from "lucide-react";
+import { Sheet, SheetContent, SheetClose } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { supabase } from "@/integrations/supabase/client";
-import { cn, formatPrice, generateProductAltText, wrapWordsInSpans, getOptimizedImageUrl } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 import { StarRating } from "@/components/product/detail/ProductReviews";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
-import { sanitizeHtml } from "@/lib/sanitize";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+// Modular Components - Using relative paths to fix resolution errors
+import { QuickViewGallery } from "./product/quickview/QuickViewGallery";
+import { QuickViewHeader } from "./product/quickview/QuickViewHeader";
+import { QuickViewVariants } from "./product/quickview/QuickViewVariants";
+import { QuickViewDetails } from "./product/quickview/QuickViewDetails";
+import { QuickViewReviewsList } from "./product/quickview/QuickViewReviewsList";
+import { QuickViewFooter } from "./product/quickview/QuickViewFooter";
 
 interface QuickViewSheetProps {
   product: any | null;
@@ -45,8 +45,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   const [lastSelectedTier, setLastSelectedTier] = useState<string | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Local state to keep the product data during the exit animation
   const [displayProduct, setDisplayProduct] = useState<any>(null);
 
   useEffect(() => {
@@ -58,9 +56,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       setLastSelectedTier(null);
       setActiveImage(product.image_url);
       setActiveGallery([product.image_url, ...(product.gallery_urls || [])].filter(Boolean));
-      setIsDescriptionOpen(false);
-      setIsDimensionsOpen(false);
-      setIsSpecsOpen(false);
       fetchAdditionalData(product.id);
     }
   }, [product]);
@@ -86,7 +81,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       }
       
       setAttributes(dynamicAttributes);
-      
     } catch (e) {
       console.error(e);
     } finally {
@@ -103,18 +97,15 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     return variants.find(v => Object.entries(v.tier_values).every(([key, val]) => selectedValues[key] === val));
   }, [variants, selectedValues, tierConfig]);
 
-  // Logic hiển thị ảnh thông minh
   useEffect(() => {
     if (!displayProduct) return;
 
-    // 1. Ưu tiên cao nhất: Gallery của Biến thể tổ hợp (nếu có ảnh)
     if (activeVariant && activeVariant.gallery_urls && activeVariant.gallery_urls.length > 0) {
       setActiveGallery(activeVariant.gallery_urls);
       setActiveImage(activeVariant.gallery_urls[0]);
       return;
     }
 
-    // 2. Ưu tiên tiếp theo: Gallery của giá trị vừa được click
     if (lastSelectedTier) {
       const tier = tierConfig.find((t: any) => t.name === lastSelectedTier);
       const selectedVal = selectedValues[lastSelectedTier];
@@ -131,7 +122,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       }
     }
 
-    // 3. Ưu tiên dự phòng: Kiểm tra các giá trị đang chọn khác xem có cái nào có gallery không
     for (const tierName in selectedValues) {
       const tier = tierConfig.find((t: any) => t.name === tierName);
       const val = selectedValues[tierName];
@@ -148,7 +138,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       }
     }
 
-    // 4. Mặc định: Gallery của sản phẩm gốc
     const defaultGallery = [displayProduct.image_url, ...(displayProduct.gallery_urls || [])].filter(Boolean);
     setActiveGallery(defaultGallery);
     setActiveImage(displayProduct.image_url);
@@ -156,15 +145,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
 
   const displayPrice = activeVariant ? activeVariant.price : displayProduct?.price;
   const displayOriginalPrice = activeVariant ? activeVariant.original_price : displayProduct?.original_price;
-
-  const processedDescription = useMemo(() => {
-    if (!displayProduct?.description) return "";
-    return wrapWordsInSpans(sanitizeHtml(displayProduct.description));
-  }, [displayProduct?.description]);
-
-  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
-  const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
-  const [isSpecsOpen, setIsSpecsOpen] = useState(false);
 
   const handleValueSelect = (tierName: string, value: string) => {
     setSelectedValues(prev => ({ ...prev, [tierName]: value }));
@@ -224,109 +204,30 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="relative aspect-square bg-secondary/20 overflow-hidden">
-                  <img src={activeImage} alt={generateProductAltText(displayProduct)} className="w-full h-full object-cover transition-all duration-500" />
-                  <div className="absolute top-4 left-4">
-                    <Badge variant="secondary" className="bg-primary text-white uppercase tracking-widest text-[9px] font-bold border-none px-3 py-1 shadow-sm">
-                      {displayProduct.category_id?.replace(/-/g, ' ')}
-                    </Badge>
-                  </div>
-                </div>
-
-                {activeGallery.length > 1 && (
-                  <div className="flex gap-2 px-6 py-4 overflow-x-auto no-scrollbar bg-white border-b border-border/40">
-                    {activeGallery.map((img, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setActiveImage(img)}
-                        className={cn(
-                          "relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0",
-                          activeImage === img ? "border-primary ring-2 ring-primary/10" : "border-transparent opacity-60 hover:opacity-100"
-                        )}
-                      >
-                        <img src={img} className="w-full h-full object-cover" alt={`${displayProduct.name} - Ảnh ${idx + 1}`} />
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <QuickViewGallery 
+                  product={displayProduct}
+                  activeImage={activeImage}
+                  activeGallery={activeGallery}
+                  onSelectImage={setActiveImage}
+                />
 
                 <div className="p-6 md:p-8 space-y-10 pb-10">
-                  <div className="space-y-4">
-                    <SheetHeader>
-                      <SheetTitle className="text-2xl font-display font-bold leading-tight text-left text-charcoal">
-                        {displayProduct.name}
-                      </SheetTitle>
-                    </SheetHeader>
-                    <div className="flex items-center gap-4">
-                      <span className="text-3xl font-bold text-primary">{formatPrice(displayPrice)}</span>
-                      {displayOriginalPrice && (
-                        <span className="text-sm text-muted-foreground line-through opacity-50">{formatPrice(displayOriginalPrice)}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <StarRating rating={displayProduct.fake_rating || 5} size="w-4 h-4" />
-                      <span className="text-xs text-muted-foreground ml-2">({displayProduct.fake_review_count || reviews.length} nhận xét)</span>
-                    </div>
-                  </div>
+                  <QuickViewHeader 
+                    name={displayProduct.name}
+                    price={displayPrice}
+                    originalPrice={displayOriginalPrice}
+                    rating={displayProduct.fake_rating || 5}
+                    reviewCount={displayProduct.fake_review_count || reviews.length}
+                  />
 
                   {isLoadingDetails ? (
                     <div className="flex justify-center py-4"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
                   ) : (
-                    tierConfig.length > 0 && (
-                      <div className="space-y-6 pt-6 border-t border-border/40">
-                        {tierConfig.map((tier: any, idx: number) => (
-                          <div key={idx} className="space-y-3">
-                            <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-                              {tier.name}: <span className="text-charcoal">{selectedValues[tier.name] || "Chưa chọn"}</span>
-                            </span>
-                            <div className="flex flex-wrap gap-3">
-                              {tier.values.map((val: any) => {
-                                const isObj = val !== null && typeof val === 'object';
-                                const label = isObj ? val.label : val;
-                                const imageUrl = isObj ? val.image_url : null;
-                                const isSelected = selectedValues[tier.name] === label;
-
-                                return (
-                                  <button
-                                    key={label}
-                                    onClick={() => handleValueSelect(tier.name, label)}
-                                    className={cn(
-                                      "transition-all border-2 relative flex items-center justify-center overflow-hidden",
-                                      imageUrl 
-                                        ? "w-14 h-14 rounded-xl p-0.5" 
-                                        : "px-4 py-2 rounded-xl text-xs font-bold min-w-[60px]",
-                                      isSelected 
-                                        ? "border-primary bg-primary/5 text-primary" 
-                                        : "border-border bg-white hover:border-primary/40 text-charcoal"
-                                    )}
-                                    title={label}
-                                  >
-                                    {imageUrl ? (
-                                      <div className="w-full h-full rounded-lg overflow-hidden relative bg-secondary/20">
-                                        <img 
-                                          src={imageUrl} 
-                                          alt={label} 
-                                          className="w-full h-full object-cover" 
-                                        />
-                                        {isSelected && (
-                                          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-                                            <div className="bg-primary text-white rounded-full p-0.5 shadow-sm">
-                                              <Check className="w-3 h-3" />
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    ) : (
-                                      <span className="whitespace-nowrap">{label}</span>
-                                    )}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )
+                    <QuickViewVariants 
+                      tierConfig={tierConfig}
+                      selectedValues={selectedValues}
+                      onValueSelect={handleValueSelect}
+                    />
                   )}
 
                   <div className="space-y-3 pt-6 border-t border-border/40">
@@ -338,70 +239,11 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                     </div>
                   </div>
 
-                  <div className="space-y-2 pt-6 border-t border-border/40">
-                    {displayProduct.description && (
-                      <Collapsible open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen} className="border-b border-border/40 pb-4">
-                        <CollapsibleTrigger className="flex items-center justify-between w-full py-4 text-left group">
-                          <div className="flex items-center gap-3">
-                            <FileText className="w-4 h-4 text-primary" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal">Khám phá sản phẩm</span>
-                          </div>
-                          {isDescriptionOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="animate-accordion-down relative">
-                          <div className="vn-text-fix text-sm text-muted-foreground pb-8 w-full overflow-hidden" dangerouslySetInnerHTML={{ __html: processedDescription }} />
-                          {isDescriptionOpen && (
-                            <div className="flex justify-center pt-4 border-t border-dashed border-border/40">
-                              <Button variant="ghost" size="sm" onClick={() => setIsDescriptionOpen(false)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 gap-2">
-                                Thu gọn nội dung <ChevronUp className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          )}
-                        </CollapsibleContent>
-                      </Collapsible>
-                    )}
-
-                    {displayProduct.dimension_image_url && (
-                      <Collapsible open={isDimensionsOpen} onOpenChange={setIsDimensionsOpen} className="border-b border-border/40 pb-4">
-                        <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
-                          <div className="flex items-center gap-3">
-                            <Ruler className="w-4 h-4 text-primary" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal">Kích thước kỹ thuật</span>
-                          </div>
-                          {isDimensionsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="pb-4 animate-accordion-down">
-                          <div className="rounded-2xl overflow-hidden border border-border/40 bg-white p-2">
-                            <img src={product.dimension_image_url} alt={`${product.name} - Kích thước`} className="w-full h-auto object-contain" />
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    )}
-
-                    {attributes.length > 0 && (
-                      <Collapsible open={isSpecsOpen} onOpenChange={setIsSpecsOpen} className="pb-4">
-                        <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
-                          <div className="flex items-center gap-3">
-                            <Info className="w-4 h-4 text-primary" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal">Thông số chi tiết</span>
-                          </div>
-                          {isSpecsOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="pb-4 animate-accordion-down">
-                          <div className="grid gap-2">
-                            {attributes.map((attr, i) => (
-                              <div key={i} className="flex items-start justify-between gap-4 py-2.5 border-b border-dashed border-border/40 text-xs">
-                                <span className="text-muted-foreground font-medium shrink-0">{attr.name}</span>
-                                <span className="text-charcoal font-bold text-right break-words max-w-[70%]">
-                                  {Array.isArray(attr.value) ? attr.value.join(", ") : attr.value}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    )}
-                  </div>
+                  <QuickViewDetails 
+                    description={displayProduct.description}
+                    dimensionImageUrl={displayProduct.dimension_image_url}
+                    attributes={attributes}
+                  />
 
                   <div className="space-y-6 pt-6 border-t border-border/40">
                     <div className="flex items-center justify-between">
@@ -448,87 +290,24 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 </div>
               </motion.div>
             ) : activeView === 'reviews' && displayProduct ? (
-              <motion.div
-                key="reviews-list"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3 }}
-                className="bg-background min-h-full"
-              >
-                <div className="sticky top-0 z-20 bg-charcoal text-cream p-6 shadow-medium">
-                  <div className="flex items-center gap-4">
-                    <button 
-                      onClick={() => setActiveView('details')}
-                      className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary hover:text-white transition-all"
-                    >
-                      <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <div>
-                      <h3 className="text-lg font-bold uppercase tracking-widest leading-none">Đánh Giá Thực Tế</h3>
-                      <p className="text-[10px] text-taupe uppercase tracking-widest mt-2">{displayProduct.name}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-6 md:p-8 space-y-6">
-                  <div className="bg-white p-6 rounded-[24px] border border-border/40 shadow-subtle text-center">
-                    <p className="text-4xl font-bold text-charcoal mb-2">{displayProduct.fake_rating || 5}/5</p>
-                    <div className="flex justify-center mb-2">
-                      <StarRating rating={displayProduct.fake_rating || 5} size="w-5 h-5" />
-                    </div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tổng số {reviews.length} nhận xét</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    {reviews.map((rev) => (
-                      <div key={rev.id} className="bg-white p-6 rounded-[24px] border border-border/40 shadow-subtle hover:border-primary/30 transition-all">
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary font-bold text-xs">
-                              {rev.user_name?.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-charcoal">{rev.user_name}</p>
-                              <div className="mt-0.5"><StarRating rating={rev.rating} size="w-3 h-3" /></div>
-                            </div>
-                          </div>
-                          <span className="text-[9px] font-medium text-muted-foreground bg-secondary px-2 py-1 rounded-md">
-                            {new Date(rev.created_at).toLocaleDateString('vi-VN')}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed italic">"{rev.comment}"</p>
-                        {rev.image_url && (
-                          <div className="mt-4 aspect-square w-24 rounded-xl overflow-hidden border border-border/60">
-                             <img src={rev.image_url} className="w-full h-full object-cover" alt={`Đánh giá từ ${rev.user_name}`} />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="py-10 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-4">Bạn đã xem hết đánh giá</p>
-                    <Button variant="outline" className="rounded-full h-11 px-8 text-[10px] font-bold uppercase tracking-widest" onClick={() => setActiveView('details')}>
-                      <ArrowLeft className="w-4 h-4 mr-2" /> Quay lại chi tiết
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
+              <QuickViewReviewsList 
+                productName={displayProduct.name}
+                rating={displayProduct.fake_rating || 5}
+                reviews={reviews}
+                onBack={() => setActiveView('details')}
+              />
             ) : null}
           </AnimatePresence>
         </div>
 
         {displayProduct && (
-          <div className="p-4 md:p-6 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-            <div className="flex items-center gap-5">
-              <Button variant="outline" className="flex-1 h-14 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 rounded-2xl px-2" asChild onClick={onClose}>
-                <Link to={`/san-pham/${displayProduct.slug || displayProduct.id}`}>XEM CHI TIẾT</Link>
-              </Button>
-              <button onClick={() => toggleWishlist(displayProduct)} className={cn("h-14 w-14 shrink-0 flex items-center justify-center rounded-2xl border transition-all", isInWishlist(displayProduct.id) ? "bg-primary/5 border-primary text-primary shadow-sm" : "bg-white border-border hover:border-primary/40")}><Heart className={cn("w-6 h-6", isInWishlist(displayProduct.id) && "fill-current")} /></button>
-              <Button className="flex-[2] btn-hero h-14 text-[10px] font-bold shadow-gold rounded-2xl" onClick={handleAddToCart}><ShoppingBag className="w-5 h-5 mr-2" />THÊM VÀO GIỎ</Button>
-            </div>
-          </div>
+          <QuickViewFooter 
+            product={displayProduct}
+            isInWishlist={isInWishlist(displayProduct.id)}
+            onAddToCart={handleAddToCart}
+            onToggleWishlist={() => toggleWishlist(displayProduct)}
+            onClose={onClose}
+          />
         )}
       </SheetContent>
     </Sheet>
