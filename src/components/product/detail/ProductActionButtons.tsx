@@ -45,7 +45,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
           const lookIds = itemData.map(i => i.look_id);
           const { data: looksData } = await supabase
             .from('shop_looks')
-            .select(`*, shop_look_items (*, products:product_id (*))`)
+            .select(`id, title, image_url, square_image_url, homepage_image_url, slug, category_id, shop_look_items (*, products:product_id (*))`)
             .in('id', lookIds)
             .eq('is_active', true)
             .order('display_order');
@@ -54,7 +54,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
         } else {
           const { data: catLooks } = await supabase
             .from('shop_looks')
-            .select(`*, shop_look_items (*, products:product_id (*))`)
+            .select(`id, title, image_url, square_image_url, homepage_image_url, slug, category_id, shop_look_items (*, products:product_id (*))`)
             .eq('category_id', product.category_id)
             .eq('is_active', true)
             .limit(5);
@@ -117,6 +117,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-[1700px] w-[95vw] h-[983px] max-h-[95vh] p-0 overflow-hidden border-none rounded-[32px] shadow-elevated z-[160] flex flex-col [&>button]:hidden">
+          {/* Header: Sạch sẽ, không đường kẻ */}
           <div className="h-[64px] bg-charcoal flex items-center justify-between px-8 shrink-0">
             <div className="flex items-center h-full">
               {tabs.map((tab) => (
@@ -149,21 +150,21 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               <div className="h-full flex flex-col md:flex-row">
                 {activeLook ? (
                   <>
-                    {/* Thumbnails (Left) - Sử dụng ảnh vuông 1:1 và kích thước lớn */}
-                    <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto no-scrollbar shrink-0 w-full md:w-32 lg:w-36 p-6 bg-white">
+                    {/* Thumbnails (Left) - Tăng kích thước và ép buộc ảnh vuông 1:1 */}
+                    <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto no-scrollbar shrink-0 w-full md:w-40 lg:w-44 p-6 bg-white">
                       {allProductLooks.map((look, idx) => (
                         <button
                           key={look.id}
                           onClick={() => setActiveLookIndex(idx)}
                           className={cn(
-                            "relative aspect-square w-20 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
+                            "relative aspect-square w-24 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white shadow-sm",
                             activeLookIndex === idx 
-                              ? "border-primary ring-2 ring-primary/10" 
+                              ? "border-primary ring-4 ring-primary/10" 
                               : "border-transparent opacity-50 hover:opacity-100"
                           )}
                         >
                           <img 
-                            src={getOptimizedImageUrl(look.square_image_url || look.image_url, { width: 250 })} 
+                            src={getOptimizedImageUrl(look.square_image_url || look.image_url, { width: 300 })} 
                             className="w-full h-full object-cover" 
                             alt={look.title} 
                             onError={(e) => { (e.target as HTMLImageElement).src = look.image_url; }}
@@ -172,7 +173,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                       ))}
                     </div>
 
-                    {/* Main Image (Center) - Bo góc theo admin */}
+                    {/* Main Image (Center) - Khổ vuông lớn, không đường kẻ bao quanh */}
                     <div className="flex-1 relative bg-white flex items-center justify-center p-6">
                       <div 
                         className="relative aspect-square h-full max-h-[800px] overflow-hidden shadow-medium bg-secondary/10"
@@ -216,6 +217,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                       </div>
                     </div>
 
+                    {/* Products List (Right) - Không đường kẻ phân vùng, tạo cảm giác thoáng */}
                     <div className="w-full md:w-[450px] bg-white flex flex-col">
                       <div className="p-8 pb-4">
                         <h3 className="font-bold text-sm uppercase tracking-widest text-charcoal">Sản phẩm trong ảnh</h3>
@@ -246,6 +248,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               </div>
             )}
 
+            {/* Các tab khác giữ nguyên logic nhưng đảm bảo không có border thừa */}
             {activeTab === 'media' && (
               <div className="h-full p-8 md:p-12 overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
