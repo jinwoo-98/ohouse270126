@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { ShoppingBag, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { LookProductVerticalItem } from "./LookProductVerticalItem";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
@@ -12,18 +11,19 @@ import { cn } from "@/lib/utils";
 interface LookProductListProps {
   products: any[];
   onQuickView: (product: any) => void;
+  activeProductId?: string | null; // Thêm prop
 }
 
-export function LookProductList({ products, onQuickView }: LookProductListProps) {
+export function LookProductList({ products, onQuickView, activeProductId }: LookProductListProps) {
   const { addToCart } = useCart();
   const [showAll, setShowAll] = useState(false);
-  const MAX_VISIBLE_ITEMS = 4; // Tăng lên 4 để phù hợp với 2 cột
+  const MAX_VISIBLE_ITEMS = 4; 
   
   const visibleProducts = showAll ? products : products.slice(0, MAX_VISIBLE_ITEMS);
   const hasMore = products.length > MAX_VISIBLE_ITEMS;
 
   const handleAddAllToCart = () => {
-    products.forEach((product: any) => addToCart({ ...product, quantity: 1, image: product.products.image_url }));
+    products.forEach((product: any) => addToCart({ ...product, quantity: 1, image: product.image_url }));
     toast.success(`Đã thêm ${products.length} sản phẩm vào giỏ hàng.`);
   };
 
@@ -31,10 +31,9 @@ export function LookProductList({ products, onQuickView }: LookProductListProps)
     <div className="lg:col-span-1 min-w-0 w-full">
       <h2 className="text-xl font-bold mb-6 text-charcoal uppercase tracking-widest">Sản phẩm trong không gian</h2>
       
-      {/* Grid 2 cột trên desktop */}
       <div className={cn(
         "grid gap-4 transition-all duration-500",
-        "grid-cols-2", // Luôn là 2 cột
+        "grid-cols-2",
         !showAll && hasMore ? "max-h-[400px] overflow-hidden" : "max-h-none"
       )}>
         {visibleProducts.map((product: any) => (
@@ -44,6 +43,7 @@ export function LookProductList({ products, onQuickView }: LookProductListProps)
             onQuickView={onQuickView} 
             className="rounded-2xl"
             imageClassName="rounded-t-2xl"
+            isActive={activeProductId === product.id} // Truyền trạng thái active
           />
         ))}
       </div>
@@ -64,7 +64,6 @@ export function LookProductList({ products, onQuickView }: LookProductListProps)
         </div>
       )}
       
-      {/* CTA to add all to cart */}
       <Button 
         onClick={handleAddAllToCart}
         className="w-full btn-hero h-12 text-xs font-bold shadow-gold mt-6 rounded-2xl"

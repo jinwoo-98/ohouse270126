@@ -27,6 +27,7 @@ interface ProductGalleryProps {
   imageAltText?: string; 
   hotspots?: Hotspot[];
   onHotspotClick?: (product: any) => void;
+  onActiveHotspotChange?: (productId: string | null) => void; // Thêm callback
   children?: (currentImageUrl: string) => React.ReactNode;
   product?: any; 
   aspectRatio?: string;
@@ -48,6 +49,7 @@ export function ProductGallery({
   imageAltText, 
   hotspots = [], 
   onHotspotClick, 
+  onActiveHotspotChange,
   children, 
   product,
   aspectRatio = "aspect-square",
@@ -73,6 +75,7 @@ export function ProductGallery({
     if (allImages.length <= 1) return;
     setIsZoomed(false); 
     setActiveHotspotId(null);
+    onActiveHotspotChange?.(null);
     let newIndex = imageIndex + newDirection;
     if (newIndex < 0) {
       newIndex = allImages.length - 1;
@@ -101,15 +104,16 @@ export function ProductGallery({
   };
 
   const handleContainerClick = (e: React.MouseEvent) => {
-    // Nếu click vào vùng trống của ảnh
     if (onImageClick) {
       onImageClick();
       setActiveHotspotId(null);
+      onActiveHotspotChange?.(null);
       return;
     }
 
     if (disableZoom) {
       setActiveHotspotId(null);
+      onActiveHotspotChange?.(null);
       return;
     }
 
@@ -142,21 +146,16 @@ export function ProductGallery({
             {/* Nút Hotspot chính */}
             <button
               className="group relative w-8 h-8 -ml-4 -mt-4 rounded-full bg-primary/30 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90"
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveHotspotId(isActive ? null : item.id);
+              onMouseEnter={() => {
+                setActiveHotspotId(item.id);
+                onActiveHotspotChange?.(item.product.id);
               }}
             >
-              {/* Vòng tròn trắng ở tâm */}
+              {/* Vòng tròn trắng ở tâm (16px -> 14px khi hover) */}
               <div className="w-4 h-4 rounded-full bg-white transition-all duration-300 group-hover:w-[14px] group-hover:h-[14px]" />
               
-              {/* Viền trắng thu vào trong khi hover */}
+              {/* Viền trắng thu vào trong khi hover (3px) */}
               <div className="absolute inset-0 rounded-full border-white opacity-0 group-hover:opacity-100 group-hover:border-[3px] transition-all duration-300" />
-              
-              {/* Hiệu ứng Ping khi không active */}
-              {!isActive && (
-                <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping pointer-events-none" />
-              )}
             </button>
 
             {/* Bảng thông tin Popup */}
@@ -168,11 +167,11 @@ export function ProductGallery({
                   exit={{ opacity: 0, y: 10, scale: 0.9 }}
                   className="absolute bottom-full left-1/2 -translate-x-1/2 mb-12 flex items-center shadow-elevated rounded-xl overflow-hidden z-40"
                 >
-                  {/* Đường nối từ tâm lên bảng */}
+                  {/* Đường nối 2px từ tâm nút lên bảng */}
                   <div className="absolute top-full left-1/2 -translate-x-1/2 w-[2px] h-12 bg-white pointer-events-none" />
 
                   {/* Phần thông tin (143x72px) */}
-                  <div className="w-[143px] h-[72px] bg-white p-3 flex flex-col justify-center text-left">
+                  <div className="w-[143px] h-[72px] bg-white p-3 flex flex-col justify-center text-left border-r border-border/40">
                     <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground truncate mb-1">
                       {item.product.category_id?.replace(/-/g, ' ') || "Sản phẩm"}
                     </p>
@@ -181,9 +180,9 @@ export function ProductGallery({
                     </p>
                   </div>
 
-                  {/* Nút Xem nhanh (24x72px) */}
+                  {/* Nút Xem nhanh (24x72px) - Nền trắng, icon màu chủ đạo */}
                   <button
-                    className="w-[24px] h-[72px] bg-primary flex items-center justify-center text-white hover:bg-primary/90 transition-colors"
+                    className="w-[24px] h-[72px] bg-white flex items-center justify-center text-primary hover:bg-primary/5 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       if (onHotspotClick) onHotspotClick(item.product);

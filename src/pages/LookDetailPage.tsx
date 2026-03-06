@@ -32,6 +32,7 @@ export default function LookDetailPage() {
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
   const [showHotspots, setShowHotspots] = useState(true);
+  const [activeProductId, setActiveProductId] = useState<string | null>(null); // Trạng thái sản phẩm đang được chọn từ hotspot
 
   useEffect(() => {
     if (id) {
@@ -232,11 +233,15 @@ export default function LookDetailPage() {
                     productName={look.title} 
                     hotspots={lookHotspots}
                     onHotspotClick={setQuickViewProduct}
+                    onActiveHotspotChange={setActiveProductId} // Truyền callback để cập nhật sản phẩm đang chọn
                     aspectRatio={galleryConfig.ratio}
                     disableZoom={true}
                     hideCounter={true}
                     showHotspots={showHotspots}
-                    onImageClick={() => setShowHotspots(!showHotspots)}
+                    onImageClick={() => {
+                      setShowHotspots(!showHotspots);
+                      setActiveProductId(null);
+                    }}
                   >
                     {() => (
                       <>
@@ -258,7 +263,7 @@ export default function LookDetailPage() {
 
                         {/* Nút Chuyển đổi Hotspot (Góc dưới phải) */}
                         <button 
-                          onClick={(e) => { e.stopPropagation(); setShowHotspots(!showHotspots); }}
+                          onClick={(e) => { e.stopPropagation(); setShowHotspots(!showHotspots); setActiveProductId(null); }}
                           className="absolute bottom-4 right-4 z-30 w-10 h-10 rounded-full bg-charcoal/80 backdrop-blur-md text-white flex items-center justify-center hover:bg-primary transition-all shadow-medium"
                           title={showHotspots ? "Ẩn sản phẩm" : "Hiện sản phẩm"}
                         >
@@ -272,7 +277,11 @@ export default function LookDetailPage() {
 
               {visibleItems.length > 0 && (
                 <div className="min-w-0 w-full hidden lg:block">
-                  <LookProductList products={lookbookProducts} onQuickView={setQuickViewProduct} />
+                  <LookProductList 
+                    products={lookbookProducts} 
+                    onQuickView={setQuickViewProduct} 
+                    activeProductId={activeProductId} // Truyền ID sản phẩm đang chọn xuống danh sách
+                  />
                 </div>
               )}
             </div>
