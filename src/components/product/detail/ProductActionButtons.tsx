@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Images, Ruler, Sparkles, Loader2, X, PlayCircle, Camera } from "lucide-react";
+import { Images, Ruler, Sparkles, Loader2, X, PlayCircle, Camera, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -36,7 +36,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
     const fetchLooks = async () => {
       setLoadingLooks(true);
       try {
-        // Lấy tất cả look_id mà sản phẩm này tham gia
         const { data: itemData } = await supabase
           .from('shop_look_items')
           .select('look_id')
@@ -53,7 +52,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
           
           setAllProductLooks(looksData || []);
         } else {
-          // Fallback: Lấy lookbook cùng danh mục
           const { data: catLooks } = await supabase
             .from('shop_looks')
             .select(`*, shop_look_items (*, products:product_id (*))`)
@@ -119,8 +117,8 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-[1700px] w-[95vw] h-[983px] max-h-[95vh] p-0 overflow-hidden border-none rounded-[32px] shadow-elevated z-[160] flex flex-col [&>button]:hidden">
-          {/* Header: 64px */}
-          <div className="h-[64px] bg-charcoal flex items-center justify-between px-8 shrink-0 border-b border-white/10">
+          {/* Header: Không đường kẻ */}
+          <div className="h-[64px] bg-charcoal flex items-center justify-between px-8 shrink-0">
             <div className="flex items-center h-full">
               {tabs.map((tab) => (
                 <button
@@ -147,57 +145,14 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
             </button>
           </div>
 
-          {/* Content: 919px */}
-          <div className="flex-1 h-[919px] bg-white overflow-hidden">
-            {activeTab === 'media' && (
-              <div className="h-full p-8 md:p-12 overflow-y-auto custom-scrollbar">
-                <div className="grid grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
-                  {allImages.map((img, idx) => (
-                    <div key={idx} className="aspect-square rounded-3xl overflow-hidden border border-border/40 bg-secondary/10 group shadow-sm">
-                      <img 
-                        src={getOptimizedImageUrl(img, { width: 800 })} 
-                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
-                        alt={`${product.name} - ${idx + 1}`} 
-                        onError={(e) => { (e.target as HTMLImageElement).src = img; }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'video' && (
-              <div className="h-full flex items-center justify-center p-12 bg-black">
-                <div className="w-full max-w-5xl aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                  <iframe 
-                    src={product.video_url?.replace('watch?v=', 'embed/')} 
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen
-                  />
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'dimensions' && (
-              <div className="h-full flex items-center justify-center p-12 bg-secondary/5">
-                <div className="max-w-4xl w-full bg-white p-4 rounded-[32px] shadow-medium border border-border/40 relative overflow-hidden">
-                  <img 
-                    src={product.dimension_image_url} 
-                    alt="Kích thước sản phẩm" 
-                    className="w-full h-auto object-contain" 
-                    loading="eager"
-                  />
-                </div>
-              </div>
-            )}
-
+          {/* Content Area */}
+          <div className="flex-1 bg-white overflow-hidden">
             {activeTab === 'lookbook' && (
               <div className="h-full flex flex-col md:flex-row">
                 {activeLook ? (
                   <>
-                    {/* Thumbnails List (Left) - Đồng bộ style với ProductGallery */}
-                    <div className="flex md:flex-col gap-2.5 overflow-x-auto md:overflow-y-auto no-scrollbar shrink-0 w-full md:w-20 lg:w-24 p-4 bg-secondary/10 border-r border-border/40">
+                    {/* Thumbnails (Left) - Giống hệt ProductGallery */}
+                    <div className="flex md:flex-col gap-2.5 overflow-x-auto md:overflow-y-auto no-scrollbar shrink-0 w-full md:w-20 lg:w-24 p-6 bg-white">
                       {allProductLooks.map((look, idx) => (
                         <button
                           key={look.id}
@@ -219,10 +174,10 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                       ))}
                     </div>
 
-                    {/* Main Square Image (Center) - Bo góc theo setup admin */}
-                    <div className="flex-1 relative bg-secondary/5 flex items-center justify-center p-8">
+                    {/* Main Image (Center) - Khổ vuông lớn, bo góc theo admin */}
+                    <div className="flex-1 relative bg-white flex items-center justify-center p-6">
                       <div 
-                        className="relative aspect-square h-full max-h-[800px] overflow-hidden shadow-elevated border border-border/40 bg-white"
+                        className="relative aspect-square h-full max-h-[800px] overflow-hidden shadow-medium bg-secondary/10"
                         style={{ borderRadius: 'var(--radius)' }}
                       >
                         <AnimatePresence mode="wait">
@@ -263,13 +218,13 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                       </div>
                     </div>
 
-                    {/* Products List (Right) */}
-                    <div className="w-full md:w-[450px] bg-white flex flex-col border-l border-border/40">
-                      <div className="p-8 border-b border-border/40">
+                    {/* Products List (Right) - Không đường kẻ phân vùng */}
+                    <div className="w-full md:w-[450px] bg-white flex flex-col">
+                      <div className="p-8 pb-4">
                         <h3 className="font-bold text-sm uppercase tracking-widest text-charcoal">Sản phẩm trong ảnh</h3>
                         <p className="text-[10px] text-muted-foreground uppercase font-bold mt-1">{uniqueLookbookProducts.length} sản phẩm phối hợp</p>
                       </div>
-                      <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar bg-secondary/5">
+                      <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                         {uniqueLookbookProducts.map((p: any) => (
                           <HorizontalProductCard 
                             key={p.id} 
@@ -278,7 +233,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                           />
                         ))}
                       </div>
-                      <div className="p-8 bg-white border-t border-border/40">
+                      <div className="p-8 pt-4">
                         <Button className="w-full btn-hero h-14 rounded-2xl shadow-gold text-xs font-bold" asChild>
                           <a href={`/y-tuong/${activeLook.slug || activeLook.id}`}>XEM CHI TIẾT KHÔNG GIAN</a>
                         </Button>
@@ -294,11 +249,54 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               </div>
             )}
 
+            {/* Các tab khác giữ nguyên logic nhưng bỏ border nếu cần */}
+            {activeTab === 'media' && (
+              <div className="h-full p-8 md:p-12 overflow-y-auto custom-scrollbar">
+                <div className="grid grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
+                  {allImages.map((img, idx) => (
+                    <div key={idx} className="aspect-square rounded-3xl overflow-hidden bg-secondary/10 group shadow-sm">
+                      <img 
+                        src={getOptimizedImageUrl(img, { width: 800 })} 
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                        alt={`${product.name} - ${idx + 1}`} 
+                        onError={(e) => { (e.target as HTMLImageElement).src = img; }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'video' && (
+              <div className="h-full flex items-center justify-center p-12 bg-black">
+                <div className="w-full max-w-5xl aspect-video rounded-3xl overflow-hidden shadow-2xl">
+                  <iframe 
+                    src={product.video_url?.replace('watch?v=', 'embed/')} 
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'dimensions' && (
+              <div className="h-full flex items-center justify-center p-12 bg-secondary/5">
+                <div className="max-w-4xl w-full bg-white p-4 rounded-[32px] shadow-medium relative overflow-hidden">
+                  <img 
+                    src={product.dimension_image_url} 
+                    alt="Kích thước sản phẩm" 
+                    className="w-full h-auto object-contain" 
+                  />
+                </div>
+              </div>
+            )}
+
             {activeTab === 'customer_photos' && (
               <div className="h-full p-8 md:p-12 overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                   {customerImages.map((img, idx) => (
-                    <div key={idx} className="relative aspect-square rounded-3xl overflow-hidden border border-border/40 bg-secondary/10 group shadow-sm">
+                    <div key={idx} className="relative aspect-square rounded-3xl overflow-hidden bg-secondary/10 group shadow-sm">
                       <img 
                         src={getOptimizedImageUrl(img.url, { width: 600 })} 
                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
