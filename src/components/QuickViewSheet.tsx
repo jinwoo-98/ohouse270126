@@ -46,8 +46,12 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Local state to keep the product data during the exit animation
+  const [displayProduct, setDisplayProduct] = useState<any>(null);
+
   useEffect(() => {
-    if (isOpen && product) {
+    if (product) {
+      setDisplayProduct(product);
       setActiveView('details');
       setQuantity(1);
       setSelectedValues({});
@@ -57,18 +61,17 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       setIsDescriptionOpen(false);
       setIsDimensionsOpen(false);
       setIsSpecsOpen(false);
-      fetchAdditionalData();
+      fetchAdditionalData(product.id);
     }
-  }, [isOpen, product?.id]);
+  }, [product]);
 
-  const fetchAdditionalData = async () => {
-    if (!product) return;
+  const fetchAdditionalData = async (productId: string) => {
     setIsLoadingDetails(true);
     try {
       const [vRes, rRes, aRes] = await Promise.all([
-        supabase.from('product_variants').select('*').eq('product_id', product.id),
-        supabase.from('reviews').select('*').eq('product_id', product.id).order('created_at', { ascending: false }),
-        supabase.from('product_attributes').select('value, attributes(name)').eq('product_id', product.id)
+        supabase.from('product_variants').select('*').eq('product_id', productId),
+        supabase.from('reviews').select('*').eq('product_id', productId).order('created_at', { ascending: false }),
+        supabase.from('product_attributes').select('value, attributes(name)').eq('product_id', productId)
       ]);
       
       setVariants(vRes.data || []);
@@ -91,7 +94,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     }
   };
 
-  const tierConfig = product?.tier_variants_config || [];
+  const tierConfig = displayProduct?.tier_variants_config || [];
 
   const activeVariant = useMemo(() => {
     if (tierConfig.length === 0) return null;
@@ -102,7 +105,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
 
   // Logic hiển thị ảnh thông minh
   useEffect(() => {
-    if (!product) return;
+    if (!displayProduct) return;
 
     // 1. Ưu tiên Gallery của Biến thể đầy đủ (Tổ hợp)
     if (activeVariant && activeVariant.gallery_urls && activeVariant.gallery_urls.length > 0) {
@@ -130,18 +133,18 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     }
 
     // 3. Mặc định: Gallery của sản phẩm
-    const defaultGallery = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
+    const defaultGallery = [displayProduct.image_url, ...(displayProduct.gallery_urls || [])].filter(Boolean);
     setActiveGallery(defaultGallery);
-    setActiveImage(product.image_url);
-  }, [activeVariant, selectedValues, lastSelectedTier, product, tierConfig]);
+    setActiveImage(displayProduct.image_url);
+  }, [activeVariant, selectedValues, lastSelectedTier, displayProduct, tierConfig]);
 
-  const displayPrice = activeVariant ? activeVariant.price : product?.price;
-  const displayOriginalPrice = activeVariant ? activeVariant.original_price : product?.original_price;
+  const displayPrice = activeVariant ? activeVariant.price : displayProduct?.price;
+  const displayOriginalPrice = activeVariant ? activeVariant.original_price : displayProduct?.original_price;
 
   const processedDescription = useMemo(() => {
-    if (!product?.description) return "";
-    return wrapWordsInSpans(sanitizeHtml(product.description));
-  }, [product?.description]);
+    if (!displayProduct?.description) return "";
+    return wrapWordsInSpans(sanitizeHtml(displayProduct.description));
+  }, [displayProduct?.description]);
 
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
@@ -153,23 +156,26 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   };
 
   const handleAddToCart = () => {
+    if (!displayProduct) return;
     if (tierConfig.length > 0 && !activeVariant) {
       const missing = tierConfig.find((t: any) => !selectedValues[t.name]);
       toast.error(`Vui lòng chọn ${missing?.name}`);
       return;
     }
     addToCart({
-      id: product.id,
-      name: product.name,
+      id: displayProduct.id,
+      name: displayProduct.name,
       price: displayPrice,
-      image: product.image_url,
+      image: displayProduct.image_url,
       quantity,
       variant: activeVariant ? Object.values(activeVariant.tier_values).join(" / ") : undefined,
       variant_id: activeVariant?.id,
-      slug: product.slug
+      slug: displayProduct.slug
     });
     onClose();
   };
+
+  if (!displayProduct && !isOpen) return null;
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -194,7 +200,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
         
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto custom-scrollbar bg-background">
           <AnimatePresence mode="wait">
-            {activeView === 'details' ? (
+            {activeView === 'details' && displayProduct ? (
               <motion.div
                 key="details"
                 initial={{ opacity: 0, x: -20 }}
@@ -203,10 +209,10 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 transition={{ duration: 0.3 }}
               >
                 <div className="relative aspect-square bg-secondary/20 overflow-hidden">
-                  <img src={activeImage} alt={generateProductAltText(product)} className="w-full h-full object-cover transition-all duration-500" />
+                  <img src={activeImage} alt={generateProductAltText(displayProduct)} className="w-full h-full object-cover transition-all duration-500" />
                   <div className="absolute top-4 left-4">
                     <Badge variant="secondary" className="bg-primary text-white uppercase tracking-widest text-[9px] font-bold border-none px-3 py-1 shadow-sm">
-                      {product.category_id?.replace(/-/g, ' ')}
+                      {displayProduct.category_id?.replace(/-/g, ' ')}
                     </Badge>
                   </div>
                 </div>
@@ -222,7 +228,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                           activeImage === img ? "border-primary ring-2 ring-primary/10" : "border-transparent opacity-60 hover:opacity-100"
                         )}
                       >
-                        <img src={img} className="w-full h-full object-cover" alt={`${product.name} - Ảnh ${idx + 1}`} />
+                        <img src={img} className="w-full h-full object-cover" alt={`${displayProduct.name} - Ảnh ${idx + 1}`} />
                       </button>
                     ))}
                   </div>
@@ -232,7 +238,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                   <div className="space-y-4">
                     <SheetHeader>
                       <SheetTitle className="text-2xl font-display font-bold leading-tight text-left text-charcoal">
-                        {product.name}
+                        {displayProduct.name}
                       </SheetTitle>
                     </SheetHeader>
                     <div className="flex items-center gap-4">
@@ -242,8 +248,8 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <StarRating rating={product.fake_rating || 5} size="w-4 h-4" />
-                      <span className="text-xs text-muted-foreground ml-2">({product.fake_review_count || reviews.length} nhận xét)</span>
+                      <StarRating rating={displayProduct.fake_rating || 5} size="w-4 h-4" />
+                      <span className="text-xs text-muted-foreground ml-2">({displayProduct.fake_review_count || reviews.length} nhận xét)</span>
                     </div>
                   </div>
 
@@ -317,7 +323,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                   </div>
 
                   <div className="space-y-2 pt-6 border-t border-border/40">
-                    {product.description && (
+                    {displayProduct.description && (
                       <Collapsible open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen} className="border-b border-border/40 pb-4">
                         <CollapsibleTrigger className="flex items-center justify-between w-full py-4 text-left group">
                           <div className="flex items-center gap-3">
@@ -339,7 +345,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                       </Collapsible>
                     )}
 
-                    {product.dimension_image_url && (
+                    {displayProduct.dimension_image_url && (
                       <Collapsible open={isDimensionsOpen} onOpenChange={setIsDimensionsOpen} className="border-b border-border/40 pb-4">
                         <CollapsibleTrigger className="flex items-center justify-between w-full py-4 group">
                           <div className="flex items-center gap-3">
@@ -350,7 +356,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                         </CollapsibleTrigger>
                         <CollapsibleContent className="pb-4 animate-accordion-down">
                           <div className="rounded-2xl overflow-hidden border border-border/40 bg-white p-2">
-                            <img src={product.dimension_image_url} alt={`${product.name} - Kích thước`} className="w-full h-auto object-contain" />
+                            <img src={displayProduct.dimension_image_url} alt={`${displayProduct.name} - Kích thước`} className="w-full h-auto object-contain" />
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
@@ -425,7 +431,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                   </div>
                 </div>
               </motion.div>
-            ) : (
+            ) : activeView === 'reviews' && displayProduct ? (
               <motion.div
                 key="reviews-list"
                 initial={{ opacity: 0, x: 20 }}
@@ -444,16 +450,16 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                     </button>
                     <div>
                       <h3 className="text-lg font-bold uppercase tracking-widest leading-none">Đánh Giá Thực Tế</h3>
-                      <p className="text-[10px] text-taupe uppercase tracking-widest mt-2">{product.name}</p>
+                      <p className="text-[10px] text-taupe uppercase tracking-widest mt-2">{displayProduct.name}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="p-6 md:p-8 space-y-6">
                   <div className="bg-white p-6 rounded-[24px] border border-border/40 shadow-subtle text-center">
-                    <p className="text-4xl font-bold text-charcoal mb-2">{product.fake_rating || 5}/5</p>
+                    <p className="text-4xl font-bold text-charcoal mb-2">{displayProduct.fake_rating || 5}/5</p>
                     <div className="flex justify-center mb-2">
-                      <StarRating rating={product.fake_rating || 5} size="w-5 h-5" />
+                      <StarRating rating={displayProduct.fake_rating || 5} size="w-5 h-5" />
                     </div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tổng số {reviews.length} nhận xét</p>
                   </div>
@@ -493,19 +499,21 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                   </div>
                 </div>
               </motion.div>
-            )}
+            ) : null}
           </AnimatePresence>
         </div>
 
-        <div className="p-4 md:p-6 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-          <div className="flex items-center gap-5">
-            <Button variant="outline" className="flex-1 h-14 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 rounded-2xl px-2" asChild onClick={onClose}>
-              <Link to={`/san-pham/${product.slug || product.id}`}>XEM CHI TIẾT</Link>
-            </Button>
-            <button onClick={() => toggleWishlist(product)} className={cn("h-14 w-14 shrink-0 flex items-center justify-center rounded-2xl border transition-all", isInWishlist(product.id) ? "bg-primary/5 border-primary text-primary shadow-sm" : "bg-white border-border hover:border-primary/40")}><Heart className={cn("w-6 h-6", isInWishlist(product.id) && "fill-current")} /></button>
-            <Button className="flex-[2] btn-hero h-14 text-[10px] font-bold shadow-gold rounded-2xl" onClick={handleAddToCart}><ShoppingBag className="w-5 h-5 mr-2" />THÊM VÀO GIỎ</Button>
+        {displayProduct && (
+          <div className="p-4 md:p-6 border-t border-border bg-card sticky bottom-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+            <div className="flex items-center gap-5">
+              <Button variant="outline" className="flex-1 h-14 text-[10px] font-bold uppercase tracking-widest border-charcoal/20 rounded-2xl px-2" asChild onClick={onClose}>
+                <Link to={`/san-pham/${displayProduct.slug || displayProduct.id}`}>XEM CHI TIẾT</Link>
+              </Button>
+              <button onClick={() => toggleWishlist(displayProduct)} className={cn("h-14 w-14 shrink-0 flex items-center justify-center rounded-2xl border transition-all", isInWishlist(displayProduct.id) ? "bg-primary/5 border-primary text-primary shadow-sm" : "bg-white border-border hover:border-primary/40")}><Heart className={cn("w-6 h-6", isInWishlist(displayProduct.id) && "fill-current")} /></button>
+              <Button className="flex-[2] btn-hero h-14 text-[10px] font-bold shadow-gold rounded-2xl" onClick={handleAddToCart}><ShoppingBag className="w-5 h-5 mr-2" />THÊM VÀO GIỎ</Button>
+            </div>
           </div>
-        </div>
+        )}
       </SheetContent>
     </Sheet>
   );
