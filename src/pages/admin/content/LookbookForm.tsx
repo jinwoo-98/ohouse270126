@@ -145,7 +145,7 @@ export default function LookbookForm() {
       slug: lookData.slug || slugify(lookData.title),
       description: lookData.description || "",
       category_id: lookData.category_id,
-      image_url: lookData.image_url,
+      image_url: lookData.image_url || "",
       square_image_url: lookData.square_image_url || "",
       gallery_urls: lookData.gallery_urls || [],
       is_active: lookData.is_active,
@@ -156,7 +156,7 @@ export default function LookbookForm() {
     });
     
     setLookItems(lookData.shop_look_items || []);
-    setActiveEditingImage(lookData.image_url);
+    setActiveEditingImage(lookData.image_url || lookData.homepage_image_url);
   };
 
   const restoreDraft = () => {
@@ -189,7 +189,7 @@ export default function LookbookForm() {
     setSaving(true);
     
     if (!formData.title) { toast.error("Vui lòng nhập tên Lookbook"); setSaving(false); return; }
-    if (!formData.image_url) { toast.error("Thiếu ảnh chính"); setSaving(false); return; }
+    if (!formData.homepage_image_url) { toast.error("Thiếu ảnh trang chủ (Bắt buộc)"); setSaving(false); return; }
     if (!formData.category_id) { toast.error("Vui lòng chọn danh mục hiển thị"); setSaving(false); return; }
 
     const payload = {
@@ -197,9 +197,9 @@ export default function LookbookForm() {
       slug: formData.slug,
       description: formData.description,
       category_id: formData.category_id,
-      image_url: formData.image_url,
-      square_image_url: formData.square_image_url,
-      gallery_urls: formData.gallery_urls,
+      image_url: formData.image_url || null,
+      square_image_url: formData.square_image_url || null,
+      gallery_urls: formData.gallery_urls || [],
       is_active: formData.is_active,
       homepage_image_url: formData.homepage_image_url,
       style: formData.style === 'none' ? null : formData.style,
