@@ -145,16 +145,13 @@ export function ProductGallery({
           >
             {/* Nút Hotspot chính */}
             <button
-              className="group relative w-8 h-8 -ml-4 -mt-4 rounded-full bg-primary/30 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90"
+              className="group relative w-8 h-8 -ml-4 -mt-4 rounded-full bg-primary/30 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
               onMouseEnter={() => {
                 setActiveHotspotId(item.id);
                 onActiveHotspotChange?.(item.product.id);
               }}
             >
-              {/* Vòng tròn trắng ở tâm (16px -> 14px khi hover) */}
               <div className="w-4 h-4 rounded-full bg-white transition-all duration-300 group-hover:w-[14px] group-hover:h-[14px]" />
-              
-              {/* Viền trắng thu vào trong khi hover (3px) */}
               <div className="absolute inset-0 rounded-full border-white opacity-0 group-hover:opacity-100 group-hover:border-[3px] transition-all duration-300" />
             </button>
 
@@ -165,13 +162,17 @@ export function ProductGallery({
                   initial={{ opacity: 0, y: 10, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                  className="absolute bottom-full left-0 -translate-x-[63px] mb-12 flex items-center shadow-elevated rounded-xl overflow-hidden z-40"
+                  className="absolute bottom-full left-0 mb-12 flex items-center shadow-elevated rounded-xl overflow-visible z-50 bg-white"
+                  style={{ transform: 'translateX(-63px)' }}
                 >
                   {/* Đường nối từ tâm nút lên bảng (Vị trí 63px từ mép trái bảng để khớp với tâm nút) */}
-                  <div className="absolute top-full left-[63px] -translate-x-1/2 w-[2px] h-12 bg-primary pointer-events-none shadow-sm" />
+                  <div 
+                    className="absolute top-full w-[2px] h-12 bg-primary pointer-events-none shadow-sm z-50" 
+                    style={{ left: '63px', transform: 'translateX(-50%)' }}
+                  />
 
                   {/* Phần thông tin (143x72px) */}
-                  <div className="w-[143px] h-[72px] bg-white p-3 flex flex-col justify-center text-left border-r border-border/40">
+                  <div className="w-[143px] h-[72px] bg-white p-3 flex flex-col justify-center text-left border-r border-border/40 rounded-l-xl">
                     <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground truncate mb-1">
                       {item.product.category_id?.replace(/-/g, ' ') || "Sản phẩm"}
                     </p>
@@ -182,7 +183,7 @@ export function ProductGallery({
 
                   {/* Nút Xem nhanh (24x72px) - Nền trắng, icon màu chủ đạo */}
                   <button
-                    className="w-[24px] h-[72px] bg-white flex items-center justify-center text-primary hover:bg-primary/5 transition-colors"
+                    className="w-[24px] h-[72px] bg-white flex items-center justify-center text-primary hover:bg-primary/5 transition-colors rounded-r-xl"
                     onClick={(e) => {
                       e.stopPropagation();
                       if (onHotspotClick) onHotspotClick(item.product);
