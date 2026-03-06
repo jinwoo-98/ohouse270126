@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Check, Tag, Lightbulb, X, ImageIcon } from "lucide-react";
+import { Plus, Trash2, Tag, Lightbulb, X, ImageIcon, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,10 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface VariantValue {
   label: string;
   image_url?: string;
+  gallery_urls?: string[];
 }
 
 interface VariantTier {
@@ -28,6 +30,7 @@ interface VariantConfigSectionProps {
 
 export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig }: VariantConfigSectionProps) {
   const [tempValue, setTempValue] = useState<Record<number, string>>({});
+  const [editingGallery, setEditingGallery] = useState<{ tierIdx: number, valIdx: number } | null>(null);
 
   const addTier = () => {
     if (tierConfig.length >= 3) {
@@ -49,15 +52,15 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
 
     const newConfig = [...tierConfig];
     if (!newConfig[index].values.some(v => v.label === labelToAdd)) {
-      newConfig[index].values = [...newConfig[index].values, { label: labelToAdd, image_url: "" }];
+      newConfig[index].values = [...newConfig[index].values, { label: labelToAdd, image_url: "", gallery_urls: [] }];
       setTierConfig(newConfig);
     }
     setTempValue({ ...tempValue, [index]: "" });
   };
 
-  const updateValueImage = (tierIdx: number, valIdx: number, url: string) => {
+  const updateValueField = (tierIdx: number, valIdx: number, field: string, value: any) => {
     const newConfig = [...tierConfig];
-    newConfig[tierIdx].values[valIdx].image_url = url;
+    newConfig[tierIdx].values[valIdx] = { ...newConfig[tierIdx].values[valIdx], [field]: value };
     setTierConfig(newConfig);
   };
 
@@ -84,12 +87,6 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
           <Plus className="w-3 h-3 mr-1" /> Thêm nhóm phân loại
         </Button>
       </div>
-
-      {tierConfig.length === 0 && (
-        <div className="py-10 border-2 border-dashed border-border/60 rounded-2xl text-center bg-secondary/10">
-          <p className="text-xs text-muted-foreground italic">Sản phẩm này chưa có phân loại (Màu sắc, Kích thước...).</p>
-        </div>
-      )}
 
       {tierConfig.map((tier, idx) => {
         const matchedOpt = variantOptions.find(a => a.name.toLowerCase() === tier.name.toLowerCase());
@@ -121,22 +118,6 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
                   placeholder="VD: Màu sắc, Kích thước..."
                   className="h-11 bg-white rounded-xl font-bold"
                 />
-                
-                <div className="flex flex-wrap gap-1.5">
-                  {variantOptions.map(a => (
-                    <button
-                      key={a.id}
-                      type="button"
-                      onClick={() => updateTierName(idx, a.name)}
-                      className={cn(
-                        "px-2 py-1 rounded-md text-[9px] font-bold uppercase border transition-all",
-                        tier.name === a.name ? "bg-primary text-white border-primary" : "bg-white text-muted-foreground hover:border-primary/40"
-                      )}
-                    >
-                      {a.name}
-                    </button>
-                  ))}
-                </div>
               </div>
 
               <div className="space-y-3">
@@ -151,79 +132,99 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
                   />
                   <Button type="button" size="icon" variant="secondary" onClick={() => addValueToTier(idx)} className="h-11 w-11 rounded-xl shrink-0"><Plus className="w-4 h-4" /></Button>
                 </div>
-
-                {suggestions.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    <div className="flex items-center gap-1 text-[9px] font-bold text-primary uppercase mr-1">
-                      <Lightbulb className="w-3 h-3" /> Gợi ý:
-                    </div>
-                    {suggestions.map((s: string) => {
-                      const isAdded = tier.values.some(v => v.label === s);
-                      return (
-                        <button
-                          key={s}
-                          type="button"
-                          onClick={() => addValueToTier(idx, s)}
-                          disabled={isAdded}
-                          className={cn(
-                            "px-2 py-1 rounded-md text-[9px] font-bold transition-all border",
-                            isAdded ? "bg-gray-100 text-gray-300 border-transparent" : "bg-white text-charcoal hover:border-primary/40"
-                          )}
-                        >
-                          {s}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             </div>
 
-            <div className="space-y-4 pt-6 border-t border-dashed border-border/40">
-              <div className="flex items-center justify-between">
-                <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Danh sách giá trị & Ảnh minh họa:</p>
-                <p className="text-[9px] text-primary font-bold italic">* Ảnh này sẽ hiển thị khi khách hàng chọn phân loại tương ứng.</p>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {tier.values.map((v, vIdx) => (
-                  <div key={vIdx} className="relative flex flex-col bg-white rounded-2xl border border-border/60 shadow-sm group overflow-hidden animate-fade-in">
-                    {/* Image Area */}
-                    <div className="aspect-square bg-secondary/30 border-b border-dashed border-border/60 relative">
-                      <ImageUpload 
-                        value={v.image_url || ""} 
-                        onChange={(url) => updateValueImage(idx, vIdx, url as string)}
-                        aspectRatio="aspect-square"
-                      />
-                      {!v.image_url && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-                          <ImageIcon className="w-6 h-6" />
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Label Area - Clearly underneath */}
-                    <div className="p-2.5 text-center bg-gray-50/50">
-                      <p className="text-[11px] font-bold text-charcoal truncate leading-tight" title={v.label}>
-                        {v.label}
-                      </p>
-                    </div>
-
-                    {/* Remove Button */}
-                    <button 
-                      type="button" 
-                      onClick={() => removeValue(idx, vIdx)}
-                      className="absolute top-1.5 right-1.5 p-1.5 bg-destructive/10 text-destructive hover:bg-destructive hover:text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {tier.values.map((v, vIdx) => (
+                <div key={vIdx} className="relative flex flex-col bg-white rounded-2xl border border-border/60 shadow-sm group overflow-hidden animate-fade-in">
+                  <div className="aspect-square bg-secondary/30 border-b border-dashed border-border/60 relative">
+                    <ImageUpload 
+                      value={v.image_url || ""} 
+                      onChange={(url) => updateValueField(idx, vIdx, 'image_url', url as string)}
+                      aspectRatio="aspect-square"
+                    />
                   </div>
-                ))}
-              </div>
+                  
+                  <div className="p-2 space-y-2 bg-gray-50/50">
+                    <p className="text-[11px] font-bold text-charcoal truncate text-center">{v.label}</p>
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setEditingGallery({ tierIdx: idx, valIdx: vIdx })}
+                      className="w-full h-7 text-[9px] font-bold uppercase gap-1.5 rounded-lg border-primary/20 text-primary hover:bg-primary/5"
+                    >
+                      <Images className="w-3 h-3" />
+                      Gallery ({(v.gallery_urls || []).length})
+                    </Button>
+                  </div>
+
+                  <button 
+                    type="button" 
+                    onClick={() => removeValue(idx, vIdx)}
+                    className="absolute top-1.5 right-1.5 p-1.5 bg-destructive/10 text-destructive hover:bg-destructive hover:text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-10 shadow-sm"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         );
       })}
+
+      {/* Dialog quản lý Gallery cho từng giá trị */}
+      <Dialog open={editingGallery !== null} onOpenChange={(open) => !open && setEditingGallery(null)}>
+        <DialogContent className="max-w-3xl rounded-3xl p-0 overflow-hidden border-none shadow-elevated z-[160]">
+          {editingGallery && (
+            <>
+              <div className="bg-charcoal p-6 text-white">
+                <DialogHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                      <Images className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-lg font-bold">Bộ sưu tập ảnh: {tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].label}</DialogTitle>
+                      <p className="text-[10px] text-taupe uppercase tracking-widest mt-1">Phân loại: {tierConfig[editingGallery.tierIdx].name}</p>
+                    </div>
+                  </div>
+                </DialogHeader>
+              </div>
+              <div className="p-8 max-h-[60vh] overflow-y-auto custom-scrollbar space-y-6">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                  {(tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].gallery_urls || []).map((url, i) => (
+                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border group">
+                      <img src={url} className="w-full h-full object-cover" />
+                      <button 
+                        onClick={() => {
+                          const current = [...(tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].gallery_urls || [])];
+                          current.splice(i, 1);
+                          updateValueField(editingGallery.tierIdx, editingGallery.valIdx, 'gallery_urls', current);
+                        }}
+                        className="absolute top-1 right-1 p-1 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="pt-4 border-t border-dashed">
+                  <ImageUpload 
+                    multiple 
+                    value={tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].gallery_urls || []} 
+                    onChange={(urls) => updateValueField(editingGallery.tierIdx, editingGallery.valIdx, 'gallery_urls', urls as string[])} 
+                  />
+                </div>
+              </div>
+              <DialogFooter className="p-6 bg-gray-50 border-t">
+                <Button onClick={() => setEditingGallery(null)} className="btn-hero h-12 px-10 rounded-xl shadow-gold">XÁC NHẬN & ĐÓNG</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -39,6 +39,8 @@ export default function ProductDetailPage() {
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [activeGallery, setActiveGallery] = useState<{ main: string, thumbs: string[] }>({ main: '', thumbs: [] });
+  const [lastSelectedTier, setLastSelectedTier] = useState<string | null>(null);
+  const [selectedValues, setSelectedValues] = useState<Record<string, string>>({});
 
   const { seo } = useSeo({
     title: product ? `${product.name} | OHOUSE` : undefined,
@@ -181,6 +183,49 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleVariantChange = (data: { variant: any | null, selectedValues: Record<string, string> }) => {
+    const { variant, selectedValues: newSelectedValues } = data;
+    
+    // Tìm xem tier nào vừa được thay đổi
+    let changedTier = null;
+    for (const key in newSelectedValues) {
+      if (newSelectedValues[key] !== selectedValues[key]) {
+        changedTier = key;
+        break;
+      }
+    }
+    
+    setSelectedValues(newSelectedValues);
+    if (changedTier) setLastSelectedTier(changedTier);
+
+    // 1. Ưu tiên Gallery của Biến thể đầy đủ (Tổ hợp)
+    if (variant && variant.gallery_urls && variant.gallery_urls.length > 0) {
+      setActiveGallery({ main: variant.gallery_urls[0], thumbs: variant.gallery_urls.slice(1) });
+      return;
+    }
+
+    // 2. Ưu tiên Gallery của Giá trị phân loại vừa chọn
+    if (changedTier || lastSelectedTier) {
+      const targetTier = changedTier || lastSelectedTier;
+      const tierConfig = product.tier_variants_config || [];
+      const tier = tierConfig.find((t: any) => t.name === targetTier);
+      const selectedVal = newSelectedValues[targetTier!];
+      const valueConfig = tier?.values.find((v: any) => v.label === selectedVal);
+      
+      if (valueConfig?.gallery_urls && valueConfig.gallery_urls.length > 0) {
+        setActiveGallery({ main: valueConfig.gallery_urls[0], thumbs: valueConfig.gallery_urls.slice(1) });
+        return;
+      } else if (valueConfig?.image_url) {
+        setActiveGallery({ main: valueConfig.image_url, thumbs: [] });
+        return;
+      }
+    }
+
+    // 3. Mặc định: Gallery của sản phẩm
+    const defaultGallery = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
+    setActiveGallery({ main: defaultGallery[0] || '', thumbs: defaultGallery.slice(1) });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -236,13 +281,7 @@ export default function ProductDetailPage() {
                   product={product} 
                   attributes={attributes} 
                   reviewsCount={reviews.length}
-                  onVariantChange={({ variant }) => {
-                    if (variant && variant.gallery_urls && variant.gallery_urls.length > 0) {
-                      setActiveGallery({ main: variant.gallery_urls[0], thumbs: variant.gallery_urls.slice(1) });
-                    } else {
-                      setActiveGallery({ main: product.image_url, thumbs: product.gallery_urls || [] });
-                    }
-                  }}
+                  onVariantChange={handleVariantChange}
                 />
               </div>
             </div>

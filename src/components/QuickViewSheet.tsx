@@ -42,11 +42,8 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [activeImage, setActiveImage] = useState("");
   const [activeGallery, setActiveGallery] = useState<string[]>([]);
+  const [lastSelectedTier, setLastSelectedTier] = useState<string | null>(null);
 
-  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
-  const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
-  const [isSpecsOpen, setIsSpecsOpen] = useState(false);
-  
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,6 +51,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       setActiveView('details');
       setQuantity(1);
       setSelectedValues({});
+      setLastSelectedTier(null);
       setActiveImage(product.image_url);
       setActiveGallery([product.image_url, ...(product.gallery_urls || [])].filter(Boolean));
       setIsDescriptionOpen(false);
@@ -102,16 +100,40 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     return variants.find(v => Object.entries(v.tier_values).every(([key, val]) => selectedValues[key] === val));
   }, [variants, selectedValues, tierConfig]);
 
+  // Logic hiển thị ảnh thông minh
   useEffect(() => {
+    if (!product) return;
+
+    // 1. Ưu tiên Gallery của Biến thể đầy đủ (Tổ hợp)
     if (activeVariant && activeVariant.gallery_urls && activeVariant.gallery_urls.length > 0) {
       setActiveGallery(activeVariant.gallery_urls);
       setActiveImage(activeVariant.gallery_urls[0]);
-    } else if (product) {
-      const defaultGallery = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
-      setActiveGallery(defaultGallery);
-      setActiveImage(product.image_url);
+      return;
     }
-  }, [activeVariant, product]);
+
+    // 2. Ưu tiên Gallery của Giá trị phân loại vừa chọn (ví dụ: chọn màu Đỏ)
+    if (lastSelectedTier) {
+      const tier = tierConfig.find((t: any) => t.name === lastSelectedTier);
+      const selectedVal = selectedValues[lastSelectedTier];
+      const valueConfig = tier?.values.find((v: any) => v.label === selectedVal);
+      
+      if (valueConfig?.gallery_urls && valueConfig.gallery_urls.length > 0) {
+        setActiveGallery(valueConfig.gallery_urls);
+        setActiveImage(valueConfig.gallery_urls[0]);
+        return;
+      } else if (valueConfig?.image_url) {
+        // Nếu chỉ có 1 ảnh đại diện cho giá trị đó
+        setActiveGallery([valueConfig.image_url]);
+        setActiveImage(valueConfig.image_url);
+        return;
+      }
+    }
+
+    // 3. Mặc định: Gallery của sản phẩm
+    const defaultGallery = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
+    setActiveGallery(defaultGallery);
+    setActiveImage(product.image_url);
+  }, [activeVariant, selectedValues, lastSelectedTier, product, tierConfig]);
 
   const displayPrice = activeVariant ? activeVariant.price : product?.price;
   const displayOriginalPrice = activeVariant ? activeVariant.original_price : product?.original_price;
@@ -121,9 +143,14 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     return wrapWordsInSpans(sanitizeHtml(product.description));
   }, [product?.description]);
 
-  if (!product) return null;
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const [isDimensionsOpen, setIsDimensionsOpen] = useState(false);
+  const [isSpecsOpen, setIsSpecsOpen] = useState(false);
 
-  const smartAlt = generateProductAltText(product);
+  const handleValueSelect = (tierName: string, value: string) => {
+    setSelectedValues(prev => ({ ...prev, [tierName]: value }));
+    setLastSelectedTier(tierName);
+  };
 
   const handleAddToCart = () => {
     if (tierConfig.length > 0 && !activeVariant) {
@@ -176,7 +203,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                 transition={{ duration: 0.3 }}
               >
                 <div className="relative aspect-square bg-secondary/20 overflow-hidden">
-                  <img src={activeImage} alt={smartAlt} className="w-full h-full object-cover transition-all duration-500" />
+                  <img src={activeImage} alt={generateProductAltText(product)} className="w-full h-full object-cover transition-all duration-500" />
                   <div className="absolute top-4 left-4">
                     <Badge variant="secondary" className="bg-primary text-white uppercase tracking-widest text-[9px] font-bold border-none px-3 py-1 shadow-sm">
                       {product.category_id?.replace(/-/g, ' ')}
@@ -195,7 +222,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                           activeImage === img ? "border-primary ring-2 ring-primary/10" : "border-transparent opacity-60 hover:opacity-100"
                         )}
                       >
-                        <img src={img} className="w-full h-full object-cover" alt={`${smartAlt} - Ảnh ${idx + 1}`} />
+                        <img src={img} className="w-full h-full object-cover" alt={`${product.name} - Ảnh ${idx + 1}`} />
                       </button>
                     ))}
                   </div>
@@ -240,7 +267,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                                 return (
                                   <button
                                     key={label}
-                                    onClick={() => setSelectedValues(prev => ({ ...prev, [tier.name]: label }))}
+                                    onClick={() => handleValueSelect(tier.name, label)}
                                     className={cn(
                                       "transition-all border-2 relative flex items-center justify-center overflow-hidden",
                                       imageUrl 
@@ -300,7 +327,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                           {isDescriptionOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </CollapsibleTrigger>
                         <CollapsibleContent className="animate-accordion-down relative">
-                          <div className="vn-content-view text-sm text-muted-foreground pb-8 w-full overflow-hidden" dangerouslySetInnerHTML={{ __html: processedDescription }} />
+                          <div className="vn-text-fix text-sm text-muted-foreground pb-8 w-full overflow-hidden" dangerouslySetInnerHTML={{ __html: processedDescription }} />
                           {isDescriptionOpen && (
                             <div className="flex justify-center pt-4 border-t border-dashed border-border/40">
                               <Button variant="ghost" size="sm" onClick={() => setIsDescriptionOpen(false)} className="text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-primary/5 gap-2">
@@ -323,7 +350,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                         </CollapsibleTrigger>
                         <CollapsibleContent className="pb-4 animate-accordion-down">
                           <div className="rounded-2xl overflow-hidden border border-border/40 bg-white p-2">
-                            <img src={product.dimension_image_url} alt={`${smartAlt} - Kích thước`} className="w-full h-auto object-contain" />
+                            <img src={product.dimension_image_url} alt={`${product.name} - Kích thước`} className="w-full h-auto object-contain" />
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
