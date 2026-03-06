@@ -42,11 +42,13 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
           .select('look_id')
           .eq('product_id', product.id);
 
+        const selectFields = `id, title, image_url, square_image_url, homepage_image_url, slug, category_id, shop_look_items (*, products:product_id (*))`;
+
         if (itemData && itemData.length > 0) {
           const lookIds = itemData.map(i => i.look_id);
           const { data: looksData } = await supabase
             .from('shop_looks')
-            .select(`*, shop_look_items (*, products:product_id (*))`) // Sử dụng * để lấy đủ square_image_url
+            .select(selectFields)
             .in('id', lookIds)
             .eq('is_active', true)
             .order('display_order');
@@ -56,7 +58,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
           // 2. Nếu không có, lấy các Lookbook cùng danh mục làm gợi ý
           const { data: catLooks } = await supabase
             .from('shop_looks')
-            .select(`*, shop_look_items (*, products:product_id (*))`)
+            .select(selectFields)
             .eq('category_id', product.category_id)
             .eq('is_active', true)
             .limit(5);
@@ -152,30 +154,33 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               <div className="h-full flex flex-col md:flex-row">
                 {activeLook ? (
                   <>
-                    {/* Thumbnails (Left) - Ưu tiên tuyệt đối square_image_url */}
+                    {/* Thumbnails (Left) - Ép buộc sử dụng ảnh vuông 1:1 */}
                     <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto no-scrollbar shrink-0 w-full md:w-40 lg:w-44 p-6 bg-white">
-                      {allProductLooks.map((look, idx) => (
-                        <button
-                          key={look.id}
-                          onClick={() => setActiveLookIndex(idx)}
-                          className={cn(
-                            "relative aspect-square w-24 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white shadow-sm",
-                            activeLookIndex === idx 
-                              ? "border-primary ring-4 ring-primary/10" 
-                              : "border-transparent opacity-50 hover:opacity-100"
-                          )}
-                        >
-                          <img 
-                            src={getOptimizedImageUrl(look.square_image_url || look.image_url, { width: 400 })} 
-                            className="w-full h-full object-cover" 
-                            alt={look.title} 
-                            onError={(e) => { (e.target as HTMLImageElement).src = look.image_url; }}
-                          />
-                        </button>
-                      ))}
+                      {allProductLooks.map((look, idx) => {
+                        const thumbUrl = look.square_image_url || look.image_url;
+                        return (
+                          <button
+                            key={look.id}
+                            onClick={() => setActiveLookIndex(idx)}
+                            className={cn(
+                              "relative aspect-square w-24 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white shadow-sm",
+                              activeLookIndex === idx 
+                                ? "border-primary ring-4 ring-primary/10" 
+                                : "border-transparent opacity-50 hover:opacity-100"
+                            )}
+                          >
+                            <img 
+                              src={getOptimizedImageUrl(thumbUrl, { width: 400 })} 
+                              className="w-full h-full object-cover" 
+                              alt={look.title} 
+                              onError={(e) => { (e.target as HTMLImageElement).src = look.image_url; }}
+                            />
+                          </button>
+                        );
+                      })}
                     </div>
 
-                    {/* Main Image (Center) - Ưu tiên ảnh vuông để khớp Hotspot */}
+                    {/* Main Image (Center) - Đồng bộ ảnh vuông */}
                     <div className="flex-1 relative bg-white flex items-center justify-center p-6">
                       <div 
                         className="relative aspect-square h-full max-h-[800px] overflow-hidden shadow-medium bg-secondary/10"
@@ -250,7 +255,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               </div>
             )}
 
-            {/* Media Tab */}
             {activeTab === 'media' && (
               <div className="h-full p-8 md:p-12 overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
@@ -268,7 +272,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               </div>
             )}
 
-            {/* Video Tab */}
             {activeTab === 'video' && (
               <div className="h-full flex items-center justify-center p-12 bg-black">
                 <div className="w-full max-w-5xl aspect-video rounded-3xl overflow-hidden shadow-2xl">
@@ -282,7 +285,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               </div>
             )}
 
-            {/* Dimensions Tab */}
             {activeTab === 'dimensions' && (
               <div className="h-full flex items-center justify-center p-12 bg-secondary/5">
                 <div className="max-w-4xl w-full bg-white p-4 rounded-[32px] shadow-medium relative overflow-hidden">
@@ -295,7 +297,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               </div>
             )}
 
-            {/* Customer Photos Tab */}
             {activeTab === 'customer_photos' && (
               <div className="h-full p-8 md:p-12 overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
