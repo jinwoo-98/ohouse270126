@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Minus, Plus, Loader2, MessageSquare, X } from "lucide-react";
 import { Sheet, SheetContent, SheetClose } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
@@ -104,7 +104,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     // 1. Ưu tiên 1: Gallery của Biến thể tổ hợp (nếu có ảnh)
     if (activeVariant && activeVariant.gallery_urls && activeVariant.gallery_urls.length > 0) {
       setActiveGallery(activeVariant.gallery_urls);
-      setActiveImage(activeVariant.gallery_urls[0]);
+      setActiveImage(activeVariant.image_url || activeVariant.gallery_urls[0]);
       return;
     }
 
@@ -116,7 +116,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       
       if (valueConfig?.gallery_urls && valueConfig.gallery_urls.length > 0) {
         setActiveGallery(valueConfig.gallery_urls);
-        setActiveImage(valueConfig.gallery_urls[0]);
+        setActiveImage(valueConfig.image_url || valueConfig.gallery_urls[0]);
         return;
       } else if (valueConfig?.image_url) {
         setActiveGallery([valueConfig.image_url]);
@@ -133,7 +133,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       
       if (vConfig?.gallery_urls && vConfig.gallery_urls.length > 0) {
         setActiveGallery(vConfig.gallery_urls);
-        setActiveImage(vConfig.gallery_urls[0]);
+        setActiveImage(vConfig.image_url || vConfig.gallery_urls[0]);
         return;
       } else if (vConfig?.image_url) {
         setActiveGallery([vConfig.image_url]);

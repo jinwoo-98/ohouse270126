@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Tag, Lightbulb, X, ImageIcon, Images, Check } from "lucide-react";
+import { Plus, Trash2, Tag, Lightbulb, X, ImageIcon, Images, Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +44,6 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
   const updateTierName = (index: number, name: string) => {
     const newConfig = [...tierConfig];
     newConfig[index].name = name;
-    // Khi đổi tên nhóm, xóa các giá trị cũ để tránh nhầm lẫn
     newConfig[index].values = [];
     setTierConfig(newConfig);
   };
@@ -54,10 +53,8 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
     const existingIdx = newConfig[index].values.findIndex(v => v.label === label);
     
     if (existingIdx > -1) {
-      // Nếu đã có thì xóa đi (toggle)
       newConfig[index].values.splice(existingIdx, 1);
     } else {
-      // Nếu chưa có thì thêm mới
       newConfig[index].values.push({ label, image_url: "", gallery_urls: [] });
     }
     setTierConfig(newConfig);
@@ -162,7 +159,6 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
               </div>
             </div>
 
-            {/* Danh sách giá trị có sẵn để chọn nhanh */}
             {tier.name && availableValues.length > 0 && (
               <div className="space-y-3 mb-8 p-4 bg-white/50 rounded-xl border border-white/50">
                 <Label className="text-[9px] font-bold uppercase text-primary tracking-widest flex items-center gap-2">
@@ -199,25 +195,27 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
                 {tier.values.map((v, vIdx) => (
                   <div key={vIdx} className="relative flex flex-col bg-white rounded-2xl border border-border/60 shadow-sm group overflow-hidden animate-fade-in">
                     <div className="aspect-square bg-secondary/30 border-b border-dashed border-border/60 relative">
-                      <ImageUpload 
-                        value={v.image_url || ""} 
-                        onChange={(url) => updateValueField(idx, vIdx, 'image_url', url as string)}
-                        aspectRatio="aspect-square"
+                      <img 
+                        src={v.image_url || "/placeholder.svg"} 
+                        className="w-full h-full object-cover opacity-50" 
+                        alt=""
                       />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Button 
+                          type="button"
+                          variant="secondary" 
+                          size="sm" 
+                          onClick={() => setEditingGallery({ tierIdx: idx, valIdx: vIdx })}
+                          className="h-8 px-3 text-[9px] font-bold uppercase rounded-lg shadow-lg"
+                        >
+                          <Images className="w-3 h-3 mr-1.5" />
+                          Sửa Ảnh ({(v.gallery_urls?.length || 0) + (v.image_url ? 1 : 0)})
+                        </Button>
+                      </div>
                     </div>
                     
-                    <div className="p-2 space-y-2 bg-gray-50/50">
+                    <div className="p-2 bg-gray-50/50">
                       <p className="text-[11px] font-bold text-charcoal truncate text-center">{v.label}</p>
-                      <Button 
-                        type="button"
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => setEditingGallery({ tierIdx: idx, valIdx: vIdx })}
-                        className="w-full h-7 text-[9px] font-bold uppercase gap-1.5 rounded-lg border-primary/20 text-primary hover:bg-primary/5"
-                      >
-                        <Images className="w-3 h-3" />
-                        Gallery ({(v.gallery_urls || []).length})
-                      </Button>
                     </div>
 
                     <button 
@@ -235,9 +233,9 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
         );
       })}
 
-      {/* Dialog quản lý Gallery cho từng giá trị */}
+      {/* Dialog quản lý Ảnh Chính & Phụ cho từng giá trị */}
       <Dialog open={editingGallery !== null} onOpenChange={(open) => !open && setEditingGallery(null)}>
-        <DialogContent className="max-w-3xl rounded-3xl p-0 overflow-hidden border-none shadow-elevated z-[160]">
+        <DialogContent className="max-w-4xl rounded-[32px] p-0 overflow-hidden border-none shadow-elevated z-[160]">
           {editingGallery && (
             <>
               <div className="bg-charcoal p-6 text-white">
@@ -247,40 +245,66 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
                       <Images className="w-5 h-5" />
                     </div>
                     <div>
-                      <DialogTitle className="text-lg font-bold">Bộ sưu tập ảnh: {tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].label}</DialogTitle>
+                      <DialogTitle className="text-lg font-bold">Thiết lập hình ảnh: {tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].label}</DialogTitle>
                       <p className="text-[10px] text-taupe uppercase tracking-widest mt-1">Phân loại: {tierConfig[editingGallery.tierIdx].name}</p>
                     </div>
                   </div>
                 </DialogHeader>
               </div>
-              <div className="p-8 max-h-[60vh] overflow-y-auto custom-scrollbar space-y-6">
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                  {(tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].gallery_urls || []).map((url, i) => (
-                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border group">
-                      <img src={url} className="w-full h-full object-cover" />
-                      <button 
-                        onClick={() => {
-                          const current = [...(tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].gallery_urls || [])];
-                          current.splice(i, 1);
-                          updateValueField(editingGallery.tierIdx, editingGallery.valIdx, 'gallery_urls', current);
-                        }}
-                        className="absolute top-1 right-1 p-1 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
+              
+              <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-10">
+                {/* Ảnh chính */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-primary fill-primary" />
+                    <Label className="text-xs font-bold uppercase tracking-widest">Ảnh đại diện chính (Ảnh sẽ hiện khi click chọn)</Label>
+                  </div>
+                  <div className="max-w-[240px]">
+                    <ImageUpload 
+                      aspectRatio="aspect-square"
+                      value={tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].image_url || ""} 
+                      onChange={(url) => updateValueField(editingGallery.tierIdx, editingGallery.valIdx, 'image_url', url as string)} 
+                    />
+                  </div>
                 </div>
-                <div className="pt-4 border-t border-dashed">
-                  <ImageUpload 
-                    multiple 
-                    value={tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].gallery_urls || []} 
-                    onChange={(urls) => updateValueField(editingGallery.tierIdx, editingGallery.valIdx, 'gallery_urls', urls as string[])} 
-                  />
+
+                {/* Ảnh phụ */}
+                <div className="space-y-4 pt-8 border-t border-dashed">
+                  <div className="flex items-center gap-2">
+                    <Images className="w-4 h-4 text-primary" />
+                    <Label className="text-xs font-bold uppercase tracking-widest">Bộ sưu tập ảnh phụ (Gallery)</Label>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 mb-4">
+                    {(tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].gallery_urls || []).map((url, i) => (
+                      <div key={i} className="relative aspect-square rounded-xl overflow-hidden border group shadow-sm">
+                        <img src={url} className="w-full h-full object-cover" alt="" />
+                        <button 
+                          onClick={() => {
+                            const current = [...(tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].gallery_urls || [])];
+                            current.splice(i, 1);
+                            updateValueField(editingGallery.tierIdx, editingGallery.valIdx, 'gallery_urls', current);
+                          }}
+                          className="absolute top-1 right-1 p-1 bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="p-6 border-2 border-dashed border-border rounded-2xl bg-secondary/10">
+                    <ImageUpload 
+                      multiple 
+                      value={tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].gallery_urls || []} 
+                      onChange={(urls) => updateValueField(editingGallery.tierIdx, editingGallery.valIdx, 'gallery_urls', urls as string[])} 
+                    />
+                  </div>
                 </div>
               </div>
+
               <DialogFooter className="p-6 bg-gray-50 border-t">
-                <Button onClick={() => setEditingGallery(null)} className="btn-hero h-12 px-10 rounded-xl shadow-gold">XÁC NHẬN & ĐÓNG</Button>
+                <Button onClick={() => setEditingGallery(null)} className="btn-hero h-12 px-10 rounded-xl shadow-gold">HOÀN TẤT THIẾT LẬP</Button>
               </DialogFooter>
             </>
           )}
