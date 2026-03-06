@@ -27,7 +27,6 @@ export default function LookDetailPage() {
   const [look, setLook] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
-  const [currentImage, setCurrentImage] = useState<string>("");
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
@@ -75,7 +74,6 @@ export default function LookDetailPage() {
       }
 
       setLook(lookData);
-      setCurrentImage(lookData.image_url);
 
     } catch (e: any) {
       console.error("Critical Error:", e);
@@ -85,12 +83,36 @@ export default function LookDetailPage() {
     }
   };
 
+  // Logic xác định ảnh hiển thị và tỉ lệ khung hình
+  const galleryConfig = useMemo(() => {
+    if (!look) return { main: "", gallery: [], ratio: "aspect-[4/3]" };
+    
+    // Nếu có ảnh chính, dùng ảnh chính và gallery phụ tỉ lệ 4:3
+    if (look.image_url) {
+      return {
+        main: look.image_url,
+        gallery: look.gallery_urls || [],
+        ratio: "aspect-[4/3]"
+      };
+    }
+    
+    // Nếu không có ảnh chính, dùng ảnh trang chủ tỉ lệ 2:1
+    if (look.homepage_image_url) {
+      return {
+        main: look.homepage_image_url,
+        gallery: [],
+        ratio: "aspect-[2/1]"
+      };
+    }
+
+    return { main: "/placeholder.svg", gallery: [], ratio: "aspect-[4/3]" };
+  }, [look]);
+
   const visibleItems = useMemo(() => {
     if (!look) return [];
     return look.shop_look_items?.filter((item: any) => item.products) || [];
   }, [look]);
   
-  // Lọc sản phẩm duy nhất dựa trên ID
   const lookbookProducts = useMemo(() => {
     const products = visibleItems.map((item: any) => item.products).filter(Boolean);
     return Array.from(new Map(products.map((p: any) => [p.id, p])).values()) as any[];
@@ -148,7 +170,7 @@ export default function LookDetailPage() {
         <title>{`${look.title} | Cảm Hứng OHOUSE`}</title>
         <meta name="description" content={look.description?.replace(/<[^>]+>/g, '') || `Khám phá không gian ${look.title} với các sản phẩm nội thất cao cấp từ OHOUSE.`} />
         <meta property="og:title" content={look.title} />
-        <meta property="og:image" content={look.image_url} />
+        <meta property="og:image" content={look.image_url || look.homepage_image_url} />
         <meta property="og:type" content="website" />
       </Helmet>
       <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
@@ -170,20 +192,21 @@ export default function LookDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center max-w-4xl mx-auto mb-12"
             >
-              <h1 className="text-3xl md:text-4xl font-bold mb-4 text-charcoal">{look.title}</h1>
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 text-charcoal">{look.title}</h1>
             </motion.div>
 
-            <div className="grid lg:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto items-start">
-              {/* Cột Trái: Mô tả & Gallery */}
-              <div className="lg:col-span-2 min-w-0 w-full space-y-8">
+            {/* Grid Layout: Loại bỏ max-w-6xl để mở rộng lề như trang chủ */}
+            <div className="grid lg:grid-cols-[1.5fr_1fr] xl:grid-cols-[2fr_1fr] gap-8 md:gap-12 items-start">
+              {/* Cột Trái: Mô tả & Gallery (Tăng kích thước hiển thị) */}
+              <div className="min-w-0 w-full space-y-8">
                 {look.description && (
-                  <div className="w-full max-w-[740px]">
+                  <div className="w-full">
                     <div className={cn(
                       "relative transition-all duration-500",
                       !isDescExpanded ? "max-h-[100px] overflow-hidden" : "max-h-none"
                     )}>
                       <div 
-                        className="vn-content-view text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap"
+                        className="vn-content-view text-sm md:text-base text-muted-foreground leading-relaxed whitespace-pre-wrap"
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(look.description) }}
                       />
                       {!isDescExpanded && (
@@ -204,26 +227,19 @@ export default function LookDetailPage() {
                 
                 <div className="overflow-hidden">
                   <ProductGallery 
-                    mainImage={look.image_url} 
-                    galleryImages={look.gallery_urls} 
+                    mainImage={galleryConfig.main} 
+                    galleryImages={galleryConfig.gallery} 
                     productName={look.title} 
                     hotspots={lookHotspots}
                     onHotspotClick={setQuickViewProduct}
-                    aspectRatio="aspect-[4/3]"
-                  >
-                    {(currentImageUrl) => {
-                      useEffect(() => {
-                        setCurrentImage(currentImageUrl);
-                      }, [currentImageUrl]);
-                      return null;
-                    }}
-                  </ProductGallery>
+                    aspectRatio={galleryConfig.ratio}
+                  />
                 </div>
               </div>
 
               {/* Cột Phải: Danh sách sản phẩm */}
               {visibleItems.length > 0 && (
-                <div className="lg:col-span-1 min-w-0 w-full hidden lg:block">
+                <div className="min-w-0 w-full hidden lg:block">
                   <LookProductList products={lookbookProducts} onQuickView={setQuickViewProduct} />
                 </div>
               )}

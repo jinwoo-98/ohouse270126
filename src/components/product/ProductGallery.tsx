@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -61,7 +63,7 @@ export function ProductGallery({
 
   const paginate = (newDirection: number) => {
     if (allImages.length <= 1) return;
-    setIsZoomed(false); // Reset zoom when changing image
+    setIsZoomed(false); 
     let newIndex = imageIndex + newDirection;
     if (newIndex < 0) {
       newIndex = allImages.length - 1;
@@ -72,7 +74,7 @@ export function ProductGallery({
   };
 
   const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
-    if (isZoomed) return; // Disable swipe when zoomed
+    if (isZoomed) return; 
     const swipe = swipePower(offset.x, velocity.x);
     if (swipe < -swipeConfidenceThreshold) {
       paginate(1);
@@ -94,7 +96,6 @@ export function ProductGallery({
   const toggleZoom = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!isZoomed && containerRef.current) {
-      // Set initial zoom position based on click
       const { left, top, width, height } = containerRef.current.getBoundingClientRect();
       const x = ((e.clientX - left) / width) * 100;
       const y = ((e.clientY - top) / height) * 100;
@@ -113,7 +114,7 @@ export function ProductGallery({
             <button
               className={cn(
                 "absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot pointer-events-auto",
-                isZoomed && "opacity-0 pointer-events-none" // Hide hotspots when zoomed for better visibility
+                isZoomed && "opacity-0 pointer-events-none" 
               )}
               style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
               onClick={(e) => { 
@@ -169,7 +170,8 @@ export function ProductGallery({
       <div 
         ref={containerRef}
         className={cn(
-          "relative flex-1 bg-white rounded-2xl overflow-hidden border border-border/40 shadow-subtle group order-1 md:order-2 aspect-square",
+          "relative flex-1 bg-white rounded-2xl overflow-hidden border border-border/40 shadow-subtle group order-1 md:order-2",
+          aspectRatio,
           isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
         )}
         onMouseMove={handleMouseMove}
@@ -190,7 +192,7 @@ export function ProductGallery({
             onDragEnd={handleDragEnd}
           >
             <img
-              src={getOptimizedImageUrl(currentImageUrl, { width: 1200 })} // Higher res for zoom
+              src={getOptimizedImageUrl(currentImageUrl, { width: 1200 })} 
               alt={currentAlt}
               className={cn(
                 "w-full h-full object-cover pointer-events-none transition-transform duration-200 ease-out",
