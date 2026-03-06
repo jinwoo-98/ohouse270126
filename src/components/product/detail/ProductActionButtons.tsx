@@ -117,7 +117,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-[1700px] w-[95vw] h-[983px] max-h-[95vh] p-0 overflow-hidden border-none rounded-[32px] shadow-elevated z-[160] flex flex-col [&>button]:hidden">
-          {/* Header: Không đường kẻ */}
           <div className="h-[64px] bg-charcoal flex items-center justify-between px-8 shrink-0">
             <div className="flex items-center h-full">
               {tabs.map((tab) => (
@@ -145,27 +144,26 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
             </button>
           </div>
 
-          {/* Content Area */}
           <div className="flex-1 bg-white overflow-hidden">
             {activeTab === 'lookbook' && (
               <div className="h-full flex flex-col md:flex-row">
                 {activeLook ? (
                   <>
-                    {/* Thumbnails (Left) - Giống hệt ProductGallery */}
-                    <div className="flex md:flex-col gap-2.5 overflow-x-auto md:overflow-y-auto no-scrollbar shrink-0 w-full md:w-20 lg:w-24 p-6 bg-white">
+                    {/* Thumbnails (Left) - Tăng kích thước lên 1.5 lần (w-36) */}
+                    <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-y-auto no-scrollbar shrink-0 w-full md:w-32 lg:w-36 p-6 bg-white">
                       {allProductLooks.map((look, idx) => (
                         <button
                           key={look.id}
                           onClick={() => setActiveLookIndex(idx)}
                           className={cn(
-                            "relative aspect-square w-16 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
+                            "relative aspect-square w-20 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
                             activeLookIndex === idx 
                               ? "border-primary ring-2 ring-primary/10" 
                               : "border-transparent opacity-50 hover:opacity-100"
                           )}
                         >
                           <img 
-                            src={getOptimizedImageUrl(look.square_image_url || look.image_url, { width: 150 })} 
+                            src={getOptimizedImageUrl(look.square_image_url || look.image_url, { width: 250 })} 
                             className="w-full h-full object-cover" 
                             alt={look.title} 
                             onError={(e) => { (e.target as HTMLImageElement).src = look.image_url; }}
@@ -174,7 +172,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                       ))}
                     </div>
 
-                    {/* Main Image (Center) - Khổ vuông lớn, bo góc theo admin */}
+                    {/* Main Image (Center) - Bo góc theo admin */}
                     <div className="flex-1 relative bg-white flex items-center justify-center p-6">
                       <div 
                         className="relative aspect-square h-full max-h-[800px] overflow-hidden shadow-medium bg-secondary/10"
@@ -218,7 +216,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                       </div>
                     </div>
 
-                    {/* Products List (Right) - Không đường kẻ phân vùng */}
                     <div className="w-full md:w-[450px] bg-white flex flex-col">
                       <div className="p-8 pb-4">
                         <h3 className="font-bold text-sm uppercase tracking-widest text-charcoal">Sản phẩm trong ảnh</h3>
@@ -249,7 +246,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               </div>
             )}
 
-            {/* Các tab khác giữ nguyên logic nhưng bỏ border nếu cần */}
             {activeTab === 'media' && (
               <div className="h-full p-8 md:p-12 overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
