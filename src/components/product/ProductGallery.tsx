@@ -144,6 +144,7 @@ export function ProductGallery({
             style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
           >
             {/* Nút Hotspot chính - Kích thước 36px (w-9 h-9) */}
+            {/* Thêm class 'group' vào đây để hiệu ứng hover chỉ tác động nội bộ nút này */}
             <button
               className="group relative w-9 h-9 -ml-[18px] -mt-[18px] rounded-full bg-primary/40 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
               onMouseEnter={() => {
@@ -249,7 +250,7 @@ export function ProductGallery({
       <div 
         ref={containerRef}
         className={cn(
-          "relative flex-1 bg-white rounded-2xl overflow-hidden border border-border/40 shadow-subtle group order-1 md:order-2",
+          "relative flex-1 bg-white rounded-2xl overflow-hidden border border-border/40 shadow-subtle order-1 md:order-2",
           aspectRatio,
           !disableZoom ? (isZoomed ? "cursor-zoom-out" : "cursor-zoom-in") : "cursor-default"
         )}
