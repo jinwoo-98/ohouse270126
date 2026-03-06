@@ -2,8 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { ChevronLeft, ChevronRight, ChevronRight as ArrowIcon } from "lucide-react";
-import { cn, getOptimizedImageUrl, formatPrice, generateProductAltText } from "@/lib/utils";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn, getOptimizedImageUrl, generateProductAltText } from "@/lib/utils";
 
 interface Hotspot {
   id: string;
@@ -60,13 +60,20 @@ export function ProductGallery({
   onImageClick,
   thumbnailPosition = 'side'
 }: ProductGalleryProps) {
-  const safeGallery = Array.isArray(galleryImages) ? galleryImages : [];
-  const allImages = [mainImage || '/placeholder.svg', ...safeGallery].filter(Boolean);
+  // Lọc bỏ ảnh trùng lặp và ảnh rỗng
+  const allImages = React.useMemo(() => {
+    const base = mainImage || '/placeholder.svg';
+    const gallery = Array.isArray(galleryImages) ? galleryImages : [];
+    // Sử dụng Set để loại bỏ các URL trùng lặp
+    const unique = Array.from(new Set([base, ...gallery])).filter(Boolean);
+    return unique.length > 0 ? unique : ['/placeholder.svg'];
+  }, [mainImage, galleryImages]);
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
+  const [failedOptimizedUrls, setFailedOptimizedUrls] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Reset index khi mainImage thay đổi (khi chọn biến thể mới)
@@ -76,8 +83,21 @@ export function ProductGallery({
     setActiveHotspotId(null);
   }, [mainImage]);
 
-  const currentImageUrl = allImages[currentIndex] || mainImage;
+  const currentImageUrl = allImages[currentIndex];
   const currentAlt = generateProductAltText(product || { name: productName, id: 'GALLERY', image_alt_text: imageAltText }, currentIndex);
+
+  const getSafeImageUrl = (url: string, width: number) => {
+    if (failedOptimizedUrls.has(url)) return url;
+    return getOptimizedImageUrl(url, { width });
+  };
+
+  const handleImageError = (url: string) => {
+    setFailedOptimizedUrls(prev => {
+      const next = new Set(prev);
+      next.add(url);
+      return next;
+    });
+  };
 
   const paginate = (newDirection: number) => {
     if (allImages.length <= 1) return;
@@ -153,9 +173,10 @@ export function ProductGallery({
               )}
             >
               <img 
-                src={getOptimizedImageUrl(img, { width: 150 })} 
+                src={getSafeImageUrl(img, 150)} 
                 alt="" 
                 className="w-full h-full object-cover"
+                onError={() => handleImageError(img)}
               />
             </button>
           ))}
@@ -188,7 +209,7 @@ export function ProductGallery({
             onDragEnd={handleDragEnd}
           >
             <img
-              src={getOptimizedImageUrl(currentImageUrl, { width: 1200 })} 
+              src={getSafeImageUrl(currentImageUrl, 1200)} 
               alt={currentAlt}
               className={cn(
                 "w-full h-full object-cover pointer-events-none transition-transform duration-200 ease-out",
@@ -196,6 +217,7 @@ export function ProductGallery({
               )}
               style={{ transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` }}
               draggable="false"
+              onError={() => handleImageError(currentImageUrl)}
             />
           </motion.div>
         </AnimatePresence>

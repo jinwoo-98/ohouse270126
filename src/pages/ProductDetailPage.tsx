@@ -88,8 +88,14 @@ export default function ProductDetailPage() {
       if (error) throw error;
       setProduct(data);
       
-      const initialGallery = [data.image_url, ...(data.gallery_urls || [])].filter(Boolean);
-      setActiveGallery({ main: initialGallery[0] || '', thumbs: initialGallery.slice(1) });
+      // Khởi tạo gallery ban đầu, loại bỏ trùng lặp
+      const initialImages = [data.image_url, ...(data.gallery_urls || [])].filter(Boolean);
+      const uniqueImages = Array.from(new Set(initialImages));
+      
+      setActiveGallery({ 
+        main: uniqueImages[0] || '', 
+        thumbs: uniqueImages.slice(1) 
+      });
 
       trackProductView({ 
         id: data.id, 
@@ -199,9 +205,18 @@ export default function ProductDetailPage() {
 
     const tierConfig = product.tier_variants_config || [];
 
+    // Hàm helper để cập nhật gallery và loại bỏ trùng lặp
+    const updateGallery = (main: string, gallery: string[]) => {
+      const unique = Array.from(new Set([main, ...gallery])).filter(Boolean);
+      setActiveGallery({
+        main: unique[0] || '',
+        thumbs: unique.slice(1)
+      });
+    };
+
     // 1. Ưu tiên 1: Gallery của Biến thể đầy đủ (Tổ hợp)
     if (variant && variant.gallery_urls && variant.gallery_urls.length > 0) {
-      setActiveGallery({ main: variant.image_url || variant.gallery_urls[0], thumbs: variant.gallery_urls });
+      updateGallery(variant.image_url || variant.gallery_urls[0], variant.gallery_urls);
       return;
     }
 
@@ -213,10 +228,10 @@ export default function ProductDetailPage() {
       const valueConfig = tier?.values.find((v: any) => v.label === selectedVal);
       
       if (valueConfig?.gallery_urls && valueConfig.gallery_urls.length > 0) {
-        setActiveGallery({ main: valueConfig.image_url || valueConfig.gallery_urls[0], thumbs: valueConfig.gallery_urls });
+        updateGallery(valueConfig.image_url || valueConfig.gallery_urls[0], valueConfig.gallery_urls);
         return;
       } else if (valueConfig?.image_url) {
-        setActiveGallery({ main: valueConfig.image_url, thumbs: [] });
+        updateGallery(valueConfig.image_url, []);
         return;
       }
     }
@@ -228,17 +243,17 @@ export default function ProductDetailPage() {
       const vConfig = tier?.values.find((v: any) => v.label === val);
       
       if (vConfig?.gallery_urls && vConfig.gallery_urls.length > 0) {
-        setActiveGallery({ main: vConfig.image_url || vConfig.gallery_urls[0], thumbs: vConfig.gallery_urls });
+        updateGallery(vConfig.image_url || vConfig.gallery_urls[0], vConfig.gallery_urls);
         return;
       } else if (vConfig?.image_url) {
-        setActiveGallery({ main: vConfig.image_url, thumbs: [] });
+        updateGallery(vConfig.image_url, []);
         return;
       }
     }
 
     // 4. Mặc định
-    const defaultGallery = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
-    setActiveGallery({ main: defaultGallery[0] || '', thumbs: defaultGallery.slice(1) });
+    const defaultImages = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
+    updateGallery(defaultImages[0] || '', defaultImages.slice(1));
   }, [selectedValues, lastSelectedTier, product]);
 
   if (loading) {
