@@ -40,10 +40,15 @@ export function ShopTheLook() {
 
   const fetchData = async () => {
     try {
+      // 1. Lấy cấu hình tiêu đề/màu sắc của section
       const { data: configData } = await supabase
-        .from('homepage_sections').select('*').eq('section_key', 'shop_look').single();
+        .from('homepage_sections')
+        .select('*')
+        .eq('section_key', 'shop_look')
+        .maybeSingle();
       if (configData) setConfig(configData);
 
+      // 2. Lấy danh sách Lookbook đang hoạt động
       const { data, error } = await supabase
         .from('shop_looks')
         .select(`
@@ -52,15 +57,16 @@ export function ShopTheLook() {
           homepage_image_url,
           shop_look_items (
             *,
-            products:product_id (*)
+            products (*)
           )
         `)
-        .order('display_order');
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
 
       if (error) throw error;
       setAllLooks(data || []);
     } catch (e) {
-      console.error(e);
+      console.error("Error fetching ShopTheLook data:", e);
     } finally {
       setLoading(false);
     }
@@ -79,6 +85,7 @@ export function ShopTheLook() {
     if (!categoriesData?.allCategories || allLooks.length === 0) return [];
     const lookCategoryIds = new Set(allLooks.map(l => l.category_id).filter(Boolean));
     const parentCategoryIds = new Set<string>();
+    
     lookCategoryIds.forEach(catId => {
         const category = categoriesData.allCategories.find((c: any) => c.id === catId);
         if (category) {
@@ -86,6 +93,7 @@ export function ShopTheLook() {
             else parentCategoryIds.add(category.id);
         }
     });
+    
     return categoriesData.allCategories
       .filter((c: any) => parentCategoryIds.has(c.id))
       .sort((a: any, b: any) => a.display_order - b.display_order);
@@ -94,17 +102,20 @@ export function ShopTheLook() {
   const currentCategoryLooks = useMemo(() => {
     if (activeCategorySlug === "all") return allLooks;
     if (!categoriesData?.allCategories) return [];
+    
     const selectedParentCategory = categoriesData.allCategories.find((c: any) => c.slug === activeCategorySlug);
     if (!selectedParentCategory) return [];
+    
     const parentId = selectedParentCategory.id;
     const childCategoryIds = categoriesData.allCategories
         .filter((c: any) => c.parent_id === parentId)
         .map((c: any) => c.id);
+    
     const targetCategoryIds = [parentId, ...childCategoryIds];
     return allLooks.filter(look => targetCategoryIds.includes(look.category_id));
   }, [allLooks, activeCategorySlug, categoriesData?.allCategories]);
 
-  if (loading) return <div className="py-10 md:py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+  if (loading) return <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   if (allLooks.length === 0) return null;
 
   return (
@@ -207,7 +218,7 @@ export function ShopTheLook() {
                       <div className="absolute inset-0 bg-black/5 pointer-events-none">
                         <TooltipProvider>
                           {look.shop_look_items
-                            .filter((item: any) => item.target_image_url === displayImage)
+                            ?.filter((item: any) => item.target_image_url === displayImage && item.products)
                             .map((item: any) => (
                             <Tooltip key={item.id} delayDuration={0}>
                               <TooltipTrigger asChild>
@@ -220,7 +231,6 @@ export function ShopTheLook() {
                                   className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-30 group/dot touch-manipulation pointer-events-auto"
                                   style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                                 >
-                                  {/* Đổi màu nền mờ sang đen */}
                                   <span className="absolute w-full h-full rounded-full bg-black/40 animate-ping opacity-100 group-hover/dot:hidden"></span>
                                   <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                                 </button>
