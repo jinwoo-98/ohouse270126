@@ -141,7 +141,6 @@ export function ShopTheLook() {
             </Button>
           </div>
 
-          {/* Danh mục phòng: Cuộn ngang mượt mà */}
           <div className="flex flex-nowrap justify-start md:justify-center gap-2 mb-8 md:mb-10 overflow-x-auto no-scrollbar-x px-4 md:px-0 pb-4 touch-pan-x">
             <button
               onClick={() => setActiveCategorySlug("all")}
@@ -221,7 +220,8 @@ export function ShopTheLook() {
                                   className="absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-30 group/dot touch-manipulation pointer-events-auto"
                                   style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                                 >
-                                  <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden"></span>
+                                  {/* Đổi màu nền mờ sang đen */}
+                                  <span className="absolute w-full h-full rounded-full bg-black/40 animate-ping opacity-100 group-hover/dot:hidden"></span>
                                   <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                                 </button>
                               </TooltipTrigger>
@@ -235,7 +235,6 @@ export function ShopTheLook() {
                           ))}
                         </TooltipProvider>
                         
-                        {/* Nút xem chi tiết: Chỉ hiện trên Desktop khi hover */}
                         <div className="absolute bottom-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block pointer-events-auto">
                           <Button asChild size="sm" className="btn-hero h-9 text-[10px] shadow-gold px-4">
                             <Link to={detailLink}>

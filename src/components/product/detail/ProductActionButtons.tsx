@@ -36,7 +36,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
     const fetchLooks = async () => {
       setLoadingLooks(true);
       try {
-        // 1. Tìm các Lookbook chứa sản phẩm này
         const { data: itemData } = await supabase
           .from('shop_look_items')
           .select('look_id')
@@ -55,7 +54,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
           
           setAllProductLooks(looksData || []);
         } else {
-          // 2. Nếu không có, lấy các Lookbook cùng danh mục làm gợi ý
           const { data: catLooks } = await supabase
             .from('shop_looks')
             .select(selectFields)
@@ -121,7 +119,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-[1700px] w-[95vw] h-[983px] max-h-[95vh] p-0 overflow-hidden border-none rounded-[32px] shadow-elevated z-[160] flex flex-col [&>button]:hidden">
-          {/* Header */}
           <div className="h-[64px] bg-charcoal flex items-center justify-between px-8 shrink-0">
             <div className="flex items-center h-full">
               {tabs.map((tab) => (
@@ -154,7 +151,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
               <div className="h-full flex flex-col md:flex-row">
                 {activeLook ? (
                   <>
-                    {/* Thumbnails (Left) - Ép buộc sử dụng ảnh vuông 1:1 */}
                     <div className="flex md:flex-col gap-4 overflow-x-auto md:overflow-y-auto no-scrollbar shrink-0 w-full md:w-40 lg:w-44 p-6 bg-white">
                       {allProductLooks.map((look, idx) => {
                         const thumbUrl = look.square_image_url || look.image_url;
@@ -180,7 +176,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                       })}
                     </div>
 
-                    {/* Main Image (Center) - Đồng bộ ảnh vuông */}
                     <div className="flex-1 relative bg-white flex items-center justify-center p-6">
                       <div 
                         className="relative aspect-square h-full max-h-[800px] overflow-hidden shadow-medium bg-secondary/10"
@@ -210,7 +205,8 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                                   style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                                   onClick={() => onQuickView?.(item.products)}
                                 >
-                                  <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
+                                  {/* Đổi màu nền mờ sang đen */}
+                                  <span className="absolute w-full h-full rounded-full bg-black/40 animate-ping opacity-100 group-hover/dot:hidden" />
                                   <span className="relative w-6 h-6 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                                 </button>
                               </TooltipTrigger>
@@ -224,7 +220,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                       </div>
                     </div>
 
-                    {/* Products List (Right) */}
                     <div className="w-full md:w-[450px] bg-white flex flex-col">
                       <div className="p-8 pb-4">
                         <h3 className="font-bold text-sm uppercase tracking-widest text-charcoal">Sản phẩm trong ảnh</h3>

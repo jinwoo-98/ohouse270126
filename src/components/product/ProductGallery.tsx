@@ -143,15 +143,13 @@ export function ProductGallery({
             )}
             style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
           >
-            {/* Nút Hotspot chính - Kích thước 32px (w-8 h-8) */}
+            {/* Nút Hotspot chính - Kích thước 32px (w-8 h-8) - Nền đen mờ */}
             <button
-              className="group relative w-8 h-8 -ml-4 -mt-4 rounded-full bg-primary/40 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
+              className="group relative w-8 h-8 -ml-4 -mt-4 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
               onMouseEnter={() => {
-                // Cập nhật trạng thái khi di chuột vào
                 setActiveHotspotId(item.id);
                 onActiveHotspotChange?.(item.product.id);
               }}
-              // Loại bỏ onMouseLeave để giữ trạng thái "dính"
             >
               {/* Vòng tròn trắng ở tâm - 12px, thu nhỏ còn 8px khi hover (scale 0.67) */}
               <div className={cn(
@@ -159,10 +157,10 @@ export function ProductGallery({
                 isActive ? "scale-[0.67]" : "scale-100"
               )} />
               
-              {/* Viền trắng 2px hiện khi đang active */}
+              {/* Viền trắng 1px hiện khi đang active */}
               <div className={cn(
                 "absolute inset-0 rounded-full border-white transition-all duration-300",
-                isActive ? "opacity-100 border-[2px]" : "opacity-0 border-0"
+                isActive ? "opacity-100 border-[1px]" : "opacity-0 border-0"
               )} />
             </button>
 
@@ -174,7 +172,7 @@ export function ProductGallery({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.9 }}
                   className="absolute bottom-full left-0 mb-12 flex items-center shadow-elevated rounded-xl overflow-visible z-50 bg-white"
-                  style={{ left: '-21px' }} // Mép trái dịch sang trái 21px so với tâm nút
+                  style={{ left: '-21px' }}
                 >
                   {/* Đường nối 1px sắc nét từ tâm nút lên bảng */}
                   <div 
@@ -192,7 +190,7 @@ export function ProductGallery({
                     </p>
                   </div>
 
-                  {/* Nút Xem nhanh (24x72px) - Nền trắng, icon màu chủ đạo */}
+                  {/* Nút Xem nhanh (24x72px) */}
                   <button
                     className="w-[24px] h-[72px] bg-white flex items-center justify-center text-primary hover:bg-primary/5 transition-colors rounded-r-xl"
                     onClick={(e) => {
