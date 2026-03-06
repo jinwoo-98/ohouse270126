@@ -10,11 +10,13 @@ import { useDebounce } from "use-debounce";
 
 // Import các section
 import { ProductDetailSection } from "@/components/admin/product-form/ProductDetailSection";
-import { PricingCategorySection } from "@/components/admin/product-form/PricingCategorySection";
+import { ProductOrganizationSection } from "@/components/admin/product-form/ProductOrganizationSection";
 import { ProductStatusSection } from "@/components/admin/product-form/ProductStatusSection";
 import { ProductMediaSection } from "@/components/admin/product-form/ProductMediaSection";
 import { CrossSellSection } from "@/components/admin/product-form/CrossSellSection";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { VariantConfigSection } from "@/components/admin/product-form/VariantConfigSection";
+import { VariantList } from "@/components/admin/product-form/VariantList";
 
 type SlugStatus = 'idle' | 'checking' | 'available' | 'taken';
 
@@ -119,10 +121,47 @@ export default function ProductForm() {
     checkSlug();
   }, [debouncedSlug, id, isEdit]);
 
+  // Logic sinh biến thể
+  useEffect(() => {
+    if (isRestoring.current) return;
+    const validTiers = tierConfig.filter(t => t.name && t.values.length > 0);
+    if (validTiers.length === 0) {
+      if (variants.length > 0) setVariants([]);
+      return;
+    }
+
+    const generateCombinations = (tiers: any[], index = 0, current: any = {}): any[] => {
+      if (index === tiers.length) return [current];
+      const tier = tiers[index];
+      let res: any[] = [];
+      tier.values.forEach((val: string) => {
+        res = res.concat(generateCombinations(tiers, index + 1, { ...current, [tier.name]: val }));
+      });
+      return res;
+    };
+
+    const combinations = generateCombinations(validTiers);
+    const newVariants = combinations.map(combo => {
+      const existing = variants.find(v => JSON.stringify(v.tier_values) === JSON.stringify(combo));
+      return existing || {
+        tier_values: combo,
+        price: formData.price || "",
+        original_price: formData.original_price || "",
+        stock: 999,
+        sku: "",
+        image_url: ""
+      };
+    });
+
+    if (JSON.stringify(newVariants.map(v => v.tier_values)) !== JSON.stringify(variants.map(v => v.tier_values))) {
+      setVariants(newVariants);
+      setIsDirty(true);
+    }
+  }, [tierConfig, formData.price, formData.original_price]);
+
   const fetchInitialData = async () => {
     setFetching(true);
     
-    // Tạo query cho products một cách an toàn để tránh lỗi UUID khi id là undefined
     let productsQuery = supabase.from('products').select('id, name, image_url').limit(1000);
     if (id) {
       productsQuery = productsQuery.neq('id', id);
@@ -258,7 +297,8 @@ export default function ProductForm() {
           price: parseFloat(v.price),
           original_price: v.original_price ? parseFloat(v.original_price) : null,
           stock: 999,
-          sku: v.sku
+          sku: v.sku,
+          image_url: v.image_url || null
         })));
       }
 
@@ -332,16 +372,25 @@ export default function ProductForm() {
             slugStatus={slugStatus}
           />
 
-          <PricingCategorySection 
+          <ProductOrganizationSection 
             formData={formData} 
             setFormData={(data) => { setFormData(data); if (!isRestoring.current && !fetching) setIsDirty(true); }} 
             categories={categories} 
+            hasVariants={tierConfig.length > 0}
+          />
+
+          <VariantConfigSection
             attributes={allAttributes}
             tierConfig={tierConfig}
             setTierConfig={(config) => { setTierConfig(config); if (!isRestoring.current && !fetching) setIsDirty(true); }}
-            variants={variants}
-            setVariants={(v) => { setVariants(v); if (!isRestoring.current && !fetching) setIsDirty(true); }}
           />
+
+          {variants.length > 0 && (
+            <VariantList
+              variants={variants}
+              setVariants={(v) => { setVariants(v); if (!isRestoring.current && !fetching) setIsDirty(true); }}
+            />
+          )}
         </div>
 
         <div className="lg:col-span-1 space-y-8">
