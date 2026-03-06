@@ -12,13 +12,13 @@ import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Modular Components - Using relative paths to fix resolution errors
-import { QuickViewGallery } from "./product/quickview/QuickViewGallery";
-import { QuickViewHeader } from "./product/quickview/QuickViewHeader";
-import { QuickViewVariants } from "./product/quickview/QuickViewVariants";
-import { QuickViewDetails } from "./product/quickview/QuickViewDetails";
-import { QuickViewReviewsList } from "./product/quickview/QuickViewReviewsList";
-import { QuickViewFooter } from "./product/quickview/QuickViewFooter";
+// Modular Components
+import { QuickViewGallery } from "@/components/product/quickview/QuickViewGallery";
+import { QuickViewHeader } from "@/components/product/quickview/QuickViewHeader";
+import { QuickViewVariants } from "@/components/product/quickview/QuickViewVariants";
+import { QuickViewDetails } from "@/components/product/quickview/QuickViewDetails";
+import { QuickViewReviewsList } from "@/components/product/quickview/QuickViewReviewsList";
+import { QuickViewFooter } from "@/components/product/quickview/QuickViewFooter";
 
 interface QuickViewSheetProps {
   product: any | null;
@@ -97,15 +97,18 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
     return variants.find(v => Object.entries(v.tier_values).every(([key, val]) => selectedValues[key] === val));
   }, [variants, selectedValues, tierConfig]);
 
+  // Logic hiển thị ảnh thông minh (Đồng bộ với trang chi tiết)
   useEffect(() => {
     if (!displayProduct) return;
 
+    // 1. Ưu tiên 1: Gallery của Biến thể tổ hợp (nếu có ảnh)
     if (activeVariant && activeVariant.gallery_urls && activeVariant.gallery_urls.length > 0) {
       setActiveGallery(activeVariant.gallery_urls);
       setActiveImage(activeVariant.gallery_urls[0]);
       return;
     }
 
+    // 2. Ưu tiên 2: Gallery của giá trị vừa được click
     if (lastSelectedTier) {
       const tier = tierConfig.find((t: any) => t.name === lastSelectedTier);
       const selectedVal = selectedValues[lastSelectedTier];
@@ -122,6 +125,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       }
     }
 
+    // 3. Ưu tiên 3: Kiểm tra tất cả các giá trị đang chọn xem có cái nào có gallery không
     for (const tierName in selectedValues) {
       const tier = tierConfig.find((t: any) => t.name === tierName);
       const val = selectedValues[tierName];
@@ -138,6 +142,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       }
     }
 
+    // 4. Mặc định: Gallery của sản phẩm gốc
     const defaultGallery = [displayProduct.image_url, ...(displayProduct.gallery_urls || [])].filter(Boolean);
     setActiveGallery(defaultGallery);
     setActiveImage(displayProduct.image_url);

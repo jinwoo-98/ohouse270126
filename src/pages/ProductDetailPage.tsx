@@ -186,7 +186,7 @@ export default function ProductDetailPage() {
   const handleVariantChange = (data: { variant: any | null, selectedValues: Record<string, string> }) => {
     const { variant, selectedValues: newSelectedValues } = data;
     
-    // Tìm xem tier nào vừa được thay đổi
+    // Xác định tier nào vừa được thay đổi
     let changedTier = null;
     for (const key in newSelectedValues) {
       if (newSelectedValues[key] !== selectedValues[key]) {
@@ -198,18 +198,21 @@ export default function ProductDetailPage() {
     setSelectedValues(newSelectedValues);
     if (changedTier) setLastSelectedTier(changedTier);
 
-    // 1. Ưu tiên Gallery của Biến thể đầy đủ (Tổ hợp)
+    const tierConfig = product.tier_variants_config || [];
+
+    // --- LOGIC ƯU TIÊN HIỂN THỊ GALLERY ---
+
+    // 1. Ưu tiên 1: Gallery của Biến thể đầy đủ (Tổ hợp)
     if (variant && variant.gallery_urls && variant.gallery_urls.length > 0) {
       setActiveGallery({ main: variant.gallery_urls[0], thumbs: variant.gallery_urls.slice(1) });
       return;
     }
 
-    // 2. Ưu tiên Gallery của Giá trị phân loại vừa chọn
-    if (changedTier || lastSelectedTier) {
-      const targetTier = changedTier || lastSelectedTier;
-      const tierConfig = product.tier_variants_config || [];
+    // 2. Ưu tiên 2: Gallery của Giá trị phân loại vừa chọn (Ví dụ: vừa click Màu Đỏ)
+    const targetTier = changedTier || lastSelectedTier;
+    if (targetTier) {
       const tier = tierConfig.find((t: any) => t.name === targetTier);
-      const selectedVal = newSelectedValues[targetTier!];
+      const selectedVal = newSelectedValues[targetTier];
       const valueConfig = tier?.values.find((v: any) => v.label === selectedVal);
       
       if (valueConfig?.gallery_urls && valueConfig.gallery_urls.length > 0) {
@@ -221,7 +224,23 @@ export default function ProductDetailPage() {
       }
     }
 
-    // 3. Mặc định: Gallery của sản phẩm
+    // 3. Ưu tiên 3 (QUAN TRỌNG): Kiểm tra tất cả các giá trị đang chọn xem có cái nào có gallery không
+    // Điều này giúp khi chọn thêm Kích thước (không ảnh), nó vẫn giữ lại ảnh của Màu sắc (có ảnh)
+    for (const tierName in newSelectedValues) {
+      const tier = tierConfig.find((t: any) => t.name === tierName);
+      const val = newSelectedValues[tierName];
+      const vConfig = tier?.values.find((v: any) => v.label === val);
+      
+      if (vConfig?.gallery_urls && vConfig.gallery_urls.length > 0) {
+        setActiveGallery({ main: vConfig.gallery_urls[0], thumbs: vConfig.gallery_urls.slice(1) });
+        return;
+      } else if (vConfig?.image_url) {
+        setActiveGallery({ main: vConfig.image_url, thumbs: [] });
+        return;
+      }
+    }
+
+    // 4. Mặc định: Gallery của sản phẩm
     const defaultGallery = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
     setActiveGallery({ main: defaultGallery[0] || '', thumbs: defaultGallery.slice(1) });
   };
