@@ -2,9 +2,8 @@
 
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronRight as ArrowIcon } from "lucide-react";
 import { cn, getOptimizedImageUrl, formatPrice, generateProductAltText } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Hotspot {
   id: string;
@@ -16,6 +15,7 @@ interface Hotspot {
     image_url: string;
     id: string;
     slug: string;
+    category_id?: string;
   };
   target_image_url: string;
 }
@@ -30,10 +30,10 @@ interface ProductGalleryProps {
   children?: (currentImageUrl: string) => React.ReactNode;
   product?: any; 
   aspectRatio?: string;
-  disableZoom?: boolean; // Tùy chọn tắt zoom
-  hideCounter?: boolean; // Tùy chọn ẩn bộ đếm
-  showHotspots?: boolean; // Trạng thái hiển thị hotspot từ bên ngoài
-  onImageClick?: () => void; // Sự kiện khi nhấp vào ảnh
+  disableZoom?: boolean;
+  hideCounter?: boolean;
+  showHotspots?: boolean;
+  onImageClick?: () => void;
 }
 
 const swipeConfidenceThreshold = 10000;
@@ -62,16 +62,17 @@ export function ProductGallery({
   const [[page, direction], setPage] = useState([0, 0]);
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+  const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const imageIndex = page % allImages.length;
   const currentImageUrl = allImages[imageIndex];
-
   const currentAlt = generateProductAltText(product || { name: productName, id: 'GALLERY', image_alt_text: imageAltText }, imageIndex);
 
   const paginate = (newDirection: number) => {
     if (allImages.length <= 1) return;
     setIsZoomed(false); 
+    setActiveHotspotId(null);
     let newIndex = imageIndex + newDirection;
     if (newIndex < 0) {
       newIndex = allImages.length - 1;
@@ -93,21 +94,24 @@ export function ProductGallery({
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (disableZoom || !isZoomed || !containerRef.current) return;
-    
     const { left, top, width, height } = containerRef.current.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
     const y = ((e.clientY - top) / height) * 100;
-    
     setZoomPos({ x, y });
   };
 
   const handleContainerClick = (e: React.MouseEvent) => {
+    // Nếu click vào vùng trống của ảnh
     if (onImageClick) {
       onImageClick();
+      setActiveHotspotId(null);
       return;
     }
 
-    if (disableZoom) return;
+    if (disableZoom) {
+      setActiveHotspotId(null);
+      return;
+    }
 
     e.stopPropagation();
     if (!isZoomed && containerRef.current) {
@@ -122,34 +126,78 @@ export function ProductGallery({
   const activeHotspots = hotspots.filter(h => h.target_image_url === currentImageUrl);
 
   const renderHotspots = () => (
-    <TooltipProvider>
-      {activeHotspots.map((item) => (
-        <Tooltip key={item.id} delayDuration={0}>
-          <TooltipTrigger asChild>
+    <>
+      {activeHotspots.map((item) => {
+        const isActive = activeHotspotId === item.id;
+        
+        return (
+          <div 
+            key={item.id}
+            className={cn(
+              "absolute z-30 transition-all duration-500",
+              (isZoomed || !showHotspots) ? "opacity-0 pointer-events-none scale-0" : "opacity-100"
+            )}
+            style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
+          >
+            {/* Nút Hotspot chính */}
             <button
-              className={cn(
-                "absolute w-8 h-8 -ml-4 -mt-4 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-20 group/dot pointer-events-auto",
-                (isZoomed || !showHotspots) && "opacity-0 pointer-events-none scale-0" 
-              )}
-              style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                if (onHotspotClick) onHotspotClick(item.product);
+              className="group relative w-8 h-8 -ml-4 -mt-4 rounded-full bg-primary/30 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90"
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveHotspotId(isActive ? null : item.id);
               }}
             >
-              <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
-              <span className="relative w-5 h-5 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
+              {/* Vòng tròn trắng ở tâm */}
+              <div className="w-4 h-4 rounded-full bg-white transition-all duration-300 group-hover:w-[14px] group-hover:h-[14px]" />
+              
+              {/* Viền trắng thu vào trong khi hover */}
+              <div className="absolute inset-0 rounded-full border-white opacity-0 group-hover:opacity-100 group-hover:border-[3px] transition-all duration-300" />
+              
+              {/* Hiệu ứng Ping khi không active */}
+              {!isActive && (
+                <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping pointer-events-none" />
+              )}
             </button>
-          </TooltipTrigger>
-          {item.product && (
-            <TooltipContent side="top" className="bg-charcoal text-cream border-none p-3 rounded-xl shadow-elevated">
-              <p className="font-bold text-[10px] uppercase tracking-wider">{item.product.name}</p>
-              <p className="text-primary font-bold text-xs mt-1">{formatPrice(item.product.price)}</p>
-            </TooltipContent>
-          )}
-        </Tooltip>
-      ))}
-    </TooltipProvider>
+
+            {/* Bảng thông tin Popup */}
+            <AnimatePresence>
+              {isActive && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-12 flex items-center shadow-elevated rounded-xl overflow-hidden z-40"
+                >
+                  {/* Đường nối từ tâm lên bảng */}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 w-[2px] h-12 bg-white pointer-events-none" />
+
+                  {/* Phần thông tin (143x72px) */}
+                  <div className="w-[143px] h-[72px] bg-white p-3 flex flex-col justify-center text-left">
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground truncate mb-1">
+                      {item.product.category_id?.replace(/-/g, ' ') || "Sản phẩm"}
+                    </p>
+                    <p className="text-sm font-bold text-primary truncate">
+                      {formatPrice(item.product.price)}
+                    </p>
+                  </div>
+
+                  {/* Nút Xem nhanh (24x72px) */}
+                  <button
+                    className="w-[24px] h-[72px] bg-primary flex items-center justify-center text-white hover:bg-primary/90 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onHotspotClick) onHotspotClick(item.product);
+                    }}
+                  >
+                    <ArrowIcon className="w-4 h-4" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </>
   );
 
   return (
