@@ -224,8 +224,10 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                             </span>
                             <div className="flex flex-wrap gap-3">
                               {tier.values.map((val: any) => {
-                                const label = typeof val === 'object' ? val.label : val;
-                                const imageUrl = typeof val === 'object' ? val.image_url : null;
+                                // Logic bóc tách dữ liệu an toàn
+                                const isObject = val !== null && typeof val === 'object';
+                                const label = isObject ? val.label : val;
+                                const imageUrl = (isObject && val.image_url) ? val.image_url : null;
                                 const isSelected = selectedValues[tier.name] === label;
 
                                 return (
@@ -244,11 +246,15 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                                     title={label}
                                   >
                                     {imageUrl ? (
-                                      <div className="w-full h-full rounded-lg overflow-hidden">
+                                      <div className="w-full h-full rounded-lg overflow-hidden bg-secondary/20">
                                         <img 
                                           src={getOptimizedImageUrl(imageUrl, { width: 100 })} 
                                           alt={label} 
                                           className="w-full h-full object-cover" 
+                                          onError={(e) => {
+                                            (e.target as HTMLImageElement).style.display = 'none';
+                                            (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-[10px] font-bold">${label}</span>`;
+                                          }}
                                         />
                                         {isSelected && (
                                           <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
