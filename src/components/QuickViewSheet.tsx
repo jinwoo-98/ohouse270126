@@ -224,10 +224,9 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                             </span>
                             <div className="flex flex-wrap gap-3">
                               {tier.values.map((val: any) => {
-                                // Logic bóc tách dữ liệu an toàn
-                                const isObject = val !== null && typeof val === 'object';
-                                const label = isObject ? val.label : val;
-                                const imageUrl = (isObject && val.image_url) ? val.image_url : null;
+                                const isObj = val !== null && typeof val === 'object';
+                                const label = isObj ? val.label : val;
+                                const imageUrl = isObj ? val.image_url : null;
                                 const isSelected = selectedValues[tier.name] === label;
 
                                 return (
@@ -235,10 +234,10 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                                     key={label}
                                     onClick={() => setSelectedValues(prev => ({ ...prev, [tier.name]: label }))}
                                     className={cn(
-                                      "transition-all border-2 relative",
+                                      "transition-all border-2 relative flex items-center justify-center overflow-hidden",
                                       imageUrl 
-                                        ? "w-14 h-14 rounded-xl overflow-hidden p-0.5" 
-                                        : "px-4 py-2 rounded-xl text-xs font-bold",
+                                        ? "w-14 h-14 rounded-xl p-0.5" 
+                                        : "px-4 py-2 rounded-xl text-xs font-bold min-w-[60px]",
                                       isSelected 
                                         ? "border-primary bg-primary/5 text-primary" 
                                         : "border-border bg-white hover:border-primary/40 text-charcoal"
@@ -246,15 +245,11 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                                     title={label}
                                   >
                                     {imageUrl ? (
-                                      <div className="w-full h-full rounded-lg overflow-hidden bg-secondary/20">
+                                      <div className="w-full h-full rounded-lg overflow-hidden relative">
                                         <img 
-                                          src={getOptimizedImageUrl(imageUrl, { width: 100 })} 
+                                          src={getOptimizedImageUrl(imageUrl, { width: 1200 })} 
                                           alt={label} 
                                           className="w-full h-full object-cover" 
-                                          onError={(e) => {
-                                            (e.target as HTMLImageElement).style.display = 'none';
-                                            (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-[10px] font-bold">${label}</span>`;
-                                          }}
                                         />
                                         {isSelected && (
                                           <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
@@ -265,7 +260,7 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                                         )}
                                       </div>
                                     ) : (
-                                      label
+                                      <span className="whitespace-nowrap">{label}</span>
                                     )}
                                   </button>
                                 );
