@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/comp
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { supabase } from "@/integrations/supabase/client";
-import { cn, formatPrice, generateProductAltText, wrapWordsInSpans, getOptimizedImageUrl } from "@/lib/utils";
+import { cn, formatPrice, generateProductAltText, wrapWordsInSpans } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { StarRating } from "@/components/product/detail/ProductReviews";
@@ -245,9 +245,9 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                                     title={label}
                                   >
                                     {imageUrl ? (
-                                      <div className="w-full h-full rounded-lg overflow-hidden relative">
+                                      <div className="w-full h-full rounded-lg overflow-hidden relative bg-secondary/20">
                                         <img 
-                                          src={getOptimizedImageUrl(imageUrl, { width: 1200 })} 
+                                          src={imageUrl} 
                                           alt={label} 
                                           className="w-full h-full object-cover" 
                                         />

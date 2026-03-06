@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
-import { cn, formatPrice, getOptimizedImageUrl } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
@@ -108,7 +108,6 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
               </span>
               <div className="flex flex-wrap gap-3">
                 {tier.values.map((val: any) => {
-                  // Chuẩn hóa dữ liệu: chấp nhận cả string và object
                   const isObj = val !== null && typeof val === 'object';
                   const label = isObj ? val.label : val;
                   const imageUrl = isObj ? val.image_url : null;
@@ -130,9 +129,9 @@ export function ProductInfo({ product, attributes, reviewsCount }: ProductInfoPr
                       title={label}
                     >
                       {imageUrl ? (
-                        <div className="w-full h-full rounded-lg overflow-hidden relative">
+                        <div className="w-full h-full rounded-lg overflow-hidden relative bg-secondary/20">
                           <img 
-                            src={getOptimizedImageUrl(imageUrl, { width: 1200 })} 
+                            src={imageUrl} 
                             alt={label} 
                             className="w-full h-full object-cover" 
                           />
