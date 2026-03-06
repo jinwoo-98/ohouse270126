@@ -143,9 +143,9 @@ export function ProductGallery({
             )}
             style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
           >
-            {/* Nút Hotspot chính - Kích thước 36px (w-9 h-9) */}
+            {/* Nút Hotspot chính - Kích thước 32px (w-8 h-8) */}
             <button
-              className="group relative w-9 h-9 -ml-[18px] -mt-[18px] rounded-full bg-primary/40 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
+              className="group relative w-8 h-8 -ml-4 -mt-4 rounded-full bg-primary/40 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
               onMouseEnter={() => {
                 setActiveHotspotId(item.id);
                 onActiveHotspotChange?.(item.product.id);
@@ -155,11 +155,11 @@ export function ProductGallery({
                 onActiveHotspotChange?.(null);
               }}
             >
-              {/* Vòng tròn trắng ở tâm */}
-              <div className="w-4 h-4 rounded-full bg-white transition-all duration-300 group-hover:scale-90" />
+              {/* Vòng tròn trắng ở tâm - 12px, thu nhỏ còn 8px khi hover (scale 0.67) */}
+              <div className="w-3 h-3 rounded-full bg-white transition-all duration-300 group-hover:scale-[0.67]" />
               
-              {/* Viền trắng 1px chỉ hiện khi hover vào CHÍNH NÚT NÀY */}
-              <div className="absolute inset-0 rounded-full border-white opacity-0 group-hover:opacity-100 group-hover:border-[1px] transition-all duration-300" />
+              {/* Viền trắng 2px chỉ hiện khi hover */}
+              <div className="absolute inset-0 rounded-full border-white opacity-0 group-hover:opacity-100 group-hover:border-[2px] transition-all duration-300" />
             </button>
 
             {/* Bảng thông tin Popup */}
@@ -180,9 +180,9 @@ export function ProductGallery({
                     onActiveHotspotChange?.(null);
                   }}
                 >
-                  {/* Đường nối 1px từ tâm nút lên bảng */}
+                  {/* Đường nối 2px từ tâm nút lên bảng */}
                   <div 
-                    className="absolute top-full w-[1px] h-12 bg-white pointer-events-none shadow-sm z-50" 
+                    className="absolute top-full w-[2px] h-12 bg-white pointer-events-none shadow-sm z-50" 
                     style={{ left: '21px', transform: 'translateX(-50%)' }}
                   />
 
