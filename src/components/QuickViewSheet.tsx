@@ -4,14 +4,14 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { 
   ShoppingBag, Heart, Minus, Plus, Loader2, Ruler, Info, FileText, 
-  Star, MessageSquare, ArrowLeft, X, ChevronDown, ChevronUp
+  Star, MessageSquare, ArrowLeft, X, ChevronDown, ChevronUp, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { supabase } from "@/integrations/supabase/client";
-import { cn, formatPrice, generateProductAltText, wrapWordsInSpans } from "@/lib/utils";
+import { cn, formatPrice, generateProductAltText, wrapWordsInSpans, getOptimizedImageUrl } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { StarRating } from "@/components/product/detail/ProductReviews";
@@ -222,21 +222,48 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
                             <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
                               {tier.name}: <span className="text-charcoal">{selectedValues[tier.name] || "Chưa chọn"}</span>
                             </span>
-                            <div className="flex flex-wrap gap-2">
-                              {tier.values.map((val: string) => (
-                                <button
-                                  key={val}
-                                  onClick={() => setSelectedValues(prev => ({ ...prev, [tier.name]: val }))}
-                                  className={cn(
-                                    "px-4 py-2 rounded-xl text-xs font-bold transition-all border-2",
-                                    selectedValues[tier.name] === val 
-                                      ? "border-primary bg-primary/5 text-primary" 
-                                      : "border-border bg-white hover:border-primary/40 text-charcoal"
-                                  )}
-                                >
-                                  {val}
-                                </button>
-                              ))}
+                            <div className="flex flex-wrap gap-3">
+                              {tier.values.map((val: any) => {
+                                const label = typeof val === 'object' ? val.label : val;
+                                const imageUrl = typeof val === 'object' ? val.image_url : null;
+                                const isSelected = selectedValues[tier.name] === label;
+
+                                return (
+                                  <button
+                                    key={label}
+                                    onClick={() => setSelectedValues(prev => ({ ...prev, [tier.name]: label }))}
+                                    className={cn(
+                                      "transition-all border-2 relative",
+                                      imageUrl 
+                                        ? "w-14 h-14 rounded-xl overflow-hidden p-0.5" 
+                                        : "px-4 py-2 rounded-xl text-xs font-bold",
+                                      isSelected 
+                                        ? "border-primary bg-primary/5 text-primary" 
+                                        : "border-border bg-white hover:border-primary/40 text-charcoal"
+                                    )}
+                                    title={label}
+                                  >
+                                    {imageUrl ? (
+                                      <div className="w-full h-full rounded-lg overflow-hidden">
+                                        <img 
+                                          src={getOptimizedImageUrl(imageUrl, { width: 100 })} 
+                                          alt={label} 
+                                          className="w-full h-full object-cover" 
+                                        />
+                                        {isSelected && (
+                                          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                                            <div className="bg-primary text-white rounded-full p-0.5 shadow-sm">
+                                              <Check className="w-3 h-3" />
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      label
+                                    )}
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
                         ))}

@@ -110,13 +110,8 @@ export default function ProductForm() {
       const query = supabase.from('products').select('id').eq('slug', debouncedSlug);
       if (isEdit) query.neq('id', id);
       
-      const { data, error } = await query.limit(1);
-
-      if (error) {
-        setSlugStatus('idle');
-        return;
-      }
-      setSlugStatus(data.length > 0 ? 'taken' : 'available');
+      const { data } = await query.limit(1);
+      setSlugStatus(data && data.length > 0 ? 'taken' : 'available');
     };
     checkSlug();
   }, [debouncedSlug, id, isEdit]);
@@ -134,8 +129,10 @@ export default function ProductForm() {
       if (index === tiers.length) return [current];
       const tier = tiers[index];
       let res: any[] = [];
-      tier.values.forEach((val: string) => {
-        res = res.concat(generateCombinations(tiers, index + 1, { ...current, [tier.name]: val }));
+      tier.values.forEach((val: any) => {
+        // Sử dụng val.label thay vì val nếu val là object
+        const label = typeof val === 'object' ? val.label : val;
+        res = res.concat(generateCombinations(tiers, index + 1, { ...current, [tier.name]: label }));
       });
       return res;
     };

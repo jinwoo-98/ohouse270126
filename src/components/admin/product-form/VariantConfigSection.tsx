@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, Check } from "lucide-react";
+import { Plus, Trash2, Check, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,11 +7,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ImageUpload } from "@/components/admin/ImageUpload";
+
+interface VariantValue {
+  label: string;
+  image_url?: string;
+}
+
+interface VariantTier {
+  name: string;
+  values: VariantValue[];
+}
 
 interface VariantConfigSectionProps {
   attributes: any[];
-  tierConfig: any[];
-  setTierConfig: (config: any[]) => void;
+  tierConfig: VariantTier[];
+  setTierConfig: (config: VariantTier[]) => void;
 }
 
 export function VariantConfigSection({ attributes, tierConfig, setTierConfig }: VariantConfigSectionProps) {
@@ -26,21 +37,34 @@ export function VariantConfigSection({ attributes, tierConfig, setTierConfig }: 
   };
 
   const addValueToTier = (index: number, val?: string) => {
-    const valueToAdd = (val || tempValue[index] || "").trim();
-    if (!valueToAdd) return;
+    const labelToAdd = (val || tempValue[index] || "").trim();
+    if (!labelToAdd) return;
 
     const newConfig = [...tierConfig];
-    if (!newConfig[index].values.includes(valueToAdd)) {
-      newConfig[index].values = [...newConfig[index].values, valueToAdd];
+    // Kiểm tra trùng lặp dựa trên label
+    if (!newConfig[index].values.some(v => v.label === labelToAdd)) {
+      newConfig[index].values = [...newConfig[index].values, { label: labelToAdd, image_url: "" }];
       setTierConfig(newConfig);
     }
     setTempValue({ ...tempValue, [index]: "" });
   };
 
+  const updateValueImage = (tierIdx: number, valIdx: number, url: string) => {
+    const newConfig = [...tierConfig];
+    newConfig[tierIdx].values[valIdx].image_url = url;
+    setTierConfig(newConfig);
+  };
+
+  const removeValue = (tierIdx: number, valIdx: number) => {
+    const newConfig = [...tierConfig];
+    newConfig[tierIdx].values.splice(valIdx, 1);
+    setTierConfig(newConfig);
+  };
+
   return (
     <div className="bg-white p-8 rounded-3xl shadow-sm border border-border space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Tạo biến thể sản phẩm</h3>
+        <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Cấu hình phân loại biến thể</h3>
         <Button 
           type="button"
           size="sm" 
@@ -98,12 +122,13 @@ export function VariantConfigSection({ attributes, tierConfig, setTierConfig }: 
               </div>
             </div>
 
+            {/* Gợi ý từ hệ thống */}
             {availableOptions.length > 0 && (
               <div className="space-y-3 mb-6">
                 <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Gợi ý từ hệ thống:</p>
                 <div className="flex flex-wrap gap-2">
                   {availableOptions.map((opt: string) => {
-                    const isSelected = tier.values.includes(opt);
+                    const isSelected = tier.values.some(v => v.label === opt);
                     return (
                       <button
                         key={opt}
@@ -125,16 +150,36 @@ export function VariantConfigSection({ attributes, tierConfig, setTierConfig }: 
               </div>
             )}
 
-            <div className="space-y-3">
-              <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Giá trị đã chọn:</p>
-              <div className="flex flex-wrap gap-2">
+            {/* Danh sách giá trị đã chọn với chức năng tải ảnh */}
+            <div className="space-y-4">
+              <p className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Quản lý giá trị & Hình ảnh minh họa:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {tier.values.length === 0 ? (
-                  <span className="text-[10px] text-muted-foreground italic">Chưa có giá trị nào.</span>
+                  <span className="text-[10px] text-muted-foreground italic col-span-full">Chưa có giá trị nào.</span>
                 ) : (
-                  tier.values.map((val: string) => (
-                    <Badge key={val} variant="outline" className="bg-white gap-2 h-8 px-3 rounded-xl border-primary/20 shadow-sm">
-                      <span className="text-[11px] font-bold text-charcoal">{val}</span>
-                    </Badge>
+                  tier.values.map((v, vIdx) => (
+                    <div key={vIdx} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border/60 shadow-sm group">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-secondary/30 shrink-0 border border-dashed border-border/60 relative">
+                        <ImageUpload 
+                          value={v.image_url || ""} 
+                          onChange={(url) => updateValueImage(idx, vIdx, url as string)}
+                          aspectRatio="aspect-square"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-charcoal truncate">{v.label}</p>
+                        <p className="text-[9px] text-muted-foreground italic mt-0.5">
+                          {v.image_url ? "Đã có ảnh minh họa" : "Chưa có ảnh"}
+                        </p>
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={() => removeValue(idx, vIdx)}
+                        className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   ))
                 )}
               </div>
