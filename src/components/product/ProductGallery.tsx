@@ -35,6 +35,7 @@ interface ProductGalleryProps {
   hideCounter?: boolean;
   showHotspots?: boolean;
   onImageClick?: () => void;
+  thumbnailPosition?: 'side' | 'bottom'; // Thêm prop mới
 }
 
 const swipeConfidenceThreshold = 10000;
@@ -56,7 +57,8 @@ export function ProductGallery({
   disableZoom = false,
   hideCounter = false,
   showHotspots = true,
-  onImageClick
+  onImageClick,
+  thumbnailPosition = 'side' // Mặc định là ở bên cạnh
 }: ProductGalleryProps) {
   const safeGallery = Array.isArray(galleryImages) ? galleryImages : [];
   const allImages = [mainImage || '/placeholder.svg', ...safeGallery].filter(Boolean);
@@ -143,7 +145,6 @@ export function ProductGallery({
             )}
             style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
           >
-            {/* Nút Hotspot chính - Kích thước 32px (w-8 h-8) - Nền đen mờ */}
             <button
               className="group relative w-8 h-8 -ml-4 -mt-4 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center transition-all active:scale-90 z-30"
               onMouseEnter={() => {
@@ -151,20 +152,17 @@ export function ProductGallery({
                 onActiveHotspotChange?.(item.product.id);
               }}
             >
-              {/* Vòng tròn trắng ở tâm - 12px, thu nhỏ còn 8px khi hover (scale 0.67) */}
               <div className={cn(
                 "w-3 h-3 rounded-full bg-white transition-all duration-300",
                 isActive ? "scale-[0.67]" : "scale-100"
               )} />
               
-              {/* Viền trắng 1px hiện khi đang active */}
               <div className={cn(
                 "absolute inset-0 rounded-full border-white transition-all duration-300",
                 isActive ? "opacity-100 border-[1px]" : "opacity-0 border-0"
               )} />
             </button>
 
-            {/* Bảng thông tin Popup */}
             <AnimatePresence>
               {isActive && (
                 <motion.div
@@ -174,13 +172,11 @@ export function ProductGallery({
                   className="absolute bottom-full left-0 mb-12 flex items-center shadow-elevated rounded-xl overflow-visible z-50 bg-white"
                   style={{ left: '-21px' }}
                 >
-                  {/* Đường nối 1px sắc nét từ tâm nút lên bảng */}
                   <div 
                     className="absolute top-full w-[1px] h-12 bg-white pointer-events-none shadow-sm z-50" 
                     style={{ left: '21px', transform: 'translateX(-50%)' }}
                   />
 
-                  {/* Phần thông tin (143x72px) */}
                   <div className="w-[143px] h-[72px] bg-white p-3 flex flex-col justify-center text-left border-r border-border/40 rounded-l-xl">
                     <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground truncate mb-1">
                       {item.product.category_id?.replace(/-/g, ' ') || "Sản phẩm"}
@@ -190,7 +186,6 @@ export function ProductGallery({
                     </p>
                   </div>
 
-                  {/* Nút Xem nhanh (24x72px) */}
                   <button
                     className="w-[24px] h-[72px] bg-white flex items-center justify-center text-primary hover:bg-primary/5 transition-colors rounded-r-xl"
                     onClick={(e) => {
@@ -210,10 +205,18 @@ export function ProductGallery({
   );
 
   return (
-    <div className="w-full max-w-full select-none flex flex-col md:flex-row gap-4">
+    <div className={cn(
+      "w-full max-w-full select-none flex gap-4",
+      thumbnailPosition === 'side' ? "flex-col md:flex-row" : "flex-col"
+    )}>
       {/* Thumbnails */}
       {allImages.length > 1 && (
-        <div className="flex md:flex-col gap-2.5 overflow-x-auto md:overflow-y-auto no-scrollbar order-2 md:order-1 w-full md:w-20 lg:w-24 shrink-0 py-1">
+        <div className={cn(
+          "flex gap-2.5 overflow-x-auto no-scrollbar shrink-0 py-1",
+          thumbnailPosition === 'side' 
+            ? "md:flex-col md:overflow-y-auto order-2 md:order-1 w-full md:w-20 lg:w-24" 
+            : "flex-row order-2 w-full"
+        )}>
           {allImages.map((img, idx) => (
             <button
               key={idx}
@@ -221,8 +224,9 @@ export function ProductGallery({
                 setPage([idx, idx > imageIndex ? 1 : -1]);
               }}
               className={cn(
-                "relative w-16 md:w-full rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
+                "relative rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-white",
                 aspectRatio, 
+                thumbnailPosition === 'side' ? "w-16 md:w-full" : "w-20 md:w-24",
                 imageIndex === idx 
                   ? "border-primary ring-2 ring-primary/10" 
                   : "border-transparent opacity-50 hover:opacity-100"
@@ -243,7 +247,8 @@ export function ProductGallery({
       <div 
         ref={containerRef}
         className={cn(
-          "relative flex-1 bg-white rounded-2xl overflow-hidden border border-border/40 shadow-subtle order-1 md:order-2",
+          "relative flex-1 bg-white rounded-2xl overflow-hidden border border-border/40 shadow-subtle order-1",
+          thumbnailPosition === 'side' && "md:order-2",
           aspectRatio,
           !disableZoom ? (isZoomed ? "cursor-zoom-out" : "cursor-zoom-in") : "cursor-default"
         )}

@@ -32,7 +32,7 @@ export default function LookDetailPage() {
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
   const [showHotspots, setShowHotspots] = useState(true);
-  const [activeProductId, setActiveProductId] = useState<string | null>(null); // Trạng thái sản phẩm đang được chọn từ hotspot
+  const [activeProductId, setActiveProductId] = useState<string | null>(null); 
 
   useEffect(() => {
     if (id) {
@@ -233,17 +233,18 @@ export default function LookDetailPage() {
                     productName={look.title} 
                     hotspots={lookHotspots}
                     onHotspotClick={setQuickViewProduct}
-                    onActiveHotspotChange={setActiveProductId} // Truyền callback để cập nhật sản phẩm đang chọn
+                    onActiveHotspotChange={setActiveProductId} 
                     aspectRatio={galleryConfig.ratio}
                     disableZoom={true}
                     hideCounter={true}
                     showHotspots={showHotspots}
+                    thumbnailPosition="bottom" // Chuyển ảnh phụ xuống dưới
                     onImageClick={() => {
                       setShowHotspots(!showHotspots);
                       setActiveProductId(null);
                     }}
                   >
-                    {() => (
+                    {(currentImageUrl) => (
                       <>
                         {/* Nút Yêu thích (Góc trên phải) */}
                         <button 
@@ -252,7 +253,7 @@ export default function LookDetailPage() {
                             toggleWishlist({ id: look.id, name: look.title, price: 0, image: look.image_url || look.homepage_image_url, slug: look.slug }); 
                           }}
                           className={cn(
-                            "absolute top-4 right-4 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-medium backdrop-blur-md",
+                            "absolute top-4 right-4 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-medium backdrop-blur-sm",
                             isFavorite 
                               ? "bg-primary text-white" 
                               : "bg-white/80 text-charcoal hover:bg-primary hover:text-white"
@@ -280,7 +281,7 @@ export default function LookDetailPage() {
                   <LookProductList 
                     products={lookbookProducts} 
                     onQuickView={setQuickViewProduct} 
-                    activeProductId={activeProductId} // Truyền ID sản phẩm đang chọn xuống danh sách
+                    activeProductId={activeProductId} 
                   />
                 </div>
               )}
