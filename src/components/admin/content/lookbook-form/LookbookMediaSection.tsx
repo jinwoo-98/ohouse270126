@@ -1,4 +1,4 @@
-import { Image as ImageIcon, X } from "lucide-react";
+import { Image as ImageIcon, X, Square } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { cn } from "@/lib/utils";
@@ -22,16 +22,32 @@ export function LookbookMediaSection({ formData, setFormData, setActiveEditingIm
     <div className="space-y-4 bg-white p-6 rounded-3xl border border-border shadow-sm">
       <h3 className="text-sm font-bold uppercase tracking-widest text-primary flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Quản lý ảnh</h3>
       
-      <div className="space-y-2">
-        <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh chính (Tỉ lệ 4:3 - Gallery & Hotspot)</Label>
-        <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-border/40 bg-secondary/5">
-          <ImageUpload 
-            value={formData.image_url} 
-            onChange={(url) => { 
-              setFormData({...formData, image_url: url as string}); 
-              setActiveEditingImage(url as string); 
-            }} 
-          />
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label className="text-[10px] font-bold uppercase text-muted-foreground">Ảnh chính (Tỉ lệ 4:3 - Gallery & Hotspot)</Label>
+          <div className="aspect-[4/3] rounded-2xl overflow-hidden border border-border/40 bg-secondary/5">
+            <ImageUpload 
+              value={formData.image_url} 
+              onChange={(url) => { 
+                setFormData({...formData, image_url: url as string}); 
+                setActiveEditingImage(url as string); 
+              }} 
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1.5">
+            <Square className="w-3 h-3" /> Ảnh vuông (Tỉ lệ 1:1 - Chi tiết SP)
+          </Label>
+          <div className="aspect-square rounded-2xl overflow-hidden border border-border/40 bg-secondary/5">
+            <ImageUpload 
+              aspectRatio="aspect-square"
+              value={formData.square_image_url} 
+              onChange={(url) => setFormData({...formData, square_image_url: url as string})} 
+            />
+          </div>
+          <p className="text-[9px] text-muted-foreground italic">Dùng để hiển thị trong cửa sổ "Phối đồ Lookbook" tại trang sản phẩm.</p>
         </div>
       </div>
       

@@ -46,6 +46,7 @@ export default function LookbookForm() {
     description: "",
     category_id: "",
     image_url: "",
+    square_image_url: "",
     gallery_urls: [] as string[],
     is_active: true,
     homepage_image_url: "",
@@ -145,6 +146,7 @@ export default function LookbookForm() {
       description: lookData.description || "",
       category_id: lookData.category_id,
       image_url: lookData.image_url,
+      square_image_url: lookData.square_image_url || "",
       gallery_urls: lookData.gallery_urls || [],
       is_active: lookData.is_active,
       homepage_image_url: lookData.homepage_image_url || "",
@@ -196,6 +198,7 @@ export default function LookbookForm() {
       description: formData.description,
       category_id: formData.category_id,
       image_url: formData.image_url,
+      square_image_url: formData.square_image_url,
       gallery_urls: formData.gallery_urls,
       is_active: formData.is_active,
       homepage_image_url: formData.homepage_image_url,
@@ -239,6 +242,7 @@ export default function LookbookForm() {
   const allEditingImages = useMemo(() => {
     const list = [];
     if (formData.image_url) list.push({ url: formData.image_url, label: "Ảnh chính", type: 'main' });
+    if (formData.square_image_url) list.push({ url: formData.square_image_url, label: "Ảnh vuông", type: 'square' });
     if (formData.homepage_image_url) list.push({ url: formData.homepage_image_url, label: "Ảnh trang chủ", type: 'homepage' });
     
     (formData.gallery_urls || []).forEach((url, idx) => {
@@ -246,7 +250,7 @@ export default function LookbookForm() {
     });
     
     return list;
-  }, [formData.image_url, formData.homepage_image_url, formData.gallery_urls]);
+  }, [formData.image_url, formData.square_image_url, formData.homepage_image_url, formData.gallery_urls]);
   
   const groupedFilters = useMemo(() => {
     return {

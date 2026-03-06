@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getOptimizedImageUrl, formatPrice, cn } from "@/lib/utils";
 import { HorizontalProductCard } from "./HorizontalProductCard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ProductActionButtonsProps {
   product: any;
@@ -23,48 +23,52 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('media');
   
-  const [lookbook, setLookbook] = useState<any>(null);
-  const [loadingLook, setLoadingLook] = useState(false);
-  const [hasCheckedLookbook, setHasCheckedLookbook] = useState(false);
+  const [allProductLooks, setAllProductLooks] = useState<any[]>([]);
+  const [activeLookIndex, setActiveLookIndex] = useState(0);
+  const [loadingLooks, setLoadingLooks] = useState(false);
 
   const allImages = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
   const customerImages = useMemo(() => reviews.filter(r => r.image_url).map(r => ({ url: r.image_url, user: r.user_name })), [reviews]);
 
-  // Kiểm tra sự tồn tại của Lookbook khi component mount để quyết định ẩn/hiện nút
+  const activeLook = allProductLooks[activeLookIndex] || null;
+
   useEffect(() => {
-    const checkLookbook = async () => {
+    const fetchLooks = async () => {
+      setLoadingLooks(true);
       try {
+        // Lấy tất cả look_id mà sản phẩm này tham gia
         const { data: itemData } = await supabase
           .from('shop_look_items')
           .select('look_id')
-          .eq('product_id', product.id)
-          .limit(1)
-          .maybeSingle();
+          .eq('product_id', product.id);
 
-        if (itemData) {
-          const { data: lookData } = await supabase
+        if (itemData && itemData.length > 0) {
+          const lookIds = itemData.map(i => i.look_id);
+          const { data: looksData } = await supabase
             .from('shop_looks')
             .select(`*, shop_look_items (*, products:product_id (*))`)
-            .eq('id', itemData.look_id)
-            .single();
-          setLookbook(lookData);
+            .in('id', lookIds)
+            .eq('is_active', true)
+            .order('display_order');
+          
+          setAllProductLooks(looksData || []);
         } else {
-          const { data: catLook } = await supabase
+          // Fallback: Lấy lookbook cùng danh mục
+          const { data: catLooks } = await supabase
             .from('shop_looks')
             .select(`*, shop_look_items (*, products:product_id (*))`)
             .eq('category_id', product.category_id)
             .eq('is_active', true)
-            .limit(1)
-            .maybeSingle();
-          if (catLook) setLookbook(catLook);
+            .limit(5);
+          setAllProductLooks(catLooks || []);
         }
       } catch (e) {
-        console.error("Error checking lookbook:", e);
+        console.error(e);
       } finally {
-        setHasCheckedLookbook(true);
+        setLoadingLooks(false);
       }
     };
-    checkLookbook();
+    fetchLooks();
   }, [product.id, product.category_id]);
 
   const tabs = useMemo(() => {
@@ -72,16 +76,16 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
       { id: 'media' as TabType, label: "Toàn bộ media", icon: Images, show: true },
       { id: 'video' as TabType, label: "Video", icon: PlayCircle, show: !!product.video_url },
       { id: 'dimensions' as TabType, label: "Thông số kích thước", icon: Ruler, show: !!product.dimension_image_url },
-      { id: 'lookbook' as TabType, label: "Phối đồ Lookbook", icon: Sparkles, show: !!lookbook },
+      { id: 'lookbook' as TabType, label: "Phối đồ Lookbook", icon: Sparkles, show: allProductLooks.length > 0 },
       { id: 'customer_photos' as TabType, label: "Hình ảnh khách hàng", icon: Camera, show: customerImages.length > 0 },
     ];
     return items.filter(t => t.show);
-  }, [product, lookbook, customerImages]);
+  }, [product, allProductLooks, customerImages]);
 
   const uniqueLookbookProducts = useMemo(() => {
-    if (!lookbook?.shop_look_items) return [];
+    if (!activeLook?.shop_look_items) return [];
     const seen = new Set();
-    return lookbook.shop_look_items
+    return activeLook.shop_look_items
       .filter((item: any) => {
         if (!item.products) return false;
         const pid = item.products.id || item.product_id;
@@ -90,7 +94,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
         return true;
       })
       .map((item: any) => item.products);
-  }, [lookbook]);
+  }, [activeLook]);
 
   const handleOpenTab = (tab: TabType) => {
     setActiveTab(tab);
@@ -190,45 +194,79 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
 
             {activeTab === 'lookbook' && (
               <div className="h-full flex flex-col md:flex-row">
-                {lookbook ? (
+                {activeLook ? (
                   <>
-                    <div className="flex-1 relative bg-secondary/20">
-                      <img src={lookbook.image_url} className="w-full h-full object-cover" alt={lookbook.title} />
-                      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent pointer-events-none" />
-                      
-                      <div className="absolute top-8 left-10 z-20">
-                        <Badge className="bg-primary text-white border-none uppercase tracking-widest text-[10px] px-4 py-1.5 shadow-gold">
-                          Cảm hứng không gian
-                        </Badge>
-                        <h2 className="text-3xl md:text-4xl font-bold text-white mt-4 drop-shadow-md uppercase tracking-tight">
-                          {lookbook.title}
-                        </h2>
-                      </div>
-
-                      <TooltipProvider>
-                        {lookbook.shop_look_items
-                          ?.filter((item: any) => item.target_image_url === lookbook.image_url && item.products)
-                          .map((item: any) => (
-                          <Tooltip key={item.id} delayDuration={0}>
-                            <TooltipTrigger asChild>
-                              <button
-                                className="absolute w-10 h-10 -ml-5 -mt-5 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-30 group/dot"
-                                style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
-                                onClick={() => onQuickView?.(item.products)}
-                              >
-                                <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
-                                <span className="relative w-6 h-6 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-charcoal text-white border-none p-4 rounded-2xl shadow-elevated">
-                              <p className="font-bold text-xs uppercase tracking-wider">{item.products.name}</p>
-                              <p className="text-primary font-bold text-sm mt-1">{formatPrice(item.products.price)}</p>
-                            </TooltipContent>
-                          </Tooltip>
+                    {/* Thumbnails List (Left) */}
+                    {allProductLooks.length > 1 && (
+                      <div className="w-24 bg-secondary/20 border-r border-border/40 flex flex-col gap-3 p-4 overflow-y-auto no-scrollbar shrink-0">
+                        {allProductLooks.map((look, idx) => (
+                          <button
+                            key={look.id}
+                            onClick={() => setActiveLookIndex(idx)}
+                            className={cn(
+                              "relative aspect-square w-full rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-white",
+                              activeLookIndex === idx 
+                                ? "border-primary ring-2 ring-primary/10" 
+                                : "border-transparent opacity-50 hover:opacity-100"
+                            )}
+                          >
+                            <img src={look.square_image_url || look.image_url} className="w-full h-full object-cover" alt={look.title} />
+                          </button>
                         ))}
-                      </TooltipProvider>
+                      </div>
+                    )}
+
+                    {/* Main Square Image (Center) */}
+                    <div className="flex-1 relative bg-secondary/20 flex items-center justify-center p-8">
+                      <div className="relative aspect-square h-full max-h-[800px] rounded-[32px] overflow-hidden shadow-elevated border border-border/40">
+                        <AnimatePresence mode="wait">
+                          <motion.img 
+                            key={activeLook.id}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            src={activeLook.square_image_url || activeLook.image_url} 
+                            className="w-full h-full object-cover" 
+                            alt={activeLook.title} 
+                          />
+                        </AnimatePresence>
+                        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 to-transparent pointer-events-none" />
+                        
+                        <div className="absolute top-8 left-10 z-20">
+                          <Badge className="bg-primary text-white border-none uppercase tracking-widest text-[10px] px-4 py-1.5 shadow-gold">
+                            Cảm hứng không gian
+                          </Badge>
+                          <h2 className="text-3xl md:text-4xl font-bold text-white mt-4 drop-shadow-md uppercase tracking-tight">
+                            {activeLook.title}
+                          </h2>
+                        </div>
+
+                        <TooltipProvider>
+                          {activeLook.shop_look_items
+                            ?.filter((item: any) => item.target_image_url === (activeLook.square_image_url || activeLook.image_url) && item.products)
+                            .map((item: any) => (
+                            <Tooltip key={item.id} delayDuration={0}>
+                              <TooltipTrigger asChild>
+                                <button
+                                  className="absolute w-10 h-10 -ml-5 -mt-5 rounded-full flex items-center justify-center text-primary hover:scale-125 transition-all duration-500 z-30 group/dot"
+                                  style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
+                                  onClick={() => onQuickView?.(item.products)}
+                                >
+                                  <span className="absolute w-full h-full rounded-full bg-primary/40 animate-ping opacity-100 group-hover/dot:hidden" />
+                                  <span className="relative w-6 h-6 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-charcoal text-white border-none p-4 rounded-2xl shadow-elevated">
+                                <p className="font-bold text-xs uppercase tracking-wider">{item.products.name}</p>
+                                <p className="text-primary font-bold text-sm mt-1">{formatPrice(item.products.price)}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ))}
+                        </TooltipProvider>
+                      </div>
                     </div>
 
+                    {/* Products List (Right) */}
                     <div className="w-full md:w-[450px] bg-white flex flex-col border-l border-border/40">
                       <div className="p-8 border-b border-border/40">
                         <h3 className="font-bold text-sm uppercase tracking-widest text-charcoal">Sản phẩm trong ảnh</h3>
@@ -245,7 +283,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                       </div>
                       <div className="p-8 bg-white border-t border-border/40">
                         <Button className="w-full btn-hero h-14 rounded-2xl shadow-gold text-xs font-bold" asChild>
-                          <a href={`/y-tuong/${lookbook.slug || lookbook.id}`}>XEM CHI TIẾT KHÔNG GIAN</a>
+                          <a href={`/y-tuong/${activeLook.slug || activeLook.id}`}>XEM CHI TIẾT KHÔNG GIAN</a>
                         </Button>
                       </div>
                     </div>
