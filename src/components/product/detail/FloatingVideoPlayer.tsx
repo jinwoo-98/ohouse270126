@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, X, Maximize } from "lucide-react";
+import { Play, Pause, X, Maximize, Loader2 } from "lucide-react";
 
 interface FloatingVideoPlayerProps {
   videoUrl: string;
@@ -12,13 +12,13 @@ interface FloatingVideoPlayerProps {
 export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVideoPlayerProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
-  
-  // Sử dụng ref để theo dõi việc kéo thả một cách chính xác
   const isDragging = useRef(false);
 
   useEffect(() => {
     if (videoRef.current && videoUrl) {
+      setIsLoading(true);
       videoRef.current.play().catch(() => {
         setIsPlaying(false);
       });
@@ -45,61 +45,51 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
       <motion.div
         drag
         dragMomentum={false}
-        // Khi bắt đầu kéo, đánh dấu là đang kéo
-        onDragStart={() => {
-          isDragging.current = true;
-        }}
-        // Khi kết thúc kéo, đợi một chút rồi mới gỡ bỏ trạng thái để tránh kích hoạt tap
-        onDragEnd={() => {
-          setTimeout(() => {
-            isDragging.current = false;
-          }, 100);
-        }}
+        onDragStart={() => { isDragging.current = true; }}
+        onDragEnd={() => { setTimeout(() => { isDragging.current = false; }, 100); }}
         initial={{ opacity: 0, scale: 0.5, x: 100 }}
         animate={{ opacity: 1, scale: 1, x: 0 }}
         exit={{ opacity: 0, scale: 0.5, x: 100 }}
-        className="fixed bottom-72 right-2 md:right-4 z-[140] w-[100px] h-[178px] md:w-[130px] md:h-[231px] rounded-2xl overflow-hidden shadow-elevated cursor-grab active:cursor-grabbing group bg-black border border-white/10"
-        onTap={() => {
-          // Chỉ mở toàn màn hình nếu KHÔNG phải đang trong thao tác kéo thả
-          if (!isDragging.current) {
-            onOpenFullScreen();
-          }
-        }}
+        className="fixed bottom-72 right-2 md:right-4 z-[140] w-[110px] h-[196px] md:w-[140px] md:h-[248px] rounded-2xl overflow-hidden shadow-elevated cursor-grab active:cursor-grabbing group bg-black border border-white/10"
+        onTap={() => { if (!isDragging.current) onOpenFullScreen(); }}
       >
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-charcoal/50 z-10">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          </div>
+        )}
+
         <video
           key={videoUrl}
           ref={videoRef}
-          src={`${videoUrl}#t=0.001`}
+          src={videoUrl}
           className="w-full h-full object-cover"
           loop
           muted
           playsInline
           autoPlay
-          preload="auto"
-          onError={(e) => {
-            console.warn("Floating video failed to load:", videoUrl);
-            setIsVisible(false);
-          }}
+          onCanPlay={() => setIsLoading(false)}
+          onError={() => setIsVisible(false)}
         />
         
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
 
         <button
           onClick={(e) => { e.stopPropagation(); setIsVisible(false); }}
-          className="absolute top-2 right-2 w-6 h-6 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-destructive transition-all z-10"
+          className="absolute top-2 right-2 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-destructive transition-all z-20"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="w-4 h-4" />
         </button>
 
         <button
           onClick={togglePlay}
-          className="absolute bottom-2 left-2 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-primary transition-all z-10"
+          className="absolute bottom-2 left-2 w-8 h-8 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-primary transition-all z-20"
         >
-          {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
         </button>
         
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2 bg-primary/80 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-gold">
-          <Maximize className="w-5 h-5" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 bg-primary/80 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-gold z-10">
+          <Maximize className="w-6 h-6" />
         </div>
       </motion.div>
     </AnimatePresence>

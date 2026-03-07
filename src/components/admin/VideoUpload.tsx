@@ -1,115 +1,145 @@
 "use client";
 
-import { useState } from "react";
-import { Upload, X, Loader2, Video } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Upload, X, Loader2, Video, CheckCircle2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { slugify } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface VideoUploadProps {
   value?: string;
   onChange: (url: string) => void;
   disabled?: boolean;
-  bucket?: string;
 }
 
-const ALLOWED_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
-
-export function VideoUpload({ 
-  value, 
-  onChange, 
-  disabled, 
-  bucket = "uploads"
-}: VideoUploadProps) {
+export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'ready'>('idle');
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Giới hạn 500MB cho Mux (thoải mái cho video nội thất)
+    if (file.size > 500 * 1024 * 1024) {
+      toast.error("Video quá lớn! Vui lòng chọn video dưới 500MB.");
+      return;
+    }
+
+    setIsUploading(true);
+    setStatus('uploading');
+    const toastId = toast.loading("Đang chuẩn bị cổng tải lên Mux...");
+
     try {
-      const file = e.target.files?.[0];
-      if (!file) return;
+      // 1. Gọi Edge Function để lấy URL tải lên trực tiếp từ Mux
+      const { data: uploadData, error: funcError } = await supabase.functions.invoke('process-video', {
+        body: { action: 'create-upload' }
+      });
 
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        toast.error(`Định dạng video không được hỗ trợ. Chỉ chấp nhận MP4, WebM, MOV.`);
-        return;
-      }
-      if (file.size > MAX_FILE_SIZE) {
-        toast.error(`Video quá lớn! Vui lòng chọn video dưới 25MB.`);
-        return;
-      }
+      if (funcError) throw funcError;
 
-      setIsUploading(true);
-      const toastId = toast.loading(`Đang tải lên video...`);
+      const { url: uploadUrl, id: uploadId } = uploadData;
 
-      const originalName = file.name.substring(0, file.name.lastIndexOf('.'));
-      const randomString = Math.random().toString(36).substring(2, 8);
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${slugify(originalName)}-${randomString}.${fileExt}`;
-      const filePath = `${fileName}`;
+      // 2. Tải file trực tiếp từ trình duyệt lên Mux (không qua server của mình)
+      toast.loading(`Đang tải video lên (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`, { id: toastId });
+      
+      const xhr = new XMLHttpRequest();
+      xhr.open('PUT', uploadUrl);
+      
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
+        }
+      };
 
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file, {
-          contentType: file.type,
-          upsert: false
+      const uploadPromise = new Promise((resolve, reject) => {
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve(xhr.response) : reject();
+        xhr.onerror = () => reject();
+      });
+
+      xhr.send(file);
+      await uploadPromise;
+
+      // 3. Chờ Mux xử lý video
+      setStatus('processing');
+      toast.loading("Video đã tải xong, đang tối ưu hóa để phát mượt mà...", { id: toastId });
+
+      // Polling để kiểm tra trạng thái xử lý
+      let attempts = 0;
+      const checkStatus = async () => {
+        const { data: statusData } = await supabase.functions.invoke('process-video', {
+          body: { action: 'check-status', uploadId }
         });
 
-      if (uploadError) throw uploadError;
+        if (statusData.url) {
+          onChange(statusData.url);
+          setStatus('ready');
+          toast.success("Video đã sẵn sàng!", { id: toastId });
+          setIsUploading(false);
+          return;
+        }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath);
+        attempts++;
+        if (attempts < 30) { // Chờ tối đa 1 phút
+          setTimeout(checkStatus, 2000);
+        } else {
+          toast.error("Xử lý video hơi lâu, vui lòng kiểm tra lại sau vài phút.", { id: toastId });
+          setIsUploading(false);
+        }
+      };
 
-      onChange(publicUrl);
-      toast.success(`Đã tải lên video thành công!`, { id: toastId });
+      checkStatus();
+
     } catch (error: any) {
-      toast.error("Lỗi: " + error.message);
-    } finally {
+      console.error(error);
+      toast.error("Lỗi tải video: " + error.message, { id: toastId });
       setIsUploading(false);
-      if (e.target) e.target.value = "";
+      setStatus('idle');
     }
-  };
-
-  const handleRemove = () => {
-    onChange("");
   };
 
   return (
     <div className="w-full">
       {value ? (
-        <div className="relative w-full max-w-[180px] aspect-[9/16] rounded-2xl overflow-hidden border border-border bg-black group shadow-md">
+        <div className="relative w-full max-w-[200px] aspect-[9/16] rounded-2xl overflow-hidden border border-border bg-black group shadow-md">
+          {/* Nếu là link Mux (.m3u8), ta dùng video tag bình thường (trình duyệt hiện đại hỗ trợ tốt) */}
           <video 
             key={value}
-            src={`${value}#t=0.001`} 
+            src={value} 
             className="w-full h-full object-cover" 
-            muted 
-            playsInline 
-            autoPlay 
-            loop 
-            preload="metadata"
+            muted playsInline autoPlay loop 
           />
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <button
-              onClick={handleRemove}
-              className="p-2 bg-destructive text-white rounded-full hover:bg-destructive/90 transition-colors shadow-lg"
+              onClick={() => onChange("")}
+              className="p-2 bg-destructive text-white rounded-full hover:bg-destructive/90 transition-colors"
               type="button"
               disabled={disabled}
             >
               <X className="w-5 h-5" />
             </button>
           </div>
+          <div className="absolute bottom-2 right-2">
+            <Badge className="bg-primary/80 text-[8px] uppercase">Mux Stream</Badge>
+          </div>
         </div>
       ) : (
         <div className="flex items-center justify-center w-full">
           <label className={cn(
-            "flex flex-col items-center justify-center w-full max-w-[180px] aspect-[9/16] border-2 border-dashed border-border rounded-2xl cursor-pointer bg-secondary/5 hover:bg-secondary/10 hover:border-primary/40 transition-all group"
+            "flex flex-col items-center justify-center w-full max-w-[200px] aspect-[9/16] border-2 border-dashed border-border rounded-2xl cursor-pointer bg-secondary/5 hover:bg-secondary/10 hover:border-primary/40 transition-all group relative overflow-hidden",
+            isUploading && "cursor-not-allowed"
           )}>
-            <div className="flex flex-col items-center justify-center p-4 text-center">
+            <div className="flex flex-col items-center justify-center p-4 text-center z-10">
               {isUploading ? (
                 <>
                   <Loader2 className="w-8 h-8 mb-2 text-primary animate-spin" />
-                  <p className="text-[10px] text-muted-foreground font-medium">Đang tải lên...</p>
+                  <p className="text-[10px] font-bold text-charcoal uppercase">
+                    {status === 'uploading' ? `Đang tải: ${uploadProgress}%` : 'Đang xử lý...'}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground mt-1">Vui lòng không đóng trình duyệt</p>
                 </>
               ) : (
                 <>
@@ -117,17 +147,25 @@ export function VideoUpload({
                     <Video className="w-5 h-5 text-primary" />
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    <span className="font-bold text-primary">Tải video lên</span>
+                    <span className="font-bold text-primary">Tải video lên Mux</span>
                     <br />
-                    <span className="opacity-60">(Tối đa 25MB)</span>
+                    <span className="opacity-60">(Hỗ trợ file lớn)</span>
                   </p>
                 </>
               )}
             </div>
+            
+            {isUploading && status === 'uploading' && (
+              <div 
+                className="absolute bottom-0 left-0 h-1 bg-primary transition-all duration-300" 
+                style={{ width: `${uploadProgress}%` }}
+              />
+            )}
+
             <input 
               type="file" 
               className="hidden" 
-              accept="video/mp4,video/webm,video/quicktime"
+              accept="video/*"
               onChange={handleUpload}
               disabled={disabled || isUploading}
             />
