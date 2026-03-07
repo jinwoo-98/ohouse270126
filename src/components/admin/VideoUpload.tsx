@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { HLSVideoPlayer } from "@/components/ui/HLSVideoPlayer";
 
 interface VideoUploadProps {
   value?: string;
@@ -39,7 +40,6 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
 
       if (!token) throw new Error("Vui lòng đăng nhập lại.");
 
-      // 1. Tạo Upload URL
       const response = await fetch(FUNCTION_URL, {
         method: 'POST',
         headers: {
@@ -54,36 +54,28 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
       const uploadData = await response.json();
       const { url: uploadUrl, id: uploadId } = uploadData;
 
-      // 2. Tải file lên
       toast.loading(`Đang tải video lên (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`, { id: toastId });
       
       const xhr = new XMLHttpRequest();
       
       const uploadPromise = new Promise((resolve, reject) => {
         xhr.open('PUT', uploadUrl);
-        
-        // Lưu ý: Không đặt bất kỳ header nào (kể cả Content-Type) khi PUT lên GCS signed URL 
-        // trừ khi nó đã được khai báo lúc tạo URL. Mux mặc định không yêu cầu.
-
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
             const percent = Math.round((event.loaded / event.total) * 100);
             setUploadProgress(percent);
           }
         };
-
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.response);
           else reject(new Error(`Lỗi máy chủ (${xhr.status})`));
         };
-
         xhr.onerror = () => reject(new Error("Kết nối bị chặn. Hãy kiểm tra Ad-blocker hoặc VPN."));
         xhr.send(file);
       });
 
       await uploadPromise;
 
-      // 3. Kiểm tra trạng thái
       setStatus('processing');
       toast.loading("Đang tối ưu hóa video...", { id: toastId });
 
@@ -134,8 +126,7 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
     <div className="w-full">
       {value ? (
         <div className="relative w-full max-w-[200px] aspect-[9/16] rounded-2xl overflow-hidden border border-border bg-black group shadow-md">
-          <video 
-            key={value}
+          <HLSVideoPlayer 
             src={value} 
             className="w-full h-full object-cover" 
             muted playsInline autoPlay loop 

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, X, Maximize, Loader2 } from "lucide-react";
+import { HLSVideoPlayer } from "@/components/ui/HLSVideoPlayer";
 
 interface FloatingVideoPlayerProps {
   videoUrl: string;
@@ -16,23 +17,15 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
   const videoRef = useRef<HTMLVideoElement>(null);
   const isDragging = useRef(false);
 
-  useEffect(() => {
-    if (videoRef.current && videoUrl) {
-      setIsLoading(true);
-      videoRef.current.play().catch(() => {
-        setIsPlaying(false);
-      });
-    }
-  }, [videoUrl]);
-
   const togglePlay = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
-    if (videoRef.current) {
-      if (videoRef.current.paused) {
-        videoRef.current.play().catch(() => {});
+    const video = document.querySelector('#floating-video-element') as HTMLVideoElement;
+    if (video) {
+      if (video.paused) {
+        video.play().catch(() => {});
         setIsPlaying(true);
       } else {
-        videoRef.current.pause();
+        video.pause();
         setIsPlaying(false);
       }
     }
@@ -59,9 +52,8 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
           </div>
         )}
 
-        <video
-          key={videoUrl}
-          ref={videoRef}
+        <HLSVideoPlayer
+          id="floating-video-element"
           src={videoUrl}
           className="w-full h-full object-cover"
           loop
@@ -69,7 +61,10 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
           playsInline
           autoPlay
           onCanPlay={() => setIsLoading(false)}
-          onError={() => setIsVisible(false)}
+          onError={(e) => {
+            console.error("Floating video error:", e);
+            // Không ẩn ngay lập tức, có thể do hls.js đang khởi tạo
+          }}
         />
         
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />

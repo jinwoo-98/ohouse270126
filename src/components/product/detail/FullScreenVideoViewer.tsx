@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { HLSVideoPlayer } from "@/components/ui/HLSVideoPlayer";
 
 interface FullScreenVideoViewerProps {
   isOpen: boolean;
@@ -10,7 +11,6 @@ interface FullScreenVideoViewerProps {
 }
 
 export function FullScreenVideoViewer({ isOpen, onClose, videoUrl }: FullScreenVideoViewerProps) {
-  // Chỉ render khi mở và có URL hợp lệ
   const shouldRender = isOpen && videoUrl && videoUrl.trim() !== "";
 
   return (
@@ -30,20 +30,14 @@ export function FullScreenVideoViewer({ isOpen, onClose, videoUrl }: FullScreenV
             className="relative h-full w-full flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <video
-              key={videoUrl} // Buộc tạo lại phần tử video khi URL thay đổi
+            <HLSVideoPlayer
               src={videoUrl}
               className="h-full w-auto max-w-full object-contain shadow-2xl"
               controls
               autoPlay
               playsInline
-              onError={() => {
-                console.error("Full screen video failed to load:", videoUrl);
-                onClose();
-              }}
             />
             
-            {/* Nút đóng nằm ở góc trên bên phải màn hình */}
             <button
               onClick={onClose}
               className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all z-[210] backdrop-blur-md border border-white/10"
