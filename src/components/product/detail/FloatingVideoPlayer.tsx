@@ -23,7 +23,7 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
     }
   }, [videoUrl]);
 
-  const togglePlay = (e: React.MouseEvent) => {
+  const togglePlay = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     if (videoRef.current) {
       if (videoRef.current.paused) {
@@ -43,13 +43,13 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
     <AnimatePresence>
       <motion.div
         drag
-        // Loại bỏ dragConstraints để có thể di chuyển tự do trên toàn màn hình
         dragMomentum={false}
         initial={{ opacity: 0, scale: 0.5, x: 100 }}
         animate={{ opacity: 1, scale: 1, x: 0 }}
         exit={{ opacity: 0, scale: 0.5, x: 100 }}
         className="fixed bottom-72 right-2 md:right-4 z-[140] w-[100px] h-[178px] md:w-[130px] md:h-[231px] rounded-2xl overflow-hidden shadow-elevated cursor-grab active:cursor-grabbing group bg-black border border-white/10"
-        onClick={onOpenFullScreen}
+        // Sử dụng onTap thay vì onClick để tránh kích hoạt khi đang kéo thả
+        onTap={() => onOpenFullScreen()}
       >
         <video
           key={videoUrl}
