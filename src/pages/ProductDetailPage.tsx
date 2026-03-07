@@ -299,7 +299,12 @@ export default function ProductDetailPage() {
                   productName={product.name} 
                   product={product}
                 />
-                <ProductActionButtons product={product} reviews={reviews} onQuickView={setQuickViewProduct} />
+                <ProductActionButtons 
+                  product={product} 
+                  reviews={reviews} 
+                  activeGallery={activeGallery} // Truyền activeGallery vào đây
+                  onQuickView={setQuickViewProduct} 
+                />
               </div>
               <div className="min-w-0 w-full px-1 md:px-0 max-w-2xl">
                 <ProductInfo 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Images, Ruler, Sparkles, Loader2, X, PlayCircle, Camera, ChevronRight } from "lucide-react";
+import { Images, Ruler, Sparkles, X, PlayCircle, Camera, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -14,12 +14,13 @@ import { motion, AnimatePresence } from "framer-motion";
 interface ProductActionButtonsProps {
   product: any;
   reviews: any[];
+  activeGallery?: { main: string, thumbs: string[] };
   onQuickView?: (product: any) => void;
 }
 
 type TabType = 'media' | 'video' | 'dimensions' | 'lookbook' | 'customer_photos';
 
-export function ProductActionButtons({ product, reviews, onQuickView }: ProductActionButtonsProps) {
+export function ProductActionButtons({ product, reviews, activeGallery, onQuickView }: ProductActionButtonsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('media');
   
@@ -27,7 +28,13 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
   const [activeLookIndex, setActiveLookIndex] = useState(0);
   const [loadingLooks, setLoadingLooks] = useState(false);
 
-  const allImages = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
+  const displayImages = useMemo(() => {
+    if (activeGallery && (activeGallery.main || activeGallery.thumbs.length > 0)) {
+      return [activeGallery.main, ...activeGallery.thumbs].filter(Boolean);
+    }
+    return [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
+  }, [product, activeGallery]);
+
   const customerImages = useMemo(() => reviews.filter(r => r.image_url).map(r => ({ url: r.image_url, user: r.user_name })), [reviews]);
 
   const activeLook = allProductLooks[activeLookIndex] || null;
@@ -205,7 +212,6 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
                                   style={{ left: `${item.x_position}%`, top: `${item.y_position}%` }}
                                   onClick={() => onQuickView?.(item.products)}
                                 >
-                                  {/* Đổi màu nền mờ sang đen */}
                                   <span className="absolute w-full h-full rounded-full bg-black/40 animate-ping opacity-100 group-hover/dot:hidden" />
                                   <span className="relative w-6 h-6 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg transition-all duration-500 group-hover/dot:bg-primary group-hover/dot:border-white" />
                                 </button>
@@ -253,7 +259,7 @@ export function ProductActionButtons({ product, reviews, onQuickView }: ProductA
             {activeTab === 'media' && (
               <div className="h-full p-8 md:p-12 overflow-y-auto custom-scrollbar">
                 <div className="grid grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
-                  {allImages.map((img, idx) => (
+                  {displayImages.map((img, idx) => (
                     <div key={idx} className="aspect-square rounded-3xl overflow-hidden bg-secondary/10 group shadow-sm">
                       <img 
                         src={getOptimizedImageUrl(img, { width: 800 })} 
