@@ -227,16 +227,14 @@ export default function ProductDetailPage() {
       const selectedVal = newSelectedValues[targetTier];
       const valueConfig = tier?.values.find((v: any) => v.label === selectedVal);
       
+      // CHỈ THAY ĐỔI NẾU CÓ GALLERY ẢNH
       if (valueConfig?.gallery_urls && valueConfig.gallery_urls.length > 0) {
         updateGallery(valueConfig.image_url || valueConfig.gallery_urls[0], valueConfig.gallery_urls);
-        return;
-      } else if (valueConfig?.image_url) {
-        updateGallery(valueConfig.image_url, []);
         return;
       }
     }
 
-    // 3. Ưu tiên 3: Duyệt tất cả giá trị đang chọn
+    // 3. Ưu tiên 3: Duyệt tất cả giá trị đang chọn xem có cái nào có gallery không
     for (const tierName in newSelectedValues) {
       const tier = tierConfig.find((t: any) => t.name === tierName);
       const val = newSelectedValues[tierName];
@@ -245,13 +243,10 @@ export default function ProductDetailPage() {
       if (vConfig?.gallery_urls && vConfig.gallery_urls.length > 0) {
         updateGallery(vConfig.image_url || vConfig.gallery_urls[0], vConfig.gallery_urls);
         return;
-      } else if (vConfig?.image_url) {
-        updateGallery(vConfig.image_url, []);
-        return;
       }
     }
 
-    // 4. Mặc định
+    // 4. Mặc định: Nếu không có tùy chọn nào có gallery, quay về gallery gốc của sản phẩm
     const defaultImages = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
     updateGallery(defaultImages[0] || '', defaultImages.slice(1));
   }, [selectedValues, lastSelectedTier, product]);

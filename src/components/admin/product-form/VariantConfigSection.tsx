@@ -253,26 +253,27 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
               </div>
               
               <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-10">
-                {/* Ảnh chính */}
+                {/* Ảnh đại diện nút bấm */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-primary fill-primary" />
-                    <Label className="text-xs font-bold uppercase tracking-widest">Ảnh đại diện chính (Ảnh sẽ hiện khi click chọn)</Label>
+                    <Label className="text-xs font-bold uppercase tracking-widest">Ảnh đại diện nút bấm (Swatch)</Label>
                   </div>
-                  <div className="max-w-[240px]">
+                  <div className="max-w-[200px]">
                     <ImageUpload 
                       aspectRatio="aspect-square"
                       value={tierConfig[editingGallery.tierIdx].values[editingGallery.valIdx].image_url || ""} 
                       onChange={(url) => updateValueField(editingGallery.tierIdx, editingGallery.valIdx, 'image_url', url as string)} 
                     />
                   </div>
+                  <p className="text-[10px] text-muted-foreground italic">* Ảnh này chỉ dùng để hiển thị trên nút chọn phân loại.</p>
                 </div>
 
-                {/* Ảnh phụ */}
+                {/* Bộ sưu tập ảnh Gallery */}
                 <div className="space-y-4 pt-8 border-t border-dashed">
                   <div className="flex items-center gap-2">
                     <Images className="w-4 h-4 text-primary" />
-                    <Label className="text-xs font-bold uppercase tracking-widest">Bộ sưu tập ảnh phụ (Gallery)</Label>
+                    <Label className="text-xs font-bold uppercase tracking-widest">Bộ sưu tập ảnh (Gallery)</Label>
                   </div>
                   
                   <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 mb-4">
@@ -300,6 +301,7 @@ export function VariantConfigSection({ variantOptions, tierConfig, setTierConfig
                       onChange={(urls) => updateValueField(editingGallery.tierIdx, editingGallery.valIdx, 'gallery_urls', urls as string[])} 
                     />
                   </div>
+                  <p className="text-[10px] text-muted-foreground italic">* Khi khách hàng chọn giá trị này, Gallery ảnh chính của sản phẩm sẽ được thay thế bằng danh sách ảnh này.</p>
                 </div>
               </div>
 

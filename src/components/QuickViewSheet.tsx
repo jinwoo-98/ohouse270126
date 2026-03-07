@@ -118,10 +118,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
         setActiveGallery(valueConfig.gallery_urls);
         setActiveImage(valueConfig.image_url || valueConfig.gallery_urls[0]);
         return;
-      } else if (valueConfig?.image_url) {
-        setActiveGallery([valueConfig.image_url]);
-        setActiveImage(valueConfig.image_url);
-        return;
       }
     }
 
@@ -134,10 +130,6 @@ export function QuickViewSheet({ product, isOpen, onClose }: QuickViewSheetProps
       if (vConfig?.gallery_urls && vConfig.gallery_urls.length > 0) {
         setActiveGallery(vConfig.gallery_urls);
         setActiveImage(vConfig.image_url || vConfig.gallery_urls[0]);
-        return;
-      } else if (vConfig?.image_url) {
-        setActiveGallery([vConfig.image_url]);
-        setActiveImage(vConfig.image_url);
         return;
       }
     }
