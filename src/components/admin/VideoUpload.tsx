@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Upload, X, Loader2, Video, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { Upload, X, Loader2, Video, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -23,24 +23,17 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 500 * 1024 * 1024) {
-      toast.error("Video quá lớn! Vui lòng chọn video dưới 500MB.");
-      return;
-    }
-
     setIsUploading(true);
     setStatus('uploading');
     setUploadProgress(0);
-    const toastId = toast.loading("Đang khởi tạo cổng tải lên an toàn...");
+    const toastId = toast.loading("Đang chuẩn bị tải lên...");
 
     try {
-      const FUNCTION_URL = "https://kyfzqgyazmjtnxjdvetr.supabase.co/functions/v1/process-video";
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      if (!token) throw new Error("Vui lòng đăng nhập lại.");
-
-      const response = await fetch(FUNCTION_URL, {
+      // 1. Tạo URL tải lên trực tiếp tới Mux
+      const response = await fetch("https://kyfzqgyazmjtnxjdvetr.supabase.co/functions/v1/process-video", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,67 +42,53 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
         body: JSON.stringify({ action: 'create-upload' })
       });
 
-      if (!response.ok) throw new Error("Máy chủ bận, vui lòng thử lại sau.");
-      
       const uploadData = await response.json();
-      const { url: uploadUrl, id: uploadId } = uploadData;
+      if (!uploadData.url) throw new Error("Không thể tạo cổng tải lên.");
 
-      toast.loading(`Đang tải video lên (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`, { id: toastId });
-      
+      // 2. Tải file trực tiếp từ trình duyệt tới Mux (Nhanh hơn qua server trung gian)
       const xhr = new XMLHttpRequest();
-      
       const uploadPromise = new Promise((resolve, reject) => {
-        xhr.open('PUT', uploadUrl);
+        xhr.open('PUT', uploadData.url);
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(percent);
+            setUploadProgress(Math.round((event.loaded / event.total) * 100));
           }
         };
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.response);
-          else reject(new Error(`Lỗi máy chủ (${xhr.status})`));
-        };
-        xhr.onerror = () => reject(new Error("Kết nối bị chặn. Hãy kiểm tra Ad-blocker hoặc VPN."));
+        xhr.onload = () => resolve(xhr.response);
+        xhr.onerror = () => reject(new Error("Lỗi kết nối mạng."));
         xhr.send(file);
       });
 
+      toast.loading(`Đang tải video lên (${(file.size / 1024 / 1024).toFixed(1)}MB)...`, { id: toastId });
       await uploadPromise;
 
+      // 3. Đợi Mux xử lý video
       setStatus('processing');
-      toast.loading("Đang tối ưu hóa video...", { id: toastId });
+      toast.loading("Video đang được tối ưu hóa trên máy chủ Mux...", { id: toastId });
 
       let attempts = 0;
       const checkStatus = async () => {
-        try {
-          const statusRes = await fetch(FUNCTION_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ action: 'check-status', uploadId })
-          });
+        const statusRes = await fetch("https://kyfzqgyazmjtnxjdvetr.supabase.co/functions/v1/process-video", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ action: 'check-status', uploadId: uploadData.id })
+        });
 
-          const statusData = await statusRes.json();
-
-          if (statusData.url) {
-            onChange(statusData.url);
-            setStatus('ready');
-            toast.success("Video đã sẵn sàng!", { id: toastId });
-            setIsUploading(false);
-            return;
-          }
-
+        const statusData = await statusRes.json();
+        if (statusData.url) {
+          onChange(statusData.url);
+          setStatus('ready');
+          toast.success("Video đã sẵn sàng!", { id: toastId });
+          setIsUploading(false);
+        } else if (attempts < 60) {
           attempts++;
-          if (attempts < 40) {
-            setTimeout(checkStatus, 3000);
-          } else {
-            toast.error("Xử lý hơi lâu, bạn có thể lưu sản phẩm và quay lại sau.", { id: toastId });
-            setIsUploading(false);
-          }
-        } catch (err) {
-          setTimeout(checkStatus, 5000);
+          setTimeout(checkStatus, 3000);
+        } else {
+          toast.error("Thời gian xử lý quá lâu. Vui lòng thử lại sau.", { id: toastId });
+          setIsUploading(false);
         }
       };
 
@@ -125,56 +104,53 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
   return (
     <div className="w-full">
       {value ? (
-        <div className="relative w-full max-w-[200px] aspect-[9/16] rounded-2xl overflow-hidden border border-border bg-black group shadow-md">
+        <div className="relative w-full max-w-[240px] aspect-[9/16] rounded-2xl overflow-hidden border border-border bg-black group shadow-lg">
           <HLSVideoPlayer 
             src={value} 
             className="w-full h-full object-cover" 
             muted playsInline autoPlay loop 
           />
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <button
-              onClick={() => { if (confirm("Xóa video?")) onChange(""); }}
-              className="p-2 bg-destructive text-white rounded-full hover:bg-destructive/90 transition-colors"
+              onClick={() => { if (confirm("Xóa video này?")) onChange(""); }}
+              className="p-3 bg-destructive text-white rounded-full hover:bg-destructive/90 transition-all transform hover:scale-110"
               type="button"
-              disabled={disabled}
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6" />
             </button>
           </div>
-          <div className="absolute bottom-2 right-2">
-            <Badge className="bg-primary/80 text-[8px] uppercase">Mux Stream</Badge>
+          <div className="absolute bottom-3 right-3">
+            <Badge className="bg-primary/90 text-[9px] uppercase tracking-widest">Mux Stream</Badge>
           </div>
         </div>
       ) : (
         <div className="flex items-center justify-center w-full">
           <label className={cn(
-            "flex flex-col items-center justify-center w-full max-w-[200px] aspect-[9/16] border-2 border-dashed border-border rounded-2xl cursor-pointer bg-secondary/5 hover:bg-secondary/10 hover:border-primary/40 transition-all group relative overflow-hidden",
+            "flex flex-col items-center justify-center w-full max-w-[240px] aspect-[9/16] border-2 border-dashed border-border rounded-3xl cursor-pointer bg-secondary/5 hover:bg-secondary/10 hover:border-primary/40 transition-all group relative overflow-hidden",
             isUploading && "cursor-not-allowed"
           )}>
-            <div className="flex flex-col items-center justify-center p-4 text-center z-10">
+            <div className="flex flex-col items-center justify-center p-6 text-center z-10">
               {isUploading ? (
                 <>
-                  <Loader2 className="w-8 h-8 mb-2 text-primary animate-spin" />
-                  <p className="text-[10px] font-bold text-charcoal uppercase">
-                    {status === 'uploading' ? `Tải lên: ${uploadProgress}%` : 'Đang xử lý...'}
+                  <Loader2 className="w-10 h-10 mb-4 text-primary animate-spin" />
+                  <p className="text-xs font-bold text-charcoal uppercase tracking-wider">
+                    {status === 'uploading' ? `Đang tải: ${uploadProgress}%` : 'Đang tối ưu...'}
                   </p>
+                  <p className="text-[10px] text-muted-foreground mt-2 italic">Vui lòng không đóng trình duyệt</p>
                 </>
               ) : (
                 <>
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Video className="w-5 h-5 text-primary" />
+                  <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Video className="w-7 h-7 text-primary" />
                   </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    <span className="font-bold text-primary">Tải video lên Mux</span>
-                    <br />
-                    <span className="opacity-60">(Hỗ trợ file lớn)</span>
-                  </p>
+                  <p className="text-xs font-bold text-charcoal uppercase tracking-widest">Tải video lên</p>
+                  <p className="text-[10px] text-muted-foreground mt-2">Hỗ trợ MP4, MOV (Tối đa 500MB)</p>
                 </>
               )}
             </div>
             
             {isUploading && status === 'uploading' && (
-              <div className="absolute bottom-0 left-0 h-1 bg-primary transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+              <div className="absolute bottom-0 left-0 h-1.5 bg-primary transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
             )}
 
             <input 

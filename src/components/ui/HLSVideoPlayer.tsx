@@ -18,71 +18,69 @@ export const HLSVideoPlayer = forwardRef<HTMLVideoElement, HLSVideoPlayerProps>(
       const video = internalVideoRef.current;
       if (!video || !src) return;
 
-      // Hủy instance cũ nếu có
+      // Dọn dẹp instance cũ
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
 
-      // Cấu hình video cơ bản để vượt qua bộ lọc trình duyệt
+      // Thiết lập thuộc tính bắt buộc để tự động phát
       video.muted = true;
-      video.defaultMuted = true;
       video.setAttribute('muted', 'true');
       video.setAttribute('playsinline', 'true');
       video.setAttribute('webkit-playsinline', 'true');
-      video.preload = "auto";
 
-      if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Hỗ trợ gốc (Safari/iOS) - Phát trực tiếp
-        video.src = src;
-        video.play().catch(err => console.warn("[HLS] Native play failed:", err));
-      } else if (Hls.isSupported()) {
-        // Sử dụng hls.js cho Chrome/Edge/Firefox
-        const hls = new Hls({
-          enableWorker: true,
-          lowLatencyMode: true, // Chế độ trễ thấp
-          backBufferLength: 60,
-          manifestLoadingMaxRetry: 10,
-          levelLoadingMaxRetry: 10,
-          fragLoadingMaxRetry: 10,
-          startLevel: 0, // Bắt đầu từ chất lượng thấp nhất để hiện hình nhanh nhất
-          abrEwmaDefaultEstimate: 500000,
-          testBandwidth: false,
-        });
-        
-        hls.loadSource(src);
-        hls.attachMedia(video);
-        hlsRef.current = hls;
-        
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          console.log("[HLS] Manifest parsed, attempting play...");
-          video.play().catch(err => {
-            console.warn("[HLS] Autoplay blocked, waiting for interaction", err);
+      const initPlayer = () => {
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          // Safari / iOS
+          video.src = src;
+        } else if (Hls.isSupported()) {
+          // Chrome / Android / PC
+          const hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: true,
+            backBufferLength: 30,
+            // Tăng khả năng chịu lỗi mạng
+            manifestLoadingMaxRetry: 6,
+            levelLoadingMaxRetry: 6,
+            fragLoadingMaxRetry: 6,
           });
-        });
-
-        // Tự động khôi phục khi gặp lỗi mạng hoặc lỗi media
-        hls.on(Hls.Events.ERROR, (_event, data) => {
-          if (data.fatal) {
-            switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
-                console.log("[HLS] Network error, retrying...");
-                hls.startLoad();
-                break;
-              case Hls.ErrorTypes.MEDIA_ERROR:
-                console.log("[HLS] Media error, recovering...");
-                hls.recoverMediaError();
-                break;
-              default:
-                console.error("[HLS] Unrecoverable error:", data);
-                hls.destroy();
-                break;
+          
+          hls.loadSource(src);
+          hls.attachMedia(video);
+          hlsRef.current = hls;
+          
+          hls.on(Hls.Events.ERROR, (_event, data) => {
+            if (data.fatal) {
+              switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                  hls.startLoad();
+                  break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                  hls.recoverMediaError();
+                  break;
+                default:
+                  hls.destroy();
+                  break;
+              }
             }
-          }
+          });
+        }
+      };
+
+      initPlayer();
+
+      // Luôn cố gắng gọi play() sau khi gán nguồn
+      const playVideo = () => {
+        video.play().catch(err => {
+          console.warn("[HLSPlayer] Autoplay blocked:", err);
         });
-      }
+      };
+
+      video.addEventListener('loadedmetadata', playVideo, { once: true });
 
       return () => {
+        video.removeEventListener('loadedmetadata', playVideo);
         if (hlsRef.current) {
           hlsRef.current.destroy();
           hlsRef.current = null;
@@ -94,11 +92,11 @@ export const HLSVideoPlayer = forwardRef<HTMLVideoElement, HLSVideoPlayerProps>(
       <video 
         ref={internalVideoRef} 
         {...props}
-        muted // Đảm bảo prop muted luôn có mặt trong DOM
-        playsInline
+        className={cn("bg-black", props.className)}
       />
     );
   }
 );
 
+import { cn } from '@/lib/utils';
 HLSVideoPlayer.displayName = "HLSVideoPlayer";
