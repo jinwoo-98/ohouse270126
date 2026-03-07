@@ -18,27 +18,36 @@ export const HLSVideoPlayer = forwardRef<HTMLVideoElement, HLSVideoPlayerProps>(
       const video = internalVideoRef.current;
       if (!video || !src) return;
 
+      // Hủy instance cũ nếu có
       if (hlsRef.current) {
         hlsRef.current.destroy();
+        hlsRef.current = null;
       }
 
-      // Đảm bảo video luôn ở trạng thái sẵn sàng tự động phát
+      // Cấu hình video cơ bản để vượt qua bộ lọc trình duyệt
       video.muted = true;
-      video.setAttribute('muted', '');
-      video.setAttribute('playsinline', '');
+      video.defaultMuted = true;
+      video.setAttribute('muted', 'true');
+      video.setAttribute('playsinline', 'true');
+      video.setAttribute('webkit-playsinline', 'true');
+      video.preload = "auto";
 
       if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Hỗ trợ gốc (Safari/iOS)
+        // Hỗ trợ gốc (Safari/iOS) - Phát trực tiếp
         video.src = src;
-        video.play().catch(() => {});
+        video.play().catch(err => console.warn("[HLS] Native play failed:", err));
       } else if (Hls.isSupported()) {
         // Sử dụng hls.js cho Chrome/Edge/Firefox
         const hls = new Hls({
-          capLevelToPlayerSize: true, // Giới hạn chất lượng theo kích thước khung hình để tải nhanh hơn
-          autoStartLoad: true,
-          startPosition: -1,
-          maxBufferLength: 10, // Giảm buffer để bắt đầu nhanh hơn
           enableWorker: true,
+          lowLatencyMode: true, // Chế độ trễ thấp
+          backBufferLength: 60,
+          manifestLoadingMaxRetry: 10,
+          levelLoadingMaxRetry: 10,
+          fragLoadingMaxRetry: 10,
+          startLevel: 0, // Bắt đầu từ chất lượng thấp nhất để hiện hình nhanh nhất
+          abrEwmaDefaultEstimate: 500000,
+          testBandwidth: false,
         });
         
         hls.loadSource(src);
@@ -46,26 +55,26 @@ export const HLSVideoPlayer = forwardRef<HTMLVideoElement, HLSVideoPlayerProps>(
         hlsRef.current = hls;
         
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          // Ra lệnh phát ngay khi manifest sẵn sàng
-          const playPromise = video.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(() => {
-              // Nếu trình duyệt chặn, ta sẽ thử lại khi có tương tác
-              console.warn("[HLSVideoPlayer] Autoplay prevented");
-            });
-          }
+          console.log("[HLS] Manifest parsed, attempting play...");
+          video.play().catch(err => {
+            console.warn("[HLS] Autoplay blocked, waiting for interaction", err);
+          });
         });
-        
+
+        // Tự động khôi phục khi gặp lỗi mạng hoặc lỗi media
         hls.on(Hls.Events.ERROR, (_event, data) => {
           if (data.fatal) {
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
+                console.log("[HLS] Network error, retrying...");
                 hls.startLoad();
                 break;
               case Hls.ErrorTypes.MEDIA_ERROR:
+                console.log("[HLS] Media error, recovering...");
                 hls.recoverMediaError();
                 break;
               default:
+                console.error("[HLS] Unrecoverable error:", data);
                 hls.destroy();
                 break;
             }
@@ -76,6 +85,7 @@ export const HLSVideoPlayer = forwardRef<HTMLVideoElement, HLSVideoPlayerProps>(
       return () => {
         if (hlsRef.current) {
           hlsRef.current.destroy();
+          hlsRef.current = null;
         }
       };
     }, [src]);
@@ -83,7 +93,9 @@ export const HLSVideoPlayer = forwardRef<HTMLVideoElement, HLSVideoPlayerProps>(
     return (
       <video 
         ref={internalVideoRef} 
-        {...props} 
+        {...props}
+        muted // Đảm bảo prop muted luôn có mặt trong DOM
+        playsInline
       />
     );
   }

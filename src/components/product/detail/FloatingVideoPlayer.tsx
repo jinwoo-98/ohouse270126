@@ -21,26 +21,37 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
     const video = videoRef.current;
     if (!video) return;
 
-    const handlePlay = () => {
+    // Các sự kiện báo hiệu video đã thực sự chạy
+    const clearLoading = () => {
+      console.log("[FloatingVideo] Playback started, clearing loader");
+      setIsLoading(false);
       setIsPlaying(true);
-      setIsLoading(false); // Ẩn loading ngay khi bắt đầu phát
     };
-    const handlePause = () => setIsPlaying(false);
-    const handleWaiting = () => setIsLoading(true); // Hiện loading nếu bị khựng (buffering)
-    const handlePlaying = () => setIsLoading(false);
 
-    video.addEventListener('play', handlePlay);
-    video.addEventListener('pause', handlePause);
+    const handleWaiting = () => setIsLoading(true);
+    const handlePause = () => setIsPlaying(false);
+
+    video.addEventListener('playing', clearLoading);
+    video.addEventListener('canplay', clearLoading);
     video.addEventListener('waiting', handleWaiting);
-    video.addEventListener('playing', handlePlaying);
+    video.addEventListener('pause', handlePause);
+    video.addEventListener('play', () => setIsPlaying(true));
+
+    // Fallback: Nếu sau 5s vẫn loading, thử gọi play() lại lần nữa
+    const timeout = setTimeout(() => {
+      if (isLoading && video.paused) {
+        video.play().catch(() => {});
+      }
+    }, 5000);
 
     return () => {
-      video.removeEventListener('play', handlePlay);
-      video.removeEventListener('pause', handlePause);
+      video.removeEventListener('playing', clearLoading);
+      video.removeEventListener('canplay', clearLoading);
       video.removeEventListener('waiting', handleWaiting);
-      video.removeEventListener('playing', handlePlaying);
+      video.removeEventListener('pause', handlePause);
+      clearTimeout(timeout);
     };
-  }, []);
+  }, [isLoading]);
 
   const togglePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -74,7 +85,7 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
         }}
       >
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10 backdrop-blur-sm">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10 backdrop-blur-[2px]">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         )}
@@ -85,8 +96,8 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
           className="w-full h-full object-cover"
           loop
           muted
-          playsInline
           autoPlay
+          playsInline
         />
         
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
