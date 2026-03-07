@@ -26,6 +26,16 @@ import { ProductActionButtons } from "@/components/product/detail/ProductActionB
 import { FloatingVideoPlayer } from "@/components/product/detail/FloatingVideoPlayer";
 import { FullScreenVideoViewer } from "@/components/product/detail/FullScreenVideoViewer";
 
+const PRODUCT_DETAIL_COLUMNS = `
+  id, name, slug, price, original_price, description, short_description,
+  image_url, gallery_urls, dimension_image_url, floating_video_url,
+  category_id, is_featured, is_new, is_sale,
+  display_order, fake_sold, fake_review_count, fake_rating,
+  material, style, image_alt_text,
+  perfect_match_ids, bought_together_ids,
+  tier_variants_config
+`;
+
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -84,13 +94,13 @@ export default function ProductDetailPage() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*, floating_video_url') 
+        .select(PRODUCT_DETAIL_COLUMNS) 
         .eq('slug', slug)
         .single();
       
       if (error) throw error;
       
-      console.log("Product Data Loaded:", {
+      console.log("Final Check - Product Data Loaded:", {
         id: data.id,
         name: data.name,
         hasVideo: !!data.floating_video_url,

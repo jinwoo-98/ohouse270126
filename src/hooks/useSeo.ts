@@ -11,10 +11,14 @@ interface SeoData {
 
 export function useSeo(overrides?: SeoData) {
   const { data: globalSettings, isLoading } = useQuery({
-    queryKey: ['seo-settings'],
+    queryKey: ['site-settings-seo'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('seo_settings').select('*').single();
-      if (error) throw error;
+      // Sửa tên bảng từ seo_settings thành site_settings
+      const { data, error } = await supabase.from('site_settings').select('*').single();
+      if (error) {
+        console.warn("Could not fetch site settings for SEO, using defaults.", error);
+        return null;
+      }
       return data;
     },
     staleTime: 1000 * 60 * 30, // 30 minutes
@@ -28,7 +32,7 @@ export function useSeo(overrides?: SeoData) {
     image: overrides?.image || globalSettings?.og_image_url || "/og-image.jpg",
     type: overrides?.type || 'website',
     url: overrides?.url || currentUrl,
-    canonical: currentUrl, // Thẻ canonical tự động
+    canonical: currentUrl,
     structuredData: globalSettings?.structured_data,
     favicon: globalSettings?.favicon_url
   };
