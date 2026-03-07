@@ -10,9 +10,12 @@ interface FullScreenVideoViewerProps {
 }
 
 export function FullScreenVideoViewer({ isOpen, onClose, videoUrl }: FullScreenVideoViewerProps) {
+  // Chỉ render khi mở và có URL hợp lệ
+  const shouldRender = isOpen && videoUrl && videoUrl.trim() !== "";
+
   return (
     <AnimatePresence>
-      {isOpen && videoUrl && (
+      {shouldRender && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -28,11 +31,16 @@ export function FullScreenVideoViewer({ isOpen, onClose, videoUrl }: FullScreenV
             onClick={(e) => e.stopPropagation()}
           >
             <video
+              key={videoUrl} // Buộc tạo lại phần tử video khi URL thay đổi
               src={videoUrl}
               className="w-full h-full object-contain"
               controls
               autoPlay
               playsInline
+              onError={() => {
+                console.error("Full screen video failed to load:", videoUrl);
+                onClose();
+              }}
             />
           </motion.div>
           <button

@@ -16,7 +16,7 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !videoUrl) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -39,7 +39,7 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
     e.stopPropagation();
     if (videoRef.current) {
       if (videoRef.current.paused) {
-        videoRef.current.play();
+        videoRef.current.play().catch(() => {});
         setIsPlaying(true);
       } else {
         videoRef.current.pause();
@@ -48,7 +48,8 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
     }
   };
 
-  if (!isVisible) return null;
+  // Không hiển thị nếu bị ẩn hoặc URL rỗng
+  if (!isVisible || !videoUrl || videoUrl.trim() === "") return null;
 
   return (
     <motion.div
@@ -62,12 +63,17 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
       onClick={onOpenFullScreen}
     >
       <video
+        key={videoUrl} // Quan trọng: Buộc render lại khi URL thay đổi
         ref={videoRef}
         src={videoUrl}
         className="w-full h-full object-cover"
         loop
         muted
         playsInline
+        onError={(e) => {
+          console.warn("Floating video failed to load:", videoUrl);
+          setIsVisible(false); // Ẩn trình phát nếu lỗi tải file
+        }}
       />
       <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
 
