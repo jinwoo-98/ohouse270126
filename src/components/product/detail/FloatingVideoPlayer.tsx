@@ -43,13 +43,13 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
     <AnimatePresence>
       <motion.div
         drag
-        dragConstraints={{ left: 0, right: 300, top: 0, bottom: 500 }}
+        dragConstraints={{ left: -300, right: 0, top: -500, bottom: 200 }}
         dragMomentum={false}
         initial={{ opacity: 0, scale: 0.5, x: 100 }}
         animate={{ opacity: 1, scale: 1, x: 0 }}
         exit={{ opacity: 0, scale: 0.5, x: 100 }}
-        // Vị trí cố định ở góc phải, trên thanh công cụ một chút
-        className="fixed bottom-32 right-6 z-[140] w-[100px] h-[178px] md:w-[120px] md:h-[214px] rounded-2xl overflow-hidden shadow-elevated cursor-grab active:cursor-grabbing group bg-black border border-white/20 ring-1 ring-black/50"
+        // Vị trí mới: bottom-72 để nằm trên nút Chat AI, right-2/4 để sát mép phải
+        className="fixed bottom-72 right-2 md:right-4 z-[140] w-[100px] h-[178px] md:w-[130px] md:h-[231px] rounded-2xl overflow-hidden shadow-elevated cursor-grab active:cursor-grabbing group bg-black border border-white/20 ring-1 ring-black/50"
         onClick={onOpenFullScreen}
       >
         <video
@@ -92,7 +92,7 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
           <Maximize className="w-5 h-5" />
         </div>
 
-        {/* Hiệu ứng viền chạy khi đang phát (tùy chọn) */}
+        {/* Hiệu ứng viền chạy khi đang phát */}
         <div className="absolute inset-0 border-2 border-primary/30 rounded-2xl pointer-events-none group-hover:border-primary transition-colors" />
       </motion.div>
     </AnimatePresence>
