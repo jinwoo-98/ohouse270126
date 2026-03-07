@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, X, Maximize, Loader2 } from "lucide-react";
 import { HLSVideoPlayer } from "@/components/ui/HLSVideoPlayer";
@@ -17,18 +17,37 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
   const videoRef = useRef<HTMLVideoElement>(null);
   const isDragging = useRef(false);
 
+  // Sync internal playing state with video element
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
+
+    return () => {
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
+    };
+  }, []);
+
   const togglePlay = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
-    const video = document.querySelector('#floating-video-element') as HTMLVideoElement;
+    const video = videoRef.current;
     if (video) {
       if (video.paused) {
-        video.play().catch(() => {});
-        setIsPlaying(true);
+        video.play().catch((err) => console.error("Play failed:", err));
       } else {
         video.pause();
-        setIsPlaying(false);
       }
     }
+  };
+
+  const handleLoaded = () => {
+    setIsLoading(false);
   };
 
   if (!isVisible || !videoUrl || videoUrl.trim() === "") return null;
@@ -39,12 +58,17 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
         drag
         dragMomentum={false}
         onDragStart={() => { isDragging.current = true; }}
-        onDragEnd={() => { setTimeout(() => { isDragging.current = false; }, 100); }}
+        onDragEnd={() => { 
+          // Small delay to prevent accidental clicks after dragging
+          setTimeout(() => { isDragging.current = false; }, 100); 
+        }}
         initial={{ opacity: 0, scale: 0.5, x: 100 }}
         animate={{ opacity: 1, scale: 1, x: 0 }}
         exit={{ opacity: 0, scale: 0.5, x: 100 }}
         className="fixed bottom-72 right-2 md:right-4 z-[140] w-[110px] h-[196px] md:w-[140px] md:h-[248px] rounded-2xl overflow-hidden shadow-elevated cursor-grab active:cursor-grabbing group bg-black border border-white/10"
-        onTap={() => { if (!isDragging.current) onOpenFullScreen(); }}
+        onTap={() => { 
+          if (!isDragging.current) onOpenFullScreen(); 
+        }}
       >
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-charcoal/50 z-10">
@@ -53,24 +77,30 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
         )}
 
         <HLSVideoPlayer
-          id="floating-video-element"
+          ref={videoRef}
           src={videoUrl}
           className="w-full h-full object-cover"
           loop
           muted
           playsInline
           autoPlay
-          onCanPlay={() => setIsLoading(false)}
+          // Multiple events to ensure loading state is cleared
+          onCanPlay={handleLoaded}
+          onPlaying={handleLoaded}
+          onLoadedData={handleLoaded}
           onError={(e) => {
             console.error("Floating video error:", e);
-            // Không ẩn ngay lập tức, có thể do hls.js đang khởi tạo
+            // Don't hide immediately, hls.js might recover
           }}
         />
         
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
 
         <button
-          onClick={(e) => { e.stopPropagation(); setIsVisible(false); }}
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            setIsVisible(false); 
+          }}
           className="absolute top-2 right-2 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-destructive transition-all z-20"
         >
           <X className="w-4 h-4" />
