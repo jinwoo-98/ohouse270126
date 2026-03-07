@@ -17,37 +17,41 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
   const videoRef = useRef<HTMLVideoElement>(null);
   const isDragging = useRef(false);
 
-  // Sync internal playing state with video element
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const handlePlay = () => setIsPlaying(true);
+    const handlePlay = () => {
+      setIsPlaying(true);
+      setIsLoading(false); // Ẩn loading ngay khi bắt đầu phát
+    };
     const handlePause = () => setIsPlaying(false);
+    const handleWaiting = () => setIsLoading(true); // Hiện loading nếu bị khựng (buffering)
+    const handlePlaying = () => setIsLoading(false);
 
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
+    video.addEventListener('waiting', handleWaiting);
+    video.addEventListener('playing', handlePlaying);
 
     return () => {
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
+      video.removeEventListener('waiting', handleWaiting);
+      video.removeEventListener('playing', handlePlaying);
     };
   }, []);
 
-  const togglePlay = (e: React.MouseEvent | React.TouchEvent) => {
+  const togglePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
     const video = videoRef.current;
     if (video) {
       if (video.paused) {
-        video.play().catch((err) => console.error("Play failed:", err));
+        video.play().catch(() => {});
       } else {
         video.pause();
       }
     }
-  };
-
-  const handleLoaded = () => {
-    setIsLoading(false);
   };
 
   if (!isVisible || !videoUrl || videoUrl.trim() === "") return null;
@@ -59,7 +63,6 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
         dragMomentum={false}
         onDragStart={() => { isDragging.current = true; }}
         onDragEnd={() => { 
-          // Small delay to prevent accidental clicks after dragging
           setTimeout(() => { isDragging.current = false; }, 100); 
         }}
         initial={{ opacity: 0, scale: 0.5, x: 100 }}
@@ -71,7 +74,7 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
         }}
       >
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-charcoal/50 z-10">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10 backdrop-blur-sm">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         )}
@@ -84,14 +87,6 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
           muted
           playsInline
           autoPlay
-          // Multiple events to ensure loading state is cleared
-          onCanPlay={handleLoaded}
-          onPlaying={handleLoaded}
-          onLoadedData={handleLoaded}
-          onError={(e) => {
-            console.error("Floating video error:", e);
-            // Don't hide immediately, hls.js might recover
-          }}
         />
         
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />

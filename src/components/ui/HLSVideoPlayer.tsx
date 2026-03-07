@@ -7,48 +7,54 @@ interface HLSVideoPlayerProps extends React.VideoHTMLAttributes<HTMLVideoElement
   src: string;
 }
 
-/**
- * A specialized video player component for HLS (.m3u8) streams.
- * Uses native support where available (Safari/iOS) and hls.js for other browsers.
- * Wrapped in forwardRef to allow parent components to control the video element.
- */
 export const HLSVideoPlayer = forwardRef<HTMLVideoElement, HLSVideoPlayerProps>(
   ({ src, ...props }, ref) => {
     const internalVideoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
 
-    // Expose the internal video element to the forwarded ref
     useImperativeHandle(ref, () => internalVideoRef.current!);
 
     useEffect(() => {
       const video = internalVideoRef.current;
       if (!video || !src) return;
 
-      // Clean up any existing HLS instance
       if (hlsRef.current) {
         hlsRef.current.destroy();
-        hlsRef.current = null;
       }
 
-      // Reset video source
-      video.src = "";
+      // Đảm bảo video luôn ở trạng thái sẵn sàng tự động phát
+      video.muted = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
 
       if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        // Native HLS support (Safari, iOS, some Android browsers)
+        // Hỗ trợ gốc (Safari/iOS)
         video.src = src;
+        video.play().catch(() => {});
       } else if (Hls.isSupported()) {
-        // Use hls.js for browsers without native HLS support (Chrome, Firefox, Edge)
+        // Sử dụng hls.js cho Chrome/Edge/Firefox
         const hls = new Hls({
+          capLevelToPlayerSize: true, // Giới hạn chất lượng theo kích thước khung hình để tải nhanh hơn
+          autoStartLoad: true,
+          startPosition: -1,
+          maxBufferLength: 10, // Giảm buffer để bắt đầu nhanh hơn
           enableWorker: true,
-          lowLatencyMode: true,
-          backBufferLength: 90,
-          manifestLoadingMaxRetry: 4,
-          levelLoadingMaxRetry: 4,
         });
         
         hls.loadSource(src);
         hls.attachMedia(video);
         hlsRef.current = hls;
+        
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          // Ra lệnh phát ngay khi manifest sẵn sàng
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(() => {
+              // Nếu trình duyệt chặn, ta sẽ thử lại khi có tương tác
+              console.warn("[HLSVideoPlayer] Autoplay prevented");
+            });
+          }
+        });
         
         hls.on(Hls.Events.ERROR, (_event, data) => {
           if (data.fatal) {
@@ -70,7 +76,6 @@ export const HLSVideoPlayer = forwardRef<HTMLVideoElement, HLSVideoPlayerProps>(
       return () => {
         if (hlsRef.current) {
           hlsRef.current.destroy();
-          hlsRef.current = null;
         }
       };
     }, [src]);
