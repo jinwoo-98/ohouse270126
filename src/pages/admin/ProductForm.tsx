@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Save, Loader2, Box, RotateCcw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { slugify } from "@/lib/utils";
+import { slugify, cn } from "@/lib/utils";
 import { useUnsavedWarning } from "@/hooks/useUnsavedWarning";
 import { useDebounce } from "use-debounce";
 
@@ -56,6 +56,7 @@ export default function ProductForm() {
     image_alt_text: "",
     gallery_urls: [] as string[],
     dimension_image_url: "",
+    floating_video_url: "", // Đã thêm trường này vào state
     is_featured: false,
     is_new: false,
     is_sale: false,
@@ -195,6 +196,7 @@ export default function ProductForm() {
         fake_rating: data.fake_rating?.toString() || "5",
         perfect_match_ids: data.perfect_match_ids || [],
         bought_together_ids: data.bought_together_ids || [],
+        floating_video_url: data.floating_video_url || "" // Đảm bảo lấy dữ liệu từ DB
       });
       
       if (data.tier_variants_config) setTierConfig(data.tier_variants_config);

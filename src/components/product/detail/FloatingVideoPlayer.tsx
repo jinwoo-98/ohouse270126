@@ -59,7 +59,8 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
       initial={{ opacity: 0, scale: 0.8, y: 50 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.8, y: 50 }}
-      className="fixed bottom-[260px] right-6 z-[110] w-[90px] h-[160px] rounded-2xl overflow-hidden shadow-elevated cursor-grab active:cursor-grabbing group bg-black"
+      // Điều chỉnh vị trí từ bottom-[260px] xuống bottom-[120px] để dễ thấy hơn
+      className="fixed bottom-[120px] right-6 z-[110] w-[90px] h-[160px] rounded-2xl overflow-hidden shadow-elevated cursor-grab active:cursor-grabbing group bg-black"
       onClick={onOpenFullScreen}
     >
       <video
@@ -70,6 +71,7 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
         loop
         muted
         playsInline
+        autoPlay // Thêm lại autoPlay kết hợp với muted để trình duyệt cho phép
         onError={(e) => {
           console.warn("Floating video failed to load:", videoUrl);
           setIsVisible(false); // Ẩn trình phát nếu lỗi tải file
