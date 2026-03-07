@@ -80,13 +80,14 @@ export function VideoUpload({
       {value ? (
         <div className="relative w-full max-w-[180px] aspect-[9/16] rounded-2xl overflow-hidden border border-border bg-black group shadow-md">
           <video 
+            key={value}
             src={`${value}#t=0.001`} 
             className="w-full h-full object-cover" 
             muted 
             playsInline 
             autoPlay 
             loop 
-            preload="auto"
+            preload="metadata"
           />
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <button

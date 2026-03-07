@@ -84,14 +84,21 @@ export default function ProductDetailPage() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*, slug')
+        .select('*, floating_video_url') 
         .eq('slug', slug)
         .single();
       
       if (error) throw error;
+      
+      console.log("Product Data Loaded:", {
+        id: data.id,
+        name: data.name,
+        hasVideo: !!data.floating_video_url,
+        videoUrl: data.floating_video_url
+      });
+
       setProduct(data);
       
-      // Khởi tạo gallery ban đầu, loại bỏ trùng lặp
       const initialImages = [data.image_url, ...(data.gallery_urls || [])].filter(Boolean);
       const uniqueImages = Array.from(new Set(initialImages));
       
@@ -122,6 +129,7 @@ export default function ProductDetailPage() {
         fetchSettings()
       ]);
     } catch (error) {
+      console.error("Error fetching product:", error);
       toast.error("Sản phẩm không tồn tại");
       navigate("/");
     } finally {
@@ -208,7 +216,6 @@ export default function ProductDetailPage() {
 
     const tierConfig = product.tier_variants_config || [];
 
-    // Hàm helper để cập nhật gallery và loại bỏ trùng lặp
     const updateGallery = (main: string, gallery: string[]) => {
       const unique = Array.from(new Set([main, ...gallery])).filter(Boolean);
       setActiveGallery({
@@ -217,27 +224,23 @@ export default function ProductDetailPage() {
       });
     };
 
-    // 1. Ưu tiên 1: Gallery của Biến thể đầy đủ (Tổ hợp)
     if (variant && variant.gallery_urls && variant.gallery_urls.length > 0) {
       updateGallery(variant.image_url || variant.gallery_urls[0], variant.gallery_urls);
       return;
     }
 
-    // 2. Ưu tiên 2: Gallery của Giá trị vừa click
     const targetTier = changedTier || lastSelectedTier;
     if (targetTier) {
       const tier = tierConfig.find((t: any) => t.name === targetTier);
       const selectedVal = newSelectedValues[targetTier];
       const valueConfig = tier?.values.find((v: any) => v.label === selectedVal);
       
-      // CHỈ THAY ĐỔI NẾU CÓ GALLERY ẢNH
       if (valueConfig?.gallery_urls && valueConfig.gallery_urls.length > 0) {
         updateGallery(valueConfig.image_url || valueConfig.gallery_urls[0], valueConfig.gallery_urls);
         return;
       }
     }
 
-    // 3. Ưu tiên 3: Duyệt tất cả giá trị đang chọn xem có cái nào có gallery không
     for (const tierName in newSelectedValues) {
       const tier = tierConfig.find((t: any) => t.name === tierName);
       const val = newSelectedValues[tierName];
@@ -249,7 +252,6 @@ export default function ProductDetailPage() {
       }
     }
 
-    // 4. Mặc định: Nếu không có tùy chọn nào có gallery, quay về gallery gốc của sản phẩm
     const defaultImages = [product.image_url, ...(product.gallery_urls || [])].filter(Boolean);
     updateGallery(defaultImages[0] || '', defaultImages.slice(1));
   }, [selectedValues, lastSelectedTier, product]);
@@ -305,7 +307,7 @@ export default function ProductDetailPage() {
                 <ProductActionButtons 
                   product={product} 
                   reviews={reviews} 
-                  activeGallery={activeGallery} // Truyền activeGallery vào đây
+                  activeGallery={activeGallery} 
                   onQuickView={setQuickViewProduct} 
                 />
               </div>
