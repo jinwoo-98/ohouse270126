@@ -23,6 +23,8 @@ import { useSeo } from "@/hooks/useSeo";
 import { generateProductAltText, generateSKU } from "@/lib/utils";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { ProductActionButtons } from "@/components/product/detail/ProductActionButtons";
+import { FloatingVideoPlayer } from "@/components/product/detail/FloatingVideoPlayer";
+import { FullScreenVideoViewer } from "@/components/product/detail/FullScreenVideoViewer";
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
@@ -37,6 +39,7 @@ export default function ProductDetailPage() {
   const [shippingPolicy, setShippingPolicy] = useState("");
   
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [isFullScreenVideoOpen, setIsFullScreenVideoOpen] = useState(false);
   const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [activeGallery, setActiveGallery] = useState<{ main: string, thumbs: string[] }>({ main: '', thumbs: [] });
   const [lastSelectedTier, setLastSelectedTier] = useState<string | null>(null);
@@ -423,6 +426,20 @@ export default function ProductDetailPage() {
 
         <StickyActionToolbar product={product} />
         <AIChatWindow isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} productContext={product} />
+        
+        {product?.floating_video_url && (
+          <FloatingVideoPlayer 
+            videoUrl={product.floating_video_url} 
+            onOpenFullScreen={() => setIsFullScreenVideoOpen(true)} 
+          />
+        )}
+        
+        <FullScreenVideoViewer 
+          isOpen={isFullScreenVideoOpen} 
+          onClose={() => setIsFullScreenVideoOpen(false)} 
+          videoUrl={product?.floating_video_url || ""}
+        />
+
         <Footer />
         <QuickViewSheet product={quickViewProduct} isOpen={!!quickViewProduct} onClose={() => setQuickViewProduct(null)} />
       </div>

@@ -1,5 +1,6 @@
-import { Image as ImageIcon, X, Ruler, FileText, AlignLeft } from "lucide-react";
+import { Image as ImageIcon, X, Ruler, FileText, AlignLeft, Video } from "lucide-react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { VideoUpload } from "@/components/admin/VideoUpload";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,6 +59,18 @@ export function ProductMediaSection({ formData, setFormData }: ProductMediaSecti
             </div>
             <ImageUpload multiple value={formData.gallery_urls} onChange={(urls) => setFormData((prev: any) => ({ ...prev, gallery_urls: urls as string[] }))} />
           </div>
+        </div>
+
+        {/* Video Upload */}
+        <div className="space-y-4 pt-10 border-t border-dashed">
+          <Label className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-2">
+            <Video className="w-4 h-4" /> Video Nổi (Floating Video - Tỉ lệ 9:16)
+          </Label>
+          <VideoUpload 
+            value={formData.floating_video_url} 
+            onChange={(url) => setFormData({...formData, floating_video_url: url as string})} 
+          />
+          <p className="text-[10px] text-muted-foreground italic">Video này sẽ hiển thị dưới dạng một ô nhỏ, nổi ở góc màn hình trang chi tiết sản phẩm.</p>
         </div>
 
         {/* Descriptions */}
