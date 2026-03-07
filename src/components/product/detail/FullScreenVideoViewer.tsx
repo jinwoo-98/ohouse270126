@@ -20,20 +20,20 @@ export function FullScreenVideoViewer({ isOpen, onClose, videoUrl }: FullScreenV
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center"
+          className="fixed inset-0 bg-black/90 backdrop-blur-lg z-[200] flex items-center justify-center"
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0.8 }}
-            className="relative w-full max-w-[450px] aspect-[9/16] bg-black rounded-2xl overflow-hidden shadow-2xl"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="relative h-full w-full flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
             <video
               key={videoUrl} // Buộc tạo lại phần tử video khi URL thay đổi
               src={videoUrl}
-              className="w-full h-full object-contain"
+              className="h-full w-auto max-w-full object-contain shadow-2xl"
               controls
               autoPlay
               playsInline
@@ -42,13 +42,15 @@ export function FullScreenVideoViewer({ isOpen, onClose, videoUrl }: FullScreenV
                 onClose();
               }}
             />
+            
+            {/* Nút đóng nằm ở góc trên bên phải màn hình */}
+            <button
+              onClick={onClose}
+              className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all z-[210] backdrop-blur-md border border-white/10"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </motion.div>
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-3 bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
         </motion.div>
       )}
     </AnimatePresence>
