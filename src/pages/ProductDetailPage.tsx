@@ -440,9 +440,10 @@ export default function ProductDetailPage() {
         <AIChatWindow isOpen={isAIChatOpen} onClose={() => setIsAIChatOpen(false)} productContext={product} />
         
         {product?.floating_video_url && (
-          <FloatingVideoPlayer 
-            videoUrl={product.floating_video_url} 
-            onOpenFullScreen={() => setIsFullScreenVideoOpen(true)} 
+          <FloatingVideoPlayer
+            videoUrl={product.floating_video_url}
+            onOpenFullScreen={() => setIsFullScreenVideoOpen(true)}
+            isParentPaused={isFullScreenVideoOpen}
           />
         )}
         

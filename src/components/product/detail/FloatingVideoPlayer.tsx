@@ -7,9 +7,10 @@ import { Play, Pause, X, Maximize, Loader2 } from "lucide-react";
 interface FloatingVideoPlayerProps {
   videoUrl: string;
   onOpenFullScreen: () => void;
+  isParentPaused?: boolean;
 }
 
-export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVideoPlayerProps) {
+export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen, isParentPaused }: FloatingVideoPlayerProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -18,6 +19,12 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+
+  useEffect(() => {
+    if (isParentPaused && videoRef.current) {
+      videoRef.current.pause();
+    }
+  }, [isParentPaused]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -69,9 +76,6 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
 
   const handleContainerTap = () => {
     if (!isDragging.current) {
-      if (videoRef.current && videoRef.current.paused) {
-        videoRef.current.play().catch(() => {});
-      }
       onOpenFullScreen();
     }
   };
@@ -120,6 +124,7 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
 
         <button
           onClick={(e) => { e.stopPropagation(); setIsVisible(false); }}
+          onPointerDown={(e) => e.stopPropagation()}
           className="absolute top-2 right-2 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-destructive transition-all z-20"
         >
           <X className="w-4 h-4" />
@@ -127,6 +132,7 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
 
         <button
           onClick={togglePlay}
+          onPointerDown={(e) => e.stopPropagation()}
           className="absolute bottom-2 left-2 w-8 h-8 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-primary transition-all z-20"
         >
           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}

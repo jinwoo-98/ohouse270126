@@ -33,6 +33,7 @@ export function FullScreenVideoViewer({ isOpen, onClose, videoUrl }: FullScreenV
               src={videoUrl}
               className="h-full w-auto max-w-full object-contain shadow-2xl"
               controls
+              autoPlay
               playsInline
             />
             
