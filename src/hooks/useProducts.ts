@@ -18,6 +18,8 @@ const priceRangeMap: Record<string, [number, number]> = {
   "50+": [50000000, 999999999],
 };
 
+const PRODUCT_COLUMNS = 'id, name, slug, price, original_price, image_url, category_id, is_featured, is_new, is_sale, display_order, fake_sold, fake_review_count, fake_rating, material, style, image_alt_text';
+
 export function useProducts(categorySlug: string, initialSearch?: string) {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +49,7 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
       // Get Category Info
       const { data: catData } = await supabase
         .from('categories')
-        .select('*')
+        .select('id, name, slug, parent_id, default_sort')
         .eq('slug', categorySlug)
         .single();
       
@@ -76,7 +78,7 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
         
         const { data: attrs } = await supabase
           .from('attributes')
-          .select('*')
+          .select('id, name, type, options')
           .in('id', uniqueAttrIds)
           .order('name');
         
@@ -96,7 +98,7 @@ export function useProducts(categorySlug: string, initialSearch?: string) {
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
-      let query = supabase.from('products').select('*');
+      let query = supabase.from('products').select(PRODUCT_COLUMNS);
       let targetSlugs = [categorySlug];
 
       // --- Category Filter Logic ---
