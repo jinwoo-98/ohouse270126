@@ -14,8 +14,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
-    <!-- Content Security Policy - Cập nhật để cho phép tải video từ Supabase -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://www.googletagmanager.com https://connect.facebook.net https://hcaptcha.com https://*.hcaptcha.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://hcaptcha.com https://*.hcaptcha.com; img-src 'self' data: https://*.supabase.co https://images.unsplash.com; media-src 'self' https://*.supabase.co; connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://hcaptcha.com https://*.hcaptcha.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://www.google.com https://td.doubleclick.net https://hcaptcha.com https://*.hcaptcha.com;">
+    <!-- Content Security Policy - Đã thêm các domain của Mux và Google Storage vào connect-src -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://www.googletagmanager.com https://connect.facebook.net https://hcaptcha.com https://*.hcaptcha.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://hcaptcha.com https://*.hcaptcha.com; img-src 'self' data: https://*.supabase.co https://images.unsplash.com; media-src 'self' https://*.supabase.co https://stream.mux.com; connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://hcaptcha.com https://*.hcaptcha.com https://*.mux.com https://storage.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://www.google.com https://td.doubleclick.net https://hcaptcha.com https://*.hcaptcha.com;">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />

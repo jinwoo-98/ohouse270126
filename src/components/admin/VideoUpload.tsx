@@ -22,7 +22,6 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Giới hạn 500MB
     if (file.size > 500 * 1024 * 1024) {
       toast.error("Video quá lớn! Vui lòng chọn video dưới 500MB.");
       return;
@@ -38,9 +37,9 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      if (!token) throw new Error("Vui lòng đăng nhập lại để thực hiện tác vụ này.");
+      if (!token) throw new Error("Vui lòng đăng nhập lại.");
 
-      // 1. Tạo Upload URL từ Mux thông qua Edge Function
+      // 1. Tạo Upload URL
       const response = await fetch(FUNCTION_URL, {
         method: 'POST',
         headers: {
@@ -50,17 +49,12 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
         body: JSON.stringify({ action: 'create-upload' })
       });
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || "Máy chủ xử lý video đang bận. Vui lòng thử lại sau.");
-      }
+      if (!response.ok) throw new Error("Máy chủ bận, vui lòng thử lại sau.");
       
       const uploadData = await response.json();
       const { url: uploadUrl, id: uploadId } = uploadData;
 
-      if (!uploadUrl) throw new Error("Không nhận được địa chỉ tải lên từ máy chủ.");
-
-      // 2. Tải file trực tiếp lên Google Cloud Storage (qua Mux URL)
+      // 2. Tải file lên
       toast.loading(`Đang tải video lên (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`, { id: toastId });
       
       const xhr = new XMLHttpRequest();
@@ -68,9 +62,8 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
       const uploadPromise = new Promise((resolve, reject) => {
         xhr.open('PUT', uploadUrl);
         
-        // Quan trọng: Không đặt Authorization header khi tải lên URL đã ký của Google/Mux
-        // Nhưng cần đặt Content-Type khớp với tệp để tránh lỗi signature
-        xhr.setRequestHeader('Content-Type', file.type);
+        // Lưu ý: Không đặt bất kỳ header nào (kể cả Content-Type) khi PUT lên GCS signed URL 
+        // trừ khi nó đã được khai báo lúc tạo URL. Mux mặc định không yêu cầu.
 
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
@@ -80,33 +73,21 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
         };
 
         xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(xhr.response);
-          } else {
-            console.error("[VideoUpload] Upload failed with status:", xhr.status, xhr.responseText);
-            reject(new Error(`Máy chủ từ chối tệp tin (Lỗi ${xhr.status}).`));
-          }
+          if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.response);
+          else reject(new Error(`Lỗi máy chủ (${xhr.status})`));
         };
 
-        xhr.onerror = () => {
-          console.error("[VideoUpload] XHR Network Error");
-          reject(new Error("Kết nối bị chặn hoặc gián đoạn. Vui lòng kiểm tra mạng hoặc VPN."));
-        };
-
-        xhr.onabort = () => reject(new Error("Quá trình tải lên đã bị hủy."));
-        
+        xhr.onerror = () => reject(new Error("Kết nối bị chặn. Hãy kiểm tra Ad-blocker hoặc VPN."));
         xhr.send(file);
       });
 
       await uploadPromise;
 
-      // 3. Kiểm tra trạng thái xử lý của Mux
+      // 3. Kiểm tra trạng thái
       setStatus('processing');
-      toast.loading("Đang tối ưu hóa video cho mọi thiết bị...", { id: toastId });
+      toast.loading("Đang tối ưu hóa video...", { id: toastId });
 
       let attempts = 0;
-      const maxAttempts = 60; // 2 phút
-
       const checkStatus = async () => {
         try {
           const statusRes = await fetch(FUNCTION_URL, {
@@ -118,46 +99,32 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
             body: JSON.stringify({ action: 'check-status', uploadId })
           });
 
-          if (!statusRes.ok) {
-            // Nếu lỗi mạng tạm thời, cứ để nó thử lại
-            setTimeout(checkStatus, 3000);
-            return;
-          }
-
           const statusData = await statusRes.json();
 
           if (statusData.url) {
             onChange(statusData.url);
             setStatus('ready');
-            toast.success("Video đã được xử lý thành công!", { id: toastId });
+            toast.success("Video đã sẵn sàng!", { id: toastId });
             setIsUploading(false);
             return;
           }
 
-          if (statusData.status === 'error') {
-            throw new Error("Máy chủ Mux báo lỗi khi xử lý video này.");
-          }
-
           attempts++;
-          if (attempts < maxAttempts) {
-            setTimeout(checkStatus, 2500);
+          if (attempts < 40) {
+            setTimeout(checkStatus, 3000);
           } else {
-            toast.error("Video đang được xử lý ngầm, bạn có thể lưu sản phẩm và quay lại sau.", { id: toastId });
+            toast.error("Xử lý hơi lâu, bạn có thể lưu sản phẩm và quay lại sau.", { id: toastId });
             setIsUploading(false);
           }
-        } catch (err: any) {
-          console.error("[VideoUpload] Status check error:", err);
-          toast.error("Lỗi kiểm tra trạng thái: " + (err.message || "Không xác định"), { id: toastId });
-          setIsUploading(false);
+        } catch (err) {
+          setTimeout(checkStatus, 5000);
         }
       };
 
       checkStatus();
 
     } catch (error: any) {
-      console.error("[VideoUpload] Catch Error:", error);
-      const msg = error?.message || "Đã có lỗi xảy ra.";
-      toast.error("Lỗi: " + msg, { id: toastId });
+      toast.error("Lỗi: " + error.message, { id: toastId });
       setIsUploading(false);
       setStatus('idle');
     }
@@ -175,9 +142,7 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
           />
           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <button
-              onClick={() => {
-                if (confirm("Xóa video này?")) onChange("");
-              }}
+              onClick={() => { if (confirm("Xóa video?")) onChange(""); }}
               className="p-2 bg-destructive text-white rounded-full hover:bg-destructive/90 transition-colors"
               type="button"
               disabled={disabled}
@@ -202,7 +167,6 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
                   <p className="text-[10px] font-bold text-charcoal uppercase">
                     {status === 'uploading' ? `Tải lên: ${uploadProgress}%` : 'Đang xử lý...'}
                   </p>
-                  <p className="text-[9px] text-muted-foreground mt-1">Vui lòng giữ trình duyệt mở</p>
                 </>
               ) : (
                 <>
@@ -219,10 +183,7 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
             </div>
             
             {isUploading && status === 'uploading' && (
-              <div 
-                className="absolute bottom-0 left-0 h-1 bg-primary transition-all duration-300" 
-                style={{ width: `${uploadProgress}%` }}
-              />
+              <div className="absolute bottom-0 left-0 h-1 bg-primary transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
             )}
 
             <input 
