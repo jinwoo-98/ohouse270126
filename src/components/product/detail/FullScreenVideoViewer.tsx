@@ -2,7 +2,6 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { HLSVideoPlayer } from "@/components/ui/HLSVideoPlayer";
 
 interface FullScreenVideoViewerProps {
   isOpen: boolean;
@@ -30,11 +29,10 @@ export function FullScreenVideoViewer({ isOpen, onClose, videoUrl }: FullScreenV
             className="relative h-full w-full flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <HLSVideoPlayer
+            <video
               src={videoUrl}
               className="h-full w-auto max-w-full object-contain shadow-2xl"
               controls
-              autoPlay
               playsInline
             />
             

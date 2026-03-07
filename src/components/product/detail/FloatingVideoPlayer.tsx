@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, X, Maximize, Loader2 } from "lucide-react";
-import { HLSVideoPlayer } from "@/components/ui/HLSVideoPlayer";
 
 interface FloatingVideoPlayerProps {
   videoUrl: string;
@@ -12,46 +11,49 @@ interface FloatingVideoPlayerProps {
 
 export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVideoPlayerProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isIntersecting, setIsIntersecting] = useState(false);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsIntersecting(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => {
+      if (containerRef.current) observer.unobserve(containerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Các sự kiện báo hiệu video đã thực sự chạy
-    const clearLoading = () => {
-      console.log("[FloatingVideo] Playback started, clearing loader");
-      setIsLoading(false);
-      setIsPlaying(true);
-    };
-
-    const handleWaiting = () => setIsLoading(true);
+    const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
+    const handleLoadedMetadata = () => setIsLoading(false);
 
-    video.addEventListener('playing', clearLoading);
-    video.addEventListener('canplay', clearLoading);
-    video.addEventListener('waiting', handleWaiting);
+    video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
-    video.addEventListener('play', () => setIsPlaying(true));
-
-    // Fallback: Nếu sau 5s vẫn loading, thử gọi play() lại lần nữa
-    const timeout = setTimeout(() => {
-      if (isLoading && video.paused) {
-        video.play().catch(() => {});
-      }
-    }, 5000);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
 
     return () => {
-      video.removeEventListener('playing', clearLoading);
-      video.removeEventListener('canplay', clearLoading);
-      video.removeEventListener('waiting', handleWaiting);
+      video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
-      clearTimeout(timeout);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
-  }, [isLoading]);
+  }, []);
 
   const togglePlay = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -65,48 +67,59 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen }: FloatingVide
     }
   };
 
+  const handleContainerTap = () => {
+    if (!isDragging.current) {
+      if (videoRef.current && videoRef.current.paused) {
+        videoRef.current.play().catch(() => {});
+      }
+      onOpenFullScreen();
+    }
+  };
+
   if (!isVisible || !videoUrl || videoUrl.trim() === "") return null;
 
   return (
     <AnimatePresence>
       <motion.div
+        ref={containerRef}
         drag
         dragMomentum={false}
         onDragStart={() => { isDragging.current = true; }}
-        onDragEnd={() => { 
-          setTimeout(() => { isDragging.current = false; }, 100); 
-        }}
+        onDragEnd={() => { setTimeout(() => { isDragging.current = false; }, 100); }}
         initial={{ opacity: 0, scale: 0.5, x: 100 }}
         animate={{ opacity: 1, scale: 1, x: 0 }}
         exit={{ opacity: 0, scale: 0.5, x: 100 }}
         className="fixed bottom-72 right-2 md:right-4 z-[140] w-[110px] h-[196px] md:w-[140px] md:h-[248px] rounded-2xl overflow-hidden shadow-elevated cursor-grab active:cursor-grabbing group bg-black border border-white/10"
-        onTap={() => { 
-          if (!isDragging.current) onOpenFullScreen(); 
-        }}
+        onTap={handleContainerTap}
       >
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10 backdrop-blur-[2px]">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
         )}
 
-        <HLSVideoPlayer
+        <video
           ref={videoRef}
-          src={videoUrl}
+          src={isIntersecting ? `${videoUrl}#t=0.1` : ""}
           className="w-full h-full object-cover"
           loop
           muted
-          autoPlay
           playsInline
+          preload="metadata"
         />
         
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
 
+        {!isPlaying && !isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+            <div className="w-12 h-12 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center">
+              <Play className="w-6 h-6 text-white fill-current ml-1" />
+            </div>
+          </div>
+        )}
+
         <button
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            setIsVisible(false); 
-          }}
+          onClick={(e) => { e.stopPropagation(); setIsVisible(false); }}
           className="absolute top-2 right-2 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-destructive transition-all z-20"
         >
           <X className="w-4 h-4" />
