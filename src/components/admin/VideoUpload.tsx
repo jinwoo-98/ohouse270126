@@ -32,23 +32,31 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
     const toastId = toast.loading("Đang kết nối với máy chủ xử lý video...");
 
     try {
-      // Sử dụng URL đầy đủ để gọi Edge Function theo quy tắc của hệ thống
       const FUNCTION_URL = "https://kyfzqgyazmjtnxjdvetr.supabase.co/functions/v1/process-video";
-      
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+
+      if (!token) throw new Error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+
+      // 1. Tạo Upload URL
       const response = await fetch(FUNCTION_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ action: 'create-upload' })
       });
 
-      if (!response.ok) throw new Error("Không thể khởi tạo cổng tải lên.");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "Không thể khởi tạo cổng tải lên.");
+      }
+      
       const uploadData = await response.json();
-
       const { url: uploadUrl, id: uploadId } = uploadData;
 
+      // 2. Tải file lên Mux
       toast.loading(`Đang tải video lên (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`, { id: toastId });
       
       const xhr = new XMLHttpRequest();
@@ -62,51 +70,60 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
       };
 
       const uploadPromise = new Promise((resolve, reject) => {
-        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve(xhr.response) : reject();
-        xhr.onerror = () => reject();
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve(xhr.response) : reject(new Error("Lỗi khi đẩy file lên máy chủ xử lý."));
+        xhr.onerror = () => reject(new Error("Kết nối mạng bị gián đoạn."));
       });
 
       xhr.send(file);
       await uploadPromise;
 
+      // 3. Kiểm tra trạng thái xử lý
       setStatus('processing');
       toast.loading("Video đã tải xong, đang tối ưu hóa...", { id: toastId });
 
       let attempts = 0;
       const checkStatus = async () => {
-        const statusRes = await fetch(FUNCTION_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-          },
-          body: JSON.stringify({ action: 'check-status', uploadId })
-        });
+        try {
+          const statusRes = await fetch(FUNCTION_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ action: 'check-status', uploadId })
+          });
 
-        const statusData = await statusRes.json();
+          if (!statusRes.ok) return; // Bỏ qua lỗi tạm thời, thử lại sau
 
-        if (statusData.url) {
-          onChange(statusData.url);
-          setStatus('ready');
-          toast.success("Video đã sẵn sàng!", { id: toastId });
-          setIsUploading(false);
-          return;
-        }
+          const statusData = await statusRes.json();
 
-        attempts++;
-        if (attempts < 30) {
-          setTimeout(checkStatus, 2000);
-        } else {
-          toast.error("Xử lý video hơi lâu, vui lòng kiểm tra lại sau vài phút.", { id: toastId });
-          setIsUploading(false);
+          if (statusData.url) {
+            onChange(statusData.url);
+            setStatus('ready');
+            toast.success("Video đã sẵn sàng!", { id: toastId });
+            setIsUploading(false);
+            return;
+          }
+
+          attempts++;
+          if (attempts < 60) { // Chờ tối đa 2 phút
+            setTimeout(checkStatus, 2000);
+          } else {
+            toast.error("Xử lý video hơi lâu, vui lòng kiểm tra lại sau vài phút.", { id: toastId });
+            setIsUploading(false);
+          }
+        } catch (err) {
+          // Nếu lỗi mạng trong lúc check status, vẫn tiếp tục thử lại
+          setTimeout(checkStatus, 3000);
         }
       };
 
       checkStatus();
 
     } catch (error: any) {
-      console.error(error);
-      toast.error("Lỗi tải video: " + error.message, { id: toastId });
+      console.error("[VideoUpload] Error:", error);
+      const errorMessage = error?.message || "Đã có lỗi xảy ra khi tải video.";
+      toast.error("Lỗi tải video: " + errorMessage, { id: toastId });
       setIsUploading(false);
       setStatus('idle');
     }
