@@ -12,7 +12,7 @@ interface FullScreenVideoViewerProps {
 export function FullScreenVideoViewer({ isOpen, onClose, videoUrl }: FullScreenVideoViewerProps) {
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isOpen && videoUrl && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
