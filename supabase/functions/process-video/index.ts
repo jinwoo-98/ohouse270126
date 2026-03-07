@@ -18,12 +18,12 @@ serve(async (req) => {
     const MUX_TOKEN_SECRET = Deno.env.get('MUX_TOKEN_SECRET')
 
     if (!MUX_TOKEN_ID || !MUX_TOKEN_SECRET) {
+      console.error("[process-video] Missing Mux API Keys in environment");
       throw new Error("Chưa cấu hình Mux API Keys trong Supabase Secrets.")
     }
 
     const auth = btoa(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`)
 
-    // Hành động 1: Tạo URL để tải video lên trực tiếp Mux
     if (action === 'create-upload') {
       console.log("[process-video] Creating direct upload URL...");
       
@@ -42,13 +42,13 @@ serve(async (req) => {
       })
 
       const data = await response.json()
+      console.log("[process-video] Upload URL created successfully");
       return new Response(JSON.stringify(data.data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       })
     }
 
-    // Hành động 2: Kiểm tra trạng thái và lấy Playback ID sau khi tải xong
     if (action === 'check-status') {
       console.log(`[process-video] Checking status for upload: ${uploadId}`);
       
@@ -66,6 +66,7 @@ serve(async (req) => {
         const assetData = await assetResponse.json()
         const playbackId = assetData.data.playback_ids?.[0]?.id
         
+        console.log(`[process-video] Asset processed. Playback ID: ${playbackId}`);
         return new Response(JSON.stringify({ 
           status: data.data.status, 
           playbackId,

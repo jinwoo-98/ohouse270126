@@ -22,7 +22,6 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Giới hạn 500MB cho Mux (thoải mái cho video nội thất)
     if (file.size > 500 * 1024 * 1024) {
       toast.error("Video quá lớn! Vui lòng chọn video dưới 500MB.");
       return;
@@ -30,19 +29,26 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
 
     setIsUploading(true);
     setStatus('uploading');
-    const toastId = toast.loading("Đang chuẩn bị cổng tải lên Mux...");
+    const toastId = toast.loading("Đang kết nối với máy chủ xử lý video...");
 
     try {
-      // 1. Gọi Edge Function để lấy URL tải lên trực tiếp từ Mux
-      const { data: uploadData, error: funcError } = await supabase.functions.invoke('process-video', {
-        body: { action: 'create-upload' }
+      // Sử dụng URL đầy đủ để gọi Edge Function theo quy tắc của hệ thống
+      const FUNCTION_URL = "https://kyfzqgyazmjtnxjdvetr.supabase.co/functions/v1/process-video";
+      
+      const response = await fetch(FUNCTION_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: JSON.stringify({ action: 'create-upload' })
       });
 
-      if (funcError) throw funcError;
+      if (!response.ok) throw new Error("Không thể khởi tạo cổng tải lên.");
+      const uploadData = await response.json();
 
       const { url: uploadUrl, id: uploadId } = uploadData;
 
-      // 2. Tải file trực tiếp từ trình duyệt lên Mux (không qua server của mình)
       toast.loading(`Đang tải video lên (${(file.size / (1024 * 1024)).toFixed(1)}MB)...`, { id: toastId });
       
       const xhr = new XMLHttpRequest();
@@ -63,16 +69,21 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
       xhr.send(file);
       await uploadPromise;
 
-      // 3. Chờ Mux xử lý video
       setStatus('processing');
-      toast.loading("Video đã tải xong, đang tối ưu hóa để phát mượt mà...", { id: toastId });
+      toast.loading("Video đã tải xong, đang tối ưu hóa...", { id: toastId });
 
-      // Polling để kiểm tra trạng thái xử lý
       let attempts = 0;
       const checkStatus = async () => {
-        const { data: statusData } = await supabase.functions.invoke('process-video', {
-          body: { action: 'check-status', uploadId }
+        const statusRes = await fetch(FUNCTION_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          },
+          body: JSON.stringify({ action: 'check-status', uploadId })
         });
+
+        const statusData = await statusRes.json();
 
         if (statusData.url) {
           onChange(statusData.url);
@@ -83,7 +94,7 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
         }
 
         attempts++;
-        if (attempts < 30) { // Chờ tối đa 1 phút
+        if (attempts < 30) {
           setTimeout(checkStatus, 2000);
         } else {
           toast.error("Xử lý video hơi lâu, vui lòng kiểm tra lại sau vài phút.", { id: toastId });
@@ -105,7 +116,6 @@ export function VideoUpload({ value, onChange, disabled }: VideoUploadProps) {
     <div className="w-full">
       {value ? (
         <div className="relative w-full max-w-[200px] aspect-[9/16] rounded-2xl overflow-hidden border border-border bg-black group shadow-md">
-          {/* Nếu là link Mux (.m3u8), ta dùng video tag bình thường (trình duyệt hiện đại hỗ trợ tốt) */}
           <video 
             key={value}
             src={value} 
