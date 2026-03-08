@@ -98,7 +98,7 @@ export function AIChatWindow({ isOpen, onClose, productContext }: AIChatWindowPr
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="fixed inset-0 md:inset-auto md:bottom-24 md:right-8 w-full md:w-[400px] h-full md:h-[600px] bg-card md:rounded-3xl shadow-elevated z-[120] flex flex-col overflow-hidden border border-border/40"
+          className="fixed inset-0 md:inset-auto md:bottom-24 md:right-4 w-full md:w-[400px] h-full md:h-[600px] bg-card md:rounded-3xl shadow-elevated z-[120] flex flex-col overflow-hidden border border-border/40"
         >
           <div className="bg-charcoal p-4 text-cream flex items-center justify-between">
             <div className="flex items-center gap-3">
