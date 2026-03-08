@@ -114,7 +114,6 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen, isParentPaused
           src={isIntersecting ? `${videoUrl}#t=0.1` : ""}
           className="w-full h-full object-cover"
           loop
-          muted
           playsInline
           preload="metadata"
         />
