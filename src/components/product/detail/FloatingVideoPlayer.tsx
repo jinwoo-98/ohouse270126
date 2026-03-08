@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, X, Maximize, Loader2 } from "lucide-react";
+import { Play, Pause, X, Loader2 } from "lucide-react";
 
 interface FloatingVideoPlayerProps {
   videoUrl: string;
@@ -76,8 +76,6 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen, isParentPaused
   };
 
   const handleContainerClick = (e: React.MouseEvent) => {
-    // Only trigger full screen if we weren't dragging
-    // We check the time difference to distinguish between a click and a drag
     const dragDuration = Date.now() - dragStartTime.current;
     if (!isDragging.current || dragDuration < 200) {
       onOpenFullScreen();
@@ -97,7 +95,6 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen, isParentPaused
           dragStartTime.current = Date.now();
         }}
         onDragEnd={() => { 
-          // Keep isDragging true for a tiny bit to prevent immediate click trigger
           setTimeout(() => { isDragging.current = false; }, 50); 
         }}
         initial={{ opacity: 0, scale: 0.5, x: 100 }}
@@ -124,14 +121,6 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen, isParentPaused
         
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
 
-        {!isPlaying && !isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-            <div className="w-12 h-12 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center">
-              <Play className="w-6 h-6 text-white fill-current ml-1" />
-            </div>
-          </div>
-        )}
-
         {/* Close Button */}
         <button
           onClick={(e) => { 
@@ -152,11 +141,6 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen, isParentPaused
         >
           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
         </button>
-        
-        {/* Maximize Icon Overlay */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 bg-primary/80 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-gold z-10 pointer-events-none">
-          <Maximize className="w-6 h-6" />
-        </div>
       </motion.div>
     </AnimatePresence>
   );
