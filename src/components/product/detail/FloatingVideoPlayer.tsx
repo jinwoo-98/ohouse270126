@@ -19,6 +19,7 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen, isParentPaused
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+  const dragStartTime = useRef(0);
 
   useEffect(() => {
     if (isParentPaused && videoRef.current) {
@@ -74,8 +75,11 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen, isParentPaused
     }
   };
 
-  const handleContainerTap = () => {
-    if (!isDragging.current) {
+  const handleContainerClick = (e: React.MouseEvent) => {
+    // Only trigger full screen if we weren't dragging
+    // We check the time difference to distinguish between a click and a drag
+    const dragDuration = Date.now() - dragStartTime.current;
+    if (!isDragging.current || dragDuration < 200) {
       onOpenFullScreen();
     }
   };
@@ -88,13 +92,19 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen, isParentPaused
         ref={containerRef}
         drag
         dragMomentum={false}
-        onDragStart={() => { isDragging.current = true; }}
-        onDragEnd={() => { setTimeout(() => { isDragging.current = false; }, 100); }}
+        onDragStart={() => { 
+          isDragging.current = true; 
+          dragStartTime.current = Date.now();
+        }}
+        onDragEnd={() => { 
+          // Keep isDragging true for a tiny bit to prevent immediate click trigger
+          setTimeout(() => { isDragging.current = false; }, 50); 
+        }}
         initial={{ opacity: 0, scale: 0.5, x: 100 }}
         animate={{ opacity: 1, scale: 1, x: 0 }}
         exit={{ opacity: 0, scale: 0.5, x: 100 }}
         className="fixed bottom-72 right-2 md:right-4 z-[140] w-[110px] h-[196px] md:w-[140px] md:h-[248px] rounded-2xl overflow-hidden shadow-elevated cursor-grab active:cursor-grabbing group bg-black border border-white/10"
-        onTap={handleContainerTap}
+        onClick={handleContainerClick}
       >
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
@@ -122,14 +132,19 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen, isParentPaused
           </div>
         )}
 
+        {/* Close Button */}
         <button
-          onClick={(e) => { e.stopPropagation(); setIsVisible(false); }}
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            setIsVisible(false); 
+          }}
           onPointerDown={(e) => e.stopPropagation()}
           className="absolute top-2 right-2 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-destructive transition-all z-20"
         >
           <X className="w-4 h-4" />
         </button>
 
+        {/* Play/Pause Button */}
         <button
           onClick={togglePlay}
           onPointerDown={(e) => e.stopPropagation()}
@@ -138,7 +153,8 @@ export function FloatingVideoPlayer({ videoUrl, onOpenFullScreen, isParentPaused
           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
         </button>
         
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 bg-primary/80 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-gold z-10">
+        {/* Maximize Icon Overlay */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 bg-primary/80 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-gold z-10 pointer-events-none">
           <Maximize className="w-6 h-6" />
         </div>
       </motion.div>
